@@ -8,7 +8,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.Vector;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Firework;
@@ -305,24 +304,40 @@ public class TriggerListener implements Listener {
     }
 
     private void executeKnockback(Player player, String actionStr) {
-        // Формат: "knockback:2" - отбросить на 2 блока
+        // Формат: "knockback:2" - отбросить врагов nearby
         String kbPart = actionStr.replace("knockback:", "").trim();
-        double power = 2.0;
+        double range = 3.0;
         try {
-            power = Double.parseDouble(kbPart);
+            range = Double.parseDouble(kbPart);
         } catch (Exception ignored) {}
-        org.bukkit.Vector velocity = player.getLocation().getDirection().multiply(-power).setY(0.5);
-        player.setVelocity(velocity);
+        // Отбрасываем всех мобов nearby
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
+                org.bukkit.Location loc = entity.getLocation();
+                org.bukkit.Location playerLoc = player.getLocation();
+                double dx = loc.getX() - playerLoc.getX();
+                double dz = loc.getZ() - playerLoc.getZ();
+                double dist = Math.sqrt(dx * dx + dz * dz);
+                if (dist > 0) {
+                    double strength = 1.5 / dist;
+                    entity.setVelocity(entity.getVelocity().add(new org.joml.Vector3d(dx * strength, 0.5, dz * strength)));
+                }
+            }
+        }
     }
 
     private void executeLaunch(Player player, String actionStr) {
-        // Формат: "launch:3" - подбросить на 3 блока вверх
+        // Формат: "launch:3" - подбросить nearby врагов вверх
         String launchPart = actionStr.replace("launch:", "").trim();
-        double power = 3.0;
+        double power = 1.5;
         try {
             power = Double.parseDouble(launchPart);
         } catch (Exception ignored) {}
-        player.setVelocity(new org.bukkit.Vector(0, power * 0.5, 0));
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(4, 4, 4)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
+                entity.setVelocity(entity.getVelocity().add(new org.joml.Vector3d(0, power, 0)));
+            }
+        }
     }
 
     private void executeTitle(Player player, String actionStr) {
