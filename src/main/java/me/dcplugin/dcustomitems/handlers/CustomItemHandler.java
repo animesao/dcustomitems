@@ -183,6 +183,28 @@ public class CustomItemHandler {
                 itemStack.setItemMeta(meta);
             }
 
+            // Предварительно заменяем %cooldown% и %uses% в lore
+            // (чтобы плейсхолдеры не отображались как текст)
+            int maxUses = section.getInt("max-uses", -1);
+            List<String> lorePre = section.getStringList("lore");
+            if (!lorePre.isEmpty()) {
+                List<String> processedLore = new ArrayList<>();
+                for (String line : lorePre) {
+                    String processed = line.replace("%cooldown%", "0.0");
+                    if (maxUses > 0) {
+                        processed = processed.replace("%uses%", String.valueOf(maxUses));
+                    } else {
+                        processed = processed.replace("%uses%", "∞");
+                    }
+                    processedLore.add(ColorUtils.colorize(processed));
+                }
+                meta = itemStack.getItemMeta();
+                if (meta != null) {
+                    meta.setLore(processedLore);
+                    itemStack.setItemMeta(meta);
+                }
+            }
+
             // Загружаем основные параметры
             if (effects == null) {
                 effects = new ArrayList<>();
@@ -223,7 +245,6 @@ public class CustomItemHandler {
             List<String> leftClickActions = section.getStringList("left-click-actions");
             List<String> rightClickActions = section.getStringList("right-click-actions");
             long clickCooldown = section.getLong("click-cooldown", 0);
-            int maxUses = section.getInt("max-uses", -1);
             
             List<String> loreTemplate = new ArrayList<>(section.getStringList("lore"));
 
@@ -326,8 +347,10 @@ public class CustomItemHandler {
                 for (String line : loreTemplate) {
                     String processed = line.replace("%cooldown%", cooldownStr);
                     int uses = getItemUses(itemStack);
-                    if (uses > 0 || customItem.hasMaxUses()) {
+                    if (customItem.hasMaxUses()) {
                         processed = processed.replace("%uses%", String.valueOf(uses));
+                    } else {
+                        processed = processed.replace("%uses%", "∞");
                     }
                     newLore.add(ColorUtils.colorize(processed));
                 }
@@ -347,7 +370,18 @@ public class CustomItemHandler {
             return -1;
         }
         Integer uses = meta.getPersistentDataContainer().get(itemUsesKey, PersistentDataType.INTEGER);
-        return uses != null ? uses : -1;
+        if (uses != null) {
+            return uses;
+        }
+        // Если Uses не установлены, возвращаем maxUses предмета
+        String customItemId = getCustomItemId(itemStack);
+        if (customItemId != null) {
+            CustomItem customItem = getCustomItem(customItemId);
+            if (customItem != null && customItem.hasMaxUses()) {
+                return customItem.getMaxUses();
+            }
+        }
+        return -1;
     }
     
     public void setItemUses(ItemStack itemStack, int uses) {
@@ -385,7 +419,9 @@ public class CustomItemHandler {
             if (loreTemplate != null && !loreTemplate.isEmpty()) {
                 List<String> newLore = new ArrayList<>();
                 for (String line : loreTemplate) {
-                    newLore.add(ColorUtils.colorize(line.replace("%uses%", String.valueOf(uses))));
+                    String processed = line.replace("%uses%", String.valueOf(uses));
+                    processed = processed.replace("%cooldown%", "0.0");
+                    newLore.add(ColorUtils.colorize(processed));
                 }
                 meta.setLore(newLore);
             }
@@ -429,7 +465,9 @@ public class CustomItemHandler {
         if (loreTemplate != null && !loreTemplate.isEmpty()) {
             List<String> newLore = new ArrayList<>();
             for (String line : loreTemplate) {
-                newLore.add(ColorUtils.colorize(line.replace("%uses%", String.valueOf(uses))));
+                String processed = line.replace("%uses%", String.valueOf(uses));
+                processed = processed.replace("%cooldown%", "0.0");
+                newLore.add(ColorUtils.colorize(processed));
             }
             meta.setLore(newLore);
         }

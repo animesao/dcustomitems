@@ -61,6 +61,10 @@ public class EffectManager {
         return parsedEffects;
     }
 
+    // Длительность эффектов: 24 часа (в тиках)
+    // Периодический таск обновляет эффекты каждую секунду, поэтому этого достаточно
+    private static final int EFFECT_DURATION_TICKS = 24 * 60 * 60 * 20; // 24 часа
+
     public void applyEffects(Player player, CustomItem item) {
         if (item.getParsedEffects() == null || item.getParsedEffects().isEmpty()) {
             return;
@@ -71,7 +75,7 @@ public class EffectManager {
             int level = entry.getValue();
 
             // Применяем эффект с указанным уровнем
-            player.addPotionEffect(new PotionEffect(effectType, Integer.MAX_VALUE, level - 1, false, false), true);
+            player.addPotionEffect(new PotionEffect(effectType, EFFECT_DURATION_TICKS, level - 1, false, false), true);
         }
     }
 
@@ -110,7 +114,7 @@ public class EffectManager {
         for (Map.Entry<PotionEffectType, Integer> entry : effectsMap.entrySet()) {
             player.addPotionEffect(new PotionEffect(
                 entry.getKey(),
-                Integer.MAX_VALUE,
+                EFFECT_DURATION_TICKS,
                 entry.getValue() - 1,
                 false,
                 false
