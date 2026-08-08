@@ -284,6 +284,8 @@ public class TriggerListener implements Listener {
                 executeKnockback(player, actionStr);
             } else if (actionStr.startsWith("launch:")) {
                 executeLaunch(player, actionStr);
+            } else if (actionStr.startsWith("effect-nearby:")) {
+                executeEffectNearby(player, actionStr);
             }
         } catch (Exception e) {
             plugin.getLogger().warning("Error executing action: " + actionStr + " - " + e.getMessage());
@@ -291,16 +293,26 @@ public class TriggerListener implements Listener {
     }
 
     private void executeStun(Player player, String actionStr) {
-        // Формат: "stun:3" - оглушить на 3 секунды (замедление 100)
+        // Формат: "stun:3:4" - оглушить nearby врагов на 3 сек, радиус 4 блока
         String stunPart = actionStr.replace("stun:", "").trim();
+        String[] parts = stunPart.split(":");
         int duration = 3;
+        double range = 4.0;
         try {
-            duration = Integer.parseInt(stunPart);
+            duration = Integer.parseInt(parts[0]);
+            if (parts.length > 1) {
+                range = Double.parseDouble(parts[1]);
+            }
         } catch (Exception ignored) {}
-        player.addPotionEffect(new PotionEffect(
-            PotionEffectType.SLOWNESS, duration * 20, 127, false, false));
-        player.addPotionEffect(new PotionEffect(
-            PotionEffectType.MINING_FATIGUE, duration * 20, 127, false, false));
+        // Оглушаем ВСЕХ nearby врагов (кроме владельца)
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
+                ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
+                    PotionEffectType.SLOWNESS, duration * 20, 127, false, false));
+                ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
+                    PotionEffectType.MINING_FATIGUE, duration * 20, 127, false, false));
+            }
+        }
     }
 
     private void executeKnockback(Player player, String actionStr) {
@@ -627,6 +639,25 @@ public class TriggerListener implements Listener {
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
             if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
                 ((org.bukkit.entity.LivingEntity) entity).damage(amount, player);
+            }
+        }
+    }
+
+    private void executeEffectNearby(Player player, String actionStr) {
+        // Формат: "effect-nearby:SPEED:10:2:4" - эффект nearby врагам
+        String effectPart = actionStr.replace("effect-nearby:", "").trim();
+        String[] parts = effectPart.split(":");
+        if (parts.length < 3) return;
+        String effectName = parts[0].toUpperCase();
+        int duration = Integer.parseInt(parts[1]);
+        int amplifier = Integer.parseInt(parts[2]) - 1;
+        double range = parts.length > 3 ? Double.parseDouble(parts[3]) : 4.0;
+        PotionEffectType effectType = PotionEffectType.getByName(effectName);
+        if (effectType == null) return;
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
+                ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
+                    effectType, duration * 20, amplifier, false, false));
             }
         }
     }

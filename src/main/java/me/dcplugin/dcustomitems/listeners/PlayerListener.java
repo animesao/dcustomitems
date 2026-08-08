@@ -243,6 +243,18 @@ public class PlayerListener implements Listener {
                 executeTeleport(player, actionStr);
             } else if (actionStr.startsWith("damage:")) {
                 executeDamage(player, actionStr);
+            } else if (actionStr.startsWith("knockback:")) {
+                executeKnockback(player, actionStr);
+            } else if (actionStr.startsWith("launch:")) {
+                executeLaunch(player, actionStr);
+            } else if (actionStr.startsWith("stun:")) {
+                executeStun(player, actionStr);
+            } else if (actionStr.startsWith("title:")) {
+                executeTitle(player, actionStr);
+            } else if (actionStr.startsWith("announce:")) {
+                executeAnnounce(player, actionStr);
+            } else if (actionStr.startsWith("effect-nearby:")) {
+                executeEffectNearby(player, actionStr);
             }
         } catch (Exception e) {
             plugin.getLogger().warning("Error executing action: " + actionStr);
@@ -405,6 +417,104 @@ public class PlayerListener implements Listener {
             org.bukkit.Sound sound = org.bukkit.Sound.valueOf(soundName.toUpperCase());
             player.playSound(player.getLocation(), sound, volume, pitch);
         } catch (Exception ignored) {}
+    }
+
+    private void executeKnockback(Player player, String actionStr) {
+        // AoE knockback: knockback:РАДИУС
+        String kbPart = actionStr.replace("knockback:", "").trim();
+        double range = 3.0;
+        try {
+            range = Double.parseDouble(kbPart);
+        } catch (Exception ignored) {}
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
+                org.bukkit.Location loc = entity.getLocation();
+                org.bukkit.Location playerLoc = player.getLocation();
+                double dx = loc.getX() - playerLoc.getX();
+                double dz = loc.getZ() - playerLoc.getZ();
+                double dist = Math.sqrt(dx * dx + dz * dz);
+                if (dist > 0) {
+                    double strength = 1.5 / dist;
+                    entity.setVelocity(entity.getVelocity().add(new org.bukkit.util.Vector(dx * strength, 0.5, dz * strength)));
+                }
+            }
+        }
+    }
+
+    private void executeLaunch(Player player, String actionStr) {
+        // AoE launch: launch:СИЛА
+        String launchPart = actionStr.replace("launch:", "").trim();
+        double power = 1.5;
+        try {
+            power = Double.parseDouble(launchPart);
+        } catch (Exception ignored) {}
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(4, 4, 4)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
+                entity.setVelocity(entity.getVelocity().add(new org.bukkit.util.Vector(0, power, 0)));
+            }
+        }
+    }
+
+    private void executeStun(Player player, String actionStr) {
+        // AoE stun: stun:СЕКУНДЫ:РАДИУС
+        String stunPart = actionStr.replace("stun:", "").trim();
+        String[] parts = stunPart.split(":");
+        int duration = 3;
+        double range = 4.0;
+        try {
+            duration = Integer.parseInt(parts[0]);
+            if (parts.length > 1) {
+                range = Double.parseDouble(parts[1]);
+            }
+        } catch (Exception ignored) {}
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
+                ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
+                    PotionEffectType.SLOWNESS, duration * 20, 127, false, false));
+                ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
+                    PotionEffectType.MINING_FATIGUE, duration * 20, 127, false, false));
+            }
+        }
+    }
+
+    private void executeTitle(Player player, String actionStr) {
+        // title:Заголовок:Подзаголовок:fadeIn:stay:fadeOut
+        String titlePart = actionStr.replace("title:", "").trim();
+        String[] parts = titlePart.split(":");
+        if (parts.length >= 1) {
+            String title = me.dcplugin.dcustomitems.utils.ColorUtils.colorize(parts[0].replace("%player%", player.getName()));
+            String subtitle = parts.length > 1 ? me.dcplugin.dcustomitems.utils.ColorUtils.colorize(parts[1].replace("%player%", player.getName())) : "";
+            int fadeIn = parts.length > 2 ? Integer.parseInt(parts[2]) : 10;
+            int stay = parts.length > 3 ? Integer.parseInt(parts[3]) : 40;
+            int fadeOut = parts.length > 4 ? Integer.parseInt(parts[4]) : 10;
+            player.sendTitle(title, subtitle, fadeIn, stay, fadeOut);
+        }
+    }
+
+    private void executeAnnounce(Player player, String actionStr) {
+        // announce:Текст
+        String text = actionStr.replace("announce:", "").trim();
+        text = text.replace("%player%", player.getName());
+        Bukkit.broadcastMessage(me.dcplugin.dcustomitems.utils.ColorUtils.colorize(text));
+    }
+
+    private void executeEffectNearby(Player player, String actionStr) {
+        // effect-nearby:EFFECT:СЕКУНДЫ:УРОВЕНЬ:РАДИУС
+        String effectPart = actionStr.replace("effect-nearby:", "").trim();
+        String[] parts = effectPart.split(":");
+        if (parts.length < 3) return;
+        String effectName = parts[0].toUpperCase();
+        int duration = Integer.parseInt(parts[1]);
+        int amplifier = parts.length > 2 ? Integer.parseInt(parts[2]) - 1 : 0;
+        double range = parts.length > 3 ? Double.parseDouble(parts[3]) : 4.0;
+        PotionEffectType effectType = PotionEffectType.getByName(effectName);
+        if (effectType == null) return;
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
+                ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
+                    effectType, duration * 20, amplifier, false, false));
+            }
+        }
     }
 
     @EventHandler
