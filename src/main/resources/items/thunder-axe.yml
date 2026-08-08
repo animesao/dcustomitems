@@ -38,6 +38,8 @@ thunder-axe:
     - 'ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
   unequip-particles:
     - 'SMOKE_NORMAL:8'
+  activation-message: '&e⚡ Топор Грома извлечен! Небеса гневаются!'
+  deactivation-message: '&e⚡ Топор убран. Гром затих.'
   right-click-actions:
     - 'lightning:2'
     - 'particle:FIREWORKS_SPARK:20'
@@ -51,3 +53,6 @@ thunder-axe:
     - 'on_kill:effect:HASTE:8:3'
     - 'on_kill:message:&e⚡ Враг повержен! Спешка III!'
     - 'on_kill:particle:VILLAGER_HAPPY:10'
+    - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
+    - 'on_damage_dealt:particle:FIREWORKS_SPARK:8'
+    - 'on_damage_dealt:sound:ENTITY_LIGHTNING_BOLT_THUNDER:0.3:2'

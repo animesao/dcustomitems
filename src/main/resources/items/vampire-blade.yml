@@ -19,7 +19,7 @@ vampire-blade:
     - ' &6├ &eСкорость &4I &7(&6∞&7)'
     - ' &6└ &eРегенерация &4II &7(&6∞&7)'
     - ''
-    - '&4✦ &fПКМ: Кровавый удар'
+    - '&4✦ &fПКМ: Кровавый удар (режим вампира)'
     - '&4✦ &fПри убийстве: Полное исцеление'
     - ''
   type: TOOL
@@ -40,14 +40,21 @@ vampire-blade:
     - 'SMOKE_NORMAL:10'
   unequip-sounds:
     - 'ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
+  activation-message: '&4🦇 Клинок Вампира извлечен! Жажд крови!'
+  deactivation-message: '&4🦇 Клинок убран. Жажд утихает.'
   right-click-actions:
     - 'effect:INCREASE_DAMAGE:8:3'
     - 'effect:REGENERATION:8:2'
     - 'particle:DRAGON_BREATH:25'
     - 'sound:ENTITY_VAMPIRE_BITE:1:1'
-    - 'message:&4🦇 Кровавый удар!'
+    - 'message:&4🦇 Кровавый удар активирован!'
   trigger-actions:
+    - 'on_kill:heal:20'
     - 'on_kill:effect:REGENERATION:15:3'
     - 'on_kill:particle:HEART:20'
     - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
-    - 'on_kill:message:&4🦇 Жизнь поглощена!'
+    - 'on_kill:message:&4🦇 Жизнь поглощена! Вы исцелены!'
+    - 'on_damage_dealt:particle:DRAGON_BREATH:8'
+    - 'on_damage_dealt:sound:ENTITY_WITHER_HURT:0.3:2'
+    - 'on_pickup:message:&4🦇 Клинок подобран! Тёмная сила пробуждается!'
+    - 'on_drop:message:&4🦇 Клинок выброшен! Тёмная сила уходит.'

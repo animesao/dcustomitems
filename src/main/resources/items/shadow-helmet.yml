@@ -44,3 +44,9 @@ shadow-helmet:
     - 'SMOKE_NORMAL:8'
   unequip-sounds:
     - 'ITEM_ARMOR_EQUIP_LEATHER:0.8:0.8'
+  activation-message: '&5👁 Шлем Тени надет! Тени окружают вас!'
+  deactivation-message: '&5👁 Шлем снят. Тени растворяются.'
+  trigger-actions:
+    - 'on_damage_taken:effect:INVISIBILITY:3:0'
+    - 'on_damage_taken:particle:PORTAL:15'
+    - 'on_damage_taken:sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.5'

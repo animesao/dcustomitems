@@ -38,8 +38,13 @@ archer-bow:
     - 'ENTITY_ARROW_SHOOT:1:1'
   unequip-particles:
     - 'CLOUD:5'
+  activation-message: '&2🏹 Лук Стрелка извлечен! Огонь по врагам!'
+  deactivation-message: '&2🏹 Лук убран. Огонь гаснет.'
   trigger-actions:
     - 'on_kill:effect:HASTE:10:3'
     - 'on_kill:message:&2🏹 Враг поражен! Спешка III!'
     - 'on_kill:particle:VILLAGER_HAPPY:10'
+    - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
     - 'on_damage_dealt:particle:CRIT:5'
+    - 'on_damage_dealt:sound:ENTITY_ARROW_SHOOT:0.5:2'
+    - 'on_pickup:message:&2🏹 Лук подобран! Охота начинается!'

@@ -34,7 +34,10 @@ nature-totem:
     - 'BLOCK_GRASS_PLACE:1:1'
   unequip-particles:
     - 'CLOUD:8'
+  activation-message: '&2🌿 Тотем Природы активирован! Жизнь наполняет вас!'
+  deactivation-message: '&2🌿 Тотем убран. Природа засыпает.'
   right-click-actions:
+    - 'heal:8'
     - 'effect:REGENERATION:10:2'
     - 'effect:HEALTH_BOOST:10:1'
     - 'particle:HEART:15'
@@ -45,3 +48,6 @@ nature-totem:
     - 'on_jump:effect:HASTE:5:2'
     - 'on_jump:particle:CRIT:10'
     - 'on_jump:sound:ENTITY_SLIME_SQUISH:0.5:1'
+    - 'on_pickup:message:&2🌿 Тотем подобран! Жизнь пробуждается!'
+    - 'on_pickup:particle:VILLAGER_HAPPY:25'
+    - 'on_drop:message:&2🌿 Тотем выброшен. Природа уходит.'

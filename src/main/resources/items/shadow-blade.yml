@@ -38,6 +38,8 @@ shadow-blade:
     - 'SMOKE_NORMAL:10'
   unequip-sounds:
     - 'ENTITY_ENDER_DRAGON_GROWL:0.5:1.2'
+  activation-message: '&8⚔ Тень Клинок извлечен! Тени пробуждаются!'
+  deactivation-message: '&8⚔ Клинок убран. Тени засыпают.'
   trigger-actions:
     - 'on_kill:effect:REGENERATION:10:2'
     - 'on_kill:message:&8⚔ &fТень поглощает врага! Регенерация!'
@@ -45,3 +47,4 @@ shadow-blade:
     - 'on_kill:sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
     - 'on_jump:effect:SPEED:3:2'
     - 'on_jump:particle:SMOKE_NORMAL:5'
+    - 'on_jump:sound:ENTITY_ENDERMAN_TELEPORT:0.3:1.5'

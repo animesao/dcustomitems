@@ -36,7 +36,10 @@ healer-amulet:
     - 'CLOUD:5'
   unequip-sounds:
     - 'BLOCK_BEACON_DEACTIVATE:1:1'
+  activation-message: '&c❤ Амулет Исцеления активирован! Жизнь наполняет вас!'
+  deactivation-message: '&c❤ Амулет убран. Жизнь отступает.'
   right-click-actions:
+    - 'heal:10'
     - 'effect:REGENERATION:15:2'
     - 'effect:HEALTH_BOOST:15:1'
     - 'particle:HEART:20'
@@ -46,3 +49,7 @@ healer-amulet:
     - 'on_kill:effect:HEALTH_BOOST:30:2'
     - 'on_kill:message:&c❤ Враг побежден! Здоровье усилено!'
     - 'on_kill:particle:HEART:15'
+    - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
+    - 'on_pickup:message:&c❤ Амулет подобран! Сила исцеления!'
+    - 'on_pickup:particle:HEART:25'
+    - 'on_pickup:sound:BLOCK_BEACON_ACTIVATE:1:1'

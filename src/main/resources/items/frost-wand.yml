@@ -15,7 +15,7 @@ frost-wand:
     - ' &6├ &eСкорость &bII &7(&6∞&7)'
     - ' &6└ &eОгнестойкость &7(&6∞&7)'
     - ''
-    - '&b✦ &fПКМ: Заморозка附近 мобов'
+    - '&b✦ &fПКМ: Заморозка nearby мобов'
     - '&b✦ &fПри уроне: Сопротивление на 5 сек'
     - ''
   type: TOOL
@@ -35,6 +35,8 @@ frost-wand:
     - 'BLOCK_GLASS_BREAK:1:0.5'
   unequip-particles:
     - 'CLOUD:8'
+  activation-message: '&b❄ Посох Мороза активирован! Ледяная сила!'
+  deactivation-message: '&b❄ Посох убран. Лед тает.'
   right-click-actions:
     - 'effect:SLOW:3:1'
     - 'particle:SNOWFLAKE:30'
@@ -44,3 +46,5 @@ frost-wand:
     - 'on_damage_taken:effect:DAMAGE_RESISTANCE:5:2'
     - 'on_damage_taken:particle:SNOWFLAKE:15'
     - 'on_damage_taken:sound:BLOCK_GLASS_BREAK:0.5:0.8'
+    - 'on_pickup:message:&b❄ Ледяной посох подобран!'
+    - 'on_pickup:particle:SNOWFLAKE:20'

@@ -42,6 +42,8 @@ berserker-axe:
     - 'SMOKE_LARGE:10'
   unequip-sounds:
     - 'ENTITY_ENDER_DRAGON_GROWL:0.5:1.2'
+  activation-message: '&c💀 Топор Берсерка извлечен! Ярость нарастает!'
+  deactivation-message: '&c💀 Топор убран. Ярость утихает.'
   right-click-actions:
     - 'effect:INCREASE_DAMAGE:10:4'
     - 'effect:SPEED:10:3'
@@ -49,9 +51,13 @@ berserker-axe:
     - 'sound:ENTITY_WITHER_AMBIENT:1:1'
     - 'message:&c💀 БЕРСЕРК АКТИВИРОВАН!'
   trigger-actions:
+    - 'on_kill:heal:16'
     - 'on_kill:effect:REGENERATION:10:3'
     - 'on_kill:particle:HEART:20'
     - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:2'
-    - 'on_kill:message:&c💀 Враг уничтожен!'
+    - 'on_kill:message:&c💀 Враг уничтожен! Ярость усиливается!'
     - 'on_damage_taken:effect:INCREASE_DAMAGE:5:2'
     - 'on_damage_taken:particle:FLAME:10'
+    - 'on_damage_taken:sound:ENTITY_WITHER_HURT:0.5:2'
+    - 'on_jump:particle:FLAME:15'
+    - 'on_jump:sound:ENTITY_BLAZE_SHOOT:0.3:2'

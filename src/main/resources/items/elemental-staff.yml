@@ -35,6 +35,8 @@ elemental-staff:
     - 'BLOCK_END_PORTAL_SPAWN:1:1'
   unequip-particles:
     - 'CLOUD:10'
+  activation-message: '&d🌀 Стихийный Посох активирован! Стихии подчиняются!'
+  deactivation-message: '&d🌀 Посох убран. Стихии уходят.'
   right-click-actions:
     - 'effect:INCREASE_DAMAGE:5:2'
     - 'particle:FLAME:30'
@@ -48,3 +50,6 @@ elemental-staff:
   trigger-actions:
     - 'on_jump:effect:SPEED:3:1'
     - 'on_jump:particle:PORTAL:8'
+    - 'on_jump:sound:ENTITY_ENDERMAN_TELEPORT:0.3:2'
+    - 'on_damage_dealt:particle:FLAME:10'
+    - 'on_damage_dealt:sound:ENTITY_BLAZE_SHOOT:0.5:1.5'

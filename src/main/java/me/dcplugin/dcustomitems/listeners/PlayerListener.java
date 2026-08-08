@@ -4,6 +4,7 @@ import me.dcplugin.dcustomitems.Main;
 import me.dcplugin.dcustomitems.models.CustomItem;
 import me.dcplugin.dcustomitems.utils.ColorUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -17,7 +18,10 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -202,10 +206,56 @@ public class PlayerListener implements Listener {
                 executeParticle(player, actionStr);
             } else if (actionStr.startsWith("sound:")) {
                 executeSound(player, actionStr);
+            } else if (actionStr.startsWith("heal:")) {
+                executeHeal(player, actionStr);
+            } else if (actionStr.startsWith("teleport:")) {
+                executeTeleport(player, actionStr);
+            } else if (actionStr.startsWith("damage:")) {
+                executeDamage(player, actionStr);
             }
         } catch (Exception e) {
             plugin.getLogger().warning("Error executing action: " + actionStr);
         }
+    }
+
+    private void executeHeal(Player player, String actionStr) {
+        String healPart = actionStr.replace("heal:", "").trim();
+        double amount = 10.0;
+        try {
+            amount = Double.parseDouble(healPart);
+        } catch (Exception ignored) {}
+        if (player.getAttribute(Attribute.MAX_HEALTH) != null) {
+            double maxHealth = player.getAttribute(Attribute.MAX_HEALTH).getValue();
+            double newHealth = Math.min(player.getHealth() + amount, maxHealth);
+            player.setHealth(newHealth);
+        }
+        player.sendMessage(me.dcplugin.dcustomitems.utils.ColorUtils.colorize("&a❤ Вы исцелены!"));
+    }
+
+    private void executeTeleport(Player player, String actionStr) {
+        String tpPart = actionStr.replace("teleport:", "").trim();
+        String[] parts = tpPart.split(":");
+        Location loc = player.getLocation();
+        if (parts.length >= 3) {
+            try {
+                double x = parts[0].startsWith("~") ? loc.getX() + Double.parseDouble(parts[0].substring(1)) : Double.parseDouble(parts[0]);
+                double y = parts[1].startsWith("~") ? loc.getY() + Double.parseDouble(parts[1]) : Double.parseDouble(parts[1]);
+                double z = parts[2].startsWith("~") ? loc.getZ() + Double.parseDouble(parts[2]) : Double.parseDouble(parts[2]);
+                player.teleport(new org.bukkit.Location(loc.getWorld(), x, y, z));
+                player.sendMessage(me.dcplugin.dcustomitems.utils.ColorUtils.colorize("&d✨ Телепортация!"));
+            } catch (Exception e) {
+                plugin.getLogger().warning("Invalid teleport params: " + tpPart);
+            }
+        }
+    }
+
+    private void executeDamage(Player player, String actionStr) {
+        String dmgPart = actionStr.replace("damage:", "").trim();
+        double amount = 4.0;
+        try {
+            amount = Double.parseDouble(dmgPart);
+        } catch (Exception ignored) {}
+        player.damage(amount);
     }
 
     private void executeLightning(Player player, Block block, String actionStr) {
@@ -244,14 +294,34 @@ public class PlayerListener implements Listener {
 
         if (parts.length < 2) return;
 
-        String effectName = parts[0];
+        String effectName = parts[0].toUpperCase();
         int duration = Integer.parseInt(parts[1]);
         int amplifier = parts.length > 2 ? Integer.parseInt(parts[2]) - 1 : 0;
 
-        PotionEffectType effectType = PotionEffectType.getByName(effectName);
+        // Маппинг кастомных названий
+        PotionEffectType effectType = null;
+        switch (effectName) {
+            case "INCREASE_DAMAGE":
+            case "STRENGTH":
+                effectType = PotionEffectType.STRENGTH;
+                break;
+            case "DAMAGE_RESISTANCE":
+            case "RESISTANCE":
+                effectType = PotionEffectType.RESISTANCE;
+                break;
+            case "HASTE":
+                effectType = PotionEffectType.HASTE;
+                break;
+            default:
+                effectType = PotionEffectType.getByName(effectName);
+                break;
+        }
+
         if (effectType != null) {
             PotionEffect effect = new PotionEffect(effectType, duration * 20, amplifier, false, false);
             player.addPotionEffect(effect);
+        } else {
+            plugin.getLogger().warning("Unknown effect: " + effectName);
         }
     }
 
@@ -311,6 +381,37 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
         Player player = event.getPlayer();
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> checkEquippedItems(player), 1L);
+    }
+
+    @EventHandler
+    public void onPlayerDropItem(PlayerDropItemEvent event) {
+        Player player = event.getPlayer();
+        ItemStack droppedItem = event.getItemDrop().getItemStack();
+        
+        String itemId = plugin.getItemHandler().getCustomItemId(droppedItem);
+        if (itemId != null) {
+            CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
+            if (customItem != null) {
+                spawnEquipEffects(player, customItem, false);
+            }
+        }
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> checkEquippedItems(player), 1L);
+    }
+
+    @EventHandler
+    public void onEntityPickupItem(org.bukkit.event.entity.EntityPickupItemEvent event) {
+        if (!(event.getEntity() instanceof Player)) return;
+        Player player = (Player) event.getEntity();
+        ItemStack pickedItem = event.getItem().getItemStack();
+        
+        String itemId = plugin.getItemHandler().getCustomItemId(pickedItem);
+        if (itemId != null) {
+            CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
+            if (customItem != null) {
+                spawnEquipEffects(player, customItem, true);
+            }
+        }
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> checkEquippedItems(player), 1L);
     }
 
