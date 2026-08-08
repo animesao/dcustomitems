@@ -28,28 +28,29 @@ jobs:
         if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
           VERSION="${GITHUB_REF#refs/tags/v}"
         else
-          VERSION="0.0.0-dev"
+          VERSION="dev"
         fi
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "Version: $VERSION"
 
-    - name: Update version in pom.xml
+    - name: Update project version in pom.xml
       run: |
-        sed -i "s|<version>.*</version>|<version>${{ steps.version.outputs.version }}</version>|" pom.xml
-        cat pom.xml | grep version | head -3
+        # Only replace the first <version> tag (project version)
+        sed -i "0,/<version>.*<\/version>/s//<version>${{ steps.version.outputs.version }}<\/version>/" pom.xml
+        echo "Updated pom.xml:"
+        head -15 pom.xml
 
     - name: Build
       run: mvn clean package -q
 
     - name: Generate release notes
-      id: notes
+      if: startsWith(github.ref, 'refs/tags/v')
       run: |
         echo "## What's Changed" > notes.md
         echo "" >> notes.md
         git log --oneline -10 --pretty=format:"- %s" >> notes.md
         echo "" >> notes.md
         echo "" >> notes.md
-        echo "**Full Changelog**: https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}" >> notes.md
         echo "---" >> notes.md
         echo "## Installation" >> notes.md
         echo "1. Download the JAR file below" >> notes.md
