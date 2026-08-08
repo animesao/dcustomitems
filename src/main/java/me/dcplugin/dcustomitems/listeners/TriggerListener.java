@@ -320,7 +320,7 @@ public class TriggerListener implements Listener {
                 double dist = Math.sqrt(dx * dx + dz * dz);
                 if (dist > 0) {
                     double strength = 1.5 / dist;
-                    entity.setVelocity(entity.getVelocity().add(new org.joml.Vector3d(dx * strength, 0.5, dz * strength)));
+                    entity.setVelocity(entity.getVelocity().add(new org.bukkit.util.Vector(dx * strength, 0.5, dz * strength)));
                 }
             }
         }
@@ -335,7 +335,7 @@ public class TriggerListener implements Listener {
         } catch (Exception ignored) {}
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(4, 4, 4)) {
             if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
-                entity.setVelocity(entity.getVelocity().add(new org.joml.Vector3d(0, power, 0)));
+                entity.setVelocity(entity.getVelocity().add(new org.bukkit.util.Vector(0, power, 0)));
             }
         }
     }
