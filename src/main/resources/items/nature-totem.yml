@@ -1,53 +1,119 @@
-# Тотем Природы - Тотем с целительной силой природы
+# ============================================
+# ТОТЕМ ПРИРОДЫ - Тотем с целительной силой
+# ============================================
+# Тип: Руна/Тотем
+# Активация: Вторая рука
+# Особенность: Постоянно исцеляет и укрепляет
+# ============================================
+
 nature-totem:
+  # === ОСНОВНЫЕ ПАРАМЕТРЫ ===
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  permission: nature.totem
+
+  # === ПАРАМЕТРЫ ПРЕДМЕТА ===
   item:
     type: TOTEM_OF_UNDYING
     title: '&2[🌿] &fТотем &2Природы'
     glowing: true
     unbreakable: true
     custom-model-data: 1009
+
+  # === ОПИСАНИЕ (ЛОР) ===
   lore:
     - ''
-    - ' &7Древний тотем, наделенный силой природы'
-    - ' &7Постоянно исцеляет и укрепляет'
+    - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Древний тотем'
+    - ' &7силы природы'
+    - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
+    - ' &e⚡ &fКогда во второй руке:'
     - ' &6┌ &eРегенерация &2III &7(&6∞&7)'
     - ' &6├ &eНасыщение &2II &7(&6∞&7)'
     - ' &6└ &eСпешка &2I &7(&6∞&7)'
     - ''
-    - '&2✦ &fПКМ: Исцеление nearby'
-    - '&2✦ &fПрыжок: Спешка II на 5 сек'
+    - '&2🌿 &fПКМ: Исцеление nearby'
+    - '&2🌿 &fПрыжок: Спешка II'
+    - '&2🌿 &fПри уроне: Регенерация'
     - ''
-  type: RUNE
-  activation-slot: OFFHAND
-  placeable: false
-  permission: nature.totem
-  click-cooldown: 4000
+
+  # === ПОСТОЯННЫЕ ЭФФЕКТЫ ===
   effects:
     - 'REGENERATION:3'
     - 'SATURATION:2'
     - 'HASTE:1'
+
+  # === КУЛДОН КЛИКОВ ===
+  click-cooldown: 4000
+
+  # === ЭФФЕКТЫ ЭКИПИРОВКИ ===
   equip-particles:
-    - 'VILLAGER_HAPPY:20'
-    - 'HAPPY_VILLAGER:15'
+    - 'VILLAGER_HAPPY:25'
+    - 'HAPPY_VILLAGER:20'
+    - 'HEART:15'
   equip-sounds:
     - 'BLOCK_GRASS_PLACE:1:1'
+    - 'ENTITY_PLAYER_LEVELUP:0.5:1.2'
+
+  # === ЭФФЕКТЫ СНЯТИЯ ===
   unequip-particles:
-    - 'CLOUD:8'
-  activation-message: '&2🌿 Тотем Природы активирован! Жизнь наполняет вас!'
-  deactivation-message: '&2🌿 Тотем убран. Природа засыпает.'
+    - 'CLOUD:10'
+    - 'SMOKE_NORMAL:5'
+  unequip-sounds:
+    - 'BLOCK_GRASS_BREAK:0.5:0.8'
+
+  # === СООБЩЕНИЯ ===
+  activation-message: '&2🌿 &7Тотем Природы активирован! &aЖизнь наполняет!'
+  deactivation-message: '&2🌿 &7Тотем убран. &aПрирода засыпает.'
+  equip-message: '&2🌿 &7Вы чувствуете силу природы!'
+  unequip-message: '&2🌿 &7Сила природы уходит.'
+  cooldown-message: '&2⏳ &7Подождите {seconds} сек!'
+  uses-depleted-message: '&2💀 &7Тотем рассеялся!'
+
+  # === ДЕЙСТВИЯ ПРИ ПКМ ===
   right-click-actions:
-    - 'heal:8'
-    - 'effect:REGENERATION:10:2'
-    - 'effect:HEALTH_BOOST:10:1'
-    - 'particle:HEART:15'
+    - 'heal:16'
+    - 'effect:REGENERATION:15:2'
+    - 'effect:HEALTH_BOOST:15:1'
+    - 'effect:SATURATION:15:1'
+    - 'particle:HEART:25'
     - 'particle:VILLAGER_HAPPY:20'
     - 'sound:ENTITY_PLAYER_LEVELUP:1:1'
-    - 'message:&2🌿 Сила природы исцеляет!'
+    - 'title:&2🌿 &7ИСЦЕЛЕНИЕ ПРИРОДЫ!::&aЖизнь наполняет!:10:40:10'
+    - 'message:&2🌿 &7Сила природы исцеляет!'
+
+  # === ТРИГГЕРЫ ===
   trigger-actions:
+    # При убийстве
+    - 'on_kill:effect:REGENERATION:15:2'
+    - 'on_kill:effect:HEALTH_BOOST:15:1'
+    - 'on_kill:particle:VILLAGER_HAPPY:15'
+    - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
+    - 'on_kill:message:&2🌿 &7Природа помогает победить!'
+
+    # При прыжке - СПЕШКА
     - 'on_jump:effect:HASTE:5:2'
-    - 'on_jump:particle:CRIT:10'
+    - 'on_jump:effect:SPEED:5:1'
+    - 'on_jump:particle:VILLAGER_HAPPY:10'
     - 'on_jump:sound:ENTITY_SLIME_SQUISH:0.5:1'
-    - 'on_pickup:message:&2🌿 Тотем подобран! Жизнь пробуждается!'
+    - 'on_jump:message:&2🌿 &7Сила природы!'
+
+    # При нанесении урона
+    - 'on_damage_dealt:particle:VILLAGER_HAPPY:8'
+    - 'on_damage_dealt:sound:ENTITY_SLIME_SQUISH:0.3:2'
+
+    # При получении урона
+    - 'on_damage_taken:effect:REGENERATION:5:2'
+    - 'on_damage_taken:effect:RESISTANCE:5:1'
+    - 'on_damage_taken:particle:HEART:10'
+
+    # При подборе
+    - 'on_pickup:message:&2🌿 &7Тотем подобран! &aЖизнь пробуждается!'
     - 'on_pickup:particle:VILLAGER_HAPPY:25'
-    - 'on_drop:message:&2🌿 Тотем выброшен. Природа уходит.'
+    - 'on_pickup:sound:BLOCK_GRASS_PLACE:0.5:1.2'
+
+    # При выбрасывании
+    - 'on_drop:message:&2🌿 &7Тотем выброшен. &aПрирода уходит.'
+    - 'on_drop:particle:CLOUD:10'

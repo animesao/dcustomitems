@@ -1,5 +1,19 @@
-# Шлем Тени - Шлем, дающий ночное зрение
+# ============================================
+# ШЛЕМ ТЕНИ - Шлем, дающий ночное зрение
+# ============================================
+# Тип: Броня (Голова)
+# Активация: Голова
+# Особенность: Ночное зрение + невидимость
+# ============================================
+
 shadow-helmet:
+  # === ОСНОВНЫЕ ПАРАМЕТРЫ ===
+  type: ARMOR
+  activation-slot: HEAD
+  placeable: false
+  permission: shadow.helmet
+
+  # === ПАРАМЕТРЫ ПРЕДМЕТА ===
   item:
     type: NETHERITE_HELMET
     title: '&5[👁] &fШлем &5Тени'
@@ -10,43 +24,92 @@ shadow-helmet:
       PROTECTION_ENVIRONMENTAL: 5
       DURABILITY: 3
       THORNS: 2
+
+  # === ОПИСАНИЕ (ЛОР) ===
   lore:
     - ''
-    - ' &7Шлем теней, дающий зрение в темноте'
-    - ' &7Позволяет видеть сквозь стены'
+    - ' &5━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Шлем теней, дающий'
+    - ' &7зрение в темноте'
+    - ' &5━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
+    - ' &e⚡ &fКогда на голове:'
     - ' &6┌ &eНочное зрение &7(&6∞&7)'
     - ' &6├ &eСопротивление &5II &7(&6∞&7)'
     - ' &6└ &eНевидимость &5I &7(&6∞&7)'
     - ''
-    - '&5✦ &fБроня +4.0 Прочность +2.0'
+    - '&5👁 &fБроня: +4.0'
+    - '&5👁 &fПрочность: +2.0'
+    - '&5👁 &fПри уроне: Невидимость'
     - ''
-  type: ARMOR
-  activation-slot: HEAD
-  placeable: false
-  permission: shadow.helmet
-  armor-set: shadow-set
-  has-set-bonus: true
-  attributes:
-    GENERIC_ARMOR: 4.0
-    GENERIC_ARMOR_TOUGHNESS: 2.0
-    GENERIC_KNOCKBACK_RESISTANCE: 0.2
+
+  # === ПОСТОЯННЫЕ ЭФФЕКТЫ ===
   effects:
     - 'NIGHT_VISION:1'
     - 'DAMAGE_RESISTANCE:2'
     - 'INVISIBILITY:1'
+
+  # === АТРИБУТЫ ===
+  attributes:
+    GENERIC_ARMOR: 4.0
+    GENERIC_ARMOR_TOUGHNESS: 2.0
+    GENERIC_KNOCKBACK_RESISTANCE: 0.2
+
+  # === СЕТ ===
+  armor-set: shadow-set
+  has-set-bonus: true
+
+  # === ЭФФЕКТЫ ЭКИПИРОВКИ ===
   equip-particles:
-    - 'SPELL_WITCH:15'
-    - 'PORTAL:10'
+    - 'SPELL_WITCH:20'
+    - 'PORTAL:15'
+    - 'SMOKE_NORMAL:10'
   equip-sounds:
     - 'ITEM_ARMOR_EQUIP_NETHERITE:1:1'
+    - 'ENTITY_ENDERMAN_TELEPORT:0.5:1.2'
+
+  # === ЭФФЕКТЫ СНЯТИЯ ===
   unequip-particles:
-    - 'SMOKE_NORMAL:8'
+    - 'SMOKE_NORMAL:10'
+    - 'CLOUD:8'
   unequip-sounds:
     - 'ITEM_ARMOR_EQUIP_LEATHER:0.8:0.8'
-  activation-message: '&5👁 Шлем Тени надет! Тени окружают вас!'
-  deactivation-message: '&5👁 Шлем снят. Тени растворяются.'
+
+  # === СООБЩЕНИЯ ===
+  activation-message: '&5👁 &7Шлем Тени надет! &5Тени окружают вас!'
+  deactivation-message: '&5👁 &7Шлем снят. &5Тени растворяются.'
+  equip-message: '&5👁 &7Вы видите в темноте!'
+  unequip-message: '&5👁 &7Зрение в темноте исчезает.'
+  uses-depleted-message: '&5💀 &7Шлем рассеялся!'
+
+  # === ТРИГГЕРЫ ===
   trigger-actions:
-    - 'on_damage_taken:effect:INVISIBILITY:3:0'
-    - 'on_damage_taken:particle:PORTAL:15'
-    - 'on_damage_taken:sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.5'
+    # При убийстве
+    - 'on_kill:effect:NIGHT_VISION:15:1'
+    - 'on_kill:effect:INVISIBILITY:10:1'
+    - 'on_kill:particle:PORTAL:15'
+    - 'on_kill:sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.5'
+    - 'on_kill:message:&5👁 &7Тени поглотили врага!'
+
+    # При нанесении урона
+    - 'on_damage_dealt:particle:PORTAL:8'
+    - 'on_damage_dealt:sound:ENTITY_ENDERMAN_TELEPORT:0.3:2'
+
+    # При прыжке
+    - 'on_jump:effect:SPEED:3:1'
+    - 'on_jump:particle:SMOKE_NORMAL:8'
+
+    # При получении урона - НЕВИДИМОСТЬ
+    - 'on_damage_taken:effect:INVISIBILITY:5:1'
+    - 'on_damage_taken:particle:PORTAL:12'
+    - 'on_damage_taken:sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.2'
+    - 'on_damage_taken:message:&5👁 &7Вы стали невидимы!'
+
+    # При подборе
+    - 'on_pickup:message:&5👁 &7Шлем подобран! &5Тени пробуждаются!'
+    - 'on_pickup:particle:PORTAL:20'
+    - 'on_pickup:sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.5'
+
+    # При выбрасывании
+    - 'on_drop:message:&5👁 &7Шлем выброшен. &5Тени уходят.'
+    - 'on_drop:particle:SMOKE_NORMAL:10'

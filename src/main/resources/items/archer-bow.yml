@@ -1,5 +1,19 @@
-# Лук Стрелка - Магический лук с особой силой
+# ============================================
+# ЛУК СТРЕЛКА - Магический лук
+# ============================================
+# Тип: Оружие дальнего боя
+# Активация: Основная рука
+# Особенность: Огненные стрелы + удача
+# ============================================
+
 archer-bow:
+  # === ОСНОВНЫЕ ПАРАМЕТРЫ ===
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: archer.bow
+
+  # === ПАРАМЕТРЫ ПРЕДМЕТА ===
   item:
     type: BOW
     title: '&2[🏹] &fЛук &2Стрелка'
@@ -11,40 +25,84 @@ archer-bow:
       FLAME: 2
       INFINITY: 1
       DURABILITY: 3
+
+  # === ОПИСАНИЕ (ЛОР) ===
   lore:
     - ''
-    - ' &7Волшебный лук древних охотников'
-    - ' &7Стрелы горят и пронзают врагов'
+    - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Волшебный лук'
+    - ' &7древних охотников'
+    - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
+    - ' &e⚡ &fКогда в основной руке:'
     - ' &6┌ &eСила &2III &7(&6∞&7)'
     - ' &6├ &eСкорость &2II &7(&6∞&7)'
     - ' &6└ &eУдача &2I &7(&6∞&7)'
     - ''
     - '&2✦ &fСтрелы горят'
-    - '&2✦ &fПри убийстве: Спешка III на 10 сек'
+    - '&2✦ &fПри убийстве: Спешка III'
+    - '&2✦ &fПри ударе: Частицы'
     - ''
-  type: TOOL
-  activation-slot: HAND
-  placeable: false
-  permission: archer.bow
+
+  # === ПОСТОЯННЫЕ ЭФФЕКТЫ ===
   effects:
     - 'INCREASE_DAMAGE:3'
     - 'SPEED:2'
     - 'LUCK:1'
+
+  # === КУЛДОН КЛИКОВ ===
+  click-cooldown: 1000
+
+  # === ЭФФЕКТЫ ЭКИПИРОВКИ ===
   equip-particles:
-    - 'CRIT:15'
-    - 'FLAME:10'
+    - 'CRIT:20'
+    - 'FLAME:15'
+    - 'CLOUD:10'
   equip-sounds:
     - 'ENTITY_ARROW_SHOOT:1:1'
+    - 'ENTITY_PLAYER_LEVELUP:0.3:1.5'
+
+  # === ЭФФЕКТЫ СНЯТИЯ ===
   unequip-particles:
-    - 'CLOUD:5'
-  activation-message: '&2🏹 Лук Стрелка извлечен! Огонь по врагам!'
-  deactivation-message: '&2🏹 Лук убран. Огонь гаснет.'
+    - 'CLOUD:8'
+    - 'SMOKE_NORMAL:5'
+  unequip-sounds:
+    - 'ENTITY_ARROW_SHOOT:0.5:0.8'
+
+  # === СООБЩЕНИЯ ===
+  activation-message: '&2🏹 &7Лук Стрелка извлечен! &2Огонь по врагам!'
+  deactivation-message: '&2🏹 &7Лук убран. &2Огонь гаснет.'
+  equip-message: '&2🏹 &7Вы чувствуете силу лука!'
+  unequip-message: '&2🏹 &7Сила лука уходит.'
+  uses-depleted-message: '&2💀 &7Лук сломался!'
+
+  # === ТРИГГЕРЫ ===
   trigger-actions:
-    - 'on_kill:effect:HASTE:10:3'
-    - 'on_kill:message:&2🏹 Враг поражен! Спешка III!'
-    - 'on_kill:particle:VILLAGER_HAPPY:10'
+    # При убийстве - СПЕШКА III
+    - 'on_kill:effect:HASTE:15:3'
+    - 'on_kill:effect:SPEED:15:2'
+    - 'on_kill:effect:LUCK:15:2'
+    - 'on_kill:particle:VILLAGER_HAPPY:20'
     - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
-    - 'on_damage_dealt:particle:CRIT:5'
+    - 'on_kill:message:&2🏹 &7Враг поражен! &aСпешка III на 15 сек!'
+
+    # При нанесении урона
+    - 'on_damage_dealt:particle:CRIT:12'
     - 'on_damage_dealt:sound:ENTITY_ARROW_SHOOT:0.5:2'
-    - 'on_pickup:message:&2🏹 Лук подобран! Охота начинается!'
+
+    # При прыжке
+    - 'on_jump:effect:SPEED:3:2'
+    - 'on_jump:particle:CRIT:8'
+
+    # При получении урона
+    - 'on_damage_taken:effect:RESISTANCE:5:1'
+    - 'on_damage_taken:particle:CRIT:8'
+
+    # При подборе
+    - 'on_pickup:message:&2🏹 &7Лук подобран! &aОхота начинается!'
+    - 'on_pickup:particle:CRIT:20'
+    - 'on_pickup:sound:ENTITY_ARROW_SHOOT:0.5:1.5'
+
+    # При выбрасывании
+    - 'on_drop:message:&2🏹 &7Лук выброшен. &aОхота заканчивается.'
+    - 'on_drop:particle:CLOUD:8'

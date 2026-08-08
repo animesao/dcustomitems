@@ -1,50 +1,115 @@
-# Посох Мороза - Магический посох с ледяной магией
+# ============================================
+# ПОСОХ МОРОЗА - Магический посох с ледяной магией
+# ============================================
+# Тип: Посох
+# Активация: Основная рука
+# Особенность: Замораживает врагов
+# ============================================
+
 frost-wand:
+  # === ОСНОВНЫЕ ПАРАМЕТРЫ ===
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: frost.wand
+  max-uses: 100
+
+  # === ПАРАМЕТРЫ ПРЕДМЕТА ===
   item:
     type: BLAZE_ROD
     title: '&b[❄] &fПосох &bМороза'
     glowing: true
     unbreakable: true
     custom-model-data: 1002
+
+  # === ОПИСАНИЕ (ЛОР) ===
   lore:
     - ''
-    - ' &7Ледяной посох древних шаманов'
-    - ' &7Замораживает врагов и защищает хозяина'
+    - ' &b━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Ледяной посох'
+    - ' &7древних шаманов'
+    - ' &b━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
+    - ' &e⚡ &fКогда в основной руке:'
     - ' &6┌ &eСопротивление &bIII &7(&6∞&7)'
     - ' &6├ &eСкорость &bII &7(&6∞&7)'
     - ' &6└ &eОгнестойкость &7(&6∞&7)'
     - ''
-    - '&b✦ &fПКМ: Заморозка nearby мобов'
-    - '&b✦ &fПри уроне: Сопротивление на 5 сек'
+    - '&b❄ &fПКМ: Заморозка nearby мобов'
+    - '&b❄ &fПри уроне: Сопротивление'
+    - '&b❄ &fОсталось использований: &b%uses%'
     - ''
-  type: TOOL
-  activation-slot: HAND
-  placeable: false
-  permission: frost.wand
-  click-cooldown: 2000
-  max-uses: 100
+
+  # === ПОСТОЯННЫЕ ЭФФЕКТЫ ===
   effects:
     - 'DAMAGE_RESISTANCE:3'
     - 'SPEED:2'
     - 'FIRE_RESISTANCE:1'
+
+  # === КУЛДОН КЛИКОВ ===
+  click-cooldown: 2000
+
+  # === ЭФФЕКТЫ ЭКИПИРОВКИ ===
   equip-particles:
-    - 'SNOWFLAKE:25'
-    - 'SPELL_WITCH:10'
+    - 'SNOWFLAKE:30'
+    - 'SPELL_WITCH:15'
+    - 'CLOUD:10'
   equip-sounds:
     - 'BLOCK_GLASS_BREAK:1:0.5'
+    - 'ENTITY_PLAYER_LEVELUP:0.3:2'
+
+  # === ЭФФЕКТЫ СНЯТИЯ ===
   unequip-particles:
-    - 'CLOUD:8'
-  activation-message: '&b❄ Посох Мороза активирован! Ледяная сила!'
-  deactivation-message: '&b❄ Посох убран. Лед тает.'
+    - 'CLOUD:10'
+    - 'SMOKE_NORMAL:5'
+  unequip-sounds:
+    - 'BLOCK_GLASS_BREAK:0.5:0.8'
+
+  # === СООБЩЕНИЯ ===
+  activation-message: '&b❄ &7Посох Мороза активирован! &bЛедяная сила!'
+  deactivation-message: '&b❄ &7Посох убран. &bЛед тает.'
+  equip-message: '&b❄ &7Вы чувствуете холод!'
+  unequip-message: '&b❄ &7Холод уходит.'
+  cooldown-message: '&b⏳ &7Подождите {seconds} сек!'
+  uses-depleted-message: '&b💀 &7Посох сломался!'
+
+  # === ДЕЙСТВИЯ ПРИ ПКМ ===
   right-click-actions:
-    - 'effect:SLOW:3:1'
-    - 'particle:SNOWFLAKE:30'
+    - 'effect:SLOW:5:2'
+    - 'effect:RESISTANCE:5:2'
+    - 'particle:SNOWFLAKE:35'
+    - 'particle:SPELL_WITCH:15'
     - 'sound:BLOCK_GLASS_BREAK:1:0.5'
-    - 'message:&b❄ Враги заморожены!'
+    - 'sound:ENTITY_PLAYER_LEVELUP:0.3:2'
+    - 'title:&b❄ &7ЗАМОРОЗКА!::&bВраги заморожены!:10:40:10'
+    - 'message:&b❄ &7Враги заморожены на 5 секунд!'
+
+  # === ТРИГГЕРЫ ===
   trigger-actions:
+    # При убийстве
+    - 'on_kill:effect:DAMAGE_RESISTANCE:10:2'
+    - 'on_kill:particle:SNOWFLAKE:20'
+    - 'on_kill:sound:BLOCK_GLASS_BREAK:0.5:1.5'
+    - 'on_kill:message:&b❄ &7Враг заморожен!'
+
+    # При нанесении урона
+    - 'on_damage_dealt:effect:SLOW:3:1'
+    - 'on_damage_dealt:particle:SNOWFLAKE:8'
+
+    # При прыжке
+    - 'on_jump:effect:SPEED:3:2'
+    - 'on_jump:particle:SNOWFLAKE:10'
+
+    # При получении урона
     - 'on_damage_taken:effect:DAMAGE_RESISTANCE:5:2'
-    - 'on_damage_taken:particle:SNOWFLAKE:15'
+    - 'on_damage_taken:particle:SNOWFLAKE:12'
     - 'on_damage_taken:sound:BLOCK_GLASS_BREAK:0.5:0.8'
-    - 'on_pickup:message:&b❄ Ледяной посох подобран!'
-    - 'on_pickup:particle:SNOWFLAKE:20'
+
+    # При подборе
+    - 'on_pickup:message:&b❄ &7Посох подобран! &bЛедяная сила!'
+    - 'on_pickup:particle:SNOWFLAKE:25'
+    - 'on_pickup:sound:BLOCK_GLASS_BREAK:0.5:1.5'
+
+    # При выбрасывании
+    - 'on_drop:message:&b❄ &7Посох выброшен. &bЛед тает.'
+    - 'on_drop:particle:CLOUD:10'
