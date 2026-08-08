@@ -1,4 +1,4 @@
-name: Build
+name: Build & Release
 
 on:
   push:
@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -20,30 +22,52 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Get version from tag
+      id: version
+      run: |
+        if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+          VERSION="${GITHUB_REF#refs/tags/v}"
+        else
+          VERSION="0.0.0-dev"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+
+    - name: Update version in pom.xml
+      run: |
+        sed -i "s|<version>.*</version>|<version>${{ steps.version.outputs.version }}</version>|" pom.xml
+        cat pom.xml | grep version | head -3
+
     - name: Build
       run: mvn clean package -q
+
+    - name: Generate release notes
+      id: notes
+      run: |
+        echo "## What's Changed" > notes.md
+        echo "" >> notes.md
+        git log --oneline -10 --pretty=format:"- %s" >> notes.md
+        echo "" >> notes.md
+        echo "" >> notes.md
+        echo "**Full Changelog**: https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}" >> notes.md
+        echo "---" >> notes.md
+        echo "## Installation" >> notes.md
+        echo "1. Download the JAR file below" >> notes.md
+        echo "2. Place it in your server's \`plugins/\` folder" >> notes.md
+        echo "3. Restart the server" >> notes.md
 
     - name: Upload JAR
       uses: actions/upload-artifact@v4
       with:
-        name: plugin
+        name: dcustomitems-${{ steps.version.outputs.version }}
         path: target/*.jar
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Download JAR
-      uses: actions/download-artifact@v4
-      with:
-        name: plugin
-
     - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v2
       with:
-        files: "*.jar"
+        name: "DC-CustomItems v${{ steps.version.outputs.version }}"
+        body_path: notes.md
+        files: target/*.jar
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
