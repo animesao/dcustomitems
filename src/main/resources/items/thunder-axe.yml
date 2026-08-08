@@ -44,13 +44,6 @@ thunder-axe:
 
   click-cooldown: 1500
 
-  activation-message: '&e⚡ &7Топор Грома извлечен!'
-  deactivation-message: '&e⚡ &7Топор убран.'
-  equip-message: '&e⚡ &7Молнии окружают вас!'
-  unequip-message: '&e⚡ &7Молнии утихают.'
-  cooldown-message: '&e⏳ &7Подождите {seconds} сек!'
-  uses-depleted-message: '&e💀 &7Топор раскололся!'
-
   trigger-actions:
     # --- При экипировке ---
     - 'on_equip:particle:FIREWORKS_SPARK:25'

@@ -1,19 +1,13 @@
 # ============================================
 # ТОТЕМ ПРИРОДЫ - Тотем с целительной силой
 # ============================================
-# Тип: Руна/Тотем
-# Активация: Вторая рука
-# Особенность: Постоянно исцеляет и укрепляет
-# ============================================
 
 nature-totem:
-  # === ОСНОВНЫЕ ПАРАМЕТРЫ ===
   type: RUNE
   activation-slot: OFFHAND
   placeable: false
   permission: nature.totem
 
-  # === ПАРАМЕТРЫ ПРЕДМЕТА ===
   item:
     type: TOTEM_OF_UNDYING
     title: '&2[🌿] &fТотем &2Природы'
@@ -21,7 +15,6 @@ nature-totem:
     unbreakable: true
     custom-model-data: 1009
 
-  # === ОПИСАНИЕ (ЛОР) ===
   lore:
     - ''
     - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
@@ -34,29 +27,14 @@ nature-totem:
     - ' &6├ &eНасыщение &2II &7(&6∞&7)'
     - ' &6└ &eСпешка &2I &7(&6∞&7)'
     - ''
-    - '&2🌿 &fПКМ: Исцеление nearby'
-    - '&2🌿 &fПрыжок: Спешка II'
-    - '&2🌿 &fПри уроне: Регенерация'
-    - ''
 
-  # === ПОСТОЯННЫЕ ЭФФЕКТЫ ===
   effects:
     - 'REGENERATION:3'
     - 'SATURATION:2'
     - 'HASTE:1'
 
-  # === КУЛДОН КЛИКОВ ===
   click-cooldown: 4000
 
-  # === СООБЩЕНИЯ ===
-  activation-message: '&2🌿 &7Тотем Природы активирован! &aЖизнь наполняет!'
-  deactivation-message: '&2🌿 &7Тотем убран. &aПрирода засыпает.'
-  equip-message: '&2🌿 &7Вы чувствуете силу природы!'
-  unequip-message: '&2🌿 &7Сила природы уходит.'
-  cooldown-message: '&2⏳ &7Подождите {seconds} сек!'
-  uses-depleted-message: '&2💀 &7Тотем рассеялся!'
-
-  # === ВСЕ ДЕЙСТВИЯ ЧЕРЕЗ ТРИГГЕРЫ ===
   trigger-actions:
     # --- При экипировке ---
     - 'on_equip:effect:REGENERATION:24:3'
@@ -117,10 +95,10 @@ nature-totem:
     - 'on_damage_taken:particle:HEART:10'
 
     # --- При подборе ---
-    - 'on_pickup:message:&2🌿 &7Тотем подобран! &aЖизнь пробуждается!'
+    - 'on_pickup:message:&2🌿 &7Тотем подобран!'
     - 'on_pickup:particle:VILLAGER_HAPPY:25'
     - 'on_pickup:sound:BLOCK_GRASS_PLACE:0.5:1.2'
 
     # --- При выбрасывании ---
-    - 'on_drop:message:&2🌿 &7Тотем выброшен. &aПрирода уходит.'
+    - 'on_drop:message:&2🌿 &7Тотем выброшен.'
     - 'on_drop:particle:CLOUD:10'

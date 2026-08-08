@@ -37,13 +37,6 @@ frost-wand:
 
   click-cooldown: 2000
 
-  activation-message: '&b❄ &7Посох Мороза активирован!'
-  deactivation-message: '&b❄ &7Посох убран.'
-  equip-message: '&b❄ &7Вы чувствуете холод!'
-  unequip-message: '&b❄ &7Холод уходит.'
-  cooldown-message: '&b⏳ &7Подождите {seconds} сек!'
-  uses-depleted-message: '&b💀 &7Посох сломался!'
-
   trigger-actions:
     # --- При экипировке ---
     - 'on_equip:particle:SNOWFLAKE:30'

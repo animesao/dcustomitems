@@ -38,13 +38,6 @@ healer-amulet:
 
   click-cooldown: 5000
 
-  activation-message: '&c❤ &7Амулет Исцеления активирован!'
-  deactivation-message: '&c❤ &7Амулет убран.'
-  equip-message: '&c❤ &7Вы чувствуете тепло исцеления!'
-  unequip-message: '&c❤ &7Тепло исчезает.'
-  cooldown-message: '&c⏳ &7Подождите {seconds} сек!'
-  uses-depleted-message: '&c💀 &7Амулет рассеялся!'
-
   trigger-actions:
     # --- При экипировке ---
     - 'on_equip:particle:HEART:20'

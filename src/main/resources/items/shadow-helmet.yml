@@ -44,13 +44,6 @@ shadow-helmet:
   armor-set: shadow-set
   has-set-bonus: true
 
-  activation-message: '&5👁 &7Шлем Тени надет!'
-  deactivation-message: '&5👁 &7Шлем снят.'
-  equip-message: '&5👁 &7Вы видите в темноте!'
-  unequip-message: '&5👁 &7Зрение исчезает.'
-  cooldown-message: '&5⏳ &7Подождите {seconds} сек!'
-  uses-depleted-message: '&5💀 &7Шлем рассеялся!'
-
   trigger-actions:
     # --- При экипировке ---
     - 'on_equip:particle:SPELL_WITCH:20'

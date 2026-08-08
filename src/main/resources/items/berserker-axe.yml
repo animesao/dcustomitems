@@ -45,13 +45,6 @@ berserker-axe:
 
   click-cooldown: 5000
 
-  activation-message: '&c💀 &7Топор Берсерка извлечен!'
-  deactivation-message: '&c💀 &7Топор убран.'
-  equip-message: '&c💀 &7Вы чувствуете безумную ярость!'
-  unequip-message: '&c💀 &7Ярость покидает вас.'
-  cooldown-message: '&c⏳ &7Подождите {seconds} сек!'
-  uses-depleted-message: '&c💀 &7Топор сломался!'
-
   trigger-actions:
     # --- При экипировке ---
     - 'on_equip:particle:FLAME:30'

@@ -42,13 +42,6 @@ shadow-blade:
 
   click-cooldown: 1500
 
-  activation-message: '&8⚔ &7Тень Клинок извлечен!'
-  deactivation-message: '&8⚔ &7Клинок убран.'
-  equip-message: '&8👁 &7Вы чувствуете силу теней!'
-  unequip-message: '&8👁 &7Тени покидают вас.'
-  cooldown-message: '&8⏳ &7Подождите {seconds} сек!'
-  uses-depleted-message: '&8💀 &7Клинок рассеялся!'
-
   trigger-actions:
     # --- При экипировке ---
     - 'on_equip:particle:SMOKE_LARGE:25'
@@ -86,7 +79,7 @@ shadow-blade:
     - 'on_kill:particle:HEART:25'
     - 'on_kill:particle:DRAGON_BREATH:15'
     - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
-    - 'on_kill:message:&8💀 &7Враг повержен! &cЖизнь поглощена!'
+    - 'on_kill:message:&8💀 &7Враг повержен!'
 
     # --- При прыжке ---
     - 'on_jump:effect:SPEED:3:2'

@@ -43,13 +43,6 @@ vampire-blade:
 
   click-cooldown: 2000
 
-  activation-message: '&4🦇 &7Клинок Вампира извлечен!'
-  deactivation-message: '&4🦇 &7Клинок убран.'
-  equip-message: '&4👁 &7Вы чувствуете жажду крови!'
-  unequip-message: '&4👁 &7Жажд утихает.'
-  cooldown-message: '&4⏳ &7Подождите {seconds} сек!'
-  uses-depleted-message: '&4💀 &7Клинок рассеялся!'
-
   trigger-actions:
     # --- При экипировке ---
     - 'on_equip:particle:DRAGON_BREATH:20'
@@ -86,7 +79,7 @@ vampire-blade:
     - 'on_kill:particle:HEART:30'
     - 'on_kill:particle:DRAGON_BREATH:20'
     - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:2'
-    - 'on_kill:message:&4🦇 &7Вы поглотили жизнь врага! &cПОЛНОЕ ИСЦЕЛЕНИЕ!'
+    - 'on_kill:message:&4🦇 &7Вы поглотили жизнь врага!'
 
     # --- При нанесении урона ---
     - 'on_damage_dealt:heal:4'

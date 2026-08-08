@@ -39,13 +39,6 @@ archer-bow:
 
   click-cooldown: 1000
 
-  activation-message: '&2🏹 &7Лук Стрелка извлечен!'
-  deactivation-message: '&2🏹 &7Лук убран.'
-  equip-message: '&2🏹 &7Вы чувствуете силу лука!'
-  unequip-message: '&2🏹 &7Сила лука уходит.'
-  cooldown-message: '&2⏳ &7Подождите {seconds} сек!'
-  uses-depleted-message: '&2💀 &7Лук сломался!'
-
   trigger-actions:
     # --- При экипировке ---
     - 'on_equip:particle:CRIT:20'

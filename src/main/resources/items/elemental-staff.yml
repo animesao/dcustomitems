@@ -38,13 +38,6 @@ elemental-staff:
 
   click-cooldown: 1000
 
-  activation-message: '&d🌀 &7Стихийный Посох активирован!'
-  deactivation-message: '&d🌀 &7Посох убран.'
-  equip-message: '&d🌀 &7Стихии окружают вас!'
-  unequip-message: '&d🌀 &7Стихии покидают вас.'
-  cooldown-message: '&d⏳ &7Подождите {seconds} сек!'
-  uses-depleted-message: '&d💀 &7Посох рассеялся!'
-
   trigger-actions:
     # --- При экипировке ---
     - 'on_equip:particle:PORTAL:25'
