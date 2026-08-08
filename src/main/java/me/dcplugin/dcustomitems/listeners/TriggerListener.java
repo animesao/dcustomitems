@@ -286,6 +286,26 @@ public class TriggerListener implements Listener {
                 executeLaunch(player, actionStr);
             } else if (actionStr.startsWith("effect-nearby:")) {
                 executeEffectNearby(player, actionStr);
+            } else if (actionStr.startsWith("damage-mobs:")) {
+                executeDamageMobs(player, actionStr);
+            } else if (actionStr.startsWith("damage-players:")) {
+                executeDamagePlayers(player, actionStr);
+            } else if (actionStr.startsWith("knockback-mobs:")) {
+                executeKnockbackMobs(player, actionStr);
+            } else if (actionStr.startsWith("knockback-players:")) {
+                executeKnockbackPlayers(player, actionStr);
+            } else if (actionStr.startsWith("launch-mobs:")) {
+                executeLaunchMobs(player, actionStr);
+            } else if (actionStr.startsWith("launch-players:")) {
+                executeLaunchPlayers(player, actionStr);
+            } else if (actionStr.startsWith("stun-mobs:")) {
+                executeStunMobs(player, actionStr);
+            } else if (actionStr.startsWith("stun-players:")) {
+                executeStunPlayers(player, actionStr);
+            } else if (actionStr.startsWith("effect-nearby-mobs:")) {
+                executeEffectNearbyMobs(player, actionStr);
+            } else if (actionStr.startsWith("effect-nearby-players:")) {
+                executeEffectNearbyPlayers(player, actionStr);
             }
         } catch (Exception e) {
             plugin.getLogger().warning("Error executing action: " + actionStr + " - " + e.getMessage());
@@ -657,6 +677,174 @@ public class TriggerListener implements Listener {
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
             if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
                 ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
+                    effectType, duration * 20, amplifier, false, false));
+            }
+        }
+    }
+
+    // === MOB-ONLY METHODS ===
+    private void executeDamageMobs(Player player, String actionStr) {
+        String dmgPart = actionStr.replace("damage-mobs:", "").trim();
+        String[] parts = dmgPart.split(":");
+        double amount = 4.0;
+        double range = 3.0;
+        try {
+            amount = Double.parseDouble(parts[0]);
+            if (parts.length > 1) range = Double.parseDouble(parts[1]);
+        } catch (Exception ignored) {}
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && !(entity instanceof Player)) {
+                ((org.bukkit.entity.LivingEntity) entity).damage(amount, player);
+            }
+        }
+    }
+
+    private void executeKnockbackMobs(Player player, String actionStr) {
+        String kbPart = actionStr.replace("knockback-mobs:", "").trim();
+        double range = 3.0;
+        try { range = Double.parseDouble(kbPart); } catch (Exception ignored) {}
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && !(entity instanceof Player)) {
+                org.bukkit.Location loc = entity.getLocation();
+                org.bukkit.Location playerLoc = player.getLocation();
+                double dx = loc.getX() - playerLoc.getX();
+                double dz = loc.getZ() - playerLoc.getZ();
+                double dist = Math.sqrt(dx * dx + dz * dz);
+                if (dist > 0) {
+                    double strength = 1.5 / dist;
+                    entity.setVelocity(entity.getVelocity().add(new org.bukkit.util.Vector(dx * strength, 0.5, dz * strength)));
+                }
+            }
+        }
+    }
+
+    private void executeLaunchMobs(Player player, String actionStr) {
+        String launchPart = actionStr.replace("launch-mobs:", "").trim();
+        double power = 1.5;
+        try { power = Double.parseDouble(launchPart); } catch (Exception ignored) {}
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(4, 4, 4)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && !(entity instanceof Player)) {
+                entity.setVelocity(entity.getVelocity().add(new org.bukkit.util.Vector(0, power, 0)));
+            }
+        }
+    }
+
+    private void executeStunMobs(Player player, String actionStr) {
+        String stunPart = actionStr.replace("stun-mobs:", "").trim();
+        String[] parts = stunPart.split(":");
+        int duration = 3;
+        double range = 4.0;
+        try {
+            duration = Integer.parseInt(parts[0]);
+            if (parts.length > 1) range = Double.parseDouble(parts[1]);
+        } catch (Exception ignored) {}
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && !(entity instanceof Player)) {
+                ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
+                    PotionEffectType.SLOWNESS, duration * 20, 127, false, false));
+                ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
+                    PotionEffectType.MINING_FATIGUE, duration * 20, 127, false, false));
+            }
+        }
+    }
+
+    private void executeEffectNearbyMobs(Player player, String actionStr) {
+        String effectPart = actionStr.replace("effect-nearby-mobs:", "").trim();
+        String[] parts = effectPart.split(":");
+        if (parts.length < 3) return;
+        String effectName = parts[0].toUpperCase();
+        int duration = Integer.parseInt(parts[1]);
+        int amplifier = Integer.parseInt(parts[2]) - 1;
+        double range = parts.length > 3 ? Double.parseDouble(parts[3]) : 4.0;
+        PotionEffectType effectType = PotionEffectType.getByName(effectName);
+        if (effectType == null) return;
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && !(entity instanceof Player)) {
+                ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
+                    effectType, duration * 20, amplifier, false, false));
+            }
+        }
+    }
+
+    // === PLAYER-ONLY METHODS ===
+    private void executeDamagePlayers(Player player, String actionStr) {
+        String dmgPart = actionStr.replace("damage-players:", "").trim();
+        String[] parts = dmgPart.split(":");
+        double amount = 4.0;
+        double range = 3.0;
+        try {
+            amount = Double.parseDouble(parts[0]);
+            if (parts.length > 1) range = Double.parseDouble(parts[1]);
+        } catch (Exception ignored) {}
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof Player && entity != player) {
+                ((Player) entity).damage(amount, player);
+            }
+        }
+    }
+
+    private void executeKnockbackPlayers(Player player, String actionStr) {
+        String kbPart = actionStr.replace("knockback-players:", "").trim();
+        double range = 3.0;
+        try { range = Double.parseDouble(kbPart); } catch (Exception ignored) {}
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof Player && entity != player) {
+                org.bukkit.Location loc = entity.getLocation();
+                org.bukkit.Location playerLoc = player.getLocation();
+                double dx = loc.getX() - playerLoc.getX();
+                double dz = loc.getZ() - playerLoc.getZ();
+                double dist = Math.sqrt(dx * dx + dz * dz);
+                if (dist > 0) {
+                    double strength = 1.5 / dist;
+                    entity.setVelocity(entity.getVelocity().add(new org.bukkit.util.Vector(dx * strength, 0.5, dz * strength)));
+                }
+            }
+        }
+    }
+
+    private void executeLaunchPlayers(Player player, String actionStr) {
+        String launchPart = actionStr.replace("launch-players:", "").trim();
+        double power = 1.5;
+        try { power = Double.parseDouble(launchPart); } catch (Exception ignored) {}
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(4, 4, 4)) {
+            if (entity instanceof Player && entity != player) {
+                entity.setVelocity(entity.getVelocity().add(new org.bukkit.util.Vector(0, power, 0)));
+            }
+        }
+    }
+
+    private void executeStunPlayers(Player player, String actionStr) {
+        String stunPart = actionStr.replace("stun-players:", "").trim();
+        String[] parts = stunPart.split(":");
+        int duration = 3;
+        double range = 4.0;
+        try {
+            duration = Integer.parseInt(parts[0]);
+            if (parts.length > 1) range = Double.parseDouble(parts[1]);
+        } catch (Exception ignored) {}
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof Player && entity != player) {
+                ((Player) entity).addPotionEffect(new PotionEffect(
+                    PotionEffectType.SLOWNESS, duration * 20, 127, false, false));
+                ((Player) entity).addPotionEffect(new PotionEffect(
+                    PotionEffectType.MINING_FATIGUE, duration * 20, 127, false, false));
+            }
+        }
+    }
+
+    private void executeEffectNearbyPlayers(Player player, String actionStr) {
+        String effectPart = actionStr.replace("effect-nearby-players:", "").trim();
+        String[] parts = effectPart.split(":");
+        if (parts.length < 3) return;
+        String effectName = parts[0].toUpperCase();
+        int duration = Integer.parseInt(parts[1]);
+        int amplifier = Integer.parseInt(parts[2]) - 1;
+        double range = parts.length > 3 ? Double.parseDouble(parts[3]) : 4.0;
+        PotionEffectType effectType = PotionEffectType.getByName(effectName);
+        if (effectType == null) return;
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof Player && entity != player) {
+                ((Player) entity).addPotionEffect(new PotionEffect(
                     effectType, duration * 20, amplifier, false, false));
             }
         }
