@@ -9,38 +9,36 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UpdateChecker {
 
     private final Main plugin;
-    private final String updateUrl;
+    private final String githubApiUrl;
+    private final String githubReleasesUrl;
     private String latestVersion;
     private boolean updateAvailable;
 
     public UpdateChecker(Main plugin) {
         this.plugin = plugin;
-        this.updateUrl = "https://animesao.spcfy.eu/api/plugins/dc-customitems";
+        this.githubApiUrl = "https://api.github.com/repos/animesao/dcustomitems/releases/latest";
+        this.githubReleasesUrl = "https://github.com/animesao/dcustomitems/releases";
         this.updateAvailable = false;
     }
 
     public void checkForUpdates(Consumer<String> consumer) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                URL url = new URL(updateUrl);
+                URL url = new URL(githubApiUrl);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setConnectTimeout(10000);
                 connection.setReadTimeout(10000);
-                
-                // Добавляем заголовки чтобы выглядеть как браузер
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-                connection.setRequestProperty("Accept", "application/json, text/plain, */*");
-                connection.setRequestProperty("Accept-Language", "en-US,en;q=0.9,ru;q=0.8");
-                connection.setRequestProperty("Cache-Control", "no-cache");
-                connection.setRequestProperty("Pragma", "no-cache");
+                connection.setRequestProperty("User-Agent", "DC-CustomItems-Plugin");
+                connection.setRequestProperty("Accept", "application/vnd.github.v3+json");
 
                 int responseCode = connection.getResponseCode();
-                plugin.getLogger().info("Update check response code: " + responseCode);
                 
                 if (responseCode == 200) {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -53,41 +51,29 @@ public class UpdateChecker {
                     reader.close();
 
                     String jsonResponse = response.toString();
-                    plugin.getLogger().info("API Response length: " + jsonResponse.length());
                     
-                    // Проверяем если это HTML (защита от DDoS)
-                    if (jsonResponse.trim().startsWith("<html") || jsonResponse.contains("javascript")) {
-                        consumer.accept("§cСайт защищен от ботов. Проверьте обновления вручную:");
-                        consumer.accept("§bhttps://animesao.spcfy.eu/plugins/dc-customitems");
-                        plugin.getLogger().warning("Website returned HTML instead of JSON (DDoS protection active)");
-                        return;
-                    }
-
-                    // Парсим JSON ответ от вашего API
-                    if (jsonResponse.contains("\"versions\"") || jsonResponse.contains("\"changelogs\"")) {
-                        // Ищем последнюю версию в массиве versions или changelogs
-                        String latestVersionFromAPI = parseLatestVersion(jsonResponse);
+                    // Parse tag_name from GitHub API response
+                    String tagName = extractTag(jsonResponse);
+                    
+                    if (tagName != null) {
+                        // Remove 'v' prefix if present
+                        latestVersion = tagName.startsWith("v") ? tagName.substring(1) : tagName;
+                        String currentVersion = plugin.getDescription().getVersion();
                         
-                        if (latestVersionFromAPI != null) {
-                            latestVersion = latestVersionFromAPI;
-                            String currentVersion = plugin.getDescription().getVersion();
-                            
-                            plugin.getLogger().info("Current version: " + currentVersion + ", Latest version: " + latestVersion);
-                            
-                            if (!currentVersion.equals(latestVersion)) {
-                                updateAvailable = true;
-                                consumer.accept("§aНайдено обновление! §7Текущая: §e" + currentVersion + " §7→ Новая: §a" + latestVersion);
-                                consumer.accept("§7Скачать: §bhttps://animesao.spcfy.eu/plugins/dc-customitems");
-                            } else {
-                                consumer.accept("§aВы используете последнюю версию! §7(" + currentVersion + ")");
-                            }
+                        plugin.getLogger().info("Current version: " + currentVersion + ", Latest version: " + latestVersion);
+                        
+                        if (compareVersions(latestVersion, currentVersion) > 0) {
+                            updateAvailable = true;
+                            consumer.accept("§aНайдено обновление! §7Текущая: §e" + currentVersion + " §7→ Новая: §a" + latestVersion);
+                            consumer.accept("§7Скачать: §b" + githubReleasesUrl);
                         } else {
-                            consumer.accept("§cНе удалось найти информацию о версиях в ответе API");
+                            consumer.accept("§aВы используете последнюю версию! §7(" + currentVersion + ")");
                         }
                     } else {
-                        consumer.accept("§cНеверный формат ответа API - ожидался JSON с версиями");
-                        plugin.getLogger().warning("Invalid API response format - expected JSON with versions");
+                        consumer.accept("§cНе удалось найти информацию о версии");
                     }
+                } else if (responseCode == 404) {
+                    consumer.accept("§cРелизы не найдены. Проверьте: §b" + githubReleasesUrl);
                 } else {
                     consumer.accept("§cНе удалось проверить обновления (код: " + responseCode + ")");
                 }
@@ -95,52 +81,42 @@ public class UpdateChecker {
                 connection.disconnect();
             } catch (Exception e) {
                 consumer.accept("§cОшибка при проверке обновлений: " + e.getMessage());
-                consumer.accept("§7Проверьте обновления вручную: §bhttps://animesao.spcfy.eu/plugins/dc-customitems");
+                consumer.accept("§7Проверьте обновления вручную: §b" + githubReleasesUrl);
                 plugin.getLogger().severe("Update check error: " + e.getMessage());
-                e.printStackTrace();
             }
         });
     }
 
-    private String parseLatestVersion(String jsonResponse) {
-        try {
-            // Сначала ищем массив versions
-            int versionsStart = jsonResponse.indexOf("\"versions\":[");
-            if (versionsStart != -1) {
-                int firstVersionStart = jsonResponse.indexOf("{", versionsStart);
-                if (firstVersionStart != -1) {
-                    int versionFieldStart = jsonResponse.indexOf("\"version\":\"", firstVersionStart);
-                    if (versionFieldStart != -1) {
-                        versionFieldStart += 11; // длина "version":"
-                        int versionFieldEnd = jsonResponse.indexOf("\"", versionFieldStart);
-                        if (versionFieldEnd != -1) {
-                            return jsonResponse.substring(versionFieldStart, versionFieldEnd);
-                        }
-                    }
-                }
-            }
-            
-            // Если versions пустой, ищем в changelogs
-            int changelogsStart = jsonResponse.indexOf("\"changelogs\":[");
-            if (changelogsStart != -1) {
-                int firstChangelogStart = jsonResponse.indexOf("{", changelogsStart);
-                if (firstChangelogStart != -1) {
-                    int versionFieldStart = jsonResponse.indexOf("\"version\":\"", firstChangelogStart);
-                    if (versionFieldStart != -1) {
-                        versionFieldStart += 11; // длина "version":"
-                        int versionFieldEnd = jsonResponse.indexOf("\"", versionFieldStart);
-                        if (versionFieldEnd != -1) {
-                            return jsonResponse.substring(versionFieldStart, versionFieldEnd);
-                        }
-                    }
-                }
-            }
-            
-            return null;
-        } catch (Exception e) {
-            plugin.getLogger().severe("Error parsing version from API response: " + e.getMessage());
-            return null;
+    private String extractTag(String jsonResponse) {
+        // Extract "tag_name":"xxx" from JSON
+        Pattern pattern = Pattern.compile("\"tag_name\"\\s*:\\s*\"([^\"]+)\"");
+        Matcher matcher = pattern.matcher(jsonResponse);
+        if (matcher.find()) {
+            return matcher.group(1);
         }
+        return null;
+    }
+
+    /**
+     * Compare two version strings (e.g., "1.320.203" vs "1.320.202")
+     * Returns: > 0 if v1 > v2, < 0 if v1 < v2, 0 if equal
+     */
+    private int compareVersions(String v1, String v2) {
+        String[] parts1 = v1.split("\\.");
+        String[] parts2 = v2.split("\\.");
+        
+        int maxLength = Math.max(parts1.length, parts2.length);
+        
+        for (int i = 0; i < maxLength; i++) {
+            int num1 = i < parts1.length ? Integer.parseInt(parts1[i]) : 0;
+            int num2 = i < parts2.length ? Integer.parseInt(parts2[i]) : 0;
+            
+            if (num1 != num2) {
+                return Integer.compare(num1, num2);
+            }
+        }
+        
+        return 0;
     }
 
     public void notifyPlayer(Player player) {
@@ -149,7 +125,7 @@ public class UpdateChecker {
             player.sendMessage("§6§lDC-CustomItems §7- §aДоступно обновление!");
             player.sendMessage("§7Текущая версия: §e" + plugin.getDescription().getVersion());
             player.sendMessage("§7Новая версия: §a" + latestVersion);
-            player.sendMessage("§7Скачать: §bhttps://animesao.spcfy.eu/plugins/dc-customitems");
+            player.sendMessage("§7Скачать: §b" + githubReleasesUrl);
             player.sendMessage("§8§m                                                    ");
         }
     }

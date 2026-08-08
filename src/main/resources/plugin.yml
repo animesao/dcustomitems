@@ -1,11 +1,11 @@
 
-name: DC-CustomItems-v1.7.0
-version: 1.7.0
+name: DC-CustomItems
+version: ${project.version}
 main: me.dcplugin.dcustomitems.Main
 api-version: "1.21.8"
 author: animesao
 description: Custom Items Plugin with Effects and Enchantments
-website: https://animesao.spcfy.eu/plugins/dc-customitems
+website: https://github.com/animesao/dcustomitems
 
 commands:
   customitems:
