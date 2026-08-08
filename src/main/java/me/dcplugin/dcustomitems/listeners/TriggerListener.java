@@ -611,13 +611,24 @@ public class TriggerListener implements Listener {
     }
 
     private void executeDamage(Player player, String actionStr) {
-        // Формат: "damage:5" - нанести 5 сердец урона
+        // Формат: "damage:5:3" - AoE урон 5 по площади 3 блока
+        // Формат: "damage:5" - AoE урон 5 по площади 3 блока (по умолчанию)
         String dmgPart = actionStr.replace("damage:", "").trim();
+        String[] parts = dmgPart.split(":");
         double amount = 4.0;
+        double range = 3.0;
         try {
-            amount = Double.parseDouble(dmgPart);
+            amount = Double.parseDouble(parts[0]);
+            if (parts.length > 1) {
+                range = Double.parseDouble(parts[1]);
+            }
         } catch (Exception ignored) {}
-        player.damage(amount);
+        // Наносим урон ВСЕМ nearby врагам (кроме игрока)
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
+                ((org.bukkit.entity.LivingEntity) entity).damage(amount, player);
+            }
+        }
     }
 
     private void executeFireworks(Player player, String actionStr) {
