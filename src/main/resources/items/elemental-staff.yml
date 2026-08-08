@@ -1,0 +1,50 @@
+# Стихийный Посох - Посох с разными стихиями
+elemental-staff:
+  item:
+    type: END_ROD
+    title: '&d[🌀] &fСтихийный &dПосох'
+    glowing: true
+    unbreakable: true
+    custom-model-data: 1006
+  lore:
+    - ''
+    - ' &7Посох, подчиняющий стихии'
+    - ' &7Каждый клик меняет стихию'
+    - ''
+    - ' &6┌ &eСила &dII &7(&6∞&7)'
+    - ' &6├ &eСкорость &dII &7(&6∞&7)'
+    - ' &6└ &eСопротивление &dI &7(&6∞&7)'
+    - ''
+    - '&d✦ &fПКМ: Огненный шар'
+    - '&d✦ &fЛКМ: Ледяная волна'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: elemental.staff
+  click-cooldown: 1000
+  max-uses: 200
+  effects:
+    - 'INCREASE_DAMAGE:2'
+    - 'SPEED:2'
+    - 'DAMAGE_RESISTANCE:1'
+  equip-particles:
+    - 'PORTAL:20'
+    - 'ENCHANTMENT_TABLE:15'
+  equip-sounds:
+    - 'BLOCK_END_PORTAL_SPAWN:1:1'
+  unequip-particles:
+    - 'CLOUD:10'
+  right-click-actions:
+    - 'effect:INCREASE_DAMAGE:5:2'
+    - 'particle:FLAME:30'
+    - 'sound:ENTITY_BLAZE_SHOOT:1:1'
+    - 'message:&d🔥 Огненная стихия!'
+  left-click-actions:
+    - 'effect:SPEED:5:2'
+    - 'particle:SNOWFLAKE:25'
+    - 'sound:BLOCK_GLASS_BREAK:1:0.5'
+    - 'message:&b❄ Ледяная стихия!'
+  trigger-actions:
+    - 'on_jump:effect:SPEED:3:1'
+    - 'on_jump:particle:PORTAL:8'

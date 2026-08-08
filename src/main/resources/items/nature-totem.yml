@@ -1,0 +1,47 @@
+# Тотем Природы - Тотем с целительной силой природы
+nature-totem:
+  item:
+    type: TOTEM_OF_UNDYING
+    title: '&2[🌿] &fТотем &2Природы'
+    glowing: true
+    unbreakable: true
+    custom-model-data: 1009
+  lore:
+    - ''
+    - ' &7Древний тотем, наделенный силой природы'
+    - ' &7Постоянно исцеляет и укрепляет'
+    - ''
+    - ' &6┌ &eРегенерация &2III &7(&6∞&7)'
+    - ' &6├ &eНасыщение &2II &7(&6∞&7)'
+    - ' &6└ &eСпешка &2I &7(&6∞&7)'
+    - ''
+    - '&2✦ &fПКМ: Исцеление nearby'
+    - '&2✦ &fПрыжок: Спешка II на 5 сек'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  permission: nature.totem
+  click-cooldown: 4000
+  effects:
+    - 'REGENERATION:3'
+    - 'SATURATION:2'
+    - 'HASTE:1'
+  equip-particles:
+    - 'VILLAGER_HAPPY:20'
+    - 'HAPPY_VILLAGER:15'
+  equip-sounds:
+    - 'BLOCK_GRASS_PLACE:1:1'
+  unequip-particles:
+    - 'CLOUD:8'
+  right-click-actions:
+    - 'effect:REGENERATION:10:2'
+    - 'effect:HEALTH_BOOST:10:1'
+    - 'particle:HEART:15'
+    - 'particle:VILLAGER_HAPPY:20'
+    - 'sound:ENTITY_PLAYER_LEVELUP:1:1'
+    - 'message:&2🌿 Сила природы исцеляет!'
+  trigger-actions:
+    - 'on_jump:effect:HASTE:5:2'
+    - 'on_jump:particle:CRIT:10'
+    - 'on_jump:sound:ENTITY_SLIME_SQUISH:0.5:1'

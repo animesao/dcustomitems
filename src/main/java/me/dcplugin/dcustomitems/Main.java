@@ -13,6 +13,8 @@ import me.dcplugin.dcustomitems.utils.UpdateChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+
 public class Main extends JavaPlugin {
 
     private ConfigManager configManager;
@@ -31,6 +33,7 @@ public class Main extends JavaPlugin {
 
             // Сохраняем дефолтные конфиги
             saveDefaultConfig();
+            saveResourceItems();
 
             // Инициализируем менеджеры
             configManager = new ConfigManager(this);
@@ -91,6 +94,32 @@ public class Main extends JavaPlugin {
         }
 
         getLogger().info("CustomItems отключен!");
+    }
+
+    private void saveResourceItems() {
+        File itemsFolder = new File(getDataFolder(), "items");
+        if (!itemsFolder.exists()) {
+            itemsFolder.mkdirs();
+        }
+        
+        // Сохраняем все .yml файлы из resources/items/
+        try {
+            java.util.jar.JarFile jar = new java.util.jar.JarFile(getFile());
+            java.util.Enumeration<java.util.jar.JarEntry> entries = jar.entries();
+            while (entries.hasMoreElements()) {
+                java.util.jar.JarEntry entry = entries.nextElement();
+                String name = entry.getName();
+                if (name.startsWith("items/") && name.endsWith(".yml")) {
+                    File destFile = new File(getDataFolder(), name);
+                    if (!destFile.exists()) {
+                        saveResource(name, false);
+                    }
+                }
+            }
+            jar.close();
+        } catch (Exception e) {
+            getLogger().warning("Не удалось сохранить файлы предметов: " + e.getMessage());
+        }
     }
 
     // Геттеры для менеджеров

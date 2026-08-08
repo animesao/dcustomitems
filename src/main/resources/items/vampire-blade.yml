@@ -1,0 +1,53 @@
+# Клинок Вампира - Меч, крадущий жизнь
+vampire-blade:
+  item:
+    type: NETHERITE_SWORD
+    title: '&4[🦇] &fКлинок &4Вампира'
+    glowing: true
+    unbreakable: true
+    custom-model-data: 1007
+    enchantments:
+      SHARPNESS: 5
+      UNBREAKING: 3
+      SWEEPING_EDGE: 3
+  lore:
+    - ''
+    - ' &7Древний клинок вампиров'
+    - ' &7Крадет жизнь у врагов'
+    - ''
+    - ' &6┌ &eСила &4III &7(&6∞&7)'
+    - ' &6├ &eСкорость &4I &7(&6∞&7)'
+    - ' &6└ &eРегенерация &4II &7(&6∞&7)'
+    - ''
+    - '&4✦ &fПКМ: Кровавый удар'
+    - '&4✦ &fПри убийстве: Полное исцеление'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: vampire.blade
+  click-cooldown: 3000
+  effects:
+    - 'INCREASE_DAMAGE:3'
+    - 'SPEED:1'
+    - 'REGENERATION:2'
+  equip-particles:
+    - 'DRAGON_BREATH:15'
+    - 'REDSTONE:20'
+  equip-sounds:
+    - 'ENTITY_WITHER_AMBIENT:1:1.2'
+  unequip-particles:
+    - 'SMOKE_NORMAL:10'
+  unequip-sounds:
+    - 'ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
+  right-click-actions:
+    - 'effect:INCREASE_DAMAGE:8:3'
+    - 'effect:REGENERATION:8:2'
+    - 'particle:DRAGON_BREATH:25'
+    - 'sound:ENTITY_VAMPIRE_BITE:1:1'
+    - 'message:&4🦇 Кровавый удар!'
+  trigger-actions:
+    - 'on_kill:effect:REGENERATION:15:3'
+    - 'on_kill:particle:HEART:20'
+    - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
+    - 'on_kill:message:&4🦇 Жизнь поглощена!'

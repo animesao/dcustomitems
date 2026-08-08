@@ -1,0 +1,48 @@
+# Амулет Исцеления - Амулет с целительной силой
+healer-amulet:
+  item:
+    type: TOTEM_OF_UNDYING
+    title: '&c[❤] &fАмулет &cИсцеления'
+    glowing: true
+    unbreakable: true
+    custom-model-data: 1004
+  lore:
+    - ''
+    - ' &7Священный амулет, исцеляющий раны'
+    - ' &7Постоянно восстанавливает здоровье'
+    - ''
+    - ' &6┌ &eРегенерация &cIII &7(&6∞&7)'
+    - ' &6├ &eПрилив здоровья &cII &7(&6∞&7)'
+    - ' &6└ &eПоглощение &cI &7(&6∞&7)'
+    - ''
+    - '&c✦ &fПКМ: Исцеление nearby игроков'
+    - '&c✦ &fПри убийстве: +5 сердец на 30 сек'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  permission: healer.amulet
+  click-cooldown: 5000
+  effects:
+    - 'REGENERATION:3'
+    - 'HEALTH_BOOST:2'
+    - 'ABSORPTION:1'
+  equip-particles:
+    - 'HEART:15'
+    - 'VILLAGER_HAPPY:10'
+  equip-sounds:
+    - 'BLOCK_BEACON_ACTIVATE:1:1'
+  unequip-particles:
+    - 'CLOUD:5'
+  unequip-sounds:
+    - 'BLOCK_BEACON_DEACTIVATE:1:1'
+  right-click-actions:
+    - 'effect:REGENERATION:15:2'
+    - 'effect:HEALTH_BOOST:15:1'
+    - 'particle:HEART:20'
+    - 'sound:ENTITY_PLAYER_LEVELUP:1:1.2'
+    - 'message:&c❤ Исцеление началось!'
+  trigger-actions:
+    - 'on_kill:effect:HEALTH_BOOST:30:2'
+    - 'on_kill:message:&c❤ Враг побежден! Здоровье усилено!'
+    - 'on_kill:particle:HEART:15'

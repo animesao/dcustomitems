@@ -13,6 +13,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import org.bukkit.configuration.file.YamlConfiguration;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,15 +38,13 @@ public class CustomItemHandler {
     public void loadCustomItems() {
         customItems.clear();
 
+        // 1. Загружаем предметы из config.yml
         ConfigurationSection config = plugin.getConfig();
-
         for (String itemId : config.getKeys(false)) {
             try {
-                // Пропускаем секцию set-bonuses
                 if ("set-bonuses".equals(itemId)) {
                     continue;
                 }
-                
                 CustomItem customItem = loadCustomItem(itemId, config.getConfigurationSection(itemId));
                 if (customItem != null) {
                     customItems.put(itemId, customItem);
@@ -54,7 +55,50 @@ public class CustomItemHandler {
             }
         }
 
+        // 2. Загружаем предметы из папки items/
+        loadItemsFromFolder();
+
         plugin.getLogger().info("Загружено " + customItems.size() + " кастомных предметов");
+    }
+
+    private void loadItemsFromFolder() {
+        File itemsFolder = new File(plugin.getDataFolder(), "items");
+        if (!itemsFolder.exists()) {
+            itemsFolder.mkdirs();
+            plugin.getLogger().info("Создана папка items/ для кастомных предметов");
+            return;
+        }
+
+        File[] files = itemsFolder.listFiles((dir, name) -> name.endsWith(".yml") || name.endsWith(".yaml"));
+        if (files == null || files.length == 0) {
+            plugin.getLogger().info("Папка items/ пуста. Добавьте .yml файлы с предметами.");
+            return;
+        }
+
+        for (File file : files) {
+            try {
+                YamlConfiguration fileConfig = YamlConfiguration.loadConfiguration(file);
+                String fileName = file.getName().replace(".yml", "").replace(".yaml", "");
+                
+                for (String itemId : fileConfig.getKeys(false)) {
+                    try {
+                        if ("set-bonuses".equals(itemId)) {
+                            continue;
+                        }
+                        CustomItem customItem = loadCustomItem(itemId, fileConfig.getConfigurationSection(itemId));
+                        if (customItem != null) {
+                            customItems.put(itemId, customItem);
+                            plugin.getLogger().fine("[items] Загружен предмет '" + itemId + "' из " + file.getName());
+                        }
+                    } catch (Exception e) {
+                        plugin.getLogger().severe("Ошибка при загрузке предмета " + itemId + " из " + file.getName() + ": " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                plugin.getLogger().severe("Ошибка при чтении файла " + file.getName() + ": " + e.getMessage());
+            }
+        }
     }
 
     private CustomItem loadCustomItem(String itemId, ConfigurationSection section) {

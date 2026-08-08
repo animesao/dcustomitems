@@ -1,0 +1,57 @@
+# Топор Берсерка - Топор, дающий безумную силу
+berserker-axe:
+  item:
+    type: NETHERITE_AXE
+    title: '&c[💀] &fТопор &cБерсерка'
+    glowing: true
+    unbreakable: true
+    custom-model-data: 1010
+    enchantments:
+      SHARPNESS: 8
+      SWEEPING_EDGE: 3
+      DURABILITY: 3
+  lore:
+    - ''
+    - ' &7Топор безумного воина'
+    - ' &7Максимальная цена - максимальная сила'
+    - ''
+    - ' &6┌ &eСила &cIV &7(&6∞&7)'
+    - ' &6├ &eСкорость &cIII &7(&6∞&7)'
+    - ' &6└ &eСпешка &cII &7(&6∞&7)'
+    - ''
+    - '&c✦ &fПКМ: Ярость берсерка'
+    - '&c✦ &fПри убийстве: Мгновенное исцеление'
+    - '&c✦ &cВнимание: -2 сердца при активации!'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: berserker.axe
+  click-cooldown: 5000
+  max-uses: 50
+  effects:
+    - 'INCREASE_DAMAGE:4'
+    - 'SPEED:3'
+    - 'HASTE:2'
+  equip-particles:
+    - 'FLAME:25'
+    - 'REDSTONE:15'
+  equip-sounds:
+    - 'ENTITY_WITHER_SPAWN:1:1'
+  unequip-particles:
+    - 'SMOKE_LARGE:10'
+  unequip-sounds:
+    - 'ENTITY_ENDER_DRAGON_GROWL:0.5:1.2'
+  right-click-actions:
+    - 'effect:INCREASE_DAMAGE:10:4'
+    - 'effect:SPEED:10:3'
+    - 'particle:FLAME:30'
+    - 'sound:ENTITY_WITHER_AMBIENT:1:1'
+    - 'message:&c💀 БЕРСЕРК АКТИВИРОВАН!'
+  trigger-actions:
+    - 'on_kill:effect:REGENERATION:10:3'
+    - 'on_kill:particle:HEART:20'
+    - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:2'
+    - 'on_kill:message:&c💀 Враг уничтожен!'
+    - 'on_damage_taken:effect:INCREASE_DAMAGE:5:2'
+    - 'on_damage_taken:particle:FLAME:10'

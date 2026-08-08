@@ -1,0 +1,53 @@
+# Топор Грома - Мощный топор с молниями
+thunder-axe:
+  item:
+    type: NETHERITE_AXE
+    title: '&e[⚡] &fТопор &eГрома'
+    glowing: true
+    unbreakable: true
+    custom-model-data: 1003
+    enchantments:
+      SHARPNESS: 7
+      SMITE: 5
+      DURABILITY: 3
+  lore:
+    - ''
+    - ' &7Топор, закаленный в небесной ярости'
+    - ' &7Призывает молнии на врагов'
+    - ''
+    - ' &6┌ &eСила &eIII &7(&6∞&7)'
+    - ' &6├ &eСкорость &eII &7(&6∞&7)'
+    - ' &6└ &eСпешка &eI &7(&6∞&7)'
+    - ''
+    - '&e✦ &fПКМ: Удар молнией'
+    - '&e✦ &fЛКМ: Взрыв молний'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: thunder.axe
+  click-cooldown: 1500
+  effects:
+    - 'INCREASE_DAMAGE:3'
+    - 'SPEED:2'
+    - 'HASTE:1'
+  equip-particles:
+    - 'FIREWORKS_SPARK:20'
+    - 'CLOUD:10'
+  equip-sounds:
+    - 'ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
+  unequip-particles:
+    - 'SMOKE_NORMAL:8'
+  right-click-actions:
+    - 'lightning:2'
+    - 'particle:FIREWORKS_SPARK:20'
+    - 'sound:ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
+    - 'message:&e⚡ Молнии призваны!'
+  left-click-actions:
+    - 'lightning:3'
+    - 'particle:EXPLOSION_HUGE:5'
+    - 'sound:ENTITY_LIGHTNING_BOLT_IMPACT:1:1'
+  trigger-actions:
+    - 'on_kill:effect:HASTE:8:3'
+    - 'on_kill:message:&e⚡ Враг повержен! Спешка III!'
+    - 'on_kill:particle:VILLAGER_HAPPY:10'

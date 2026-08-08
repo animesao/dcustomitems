@@ -1,0 +1,47 @@
+# Тень Клинок - Легендарный меч с триггерами
+shadow-blade:
+  item:
+    type: NETHERITE_SWORD
+    title: '&8[⚔] &7Тень &8Клинок'
+    glowing: true
+    unbreakable: true
+    custom-model-data: 1001
+    enchantments:
+      SHARPNESS: 6
+      LOOTING: 3
+      FIRE_ASPECT: 2
+      DURABILITY: 3
+  lore:
+    - ''
+    - ' &7Легендарный клинок теней'
+    - ' &7При убийстве восстанавливает силу'
+    - ''
+    - ' &6┌ &eСила &8III &7(&6∞&7)'
+    - ' &6└ &eСкорость &8II &7(&6∞&7)'
+    - ''
+    - '&8✦ &fПри убийстве: Регенерация II на 10 сек'
+    - '&8✦ &fПри прыжке: Спешка II на 3 сек'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: shadow.blade
+  effects:
+    - 'INCREASE_DAMAGE:3'
+    - 'SPEED:2'
+  equip-particles:
+    - 'SMOKE_LARGE:20'
+    - 'ENCHANTMENT_TABLE:15'
+  equip-sounds:
+    - 'ITEM_TRIDENT_RETURN:1:1.2'
+  unequip-particles:
+    - 'SMOKE_NORMAL:10'
+  unequip-sounds:
+    - 'ENTITY_ENDER_DRAGON_GROWL:0.5:1.2'
+  trigger-actions:
+    - 'on_kill:effect:REGENERATION:10:2'
+    - 'on_kill:message:&8⚔ &fТень поглощает врага! Регенерация!'
+    - 'on_kill:particle:DRAGON_BREATH:15'
+    - 'on_kill:sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
+    - 'on_jump:effect:SPEED:3:2'
+    - 'on_jump:particle:SMOKE_NORMAL:5'

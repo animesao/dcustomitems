@@ -1,0 +1,46 @@
+# Шлем Тени - Шлем, дающий ночное зрение
+shadow-helmet:
+  item:
+    type: NETHERITE_HELMET
+    title: '&5[👁] &fШлем &5Тени'
+    glowing: true
+    unbreakable: true
+    custom-model-data: 1005
+    enchantments:
+      PROTECTION_ENVIRONMENTAL: 5
+      DURABILITY: 3
+      THORNS: 2
+  lore:
+    - ''
+    - ' &7Шлем теней, дающий зрение в темноте'
+    - ' &7Позволяет видеть сквозь стены'
+    - ''
+    - ' &6┌ &eНочное зрение &7(&6∞&7)'
+    - ' &6├ &eСопротивление &5II &7(&6∞&7)'
+    - ' &6└ &eНевидимость &5I &7(&6∞&7)'
+    - ''
+    - '&5✦ &fБроня +4.0 Прочность +2.0'
+    - ''
+  type: ARMOR
+  activation-slot: HEAD
+  placeable: false
+  permission: shadow.helmet
+  armor-set: shadow-set
+  has-set-bonus: true
+  attributes:
+    GENERIC_ARMOR: 4.0
+    GENERIC_ARMOR_TOUGHNESS: 2.0
+    GENERIC_KNOCKBACK_RESISTANCE: 0.2
+  effects:
+    - 'NIGHT_VISION:1'
+    - 'DAMAGE_RESISTANCE:2'
+    - 'INVISIBILITY:1'
+  equip-particles:
+    - 'SPELL_WITCH:15'
+    - 'PORTAL:10'
+  equip-sounds:
+    - 'ITEM_ARMOR_EQUIP_NETHERITE:1:1'
+  unequip-particles:
+    - 'SMOKE_NORMAL:8'
+  unequip-sounds:
+    - 'ITEM_ARMOR_EQUIP_LEATHER:0.8:0.8'

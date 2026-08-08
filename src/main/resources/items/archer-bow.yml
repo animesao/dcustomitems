@@ -1,0 +1,45 @@
+# Лук Стрелка - Магический лук с особой силой
+archer-bow:
+  item:
+    type: BOW
+    title: '&2[🏹] &fЛук &2Стрелка'
+    glowing: true
+    unbreakable: true
+    custom-model-data: 1008
+    enchantments:
+      POWER: 6
+      FLAME: 2
+      INFINITY: 1
+      DURABILITY: 3
+  lore:
+    - ''
+    - ' &7Волшебный лук древних охотников'
+    - ' &7Стрелы горят и пронзают врагов'
+    - ''
+    - ' &6┌ &eСила &2III &7(&6∞&7)'
+    - ' &6├ &eСкорость &2II &7(&6∞&7)'
+    - ' &6└ &eУдача &2I &7(&6∞&7)'
+    - ''
+    - '&2✦ &fСтрелы горят'
+    - '&2✦ &fПри убийстве: Спешка III на 10 сек'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: archer.bow
+  effects:
+    - 'INCREASE_DAMAGE:3'
+    - 'SPEED:2'
+    - 'LUCK:1'
+  equip-particles:
+    - 'CRIT:15'
+    - 'FLAME:10'
+  equip-sounds:
+    - 'ENTITY_ARROW_SHOOT:1:1'
+  unequip-particles:
+    - 'CLOUD:5'
+  trigger-actions:
+    - 'on_kill:effect:HASTE:10:3'
+    - 'on_kill:message:&2🏹 Враг поражен! Спешка III!'
+    - 'on_kill:particle:VILLAGER_HAPPY:10'
+    - 'on_damage_dealt:particle:CRIT:5'
