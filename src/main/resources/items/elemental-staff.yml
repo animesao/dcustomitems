@@ -1,20 +1,14 @@
 # ============================================
 # СТИХИЙНЫЙ ПОСОХ - Посох с разными стихиями
 # ============================================
-# Тип: Посох
-# Активация: Основная рука
-# Особенность: Каждый клик меняет стихию
-# ============================================
 
 elemental-staff:
-  # === ОСНОВНЫЕ ПАРАМЕТРЫ ===
   type: TOOL
   activation-slot: HAND
   placeable: false
   permission: elemental.staff
   max-uses: 200
 
-  # === ПАРАМЕТРЫ ПРЕДМЕТА ===
   item:
     type: END_ROD
     title: '&d[🌀] &fСтихийный &dПосох'
@@ -22,7 +16,6 @@ elemental-staff:
     unbreakable: true
     custom-model-data: 1006
 
-  # === ОПИСАНИЕ (ЛОР) ===
   lore:
     - ''
     - ' &d━━━━━━━━━━━━━━━━━━━━━━━━'
@@ -35,93 +28,77 @@ elemental-staff:
     - ' &6├ &eСкорость &dII &7(&6∞&7)'
     - ' &6└ &eСопротивление &dI &7(&6∞&7)'
     - ''
-    - '&d🌀 &fПКМ: Огненная стихия'
-    - '&b❄ &fЛКМ: Ледяная стихия'
-    - '&a🌿 &fПрыжок: Стихия природы'
     - '&d✦ &fИспользований: &d%uses%'
     - ''
 
-  # === ПОСТОЯННЫЕ ЭФФЕКТЫ ===
   effects:
     - 'INCREASE_DAMAGE:2'
     - 'SPEED:2'
     - 'DAMAGE_RESISTANCE:1'
 
-  # === КУЛДОН КЛИКОВ ===
   click-cooldown: 1000
 
-  # === ЭФФЕКТЫ ЭКИПИРОВКИ ===
-  equip-particles:
-    - 'PORTAL:25'
-    - 'ENCHANTMENT_TABLE:20'
-    - 'SPELL_WITCH:15'
-  equip-sounds:
-    - 'BLOCK_END_PORTAL_SPAWN:1:1'
-    - 'ENTITY_PLAYER_LEVELUP:0.5:1.5'
-
-  # === ЭФФЕКТЫ СНЯТИЯ ===
-  unequip-particles:
-    - 'CLOUD:10'
-    - 'SMOKE_NORMAL:5'
-  unequip-sounds:
-    - 'BLOCK_END_PORTAL_SPAWN:0.5:0.8'
-
-  # === СООБЩЕНИЯ ===
-  activation-message: '&d🌀 &7Стихийный Посох активирован! &dСтихии подчиняются!'
-  deactivation-message: '&d🌀 &7Посох убран. &dСтихии уходят.'
+  activation-message: '&d🌀 &7Стихийный Посох активирован!'
+  deactivation-message: '&d🌀 &7Посох убран.'
   equip-message: '&d🌀 &7Стихии окружают вас!'
   unequip-message: '&d🌀 &7Стихии покидают вас.'
   cooldown-message: '&d⏳ &7Подождите {seconds} сек!'
   uses-depleted-message: '&d💀 &7Посох рассеялся!'
 
-  # === ДЕЙСТВИЯ ПРИ ПКМ ===
-  right-click-actions:
-    - 'effect:INCREASE_DAMAGE:8:3'
-    - 'particle:FLAME:35'
-    - 'particle:REDSTONE:20'
-    - 'sound:ENTITY_BLAZE_SHOOT:1:1'
-    - 'title:&d🔥 &7ОГНЕННАЯ СТИХИЯ!::&cПламя пожирает!:10:40:10'
-    - 'message:&d🔥 &7Огненная стихия активирована!'
-
-  # === ДЕЙСТВИЯ ПРИ ЛКМ ===
-  left-click-actions:
-    - 'effect:SPEED:8:3'
-    - 'effect:RESISTANCE:8:2'
-    - 'particle:SNOWFLAKE:30'
-    - 'particle:SPELL_WITCH:15'
-    - 'sound:BLOCK_GLASS_BREAK:1:0.5'
-    - 'title:&b❄ &7ЛЕДЯНАЯ СТИХИЯ!::&bМороз сковывает!:10:40:10'
-    - 'message:&b❄ &7Ледяная стихия активирована!'
-
-  # === ТРИГГЕРЫ ===
   trigger-actions:
-    # При убийстве
+    # --- При экипировке ---
+    - 'on_equip:particle:PORTAL:25'
+    - 'on_equip:particle:ENCHANTMENT_TABLE:20'
+    - 'on_equip:sound:BLOCK_END_PORTAL_SPAWN:1:1'
+    - 'on_equip:message:&d🌀 &7Стихии окружают вас!'
+
+    # --- При снятии ---
+    - 'on_unequip:particle:CLOUD:10'
+    - 'on_unequip:sound:BLOCK_END_PORTAL_SPAWN:0.5:0.8'
+    - 'on_unequip:message:&d🌀 &7Стихии покидают вас.'
+
+    # --- При ПКМ (Огонь) ---
+    - 'on_click_right:effect:INCREASE_DAMAGE:8:3'
+    - 'on_click_right:particle:FLAME:35'
+    - 'on_click_right:particle:REDSTONE:20'
+    - 'on_click_right:sound:ENTITY_BLAZE_SHOOT:1:1'
+    - 'on_click_right:title:&d🔥 &7ОГНЕННАЯ СТИХИЯ!::&cПламя пожирает!:10:40:10'
+    - 'on_click_right:message:&d🔥 &7Огненная стихия активирована!'
+
+    # --- При ЛКМ (Лёд) ---
+    - 'on_click_left:effect:SPEED:8:3'
+    - 'on_click_left:effect:RESISTANCE:8:2'
+    - 'on_click_left:particle:SNOWFLAKE:30'
+    - 'on_click_left:sound:BLOCK_GLASS_BREAK:1:0.5'
+    - 'on_click_left:title:&b❄ &7ЛЕДЯНАЯ СТИХИЯ!::&bМороз сковывает!:10:40:10'
+    - 'on_click_left:message:&b❄ &7Ледяная стихия активирована!'
+
+    # --- При убийстве ---
     - 'on_kill:effect:INCREASE_DAMAGE:10:2'
     - 'on_kill:effect:SPEED:10:2'
     - 'on_kill:particle:PORTAL:20'
     - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
     - 'on_kill:message:&d🌀 &7Стихии поглотили врага!'
 
-    # При прыжке - СТИХИЯ ПРИРОДЫ
+    # --- При прыжке (Природа) ---
     - 'on_jump:effect:HASTE:5:2'
     - 'on_jump:effect:REGENERATION:5:1'
     - 'on_jump:particle:VILLAGER_HAPPY:12'
     - 'on_jump:sound:ENTITY_SLIME_SQUISH:0.5:1'
     - 'on_jump:message:&a🌿 &7Стихия природы!'
 
-    # При нанесении урона
+    # --- При нанесении урона ---
     - 'on_damage_dealt:particle:FLAME:10'
     - 'on_damage_dealt:sound:ENTITY_BLAZE_SHOOT:0.5:2'
 
-    # При получении урона
+    # --- При получении урона ---
     - 'on_damage_taken:effect:DAMAGE_RESISTANCE:5:2'
     - 'on_damage_taken:particle:PORTAL:10'
 
-    # При подборе
-    - 'on_pickup:message:&d🌀 &7Посох подобран! &dСтихии пробуждаются!'
+    # --- При подборе ---
+    - 'on_pickup:message:&d🌀 &7Посох подобран!'
     - 'on_pickup:particle:PORTAL:25'
-    - 'on_pickup:sound:BLOCK_END_PORTAL_SPAWN:0.5:1.2'
 
-    # При выбрасывании
-    - 'on_drop:message:&d🌀 &7Посох выброшен. &dСтихии уходят.'
+    # --- При выбрасывании ---
+    - 'on_drop:message:&d🌀 &7Посох выброшен.'
     - 'on_drop:particle:CLOUD:10'

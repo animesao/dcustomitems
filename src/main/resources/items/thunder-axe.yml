@@ -1,19 +1,13 @@
 # ============================================
 # ТОПОР ГРОМА - Мощный топор с молниями
 # ============================================
-# Тип: Оружие ближнего боя
-# Активация: Основная рука
-# Особенность: Призывает молнии на врагов
-# ============================================
 
 thunder-axe:
-  # === ОСНОВНЫЕ ПАРАМЕТРЫ ===
   type: TOOL
   activation-slot: HAND
   placeable: false
   permission: thunder.axe
 
-  # === ПАРАМЕТРЫ ПРЕДМЕТА ===
   item:
     type: NETHERITE_AXE
     title: '&e[⚡] &fТопор &eГрома'
@@ -26,7 +20,6 @@ thunder-axe:
       DURABILITY: 3
       CHANNELING: 1
 
-  # === ОПИСАНИЕ (ЛОР) ===
   lore:
     - ''
     - ' &e━━━━━━━━━━━━━━━━━━━━━━━━'
@@ -39,97 +32,80 @@ thunder-axe:
     - ' &6├ &eСкорость &eII &7(&6∞&7)'
     - ' &6└ &eСпешка &eI &7(&6∞&7)'
     - ''
-    - '&e✦ &fПКМ: Удар молнией'
-    - '&e✦ &fЛКМ: Взрыв молний'
-    - '&e✦ &fПри убийстве: Спешка III'
-    - ''
 
-  # === ПОСТОЯННЫЕ ЭФФЕКТЫ ===
   effects:
     - 'INCREASE_DAMAGE:3'
     - 'SPEED:2'
     - 'HASTE:1'
 
-  # === АТРИБУТЫ ===
   attributes:
     GENERIC_ATTACK_DAMAGE: 12.0
     GENERIC_ATTACK_SPEED: 1.4
 
-  # === КУЛДОН КЛИКОВ ===
   click-cooldown: 1500
 
-  # === ЭФФЕКТЫ ЭКИПИРОВКИ ===
-  equip-particles:
-    - 'FIREWORKS_SPARK:25'
-    - 'CLOUD:15'
-    - 'FLASH:10'
-  equip-sounds:
-    - 'ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
-    - 'ENTITY_FIREWORK_ROCKET_LAUNCH:0.5:1.2'
-
-  # === ЭФФЕКТЫ СНЯТИЯ ===
-  unequip-particles:
-    - 'SMOKE_NORMAL:10'
-    - 'CLOUD:8'
-  unequip-sounds:
-    - 'ENTITY_LIGHTNING_BOLT_THUNDER:0.5:0.8'
-
-  # === СООБЩЕНИЯ ===
-  activation-message: '&e⚡ &7Топор Грома извлечен! &eНебеса гневаются!'
-  deactivation-message: '&e⚡ &7Топор убран. &eГром затих.'
+  activation-message: '&e⚡ &7Топор Грома извлечен!'
+  deactivation-message: '&e⚡ &7Топор убран.'
   equip-message: '&e⚡ &7Молнии окружают вас!'
   unequip-message: '&e⚡ &7Молнии утихают.'
   cooldown-message: '&e⏳ &7Подождите {seconds} сек!'
   uses-depleted-message: '&e💀 &7Топор раскололся!'
 
-  # === ДЕЙСТВИЯ ПРИ ПКМ ===
-  right-click-actions:
-    - 'lightning:3'
-    - 'particle:FIREWORKS_SPARK:30'
-    - 'particle:EXPLOSION_HUGE:5'
-    - 'sound:ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
-    - 'sound:ENTITY_FIREWORK_ROCKET_LAUNCH:0.8:1'
-    - 'title:&e⚡ &7УДАР МОЛНИИ!::&eНебеса повинуются!:10:40:10'
-    - 'message:&e⚡ &7Молнии призваны! &eВраги будут уничтожены!'
-
-  # === ДЕЙСТВИЯ ПРИ ЛКМ ===
-  left-click-actions:
-    - 'lightning:5'
-    - 'particle:EXPLOSION_HUGE:10'
-    - 'particle:FIREWORKS_SPARK:40'
-    - 'sound:ENTITY_LIGHTNING_BOLT_IMPACT:1:1'
-    - 'sound:ENTITY_GENERIC_EXPLODE:0.8:0.8'
-    - 'message:&e💥 &7Взрыв молний!'
-
-  # === ТРИГГЕРЫ ===
   trigger-actions:
-    # При убийстве - СПЕШКА III
+    # --- При экипировке ---
+    - 'on_equip:particle:FIREWORKS_SPARK:25'
+    - 'on_equip:particle:CLOUD:15'
+    - 'on_equip:particle:FLASH:10'
+    - 'on_equip:sound:ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
+    - 'on_equip:message:&e⚡ &7Молнии окружают вас!'
+
+    # --- При снятии ---
+    - 'on_unequip:particle:SMOKE_NORMAL:10'
+    - 'on_unequip:particle:CLOUD:8'
+    - 'on_unequip:sound:ENTITY_LIGHTNING_BOLT_THUNDER:0.5:0.8'
+    - 'on_unequip:message:&e⚡ &7Молнии утихают.'
+
+    # --- При ПКМ ---
+    - 'on_click_right:lightning:3'
+    - 'on_click_right:particle:FIREWORKS_SPARK:30'
+    - 'on_click_right:particle:EXPLOSION_HUGE:5'
+    - 'on_click_right:sound:ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
+    - 'on_click_right:title:&e⚡ &7УДАР МОЛНИИ!::&eНебеса повинуются!:10:40:10'
+    - 'on_click_right:message:&e⚡ &7Молнии призваны!'
+
+    # --- При ЛКМ ---
+    - 'on_click_left:lightning:5'
+    - 'on_click_left:particle:EXPLOSION_HUGE:10'
+    - 'on_click_left:particle:FIREWORKS_SPARK:40'
+    - 'on_click_left:sound:ENTITY_LIGHTNING_BOLT_IMPACT:1:1'
+    - 'on_click_left:message:&e💥 &7Взрыв молний!'
+
+    # --- При убийстве ---
     - 'on_kill:effect:HASTE:15:3'
     - 'on_kill:effect:SPEED:15:2'
     - 'on_kill:particle:VILLAGER_HAPPY:20'
     - 'on_kill:particle:FIREWORKS_SPARK:15'
     - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
-    - 'on_kill:message:&e⚡ &7Враг повержен! &eСпешка III на 15 сек!'
-    - 'on_kill:announce:&e⚡ &7%player% &7поразил врага молнией!'
+    - 'on_kill:message:&e⚡ &7Враг повержен!'
 
-    # При нанесении урона
+    # --- При нанесении урона ---
     - 'on_damage_dealt:particle:FIREWORKS_SPARK:12'
     - 'on_damage_dealt:sound:ENTITY_LIGHTNING_BOLT_THUNDER:0.3:2'
     - 'on_damage_dealt:lightning:1'
 
-    # При прыжке
+    # --- При прыжке ---
     - 'on_jump:particle:CLOUD:10'
     - 'on_jump:sound:ENTITY_FIREWORK_ROCKET_LAUNCH:0.3:2'
 
-    # При получении урона
+    # --- При получении урона ---
     - 'on_damage_taken:effect:INCREASE_DAMAGE:5:2'
     - 'on_damage_taken:particle:FLASH:8'
 
-    # При подборе
-    - 'on_pickup:message:&e⚡ &7Топор подобран! &eМолнии пробуждаются!'
+    # --- При подборе ---
+    - 'on_pickup:message:&e⚡ &7Топор подобран!'
     - 'on_pickup:particle:FIREWORKS_SPARK:20'
     - 'on_pickup:sound:ENTITY_LIGHTNING_BOLT_THUNDER:0.5:1.5'
 
-    # При выбрасывании
-    - 'on_drop:message:&e⚡ &7Топор выброшен. &eМолнии уходят.'
+    # --- При выбрасывании ---
+    - 'on_drop:message:&e⚡ &7Топор выброшен.'
     - 'on_drop:particle:SMOKE_NORMAL:15'

@@ -1,20 +1,14 @@
 # ============================================
 # ТОПОР БЕРСЕРКА - Топор безумной силы
 # ============================================
-# Тип: Оружие ближнего боя
-# Активация: Основная рука
-# Особенность: Максимальная цена - максимальная сила
-# ============================================
 
 berserker-axe:
-  # === ОСНОВНЫЕ ПАРАМЕТРЫ ===
   type: TOOL
   activation-slot: HAND
   placeable: false
   permission: berserker.axe
   max-uses: 50
 
-  # === ПАРАМЕТРЫ ПРЕДМЕТА ===
   item:
     type: NETHERITE_AXE
     title: '&c[💀] &fТопор &cБерсерка'
@@ -26,12 +20,10 @@ berserker-axe:
       SWEEPING_EDGE: 3
       DURABILITY: 3
 
-  # === ОПИСАНИЕ (ЛОР) ===
   lore:
     - ''
     - ' &c━━━━━━━━━━━━━━━━━━━━━━━━'
     - ' &7Топор безумного воина'
-    - ' &7Максимальная сила'
     - ' &c━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
     - ' &e⚡ &fКогда в основной руке:'
@@ -39,93 +31,78 @@ berserker-axe:
     - ' &6├ &eСкорость &cIII &7(&6∞&7)'
     - ' &6└ &eСпешка &cII &7(&6∞&7)'
     - ''
-    - '&c💀 &fПКМ: Ярость берсерка'
-    - '&c💀 &fПри убийстве: Исцеление'
     - '&c💀 &fИспользований: &c%uses%'
     - ''
 
-  # === ПОСТОЯННЫЕ ЭФФЕКТЫ ===
   effects:
     - 'INCREASE_DAMAGE:4'
     - 'SPEED:3'
     - 'HASTE:2'
 
-  # === АТРИБУТЫ ===
   attributes:
     GENERIC_ATTACK_DAMAGE: 15.0
     GENERIC_ATTACK_SPEED: 1.2
 
-  # === КУЛДОН КЛИКОВ ===
   click-cooldown: 5000
 
-  # === ЭФФЕКТЫ ЭКИПИРОВКИ ===
-  equip-particles:
-    - 'FLAME:30'
-    - 'REDSTONE:20'
-    - 'SMOKE_LARGE:15'
-  equip-sounds:
-    - 'ENTITY_WITHER_SPAWN:1:1'
-    - 'ENTITY_BLAZE_SHOOT:0.5:1.5'
-
-  # === ЭФФЕКТЫ СНЯТИЯ ===
-  unequip-particles:
-    - 'SMOKE_LARGE:10'
-    - 'CLOUD:8'
-  unequip-sounds:
-    - 'ENTITY_ENDER_DRAGON_GROWL:0.5:1.2'
-
-  # === СООБЩЕНИЯ ===
-  activation-message: '&c💀 &7Топор Берсерка извлечен! &cЯрость нарастает!'
-  deactivation-message: '&c💀 &7Топор убран. &cЯрость утихает.'
+  activation-message: '&c💀 &7Топор Берсерка извлечен!'
+  deactivation-message: '&c💀 &7Топор убран.'
   equip-message: '&c💀 &7Вы чувствуете безумную ярость!'
   unequip-message: '&c💀 &7Ярость покидает вас.'
   cooldown-message: '&c⏳ &7Подождите {seconds} сек!'
   uses-depleted-message: '&c💀 &7Топор сломался!'
 
-  # === ДЕЙСТВИЯ ПРИ ПКМ ===
-  right-click-actions:
-    - 'effect:INCREASE_DAMAGE:12:4'
-    - 'effect:SPEED:12:3'
-    - 'effect:HASTE:12:2'
-    - 'particle:FLAME:40'
-    - 'particle:REDSTONE:25'
-    - 'particle:SMOKE_LARGE:20'
-    - 'sound:ENTITY_WITHER_AMBIENT:1:1'
-    - 'sound:ENTITY_BLAZE_SHOOT:0.8:1.5'
-    - 'title:&c💀 &7ЯРОСТЬ БЕРСЕРКА!::&cБЕЗУМНАЯ СИЛА!:10:40:10'
-    - 'message:&c💀 &7БЕРСЕРК АКТИВИРОВАН! &cВы чувствуете невероятную силу!'
-
-  # === ТРИГГЕРЫ ===
   trigger-actions:
-    # При убийстве - ИСЦЕЛЕНИЕ
+    # --- При экипировке ---
+    - 'on_equip:particle:FLAME:30'
+    - 'on_equip:particle:REDSTONE:20'
+    - 'on_equip:particle:SMOKE_LARGE:15'
+    - 'on_equip:sound:ENTITY_WITHER_SPAWN:1:1'
+    - 'on_equip:message:&c💀 &7Вы чувствуете безумную ярость!'
+
+    # --- При снятии ---
+    - 'on_unequip:particle:SMOKE_LARGE:10'
+    - 'on_unequip:particle:CLOUD:8'
+    - 'on_unequip:sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.2'
+    - 'on_unequip:message:&c💀 &7Ярость покидает вас.'
+
+    # --- При ПКМ ---
+    - 'on_click_right:effect:INCREASE_DAMAGE:12:4'
+    - 'on_click_right:effect:SPEED:12:3'
+    - 'on_click_right:effect:HASTE:12:2'
+    - 'on_click_right:particle:FLAME:40'
+    - 'on_click_right:particle:REDSTONE:25'
+    - 'on_click_right:sound:ENTITY_WITHER_AMBIENT:1:1'
+    - 'on_click_right:title:&c💀 &7ЯРОСТЬ БЕРСЕРКА!::&cБЕЗУМНАЯ СИЛА!:10:40:10'
+    - 'on_click_right:message:&c💀 &7БЕРСЕРК АКТИВИРОВАН!'
+
+    # --- При убийстве ---
     - 'on_kill:heal:30'
     - 'on_kill:effect:REGENERATION:15:3'
     - 'on_kill:effect:INCREASE_DAMAGE:10:3'
     - 'on_kill:particle:HEART:30'
     - 'on_kill:particle:FLAME:25'
     - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:2'
-    - 'on_kill:message:&c💀 &7Враг УНИЧТОЖЕН! &aИсцеление!'
-    - 'on_kill:announce:&c💀 &7%player% &7в ярости уничтожил врага!'
+    - 'on_kill:message:&c💀 &7Враг УНИЧТОЖЕН!'
 
-    # При нанесении урона
+    # --- При нанесении урона ---
     - 'on_damage_dealt:particle:FLAME:15'
     - 'on_damage_dealt:sound:ENTITY_BLAZE_SHOOT:0.5:2'
     - 'on_damage_dealt:lightning:1'
 
-    # При прыжке
+    # --- При прыжке ---
     - 'on_jump:particle:FLAME:12'
     - 'on_jump:sound:ENTITY_BLAZE_SHOOT:0.3:2'
 
-    # При получении урона
+    # --- При получении урона ---
     - 'on_damage_taken:effect:INCREASE_DAMAGE:5:2'
     - 'on_damage_taken:effect:SPEED:5:2'
     - 'on_damage_taken:particle:FLAME:10'
 
-    # При подборе
-    - 'on_pickup:message:&c💀 &7Топор подобран! &cЯрость пробуждается!'
+    # --- При подборе ---
+    - 'on_pickup:message:&c💀 &7Топор подобран!'
     - 'on_pickup:particle:FLAME:25'
-    - 'on_pickup:sound:ENTITY_WITHER_SPAWN:0.5:1.2'
 
-    # При выбрасывании
-    - 'on_drop:message:&c💀 &7Топор выброшен. &cЯрость уходит.'
+    # --- При выбрасывании ---
+    - 'on_drop:message:&c💀 &7Топор выброшен.'
     - 'on_drop:particle:SMOKE_LARGE:15'

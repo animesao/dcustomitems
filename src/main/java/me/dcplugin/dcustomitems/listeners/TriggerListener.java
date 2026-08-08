@@ -120,6 +120,32 @@ public class TriggerListener implements Listener {
         }
     }
 
+    // === ПУБЛИЧНЫЕ МЕТОДЫ ДЛЯ ВЫЗОВА ИЗ DRAGOLISTENER ===
+
+    public void executeEquipTriggers(Player player, CustomItem item) {
+        if (item != null && item.hasTriggerActions()) {
+            executeTriggerActions(player, "on_equip", item);
+        }
+    }
+
+    public void executeUnequipTriggers(Player player, CustomItem item) {
+        if (item != null && item.hasTriggerActions()) {
+            executeTriggerActions(player, "on_unequip", item);
+        }
+    }
+
+    public void executeRightClickTriggers(Player player, CustomItem item) {
+        if (item != null && item.hasTriggerActions()) {
+            executeTriggerActions(player, "on_click_right", item);
+        }
+    }
+
+    public void executeLeftClickTriggers(Player player, CustomItem item) {
+        if (item != null && item.hasTriggerActions()) {
+            executeTriggerActions(player, "on_click_left", item);
+        }
+    }
+
     private void checkTriggersForPlayer(Player player, String trigger) {
         ItemStack mainHand = player.getInventory().getItemInMainHand();
         ItemStack offHand = player.getInventory().getItemInOffHand();

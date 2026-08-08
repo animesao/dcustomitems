@@ -4,6 +4,7 @@ package me.dcplugin.dcustomitems;
 import me.dcplugin.dcustomitems.commands.CustomItemsCommand;
 import me.dcplugin.dcustomitems.handlers.CustomItemHandler;
 import me.dcplugin.dcustomitems.listeners.PlayerListener;
+import me.dcplugin.dcustomitems.listeners.TriggerListener;
 import me.dcplugin.dcustomitems.managers.ConfigManager;
 import me.dcplugin.dcustomitems.managers.MessageManager;
 import me.dcplugin.dcustomitems.managers.EffectManager;
@@ -23,6 +24,7 @@ public class Main extends JavaPlugin {
     private AttributeManager attributeManager;
     private CustomItemHandler itemHandler;
     private PlayerListener playerListener;
+    private TriggerListener triggerListener;
     private ArmorSetManager armorSetManager;
     private UpdateChecker updateChecker;
 
@@ -55,9 +57,10 @@ public class Main extends JavaPlugin {
 
             // Регистрируем события
             playerListener = new PlayerListener(this);
+            triggerListener = new TriggerListener(this);
             getServer().getPluginManager().registerEvents(playerListener, this);
             getServer().getPluginManager().registerEvents(new me.dcplugin.dcustomitems.listeners.BlockPlaceListener(this), this);
-            getServer().getPluginManager().registerEvents(new me.dcplugin.dcustomitems.listeners.TriggerListener(this), this);
+            getServer().getPluginManager().registerEvents(triggerListener, this);
 
             // Проверяем обновления
             updateChecker = new UpdateChecker(this);
@@ -149,6 +152,10 @@ public class Main extends JavaPlugin {
 
     public AttributeManager getAttributeManager() {
         return attributeManager;
+    }
+
+    public TriggerListener getTriggerListener() {
+        return triggerListener;
     }
 
     public UpdateChecker getUpdateChecker() {

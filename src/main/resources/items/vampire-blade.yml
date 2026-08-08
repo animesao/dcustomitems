@@ -1,19 +1,13 @@
 # ============================================
 # КЛИНОК ВАМПИРА - Меч, крадущий жизнь
 # ============================================
-# Тип: Оружие ближнего боя
-# Активация: Основная рука
-# Особенность: Крадет жизнь у врагов при убийстве
-# ============================================
 
 vampire-blade:
-  # === ОСНОВНЫЕ ПАРАМЕТРЫ ===
   type: TOOL
   activation-slot: HAND
   placeable: false
   permission: vampire.blade
 
-  # === ПАРАМЕТРЫ ПРЕДМЕТА ===
   item:
     type: NETHERITE_SWORD
     title: '&4[🦇] &fКлинок &4Вампира'
@@ -24,14 +18,11 @@ vampire-blade:
       SHARPNESS: 5
       UNBREAKING: 3
       SWEEPING_EDGE: 3
-      LIFESTEAL: 1  # Кастомное зачарование (если есть)
 
-  # === ОПИСАНИЕ (ЛОР) ===
   lore:
     - ''
     - ' &4━━━━━━━━━━━━━━━━━━━━━━━━'
     - ' &7Древний клинок вампиров'
-    - ' &7Созданный из крови врагов'
     - ' &4━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
     - ' &e⚡ &fКогда в основной руке:'
@@ -39,99 +30,82 @@ vampire-blade:
     - ' &6├ &eСкорость &4I &7(&6∞&7)'
     - ' &6└ &eРегенерация &4II &7(&6∞&7)'
     - ''
-    - '&c❤ &fПри убийстве: Полное исцеление!'
-    - '&4✦ &fПКМ: Кровавый удар'
-    - '&4✦ &fПри ударе: Кража здоровья'
-    - ''
 
-  # === ПОСТОЯННЫЕ ЭФФЕКТЫ ===
   effects:
     - 'INCREASE_DAMAGE:3'
     - 'SPEED:1'
     - 'REGENERATION:2'
 
-  # === АТРИБУТЫ ===
   attributes:
     GENERIC_ATTACK_DAMAGE: 10.0
     GENERIC_ATTACK_SPEED: 1.6
     GENERIC_MAX_HEALTH: 4.0
 
-  # === КУЛДОН КЛИКОВ ===
   click-cooldown: 2000
 
-  # === ЭФФЕКТЫ ЭКИПИРОВКИ ===
-  equip-particles:
-    - 'DRAGON_BREATH:20'
-    - 'REDSTONE:25'
-    - 'SPELL_WITCH:15'
-  equip-sounds:
-    - 'ENTITY_WITHER_AMBIENT:1:1.2'
-    - 'ENTITY_VAMPIRE_BITE:0.5:1'
-
-  # === ЭФФЕКТЫ СНЯТИЯ ===
-  unequip-particles:
-    - 'SMOKE_NORMAL:15'
-    - 'CLOUD:10'
-  unequip-sounds:
-    - 'ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
-
-  # === СООБЩЕНИЯ ===
-  activation-message: '&4🦇 &7Клинок Вампира извлечен! &cЖажд крови!'
-  deactivation-message: '&4🦇 &7Клинок убран. &cЖажд утихает.'
+  activation-message: '&4🦇 &7Клинок Вампира извлечен!'
+  deactivation-message: '&4🦇 &7Клинок убран.'
   equip-message: '&4👁 &7Вы чувствуете жажду крови!'
   unequip-message: '&4👁 &7Жажд утихает.'
   cooldown-message: '&4⏳ &7Подождите {seconds} сек!'
   uses-depleted-message: '&4💀 &7Клинок рассеялся!'
 
-  # === ДЕЙСТВИЯ ПРИ ПКМ ===
-  right-click-actions:
-    - 'effect:INCREASE_DAMAGE:10:4'
-    - 'effect:REGENERATION:10:3'
-    - 'effect:SPEED:10:2'
-    - 'particle:DRAGON_BREATH:30'
-    - 'particle:REDSTONE:20'
-    - 'sound:ENTITY_VAMPIRE_BITE:1:1'
-    - 'sound:ENTITY_WITHER_AMBIENT:0.5:1.5'
-    - 'title:&4🦇 &7Кровавый удар!::&cЖажд крови нарастает!:10:40:10'
-    - 'message:&4🦇 &7Кровавый удар активирован! Вы чувствуете невероятную жажду!'
-
-  # === ДЕЙСТВИЯ ПРИ ЛКМ ===
-  left-click-actions:
-    - 'effect:INCREASE_DAMAGE:5:2'
-    - 'particle:DRAGON_BREATH:15'
-    - 'sound:ENTITY_WITHER_HURT:0.5:2'
-
-  # === ТРИГГЕРЫ ===
   trigger-actions:
-    # При убийстве - ПОЛНОЕ ИСЦЕЛЕНИЕ
+    # --- При экипировке ---
+    - 'on_equip:particle:DRAGON_BREATH:20'
+    - 'on_equip:particle:REDSTONE:25'
+    - 'on_equip:particle:SPELL_WITCH:15'
+    - 'on_equip:sound:ENTITY_WITHER_AMBIENT:1:1.2'
+    - 'on_equip:message:&4👁 &7Вы чувствуете жажду крови!'
+
+    # --- При снятии ---
+    - 'on_unequip:particle:SMOKE_NORMAL:15'
+    - 'on_unequip:particle:CLOUD:10'
+    - 'on_unequip:sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
+    - 'on_unequip:message:&4👁 &7Жажд утихает.'
+
+    # --- При ПКМ ---
+    - 'on_click_right:effect:INCREASE_DAMAGE:10:4'
+    - 'on_click_right:effect:REGENERATION:10:3'
+    - 'on_click_right:effect:SPEED:10:2'
+    - 'on_click_right:particle:DRAGON_BREATH:30'
+    - 'on_click_right:particle:REDSTONE:20'
+    - 'on_click_right:sound:ENTITY_VAMPIRE_BITE:1:1'
+    - 'on_click_right:title:&4🦇 &7Кровавый удар!::&cЖажд крови!:10:40:10'
+    - 'on_click_right:message:&4🦇 &7Кровавый удар активирован!'
+
+    # --- При ЛКМ ---
+    - 'on_click_left:effect:INCREASE_DAMAGE:5:2'
+    - 'on_click_left:particle:DRAGON_BREATH:15'
+    - 'on_click_left:sound:ENTITY_WITHER_HURT:0.5:2'
+
+    # --- При убийстве ---
     - 'on_kill:heal:40'
     - 'on_kill:effect:REGENERATION:15:3'
     - 'on_kill:effect:INCREASE_DAMAGE:8:3'
-    - 'on_kill:effect:SPEED:8:2'
     - 'on_kill:particle:HEART:30'
     - 'on_kill:particle:DRAGON_BREATH:20'
     - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:2'
     - 'on_kill:message:&4🦇 &7Вы поглотили жизнь врага! &cПОЛНОЕ ИСЦЕЛЕНИЕ!'
-    - 'on_kill:announce:&4🦇 &7%player% &7поглотил жизнь врага!'
 
-    # При нанесении урона - КРАЖА ЗДОРОВЬЯ
+    # --- При нанесении урона ---
     - 'on_damage_dealt:heal:4'
     - 'on_damage_dealt:particle:DRAGON_BREATH:10'
     - 'on_damage_dealt:sound:ENTITY_VAMPIRE_BITE:0.3:2'
 
-    # При прыжке
+    # --- При прыжке ---
     - 'on_jump:effect:SPEED:3:1'
     - 'on_jump:particle:SMOKE_NORMAL:8'
 
-    # При получении урона
+    # --- При получении урона ---
     - 'on_damage_taken:effect:REGENERATION:5:2'
     - 'on_damage_taken:particle:REDSTONE:10'
 
-    # При подборе
-    - 'on_pickup:message:&4🦇 &7Клинок подобран! &cТёмная сила пробуждается!'
+    # --- При подборе ---
+    - 'on_pickup:message:&4🦇 &7Клинок подобран!'
     - 'on_pickup:particle:DRAGON_BREATH:25'
     - 'on_pickup:sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.2'
 
-    # При выбрасывании
-    - 'on_drop:message:&4🦇 &7Клинок выброшен. &cТёмная сила уходит.'
+    # --- При выбрасывании ---
+    - 'on_drop:message:&4🦇 &7Клинок выброшен.'
     - 'on_drop:particle:SMOKE_NORMAL:20'

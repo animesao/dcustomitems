@@ -183,6 +183,13 @@ public class PlayerListener implements Listener {
             event.setCancelled(true);
         }
 
+        // Вызываем триггеры кликов
+        if (isRightClick) {
+            plugin.getTriggerListener().executeRightClickTriggers(player, customItem);
+        } else if (isLeftClick) {
+            plugin.getTriggerListener().executeLeftClickTriggers(player, customItem);
+        }
+
         if (!customItem.getEffects().isEmpty()) {
             plugin.getEffectManager().applyEffects(player, customItem);
         }
@@ -607,7 +614,7 @@ public class PlayerListener implements Listener {
             Set<String> newlyUnequipped = new HashSet<>(previousIds);
             newlyUnequipped.removeAll(currentActiveItemIds);
 
-            // Спавним эффекты для экипированных предметов
+            // Спавним эффекты и вызываем триггеры для экипированных предметов
             for (String itemId : newlyEquipped) {
                 CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
                 if (customItem != null) {
@@ -616,10 +623,12 @@ public class PlayerListener implements Listener {
                         ? ColorUtils.colorize(customItem.getEquipMessage()) 
                         : plugin.getMessageManager().getMessage("effects.applied", "&aЭффекты применены!");
                     player.sendMessage(msg);
+                    // Вызываем триггер on_equip
+                    plugin.getTriggerListener().executeEquipTriggers(player, customItem);
                 }
             }
 
-            // Спавним эффекты для снятых предметов
+            // Спавним эффекты и вызываем триггеры для снятых предметов
             for (String itemId : newlyUnequipped) {
                 CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
                 if (customItem != null) {
@@ -628,6 +637,8 @@ public class PlayerListener implements Listener {
                         ? ColorUtils.colorize(customItem.getUnequipMessage()) 
                         : plugin.getMessageManager().getMessage("effects.removed", "&cЭффекты удалены!");
                     player.sendMessage(msg);
+                    // Вызываем триггер on_unequip
+                    plugin.getTriggerListener().executeUnequipTriggers(player, customItem);
                 }
             }
 
