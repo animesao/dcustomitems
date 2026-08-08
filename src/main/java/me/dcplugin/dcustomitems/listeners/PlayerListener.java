@@ -123,6 +123,20 @@ public class PlayerListener implements Listener {
         if (cooldown > 0) {
             Long lastClickTime = playerCooldowns.get(playerId);
             if (lastClickTime != null && (currentTime - lastClickTime) < cooldown) {
+                // Показываем оставшееся время кулдауна в lore
+                long remaining = cooldown - (currentTime - lastClickTime);
+                double secondsLeft = remaining / 1000.0;
+                String cdMsg = customItem.hasCooldownMessage()
+                    ? ColorUtils.colorize(customItem.getCooldownMessage().replace("{seconds}", String.format("%.1f", secondsLeft)))
+                    : "&c⏳ Подождите " + String.format("%.1f", secondsLeft) + " сек!";
+                player.sendMessage(cdMsg);
+                // Обновляем lore с кулдауном
+                ItemStack updated = plugin.getItemHandler().updateItemWithCooldown(actualItem, lastClickTime, cooldown);
+                if (hand == EquipmentSlot.HAND) {
+                    player.getInventory().setItemInMainHand(updated);
+                } else if (hand == EquipmentSlot.OFF_HAND) {
+                    player.getInventory().setItemInOffHand(updated);
+                }
                 return;
             }
             playerCooldowns.put(playerId, currentTime);
@@ -193,6 +207,16 @@ public class PlayerListener implements Listener {
         if (!customItem.getEffects().isEmpty()) {
             plugin.getEffectManager().applyEffects(player, customItem);
         }
+
+        // Обновляем lore с кулдауном после использования
+        if (cooldown > 0) {
+            ItemStack updated = plugin.getItemHandler().updateItemWithCooldown(actualItem, currentTime, cooldown);
+            if (hand == EquipmentSlot.HAND) {
+                player.getInventory().setItemInMainHand(updated);
+            } else if (hand == EquipmentSlot.OFF_HAND) {
+                player.getInventory().setItemInOffHand(updated);
+            }
+        }
     }
 
     private void executeAction(Player player, Block block, String actionStr) {
@@ -257,12 +281,23 @@ public class PlayerListener implements Listener {
     }
 
     private void executeDamage(Player player, String actionStr) {
+        // AoE: damage:УРОН:РАДИУС
         String dmgPart = actionStr.replace("damage:", "").trim();
+        String[] parts = dmgPart.split(":");
         double amount = 4.0;
+        double range = 3.0;
         try {
-            amount = Double.parseDouble(dmgPart);
+            amount = Double.parseDouble(parts[0]);
+            if (parts.length > 1) {
+                range = Double.parseDouble(parts[1]);
+            }
         } catch (Exception ignored) {}
-        player.damage(amount);
+        // Бьём ВСЕХ nearby врагов, НЕ игрока
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
+                ((org.bukkit.entity.LivingEntity) entity).damage(amount, player);
+            }
+        }
     }
 
     private void executeLightning(Player player, Block block, String actionStr) {

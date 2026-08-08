@@ -231,9 +231,12 @@ public class CustomItemHandler {
             // (чтобы плейсхолдеры не отображались как текст)
             int maxUses = section.getInt("max-uses", -1);
             List<String> lorePre = section.getStringList("lore");
+            List<String> processedLore = new ArrayList<>();
+            List<String> loreTemplate = new ArrayList<>(); // Шаблон для обновлений
+            
             if (!lorePre.isEmpty()) {
-                List<String> processedLore = new ArrayList<>();
                 for (String line : lorePre) {
+                    // Создаёмprocessed версию для отображения
                     String processed = line.replace("%cooldown%", "0.0");
                     if (maxUses > 0) {
                         processed = processed.replace("%uses%", String.valueOf(maxUses));
@@ -241,6 +244,17 @@ public class CustomItemHandler {
                         processed = processed.replace("%uses%", "∞");
                     }
                     processedLore.add(ColorUtils.colorize(processed));
+                    
+                    // Сохраняем шаблон БЕЗ colorize
+                    // %cooldown% ОСТАЁМСЯ для динамической замены в updateItemWithCooldown()
+                    // %uses% заменяется на значение
+                    String templateLine = line;
+                    if (maxUses > 0) {
+                        templateLine = templateLine.replace("%uses%", String.valueOf(maxUses));
+                    } else if (line.contains("%uses%")) {
+                        templateLine = templateLine.replace("%uses%", "∞");
+                    }
+                    loreTemplate.add(templateLine);
                 }
                 meta = itemStack.getItemMeta();
                 if (meta != null) {
@@ -289,8 +303,6 @@ public class CustomItemHandler {
             List<String> leftClickActions = section.getStringList("left-click-actions");
             List<String> rightClickActions = section.getStringList("right-click-actions");
             long clickCooldown = section.getLong("click-cooldown", 0);
-            
-            List<String> loreTemplate = new ArrayList<>(section.getStringList("lore"));
 
             // Загружаем новые параметры
             int customModelData = itemSection.getInt("custom-model-data", -1);

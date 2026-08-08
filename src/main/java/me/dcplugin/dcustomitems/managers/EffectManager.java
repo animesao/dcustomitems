@@ -61,9 +61,9 @@ public class EffectManager {
         return parsedEffects;
     }
 
-    // Длительность эффектов: 24 часа (в тиках)
+    // Длительность эффектов: 60 секунд (в тиках)
     // Периодический таск обновляет эффекты каждую секунду, поэтому этого достаточно
-    private static final int EFFECT_DURATION_TICKS = 24 * 60 * 60 * 20; // 24 часа
+    private static final int EFFECT_DURATION_TICKS = 60 * 20; // 60 секунд
 
     public void applyEffects(Player player, CustomItem item) {
         if (item.getParsedEffects() == null || item.getParsedEffects().isEmpty()) {
