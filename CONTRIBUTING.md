@@ -1,67 +1,67 @@
-# Вклад в DC-CustomItems
+# Contributing to DC-CustomItems
 
-Спасибо за интерес к улучшению DC-CustomItems! Это руководство поможет вам внести свой вклад.
+Thank you for your interest in improving DC-CustomItems! This guide will help you contribute.
 
-## Как внести вклад
+## How to Contribute
 
-### 1. Fork и Clone
+### 1. Fork and Clone
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/dcustomitems.git
 cd dcustomitems
 ```
 
-### 2. Создайте ветку
+### 2. Create a Branch
 
 ```bash
 git checkout -b feature/your-feature
 ```
 
-### 3. Внесите изменения
+### 3. Make Changes
 
-- Следуйте существующему стилю кода
-- Добавляйте комментарии к сложным участкам
-- Тестируйте изменения
+- Follow existing code style
+- Add comments to complex sections
+- Test your changes
 
-### 4. Коммит и Push
+### 4. Commit and Push
 
 ```bash
 git add .
-git commit -m "Описание изменений"
+git commit -m "Description of changes"
 git push origin feature/your-feature
 ```
 
-### 5. Создайте Pull Request
+### 5. Create a Pull Request
 
-- Опишите изменения
-- Укажите проблему, которую они решают
-- Добавьте скриншоты (если применимо)
+- Describe the changes
+- Mention the issue it solves
+- Add screenshots (if applicable)
 
 ---
 
-## Правила кода
+## Code Rules
 
 ### Java
 
-- Используйте Java 17
-- Следуйте Google Java Style Guide
-- Добавляйте Javadoc к публичным методам
+- Use Java 17
+- Follow Google Java Style Guide
+- Add Javadoc to public methods
 
 ### YAML
 
-- Используйте 2 пробела для отступов
-- Добавляйте комментарии к сложным параметрам
-- Группируйте связанные настройки
+- Use 2 spaces for indentation
+- Add comments for complex parameters
+- Group related settings
 
 ---
 
-## Сообщества
+## Communities
 
-- **GitHub Issues**: Для баг-репортов и предложений
-- **Discord**: Для общения с сообществом
+- **GitHub Issues**: For bug reports and suggestions
+- **Discord**: For community chat
 
 ---
 
-## Лицензия
+## License
 
-Внося свой вклад, вы соглашаетесь с тем, что ваши работы будут лицензированы под MIT License.
+By contributing, you agree that your works will be licensed under the MIT License.

@@ -1,6 +1,9 @@
 # ============================================
 # КЛИНОК ВАМПИРА - Меч, крадущий жизнь
 # ============================================
+# LКМ = 4x сильнее (как Evoker босс)
+# ПКМ = Режим вампира (кража здоровья)
+# ============================================
 
 vampire-blade:
   type: TOOL
@@ -30,6 +33,9 @@ vampire-blade:
     - ' &6├ &eСкорость &4I &7(&6∞&7)'
     - ' &6└ &eРегенерация &4II &7(&6∞&7)'
     - ''
+    - '&c❤ &fПКМ: Кровавый режим'
+    - '&4💀 &fЛКМ: Удар ВАМПИРА (4x урон!)'
+    - ''
 
   effects:
     - 'INCREASE_DAMAGE:3'
@@ -57,34 +63,46 @@ vampire-blade:
     - 'on_unequip:sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
     - 'on_unequip:message:&4👁 &7Жажд утихает.'
 
-    # --- При ПКМ ---
-    - 'on_click_right:effect:INCREASE_DAMAGE:10:4'
+    # --- При ПКМ (Режим вампира - кража здоровья) ---
+    - 'on_click_right:effect:INCREASE_DAMAGE:8:2'
     - 'on_click_right:effect:REGENERATION:10:3'
     - 'on_click_right:effect:SPEED:10:2'
     - 'on_click_right:particle:DRAGON_BREATH:30'
     - 'on_click_right:particle:REDSTONE:20'
     - 'on_click_right:sound:ENTITY_VAMPIRE_BITE:1:1'
-    - 'on_click_right:title:&4🦇 &7Кровавый удар!::&cЖажд крови!:10:40:10'
-    - 'on_click_right:message:&4🦇 &7Кровавый удар активирован!'
+    - 'on_click_right:title:&4🦇 &7КРОВАВЫЙ РЕЖИМ!::&cКража здоровья активна!:10:40:10'
+    - 'on_click_right:message:&4🦇 &7Режим вампира активирован! Крадите жизнь при ударе!'
 
-    # --- При ЛКМ ---
-    - 'on_click_left:effect:INCREASE_DAMAGE:5:2'
-    - 'on_click_left:particle:DRAGON_BREATH:15'
-    - 'on_click_left:sound:ENTITY_WITHER_HURT:0.5:2'
+    # --- При ЛКМ (УДАР ВАМПИРА - 4x урон как у Evoker!) ---
+    - 'on_click_left:effect:INCREASE_DAMAGE:8:4'
+    - 'on_click_left:effect:SPEED:8:3'
+    - 'on_click_left:effect:RESISTANCE:8:2'
+    - 'on_click_left:particle:DRAGON_BREATH:50'
+    - 'on_click_left:particle:REDSTONE:40'
+    - 'on_click_left:particle:SPELL_WITCH:30'
+    - 'on_click_left:sound:ENTITY_ENDER_DRAGON_GROWL:1:1'
+    - 'on_click_left:sound:ENTITY_VAMPIRE_BITE:1:0.8'
+    - 'on_click_left:lightning:1'
+    - 'on_click_left:knockback:3'
+    - 'on_click_left:title:&4💀 &7УДАР ВАМПИРА!::&44x УРОН! КРОВАВЫЙ ШТОРМ!:10:40:10'
+    - 'on_click_left:message:&4💀 &7УДАР ВАМПИРА! 4x урон! Все враги в радиусе поражены!'
+    - 'on_click_left:announce:&4🦇 &7%player% &7нанес удар ВАМПИРА!'
 
-    # --- При убийстве ---
+    # --- При убийстве (ПОЛНОЕ ИСЦЕЛЕНИЕ) ---
     - 'on_kill:heal:40'
     - 'on_kill:effect:REGENERATION:15:3'
     - 'on_kill:effect:INCREASE_DAMAGE:8:3'
+    - 'on_kill:effect:SPEED:8:2'
     - 'on_kill:particle:HEART:30'
     - 'on_kill:particle:DRAGON_BREATH:20'
     - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:2'
-    - 'on_kill:message:&4🦇 &7Вы поглотили жизнь врага!'
+    - 'on_kill:message:&4🦇 &7Вы поглотили жизнь врага! &cПОЛНОЕ ИСЦЕЛЕНИЕ!'
+    - 'on_kill:announce:&4🦇 &7%player% &7поглотил жизнь врага!'
 
-    # --- При нанесении урона ---
-    - 'on_damage_dealt:heal:4'
-    - 'on_damage_dealt:particle:DRAGON_BREATH:10'
-    - 'on_damage_dealt:sound:ENTITY_VAMPIRE_BITE:0.3:2'
+    # --- При нанесении урона (кража здоровья) ---
+    - 'on_damage_dealt:heal:6'
+    - 'on_damage_dealt:particle:DRAGON_BREATH:12'
+    - 'on_damage_dealt:sound:ENTITY_VAMPIRE_BITE:0.5:2'
 
     # --- При прыжке ---
     - 'on_jump:effect:SPEED:3:1'
@@ -95,10 +113,10 @@ vampire-blade:
     - 'on_damage_taken:particle:REDSTONE:10'
 
     # --- При подборе ---
-    - 'on_pickup:message:&4🦇 &7Клинок подобран!'
+    - 'on_pickup:message:&4🦇 &7Клинок подобран! &cТёмная сила пробуждается!'
     - 'on_pickup:particle:DRAGON_BREATH:25'
     - 'on_pickup:sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.2'
 
     # --- При выбрасывании ---
-    - 'on_drop:message:&4🦇 &7Клинок выброшен.'
+    - 'on_drop:message:&4🦇 &7Клинок выброшен. &cТёмная сила уходит.'
     - 'on_drop:particle:SMOKE_NORMAL:20'

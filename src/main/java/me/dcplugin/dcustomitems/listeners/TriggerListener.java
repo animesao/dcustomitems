@@ -38,6 +38,8 @@ public class TriggerListener implements Listener {
     private final Main plugin;
     private final Map<UUID, Long> jumpCooldowns = new HashMap<>();
     private final Map<UUID, Long> actionCooldowns = new HashMap<>();
+    // Кулдауны для триггеров: playerId:itemId -> lastTriggerTime
+    private final Map<String, Long> triggerCooldowns = new HashMap<>();
     private static final long JUMP_COOLDOWN_MS = 500;
 
     public TriggerListener(Main plugin) {
@@ -172,6 +174,8 @@ public class TriggerListener implements Listener {
 
     private void executeTriggerActions(Player player, String trigger, CustomItem item) {
         List<String> triggerActions = item.getTriggerActions();
+        String playerItemKey = player.getUniqueId() + ":" + item.getId();
+        
         for (String action : triggerActions) {
             // Формат: "on_kill:effect:REGENERATION:10:2"
             // Разделяем только по первому ":" для триггера
@@ -183,8 +187,53 @@ public class TriggerListener implements Listener {
 
             if (!trigger.equals(actionTrigger)) continue;
 
+            // Проверяем кулдаун триггера
+            if (actionValue.startsWith("cooldown:")) {
+                executeCooldown(player, item, actionValue);
+                continue;
+            }
+
+            // Проверяем кулдаун для этого триггера
+            String triggerKey = playerItemKey + ":" + trigger;
+            Long lastTrigger = triggerCooldowns.get(triggerKey);
+            long now = System.currentTimeMillis();
+            if (lastTrigger != null && (now - lastTrigger) < item.getClickCooldown()) {
+                continue; // Пропускаем если кулдаун активен
+            }
+
             executeAction(player, actionValue);
         }
+    }
+
+    private void executeCooldown(Player player, CustomItem item, String actionStr) {
+        // Формат: "cooldown:5000" - установить кулдаун 5 секунд
+        String cooldownStr = actionStr.replace("cooldown:", "").trim();
+        try {
+            long cooldownMs = Long.parseLong(cooldownStr);
+            String triggerKey = player.getUniqueId() + ":" + item.getId() + ":cooldown";
+            triggerCooldowns.put(triggerKey, System.currentTimeMillis());
+            // Планируем сброс кулдауна
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                triggerCooldowns.remove(triggerKey);
+            }, cooldownMs / 50); // Конвертация мс в тики
+        } catch (Exception ignored) {}
+    }
+
+    public boolean isOnCooldown(Player player, CustomItem item) {
+        String triggerKey = player.getUniqueId() + ":" + item.getId() + ":cooldown";
+        Long lastTrigger = triggerCooldowns.get(triggerKey);
+        if (lastTrigger == null) return false;
+        long now = System.currentTimeMillis();
+        return (now - lastTrigger) < item.getClickCooldown();
+    }
+
+    public long getCooldownRemaining(Player player, CustomItem item) {
+        String triggerKey = player.getUniqueId() + ":" + item.getId() + ":cooldown";
+        Long lastTrigger = triggerCooldowns.get(triggerKey);
+        if (lastTrigger == null) return 0;
+        long now = System.currentTimeMillis();
+        long remaining = item.getClickCooldown() - (now - lastTrigger);
+        return Math.max(0, remaining);
     }
 
     private void executeAction(Player player, String actionStr) {
@@ -229,10 +278,50 @@ public class TriggerListener implements Listener {
                 executeVanish(player, actionStr);
             } else if (actionStr.startsWith("glow:")) {
                 executeGlow(player, actionStr);
+            } else if (actionStr.startsWith("stun:")) {
+                executeStun(player, actionStr);
+            } else if (actionStr.startsWith("knockback:")) {
+                executeKnockback(player, actionStr);
+            } else if (actionStr.startsWith("launch:")) {
+                executeLaunch(player, actionStr);
             }
         } catch (Exception e) {
             plugin.getLogger().warning("Error executing action: " + actionStr + " - " + e.getMessage());
         }
+    }
+
+    private void executeStun(Player player, String actionStr) {
+        // Формат: "stun:3" - оглушить на 3 секунды (замедление 100)
+        String stunPart = actionStr.replace("stun:", "").trim();
+        int duration = 3;
+        try {
+            duration = Integer.parseInt(stunPart);
+        } catch (Exception ignored) {}
+        player.addPotionEffect(new PotionEffect(
+            PotionEffectType.SLOWNESS, duration * 20, 127, false, false));
+        player.addPotionEffect(new PotionEffect(
+            PotionEffectType.MINING_FATIGUE, duration * 20, 127, false, false));
+    }
+
+    private void executeKnockback(Player player, String actionStr) {
+        // Формат: "knockback:2" - отбросить на 2 блока
+        String kbPart = actionStr.replace("knockback:", "").trim();
+        double power = 2.0;
+        try {
+            power = Double.parseDouble(kbPart);
+        } catch (Exception ignored) {}
+        org.bukkit.Vector velocity = player.getLocation().getDirection().multiply(-power).setY(0.5);
+        player.setVelocity(velocity);
+    }
+
+    private void executeLaunch(Player player, String actionStr) {
+        // Формат: "launch:3" - подбросить на 3 блока вверх
+        String launchPart = actionStr.replace("launch:", "").trim();
+        double power = 3.0;
+        try {
+            power = Double.parseDouble(launchPart);
+        } catch (Exception ignored) {}
+        player.setVelocity(new org.bukkit.Vector(0, power * 0.5, 0));
     }
 
     private void executeTitle(Player player, String actionStr) {

@@ -1,80 +1,80 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.8-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.207-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.211-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/github/license/animesao/dcustomitems-purple?style=for-the-badge" alt="License">
 </p>
 
 <h1 align="center">⚔️ DC-CustomItems</h1>
 
 <p align="center">
-  <b>Мощный плагин кастомных предметов для Minecraft</b><br>
-  Эффекты, атрибуты, сет-бонусы, триггеры и многое другое!
+  <b>Powerful custom items plugin for Minecraft</b><br>
+  Effects, attributes, armor sets, triggers and more!
 </p>
 
 <p align="center">
-  <a href="#установка">Установка</a> •
-  <a href="#команды">Команды</a> •
-  <a href="#конфигурация">Конфигурация</a> •
-  <a href="#фичи">Фичи</a> •
-  <a href="#документация">Документация</a>
+  <a href="#installation">Installation</a> •
+  <a href="#commands">Commands</a> •
+  <a href="#configuration">Configuration</a> •
+  <a href="#features">Features</a> •
+  <a href="#documentation">Documentation</a>
 </p>
 
 ---
 
-## Возможности
+## Features
 
-| Функция | Описание |
-|---------|----------|
-| 🗡️ Кастомные предметы | Руны, инструменты, броня, зелья |
-| ⚡ Эффекты зелий | Автоматическое применение при экипировке |
-| 📊 Атрибуты | Урон, скорость, броня и другие характеристики |
-| 🛡️ Сеты брони | Бонусы за полный комплект |
-| 🎯 Действия при клике | Молния, команды, эффекты, частицы, звуки |
-| 🔄 Триггеры | Автоматические действия при событиях |
-| 📦 Per-item файлы | Каждый предмет в отдельном YAML |
-| 🎨 CustomModelData | Поддержка ресурспаков |
-| 🔐 Пермишены | Права на каждый предмет |
-| ✨ Частицы и звуки | Эффекты при экипировке/снятии |
-
----
-
-## Установка
-
-1. Скачайте последний релиз с [GitHub Releases](https://github.com/animesao/dcustomitems/releases/latest)
-2. Поместите `DC-CustomItems.jar` в папку `plugins/`
-3. Перезапустите сервер
-4. Настройте предметы в `plugins/DC-CustomItems/items/`
+| Feature | Description |
+|---------|-------------|
+| 🗡️ Custom Items | Runes, tools, armor, consumables |
+| ⚡ Potion Effects | Auto-apply on equip |
+| 📊 Attributes | Damage, speed, armor and more |
+| 🛡️ Armor Sets | Bonuses for full sets |
+| 🎯 Click Actions | Lightning, commands, effects, particles, sounds |
+| 🔄 Triggers | Auto-actions on events |
+| 📦 Per-Item Files | Each item in separate YAML |
+| 🎨 CustomModelData | Resource pack support |
+| 🔐 Permissions | Per-item permissions |
+| ✨ Particles & Sounds | Equip/unequip effects |
 
 ---
 
-## Команды
+## Installation
 
-| Команда | Описание |
-|---------|----------|
-| `/customitems list` | Список всех предметов |
-| `/customitems give <id> [игрок]` | Выдать предмет |
-| `/customitems reload` | Перезагрузить конфиг |
-| `/customitems update` | Проверить обновления |
+1. Download the latest release from [GitHub Releases](https://github.com/animesao/dcustomitems/releases/latest)
+2. Place `DC-CustomItems.jar` in your `plugins/` folder
+3. Restart the server
+4. Configure items in `plugins/DC-CustomItems/items/`
 
 ---
 
-## Конфигурация
+## Commands
 
-### Структура файлов
+| Command | Description |
+|---------|-------------|
+| `/customitems list` | List all items |
+| `/customitems give <id> [player]` | Give item |
+| `/customitems reload` | Reload config |
+| `/customitems update` | Check updates |
+
+---
+
+## Configuration
+
+### File Structure
 
 ```
 plugins/DC-CustomItems/
-├── config.yml              # Основные настройки
-├── messages.yml            # Сообщения плагина
-└── items/                  # Папка с предметами
+├── config.yml              # Main settings
+├── messages.yml            # Plugin messages
+└── items/                  # Items folder
     ├── shadow-blade.yml
     ├── vampire-blade.yml
     ├── thunder-axe.yml
-    └── ... (10 предметов)
+    └── ... (10 items)
 ```
 
-### Пример предмета
+### Item Example
 
 ```yaml
 my-sword:
@@ -85,7 +85,7 @@ my-sword:
 
   item:
     type: NETHERITE_SWORD
-    title: '&6Мой Меч'
+    title: '&6My Sword'
     glowing: true
     unbreakable: true
     enchantments:
@@ -95,94 +95,111 @@ my-sword:
     - 'INCREASE_DAMAGE:3'
     - 'SPEED:2'
 
-  right-click-actions:
-    - 'lightning:2'
-    - 'particle:FLAME:30'
-    - 'message:&6Молнии призваны!'
-
   trigger-actions:
+    # On equip
+    - 'on_equip:particle:FLAME:20'
+    - 'on_equip:message:&aSword equipped!'
+    
+    # On unequip
+    - 'on_unequip:message:&cSword unequipped.'
+    
+    # On right click
+    - 'on_click_right:lightning:3'
+    - 'on_click_right:particle:FLAME:30'
+    - 'on_click_right:message:&6Lightning called!'
+    
+    # On left click (4x damage like Evoker!)
+    - 'on_click_left:effect:INCREASE_DAMAGE:8:4'
+    - 'on_click_left:lightning:2'
+    - 'on_click_left:knockback:3'
+    
+    # Auto triggers
     - 'on_kill:heal:20'
     - 'on_jump:effect:SPEED:3:2'
 ```
 
 ---
 
-## Триггеры
+## Triggers
 
-| Триггер | Описание |
-|---------|----------|
-| `on_kill` | При убийстве |
-| `on_death` | При смерти |
-| `on_damage_taken` | При получении урона |
-| `on_damage_dealt` | При нанесении урона |
-| `on_jump` | При прыжке |
-| `on_pickup` | При подборе |
-| `on_drop` | При выбрасывании |
-
----
-
-## Действия
-
-### 📢 Коммуникация
-- `message` - Сообщение игроку
-- `announce` - Сообщение всем
-- `title` - Заголовок на экране
-- `actionbar` - Текст над хотбаром
-
-### ⚡ Эффекты
-- `effect:ТИП:СЕК:УРОВЕНЬ` - Эффект зелья
-
-### 💥 Боевые
-- `lightning:КОЛ` - Молния
-- `damage:СУММА` - Урон
-- `heal:СУММА` - Исцеление
-
-### 🎁 Предметы
-- `give:МАТЕРИАЛ:КОЛ` - Выдать предмет
-- `remove:МАТЕРИАЛ:КОЛ` - Убрать предмет
-- `exp:ОПЫТ:УРОВНИ` - Опыт
-
-### 🌍 Мир
-- `teleport:X:Y:Z` - Телепортация
-- `sethealth:ЗНАЧЕНИЕ` - Здоровье
-- `setfood:ЗНАЧЕНИЕ` - Голод
-
-### 🎆 Эффекты
-- `particle:ТИП:КОЛ` - Частицы
-- `sound:ТИП:ГРОМ:ТОН` - Звук
-- `fireworks:1` - Фейерверк
-- `vanish:СЕК` - Невидимость
-- `glow:СЕК` - Сияние
-
-### 🔧 Команды
-- `command:КОМАНДА` - Выполнить команду
+| Trigger | Description |
+|---------|-------------|
+| `on_equip` | On equip item |
+| `on_unequip` | On unequip item |
+| `on_click_right` | On right click |
+| `on_click_left` | On left click |
+| `on_kill` | On kill mob/player |
+| `on_death` | On player death |
+| `on_damage_taken` | On damage taken |
+| `on_damage_dealt` | On damage dealt |
+| `on_jump` | On jump |
+| `on_pickup` | On pickup item |
+| `on_drop` | On drop item |
 
 ---
 
-## Документация
+## Actions
 
-📄 **[Полная документация](docs.md)**
+### 📢 Communication
+- `message` - Send message to player
+- `announce` - Broadcast message
+- `title` - Title on screen
+- `actionbar` - Text above hotbar
+
+### ⚡ Effects
+- `effect:TYPE:SECONDS:LEVEL` - Potion effect
+
+### 💥 Combat
+- `lightning:COUNT` - Lightning strike
+- `damage:AMOUNT` - Deal damage
+- `heal:AMOUNT` - Heal player
+- `stun:SECONDS` - Stun enemy
+- `knockback:POWER` - Knockback enemy
+- `launch:POWER` - Launch enemy up
+
+### 🎁 Items
+- `give:MATERIAL:COUNT` - Give item
+- `remove:MATERIAL:COUNT` - Remove item
+- `exp:XP:LEVELS` - Give experience
+
+### 🌍 World
+- `teleport:X:Y:Z` - Teleport
+- `sethealth:VALUE` - Set health
+- `setfood:VALUE` - Set food
+
+### 🎆 Effects
+- `particle:TYPE:COUNT` - Particles
+- `sound:TYPE:VOLUME:PITCH` - Sound
+- `fireworks:1` - Spawn firework
+- `vanish:SECONDS` - Invisibility
+- `glow:SECONDS` - Glowing
+
+### 🔧 Commands
+- `command:COMMAND` - Execute command
+
+### ⏱️ Cooldown
+- `cooldown:MS` - Set cooldown in milliseconds
 
 ---
 
-## Обновления
+## Documentation
 
-Плагин автоматически проверяет обновления через GitHub Releases.
-
----
-
-## Вклад
-
-Смотрите [CONTRIBUTING.md](CONTRIBUTING.md) для информации о том, как внести вклад.
+📄 **[Full Documentation (Russian)](docs.md)**
 
 ---
 
-## Лицензия
+## Contributing
 
-Этот проект лицензирован под MIT License - смотрите [LICENSE](LICENSE) для подробностей.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for information on how to contribute.
 
 ---
 
-## Авторы
+## License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+## Authors
 
 - **DC-CustomItems** - [GitHub](https://github.com/animesao/dcustomitems)
