@@ -22,6 +22,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -182,10 +183,162 @@ public class TriggerListener implements Listener {
                 executeDamage(player, actionStr);
             } else if (actionStr.startsWith("fireworks:")) {
                 executeFireworks(player, actionStr);
+            } else if (actionStr.startsWith("title:")) {
+                executeTitle(player, actionStr);
+            } else if (actionStr.startsWith("actionbar:")) {
+                executeActionbar(player, actionStr);
+            } else if (actionStr.startsWith("exp:")) {
+                executeExp(player, actionStr);
+            } else if (actionStr.startsWith("give:")) {
+                executeGive(player, actionStr);
+            } else if (actionStr.startsWith("remove:")) {
+                executeRemove(player, actionStr);
+            } else if (actionStr.startsWith("announce:")) {
+                executeAnnounce(player, actionStr);
+            } else if (actionStr.startsWith("sethealth:")) {
+                executeSetHealth(player, actionStr);
+            } else if (actionStr.startsWith("setfood:")) {
+                executeSetFood(player, actionStr);
+            } else if (actionStr.startsWith("vanish:")) {
+                executeVanish(player, actionStr);
+            } else if (actionStr.startsWith("glow:")) {
+                executeGlow(player, actionStr);
             }
         } catch (Exception e) {
             plugin.getLogger().warning("Error executing action: " + actionStr + " - " + e.getMessage());
         }
+    }
+
+    private void executeTitle(Player player, String actionStr) {
+        // Формат: "title:Заголовок:Подзаголовок:fadeIn:stay:fadeOut"
+        String titlePart = actionStr.replace("title:", "").trim();
+        String[] parts = titlePart.split(":");
+        if (parts.length >= 1) {
+            String title = ColorUtils.colorize(parts[0].replace("%player%", player.getName()));
+            String subtitle = parts.length > 1 ? ColorUtils.colorize(parts[1].replace("%player%", player.getName())) : "";
+            int fadeIn = parts.length > 2 ? Integer.parseInt(parts[2]) : 10;
+            int stay = parts.length > 3 ? Integer.parseInt(parts[3]) : 40;
+            int fadeOut = parts.length > 4 ? Integer.parseInt(parts[4]) : 10;
+            player.sendTitle(title, subtitle, fadeIn, stay, fadeOut);
+        }
+    }
+
+    private void executeActionbar(Player player, String actionStr) {
+        // Формат: "actionbar:Текст"
+        String text = actionStr.replace("actionbar:", "").trim();
+        text = text.replace("%player%", player.getName());
+        try {
+            player.spigot().sendMessage(
+                net.md_5.bungee.api.ChatMessageType.ACTION_BAR,
+                net.md_5.bungee.api.chat.TextComponent.fromLegacyText(ColorUtils.colorize(text))
+            );
+        } catch (Exception e) {
+            player.sendMessage(ColorUtils.colorize(text));
+        }
+    }
+
+    private void executeExp(Player player, String actionStr) {
+        // Формат: "exp:100" или "exp:5:1" (опыт + уровни)
+        String expPart = actionStr.replace("exp:", "").trim();
+        String[] parts = expPart.split(":");
+        if (parts.length >= 1) {
+            int exp = Integer.parseInt(parts[0]);
+            int levels = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+            player.giveExp(exp);
+            if (levels > 0) {
+                player.giveExpLevels(levels);
+            }
+        }
+    }
+
+    private void executeGive(Player player, String actionStr) {
+        // Формат: "give:DIAMOND:5" или "give:DIAMOND"
+        String givePart = actionStr.replace("give:", "").trim();
+        String[] parts = givePart.split(":");
+        if (parts.length >= 1) {
+            try {
+                Material material = Material.valueOf(parts[0].toUpperCase());
+                int amount = parts.length > 1 ? Integer.parseInt(parts[1]) : 1;
+                ItemStack item = new ItemStack(material, amount);
+                player.getInventory().addItem(item);
+                player.sendMessage(ColorUtils.colorize("&a+" + amount + " " + material.name()));
+            } catch (Exception e) {
+                plugin.getLogger().warning("Invalid give action: " + actionStr);
+            }
+        }
+    }
+
+    private void executeRemove(Player player, String actionStr) {
+        // Формат: "remove:DIAMOND:5"
+        String removePart = actionStr.replace("remove:", "").trim();
+        String[] parts = removePart.split(":");
+        if (parts.length >= 1) {
+            try {
+                Material material = Material.valueOf(parts[0].toUpperCase());
+                int amount = parts.length > 1 ? Integer.parseInt(parts[1]) : 1;
+                int remaining = amount;
+                for (ItemStack item : player.getInventory().getContents()) {
+                    if (item != null && item.getType() == material && remaining > 0) {
+                        int toRemove = Math.min(item.getAmount(), remaining);
+                        item.setAmount(item.getAmount() - toRemove);
+                        remaining -= toRemove;
+                    }
+                }
+                player.sendMessage(ColorUtils.colorize("&c-" + (amount - remaining) + " " + material.name()));
+            } catch (Exception e) {
+                plugin.getLogger().warning("Invalid remove action: " + actionStr);
+            }
+        }
+    }
+
+    private void executeAnnounce(Player player, String actionStr) {
+        // Формат: "announce:Текст"
+        String text = actionStr.replace("announce:", "").trim();
+        text = text.replace("%player%", player.getName());
+        Bukkit.broadcastMessage(ColorUtils.colorize(text));
+    }
+
+    private void executeSetHealth(Player player, String actionStr) {
+        // Формат: "sethealth:20"
+        String healthPart = actionStr.replace("sethealth:", "").trim();
+        try {
+            double health = Double.parseDouble(healthPart);
+            if (player.getAttribute(Attribute.MAX_HEALTH) != null) {
+                double max = player.getAttribute(Attribute.MAX_HEALTH).getValue();
+                player.setHealth(Math.min(health, max));
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private void executeSetFood(Player player, String actionStr) {
+        // Формат: "setfood:20"
+        String foodPart = actionStr.replace("setfood:", "").trim();
+        try {
+            int food = Integer.parseInt(foodPart);
+            player.setFoodLevel(Math.min(food, 20));
+        } catch (Exception ignored) {}
+    }
+
+    private void executeVanish(Player player, String actionStr) {
+        // Формат: "vanish:10" (секунды невидимости)
+        String vanishPart = actionStr.replace("vanish:", "").trim();
+        int duration = 10;
+        try {
+            duration = Integer.parseInt(vanishPart);
+        } catch (Exception ignored) {}
+        player.addPotionEffect(new org.bukkit.potion.PotionEffect(
+            org.bukkit.potion.PotionEffectType.INVISIBILITY, duration * 20, 0, false, false));
+    }
+
+    private void executeGlow(Player player, String actionStr) {
+        // Формат: "glow:10" (секунды свечения)
+        String glowPart = actionStr.replace("glow:", "").trim();
+        int duration = 10;
+        try {
+            duration = Integer.parseInt(glowPart);
+        } catch (Exception ignored) {}
+        player.addPotionEffect(new org.bukkit.potion.PotionEffect(
+            org.bukkit.potion.PotionEffectType.GLOWING, duration * 20, 0, false, false));
     }
 
     private void executeLightning(Player player, String actionStr) {
