@@ -1,0 +1,58 @@
+# ==========================================
+# Сообщения плагина DC-CustomItems
+# ==========================================
+# Все сообщения плагина настраиваются здесь.
+# Плейсхолдеры: {item}, {player}, {error}, {version}, {slot}, {type}
+#
+# Per-item сообщения настраиваются в конфиге каждого предмета:
+#   equip-message, unequip-message, cooldown-message,
+#   activation-message, deactivation-message, uses-depleted-message
+# ==========================================
+
+# Сообщения плагина
+plugin:
+  enabled: "&aPlug-in DC-CustomItems успешно включен!"
+  disabled: "&cPlug-in DC-CustomItems отключен!"
+  reloaded: "&aПлагин успешно перезагружен!"
+  update-available: "&e[CustomItems] &fДоступна новая версия: &b{version}"
+  update-download: "&e[CustomItems] &fСкачать обновление на сайте плагина"
+
+# Команды
+commands:
+  no-permission: "&cУ вас нет прав на использование этой команды!"
+  no-item-permission: "&cУ вас нет прав на использование этого предмета!"
+  player-not-found: "&cИгрок не найден!"
+  specify-player: "&cУкажите игрока!"
+  item-not-found: "&cПредмет с ID '{item}' не найден!"
+  item-given: "&aПредмет '{item}' выдан игроку {player}"
+  item-received: "&aВы получили кастомный предмет: {item}"
+  give-usage: "&cИспользование: /customitems give <предмет> [игрок]"
+  list-header: "&6=== Список кастомных предметов ==="
+  list-empty: "&cНет загруженных предметов"
+  list-item: "&e{item} &7- &f{type} &7({slot})"
+  reload-error: "&cОшибка при перезагрузке: {error}"
+  update-checking: "&eПроверка обновлений..."
+
+# Справка
+help:
+  header: "&6=== DC-CustomItems Помощь ==="
+  give: "&e/customitems give <предмет> [игрок] &7- Выдать предмет"
+  list: "&e/customitems list &7- Список предметов"
+  reload: "&e/customitems reload &7- Перезагрузить плагин"
+  update: "&e/customitems update &7- Проверить обновления"
+
+# Эффекты (глобальные по умолчанию, переопределяются per-item)
+effects:
+  applied: "&aЭффекты применены!"
+  removed: "&cЭффекты удалены!"
+  equip: "&aПредмет экипирован!"
+  unequip: "&cПредмет снят!"
+  cooldown: "&cПодождите {seconds} сек. перед повторным использованием!"
+  activation: "&aЭффекты {item} активированы!"
+  deactivation: "&cЭффекты {item} деактивированы!"
+
+# Предметы
+items:
+  uses-depleted: "&cПредмет использован до конца и пропал!"
+  uses-remaining: "&7Осталось использований: &b{uses}"
+  cooldown-remaining: "&7Кулдаун: &b{seconds} сек."

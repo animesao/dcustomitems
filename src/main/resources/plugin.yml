@@ -1,0 +1,37 @@
+
+name: DC-CustomItems-v1.7.0
+version: 1.7.0
+main: me.dcplugin.dcustomitems.Main
+api-version: "1.21.8"
+author: animesao
+description: Custom Items Plugin with Effects and Enchantments
+website: https://animesao.spcfy.eu/plugins/dc-customitems
+
+commands:
+  customitems:
+    description: Main command for custom items
+    usage: /customitems <give|list|reload|update>
+    aliases: [ci, citems]
+    permission: customitems.use
+
+permissions:
+  customitems.use:
+    description: Basic usage permission
+    default: op
+  customitems.give:
+    description: Permission to give items
+    default: op
+  customitems.reload:
+    description: Permission to reload plugin
+    default: op
+  customitems.update:
+    description: Permission to check updates
+    default: op
+  customitems.*:
+    description: All permissions
+    default: op
+    children:
+      customitems.use: true
+      customitems.give: true
+      customitems.reload: true
+      customitems.update: true
