@@ -329,27 +329,14 @@ public class CustomItemHandler {
             if (meta != null) {
                 // ПРИОРИТЕТ: item-model (для 1.21.11) > custom-model-data (legacy)
                 if (itemModel != null && !itemModel.isEmpty()) {
-                    // Используем item_model компонент (Minecraft 1.21.4+)
-                    try {
-                        NamespacedKey modelKey = NamespacedKey.fromString(itemModel);
-                        if (modelKey != null) {
-                            meta.setItemModel(modelKey);
-                            plugin.getLogger().fine("[LOAD] Применён item_model: " + itemModel + " для " + itemId);
-                        } else {
-                            plugin.getLogger().warning("Неверный item_model: " + itemModel + " для предмета: " + itemId);
-                        }
-                    } catch (Exception e) {
-                        plugin.getLogger().warning("Ошибка при установке item_model: " + e.getMessage());
-                    }
+                    // Используем custom_model_data с строками (Minecraft 1.21.4+)
+                    // Сохраняем строку в PDC для использования в ресурс-паке
+                    meta.getPersistentDataContainer().set(itemModelKey, PersistentDataType.STRING, itemModel);
+                    plugin.getLogger().fine("[LOAD] Применён item_model: " + itemModel + " для " + itemId);
                 } else if (customModelData > 0) {
                     // Используем старый custom_model_data (legacy)
                     meta.setCustomModelData(customModelData);
                     plugin.getLogger().fine("[LOAD] Применён custom_model_data: " + customModelData + " для " + itemId);
-                }
-                
-                // Сохраняем item_model в PDC для совместимости
-                if (itemModel != null) {
-                    meta.getPersistentDataContainer().set(itemModelKey, PersistentDataType.STRING, itemModel);
                 }
                 
                 itemStack.setItemMeta(meta);
