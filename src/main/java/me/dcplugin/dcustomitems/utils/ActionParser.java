@@ -111,6 +111,9 @@ public class ActionParser {
                 case "damage_players":
                     executeDamagePlayers(player, actionValue);
                     return true;
+                case "heal_nearby":
+                    executeHealNearby(player, actionValue);
+                    return true;
 
                 // === ТЕЛЕПОРТАЦИЯ ===
                 case "teleport":
@@ -302,6 +305,23 @@ public class ActionParser {
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
             if (entity instanceof Player && entity != player) {
                 ((Player) entity).damage(amount, player);
+            }
+        }
+    }
+
+    private static void executeHealNearby(Player player, String value) {
+        // Формат: HEAL:RADIUS
+        String[] parts = value.split(":");
+        double amount = parts.length > 0 ? Double.parseDouble(parts[0]) : 10.0;
+        double range = parts.length > 1 ? Double.parseDouble(parts[1]) : 5.0;
+        
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
+            if (entity instanceof Player && entity != player) {
+                Player target = (Player) entity;
+                if (target.getAttribute(Attribute.MAX_HEALTH) != null) {
+                    double max = target.getAttribute(Attribute.MAX_HEALTH).getValue();
+                    target.setHealth(Math.min(target.getHealth() + amount, max));
+                }
             }
         }
     }
