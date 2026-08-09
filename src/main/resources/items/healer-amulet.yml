@@ -1,89 +1,79 @@
 # ============================================
-# АМУЛЕТ ИСЦЕЛЕНИЯ - Амулет с целительной силой
+# АМУЛЕТ ЦЕЛИТЕЛЯ - Исцеляющие способности
 # ============================================
 
 healer-amulet:
-  type: RUNE
-  activation-slot: OFFHAND
+  type: TOOL
+  activation-slot: HAND
   placeable: false
   permission: healer.amulet
 
   item:
-    type: TOTEM_OF_UNDYING
-    title: '&c[❤] &fАмулет &cИсцеления'
+    type: NETHERITE_SWORD
+    title: '&a[💚] &fАмулет &aЦелителя'
     glowing: true
     unbreakable: true
-    custom-model-data: 1004
+    item-model: "healer_amulet"
+    enchantments:
+      SHARPNESS: 3
+      UNBREAKING: 3
+      MENDING: 1
 
   lore:
     - ''
-    - ' &c━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Священный амулет'
-    - ' &7исцеляющий раны'
-    - ' &c━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &a━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Амулет исцеления'
+    - ' &a━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда во второй руке:'
-    - ' &6┌ &eРегенерация &cIII &7(&6∞&7)'
-    - ' &6├ &eПрилив здоровья &cII &7(&6∞&7)'
-    - ' &6└ &eПоглощение &cI &7(&6∞&7)'
+    - ' &e⚡ &fКогда в основной руке:'
+    - ' &6┌ &eРегенерация &aIII'
+    - ' &6└ &eСкорость &aI'
+    - ''
+    - '&a💚 &fПКМ: Исцеление'
     - ''
 
   effects:
     - 'REGENERATION:3'
-    - 'HEALTH_BOOST:2'
-    - 'ABSORPTION:1'
+    - 'SPEED:1'
 
-  attributes:
-    GENERIC_MAX_HEALTH: 6.0
+  click-cooldown: 2000
+  cooldown-message: ""
 
-  click-cooldown: 5000
+  triggers:
+    on_equip:
+      - 'particles:HEART:20'
+      - 'sound:ENTITY_PLAYER_LEVELUP:0.5:1.5'
 
-  trigger-actions:
-    # --- При экипировке ---
-    - 'on_equip:particle:HEART:20'
-    - 'on_equip:particle:VILLAGER_HAPPY:15'
-    - 'on_equip:sound:BLOCK_BEACON_ACTIVATE:1:1'
-    - 'on_equip:message:&c❤ &7Вы чувствуете тепло исцеления!'
+    on_unequip:
+      - 'particles:SMOKE:10'
 
-    # --- При снятии ---
-    - 'on_unequip:particle:CLOUD:10'
-    - 'on_unequip:sound:BLOCK_BEACON_DEACTIVATE:1:1'
-    - 'on_unequip:message:&c❤ &7Тепло исчезает.'
+    on_click_right:
+      - 'heal:20'
+      - 'effect:REGENERATION:15:3'
+      - 'effect:SPEED:10:2'
+      - 'particles:HEART:50'
+      - 'particles:VILLAGER_HAPPY:30'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
+      - 'title:&a💚 &7ИСЦЕЛЕНИЕ!::&aПолное восстановление!:10:40:10'
 
-    # --- При ПКМ ---
-    - 'on_click_right:heal:20'
-    - 'on_click_right:effect:REGENERATION:15:3'
-    - 'on_click_right:effect:HEALTH_BOOST:15:2'
-    - 'on_click_right:particle:HEART:25'
-    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:1:1.2'
-    - 'on_click_right:title:&c❤ &7ИСЦЕЛЕНИЕ!::&aЖизнь наполняет!:10:40:10'
-    - 'on_click_right:message:&c❤ &7Исцеление началось!'
+    on_click_left:
+      - 'heal_nearby:10:5'
+      - 'effect:REGENERATION:8:2'
+      - 'particles:HEART:40'
+      - 'sound:ENTITY_PLAYER_LEVELUP:0.8:1.5'
 
-    # --- При убийстве ---
-    - 'on_kill:heal:20'
-    - 'on_kill:effect:HEALTH_BOOST:30:2'
-    - 'on_kill:effect:REGENERATION:20:3'
-    - 'on_kill:particle:HEART:30'
-    - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
-    - 'on_kill:message:&c❤ &7Враг побежден!'
+    on_kill:
+      - 'heal:30'
+      - 'effect:REGENERATION:10:3'
+      - 'particles:HEART:30'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
 
-    # --- При нанесении урона ---
-    - 'on_damage_dealt:heal:2'
+    on_damage_taken:
+      - 'effect:REGENERATION:5:2'
+      - 'particles:HEART:10'
 
-    # --- При прыжке ---
-    - 'on_jump:effect:SPEED:3:1'
-    - 'on_jump:particle:HEART:8'
+    on_pickup:
+      - 'particles:HEART:15'
 
-    # --- При получении урона ---
-    - 'on_damage_taken:effect:REGENERATION:5:2'
-    - 'on_damage_taken:effect:ABSORPTION:5:1'
-    - 'on_damage_taken:particle:HEART:10'
-
-    # --- При подборе ---
-    - 'on_pickup:message:&c❤ &7Амулет подобран!'
-    - 'on_pickup:particle:HEART:25'
-    - 'on_pickup:sound:BLOCK_BEACON_ACTIVATE:1:1'
-
-    # --- При выбрасывании ---
-    - 'on_drop:message:&c❤ &7Амулет выброшен.'
-    - 'on_drop:particle:CLOUD:10'
+    on_drop:
+      - 'particles:SMOKE:10'

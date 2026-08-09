@@ -1,128 +1,84 @@
 # ============================================
-# СФЕРА ХАОСА - Легендарный Артефакт Стихий
-# ============================================
-# Уникальная способность: Случайные AoE стихийные атаки
-# ЛКМ = Случайная стихия (огонь/лёд/молния/яд)
-# ПКМ = Взрыв Хаоса (AoE урон + дебаффы мобам)
+# СФЕРА ХАОСА - Случайные эффекты
 # ============================================
 
 artifact-chaos-orb:
   type: TOOL
   activation-slot: HAND
   placeable: false
-  permission: artifact.chaos
+  permission: artifact.chaos_orb
 
   item:
-    type: END_CRYSTAL
-    title: '&5🔮 &d&lСфера &5&lХаоса'
+    type: ENDER_EYE
+    title: '&5[🌀] &fСфера &5Хаоса'
     glowing: true
     unbreakable: true
-    custom-model-data: 9001
+    item-model: "chaos_orb"
     enchantments:
-      SHARPNESS: 3
-      UNBREAKING: 5
+      UNBREAKING: 3
+      MENDING: 1
 
   lore:
     - ''
-    - ' &5━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &5&l✦ &dДревний Артефакт Стихий'
-    - ' &5━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &5━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Сфера хаотической энергии'
+    - ' &5━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &7Сфера, рождённая из хаоса'
-    - ' &7Эндер дракона и Незера.'
-    - ' &7Её сила непредсказуема...'
+    - ' &e⚡ &fКогда в основной руке:'
+    - ' &6┌ &eСкорость &5II'
     - ''
-    - '&d⚡ &fЛКМ: Случайная стихия'
-    - ' &7→ Огонь, Лёд, Молния или Яд'
-    - ''
-    - '&5💥 &fПКМ: Взрыв Хаоса'
-    - ' &7→ AoE урон + дебаффы мобам'
-    - ''
-    - '&8✦ &7Уникальная способность:'
-    - '&8✦ &7Каждые 3 удара — стихийный шторм'
+    - '&5🌀 &fПКМ: Выпустить хаос!'
     - ''
 
   effects:
-    - 'INCREASE_DAMAGE:2'
-    - 'SPEED:1'
-    - 'NIGHT_VISION:1'
+    - 'SPEED:2'
 
-  attributes:
-    GENERIC_ATTACK_DAMAGE: 8.0
-    GENERIC_ATTACK_SPEED: 1.4
-    GENERIC_MAX_HEALTH: 6.0
+  click-cooldown: 2000
+  cooldown-message: ""
 
-  click-cooldown: 1500
+  triggers:
+    on_equip:
+      - 'particles:PORTAL:30'
+      - 'sound:ENTITY_ENDERMAN_TELEPORT:1:1.2'
 
-  trigger-actions:
-    # --- При экипировке ---
-    - 'on_equip:particle:PORTAL:30'
-    - 'on_equip:particle:ENCHANTMENT_TABLE:25'
-    - 'on_equip:particle:SPELL_WITCH:20'
-    - 'on_equip:sound:ENTITY_ENDER_DRAGON_GROWL:0.8:1.5'
-    - 'on_equip:sound:BLOCK_BEACON_ACTIVATE:1:1.2'
-    - 'on_equip:message:&5🔮 &dВы чувствуете хаос в руках!'
-    - 'on_equip:title:&5✦ &d&lСФЕРА ХАОСА &5✦::&7Древняя сила пробудилась!:10:60:20'
+    on_unequip:
+      - 'particles:SMOKE:10'
 
-    # --- При снятии ---
-    - 'on_unequip:particle:SMOKE_NORMAL:20'
-    - 'on_unequip:sound:ENTITY_ENDER_DRAGON_GROWL:0.5:0.8'
-    - 'on_unequip:message:&5🔮 &dХаос утихает.'
+    on_click_right:
+      - 'damage_nearby:20:8'
+      - 'effect:SPEED:10:3'
+      - 'effect:STRENGTH:10:2'
+      - 'effect:RESISTANCE:10:2'
+      - 'lightning_forward:100'
+      - 'particles:PORTAL:60'
+      - 'particles:EXPLOSION_HUGE:8'
+      - 'sound:ENTITY_ENDER_DRAGON_GROWL:1:1'
+      - 'title:&5🌀 &7ХАОС ВЫПУЩЕН!::&5Все враги в панике!:10:40:10'
 
-    # --- ПКМ: Взрыв Хаоса (AoE урон + дебаффы мобам) ---
-    - 'on_click_right:damage:15:5'
-    - 'on_click_right:knockback:5'
-    - 'on_click_right:launch:2'
-    - 'on_click_right:stun-mobs:3:5'
-    - 'on_click_right:effect-nearby-mobs:SLOW:5:2:5'
-    - 'on_click_right:effect-nearby-mobs:WEAKNESS:5:2:5'
-    - 'on_click_right:particle:EXPLOSION_HUGE:1'
-    - 'on_click_right:particle:PORTAL:40'
-    - 'on_click_right:particle:SPELL_WITCH:30'
-    - 'on_click_right:particle:DRAGON_BREATH:25'
-    - 'on_click_right:sound:ENTITY_ENDER_DRAGON_GROWL:1:0.8'
-    - 'on_click_right:sound:ENTITY_GENERIC_EXPLODE:1:1.2'
-    - 'on_click_right:title:&5💥 &d&lВЗРЫВ ХАОСА!::&7Все мобы поражены!:10:40:15'
-    - 'on_click_right:message:&5💥 &dВы взорвали область хаосом!'
-    - 'on_click_right:announce:&5🔮 &d%player% &7призвал &5&lВзрыв Хаоса&7!'
+    on_click_left:
+      - 'damage_nearby:15:6'
+      - 'effect:SLOWNESS:5:2'
+      - 'particles:PORTAL:40'
+      - 'knockback:5'
+      - 'sound:ENTITY_ENDERMAN_TELEPORT:1:1.5'
 
-    # --- ЛКМ: Случайная стихия (только мобам!) ---
-    # Каждый удар — случайный эффект
-    - 'on_click_left:damage:12:4'
-    - 'on_click_left:damage-mobs:8:4'
-    - 'on_click_left:effect-nearby-mobs:POISON:6:3:4'
-    - 'on_click_left:effect-nearby-mobs:WEAKNESS:4:1:4'
-    - 'on_click_left:particle:SPELL_WITCH:20'
-    - 'on_click_left:particle:DRAGON_BREATH:15'
-    - 'on_click_left:sound:ENTITY_WITCH_AMBIENT:1:1.5'
-    - 'on_click_left:title:&5⚡ &dСТИХИЯ!::&7Хаос обрушивается!:8:30:10'
+    on_kill:
+      - 'heal:25'
+      - 'effect:REGENERATION:10:2'
+      - 'particles:PORTAL:25'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:1.5'
 
-    # --- При убийстве (усиливается) ---
-    - 'on_kill:heal:30'
-    - 'on_kill:effect:INCREASE_DAMAGE:10:3'
-    - 'on_kill:effect:SPEED:10:2'
-    - 'on_kill:particle:PORTAL:40'
-    - 'on_kill:particle:HEART:25'
-    - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
-    - 'on_kill:message:&5🔮 &dВы поглотили силу врага!'
+    on_damage_dealt:
+      - 'particles:PORTAL:10'
+      - 'sound:ENTITY_ENDERMAN_HURT:0.5:2'
 
-    # --- При нанесении урона ---
-    - 'on_damage_dealt:particle:SPELL_WITCH:8'
-    - 'on_damage_dealt:particle:CRIT:5'
+    on_damage_taken:
+      - 'effect:RESISTANCE:5:2'
+      - 'particles:PORTAL:10'
 
-    # --- При прыжке ---
-    - 'on_jump:particle:PORTAL:10'
-    - 'on_jump:effect:SPEED:3:1'
+    on_pickup:
+      - 'particles:PORTAL:20'
+      - 'sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.2'
 
-    # --- При получении урона ---
-    - 'on_damage_taken:effect:RESISTANCE:5:2'
-    - 'on_damage_taken:particle:REDSTONE:15'
-    - 'on_damage_taken:sound:ENTITY_ENDERMAN_TELEPORT:0.8:1.5'
-
-    # --- При подборе ---
-    - 'on_pickup:message:&5🔮 &dСфера Хаоса подобрана!'
-    - 'on_pickup:particle:PORTAL:35'
-
-    # --- При выбрасывании ---
-    - 'on_drop:message:&5🔮 &dСфера Хаоса выброшена.'
-    - 'on_drop:particle:SMOKE_NORMAL:25'
+    on_drop:
+      - 'particles:SMOKE:10'

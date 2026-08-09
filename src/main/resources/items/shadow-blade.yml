@@ -1,5 +1,5 @@
 # ============================================
-# ТЕНЬ КЛИНОК - Легендарный меч теней
+# ТЕНЕВОЙ КЛИНОК - Легендарный меч теней
 # ============================================
 
 shadow-blade:
@@ -13,12 +13,12 @@ shadow-blade:
     title: '&8[⚔] &7Тень &8Клинок'
     glowing: true
     unbreakable: true
-    custom-model-data: 1001
+    item-model: "shadow_blade"
     enchantments:
       SHARPNESS: 6
       LOOTING: 3
       FIRE_ASPECT: 2
-      DURABILITY: 3
+      UNBREAKING: 3
 
   lore:
     - ''
@@ -27,8 +27,8 @@ shadow-blade:
     - ' &8━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
     - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eСила &8III &7(&6∞&7)'
-    - ' &6└ &eСкорость &8II &7(&6∞&7)'
+    - ' &6┌ &eСила &8III'
+    - ' &6└ &eСкорость &8II'
     - ''
 
   effects:
@@ -41,64 +41,56 @@ shadow-blade:
     GENERIC_MOVEMENT_SPEED: 0.15
 
   click-cooldown: 1500
+  cooldown-message: ""
 
-  trigger-actions:
-    # --- При экипировке ---
-    - 'on_equip:particle:SMOKE_LARGE:25'
-    - 'on_equip:particle:ENCHANTMENT_TABLE:20'
-    - 'on_equip:particle:PORTAL:15'
-    - 'on_equip:sound:ITEM_TRIDENT_RETURN:1:1.2'
-    - 'on_equip:sound:ENTITY_ENDER_DRAGON_GROWL:0.3:1.5'
-    - 'on_equip:message:&8👁 &7Вы чувствуете силу теней!'
+  triggers:
+    on_equip:
+      - 'particles:SMOKE_LARGE:25'
+      - 'particles:ENCHANTMENT_TABLE:20'
+      - 'particles:PORTAL:15'
+      - 'sound:ITEM_TRIDENT_RETURN:1:1.2'
 
-    # --- При снятии ---
-    - 'on_unequip:particle:SMOKE_NORMAL:15'
-    - 'on_unequip:particle:CLOUD:10'
-    - 'on_unequip:sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.2'
-    - 'on_unequip:message:&8👁 &7Тени покидают вас.'
+    on_unequip:
+      - 'particles:SMOKE:15'
+      - 'particles:CLOUD:10'
+      - 'sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.2'
 
-    # --- При ПКМ ---
-    - 'on_click_right:effect:INCREASE_DAMAGE:8:3'
-    - 'on_click_right:effect:SPEED:8:2'
-    - 'on_click_right:particle:SMOKE_LARGE:30'
-    - 'on_click_right:particle:ENCHANTMENT_TABLE:20'
-    - 'on_click_right:sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
-    - 'on_click_right:title:&8⚔ &7Активация теней!::&8Тени окружают вас!:10:40:10'
-    - 'on_click_right:message:&8⚔ &7Тень Клинок активирован!'
+    on_click_right:
+      - 'effect:STRENGTH:8:3'
+      - 'effect:SPEED:8:2'
+      - 'particles:SMOKE_LARGE:30'
+      - 'particles:ENCHANTMENT_TABLE:20'
+      - 'sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
+      - 'title:&8⚔ &7Активация теней!::&8Тени окружают вас!:10:40:10'
 
-    # --- При ЛКМ ---
-    - 'on_click_left:lightning:2'
-    - 'on_click_left:particle:EXPLOSION_HUGE:5'
-    - 'on_click_left:sound:ENTITY_LIGHTNING_BOLT_IMPACT:1:1'
-    - 'on_click_left:message:&8⚡ &7Молнии призваны!'
+    on_click_left:
+      - 'lightning:2'
+      - 'particles:EXPLOSION_HUGE:5'
+      - 'sound:ENTITY_LIGHTNING_BOLT_IMPACT:1:1'
 
-    # --- При убийстве ---
-    - 'on_kill:heal:20'
-    - 'on_kill:effect:REGENERATION:10:2'
-    - 'on_kill:effect:INCREASE_DAMAGE:5:2'
-    - 'on_kill:particle:HEART:25'
-    - 'on_kill:particle:DRAGON_BREATH:15'
-    - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
-    - 'on_kill:message:&8💀 &7Враг повержен!'
+    on_kill:
+      - 'heal:20'
+      - 'effect:REGENERATION:10:2'
+      - 'effect:STRENGTH:5:2'
+      - 'particles:HEART:25'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:1.5'
 
-    # --- При прыжке ---
-    - 'on_jump:effect:SPEED:3:2'
-    - 'on_jump:particle:SMOKE_NORMAL:10'
-    - 'on_jump:sound:ENTITY_ENDERMAN_TELEPORT:0.3:1.5'
+    on_jump:
+      - 'effect:SPEED:3:2'
+      - 'particles:SMOKE:10'
+      - 'sound:ENTITY_ENDERMAN_TELEPORT:0.3:1.5'
 
-    # --- При нанесении урона ---
-    - 'on_damage_dealt:particle:DRAGON_BREATH:8'
-    - 'on_damage_dealt:sound:ENTITY_WITHER_HURT:0.3:2'
+    on_damage_dealt:
+      - 'particles:DRAGON_BREATH:8'
+      - 'sound:ENTITY_WITHER_HURT:0.3:2'
 
-    # --- При получении урона ---
-    - 'on_damage_taken:effect:DAMAGE_RESISTANCE:3:1'
-    - 'on_damage_taken:particle:SMOKE_NORMAL:10'
+    on_damage_taken:
+      - 'effect:RESISTANCE:3:1'
+      - 'particles:SMOKE:10'
 
-    # --- При подборе ---
-    - 'on_pickup:message:&8👁 &7Тени приветствуют нового хозяина!'
-    - 'on_pickup:particle:PORTAL:20'
-    - 'on_pickup:sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.2'
+    on_pickup:
+      - 'particles:PORTAL:20'
+      - 'sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.2'
 
-    # --- При выбрасывании ---
-    - 'on_drop:message:&8👁 &7Тени покидают клинок.'
-    - 'on_drop:particle:SMOKE_NORMAL:15'
+    on_drop:
+      - 'particles:SMOKE:15'

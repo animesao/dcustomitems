@@ -1,5 +1,5 @@
 # ============================================
-# СТИХИЙНЫЙ ПОСОХ - Посох с разными стихиями
+# СТИХИЙНЫЙ ПОСОХ - Многоэлементное оружие
 # ============================================
 
 elemental-staff:
@@ -7,91 +7,85 @@ elemental-staff:
   activation-slot: HAND
   placeable: false
   permission: elemental.staff
-  max-uses: 200
 
   item:
-    type: END_ROD
-    title: '&d[🌀] &fСтихийный &dПосох'
+    type: BLAZE_ROD
+    title: '&6[🌟] &fСтихийный &6Посох'
     glowing: true
     unbreakable: true
-    custom-model-data: 1006
+    item-model: "elemental_staff"
+    enchantments:
+      SHARPNESS: 5
+      UNBREAKING: 3
+      MENDING: 1
 
   lore:
     - ''
-    - ' &d━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Посох, подчиняющий'
-    - ' &7все стихии'
-    - ' &d━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &6━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Посох четырёх стихий'
+    - ' &6━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
     - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eСила &dII &7(&6∞&7)'
-    - ' &6├ &eСкорость &dII &7(&6∞&7)'
-    - ' &6└ &eСопротивление &dI &7(&6∞&7)'
+    - ' &6┌ &eСила &6III'
+    - ' &6└ &eСкорость &6II'
     - ''
-    - '&d✦ &fИспользований: &d%uses%'
+    - '&c🔥 &fПКМ: Огненный шар'
+    - '&b❄ &fЛКМ: Ледяная буря'
     - ''
 
   effects:
-    - 'INCREASE_DAMAGE:2'
+    - 'INCREASE_DAMAGE:3'
     - 'SPEED:2'
-    - 'DAMAGE_RESISTANCE:1'
 
-  click-cooldown: 1000
+  attributes:
+    GENERIC_ATTACK_DAMAGE: 10.0
+    GENERIC_ATTACK_SPEED: 1.6
 
-  trigger-actions:
-    # --- При экипировке ---
-    - 'on_equip:particle:PORTAL:25'
-    - 'on_equip:particle:ENCHANTMENT_TABLE:20'
-    - 'on_equip:sound:BLOCK_END_PORTAL_SPAWN:1:1'
-    - 'on_equip:message:&d🌀 &7Стихии окружают вас!'
+  click-cooldown: 1500
+  cooldown-message: ""
 
-    # --- При снятии ---
-    - 'on_unequip:particle:CLOUD:10'
-    - 'on_unequip:sound:BLOCK_END_PORTAL_SPAWN:0.5:0.8'
-    - 'on_unequip:message:&d🌀 &7Стихии покидают вас.'
+  triggers:
+    on_equip:
+      - 'particles:FLAME:20'
+      - 'particles:SNOWFLAKE:20'
+      - 'sound:ENTITY_PLAYER_LEVELUP:0.5:1.5'
 
-    # --- При ПКМ (Огонь) ---
-    - 'on_click_right:effect:INCREASE_DAMAGE:8:3'
-    - 'on_click_right:particle:FLAME:35'
-    - 'on_click_right:particle:REDSTONE:20'
-    - 'on_click_right:sound:ENTITY_BLAZE_SHOOT:1:1'
-    - 'on_click_right:title:&d🔥 &7ОГНЕННАЯ СТИХИЯ!::&cПламя пожирает!:10:40:10'
-    - 'on_click_right:message:&d🔥 &7Огненная стихия активирована!'
+    on_unequip:
+      - 'particles:SMOKE:10'
 
-    # --- При ЛКМ (Лёд) ---
-    - 'on_click_left:effect:SPEED:8:3'
-    - 'on_click_left:effect:RESISTANCE:8:2'
-    - 'on_click_left:particle:SNOWFLAKE:30'
-    - 'on_click_left:sound:BLOCK_GLASS_BREAK:1:0.5'
-    - 'on_click_left:title:&b❄ &7ЛЕДЯНАЯ СТИХИЯ!::&bМороз сковывает!:10:40:10'
-    - 'on_click_left:message:&b❄ &7Ледяная стихия активирована!'
+    on_click_right:
+      - 'damage_nearby:15:5'
+      - 'effect:STRENGTH:8:2'
+      - 'particles:FLAME:50'
+      - 'particles:EXPLOSION_LARGE:10'
+      - 'sound:ENTITY_GENERIC_EXPLODE:1:1'
+      - 'title:&c🔥 &7ОГНЕННЫЙ ШАР!::&cВсе враги горят!:10:30:10'
 
-    # --- При убийстве ---
-    - 'on_kill:effect:INCREASE_DAMAGE:10:2'
-    - 'on_kill:effect:SPEED:10:2'
-    - 'on_kill:particle:PORTAL:20'
-    - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
-    - 'on_kill:message:&d🌀 &7Стихии поглотили врага!'
+    on_click_left:
+      - 'damage_nearby:12:6'
+      - 'effect:SLOWNESS:5:2'
+      - 'particles:SNOWFLAKE:60'
+      - 'particles:BLOCK_CRACK:30'
+      - 'sound:ENTITY_GENERIC_FREEZE:1:1'
+      - 'knockback:4'
+      - 'title:&b❄ &7ЛЕДЯНАЯ БУРЯ!::&bВсе враги заморожены!:10:30:10'
 
-    # --- При прыжке (Природа) ---
-    - 'on_jump:effect:HASTE:5:2'
-    - 'on_jump:effect:REGENERATION:5:1'
-    - 'on_jump:particle:VILLAGER_HAPPY:12'
-    - 'on_jump:sound:ENTITY_SLIME_SQUISH:0.5:1'
-    - 'on_jump:message:&a🌿 &7Стихия природы!'
+    on_kill:
+      - 'heal:20'
+      - 'effect:REGENERATION:10:2'
+      - 'particles:HEART:25'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:1.5'
 
-    # --- При нанесении урона ---
-    - 'on_damage_dealt:particle:FLAME:10'
-    - 'on_damage_dealt:sound:ENTITY_BLAZE_SHOOT:0.5:2'
+    on_damage_dealt:
+      - 'heal:5'
+      - 'particles:FLAME:10'
 
-    # --- При получении урона ---
-    - 'on_damage_taken:effect:DAMAGE_RESISTANCE:5:2'
-    - 'on_damage_taken:particle:PORTAL:10'
+    on_damage_taken:
+      - 'effect:RESISTANCE:3:1'
+      - 'particles:SMOKE:8'
 
-    # --- При подборе ---
-    - 'on_pickup:message:&d🌀 &7Посох подобран!'
-    - 'on_pickup:particle:PORTAL:25'
+    on_pickup:
+      - 'particles:ENCHANTMENT_TABLE:20'
 
-    # --- При выбрасывании ---
-    - 'on_drop:message:&d🌀 &7Посох выброшен.'
-    - 'on_drop:particle:CLOUD:10'
+    on_drop:
+      - 'particles:SMOKE:10'

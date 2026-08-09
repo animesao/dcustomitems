@@ -1,10 +1,6 @@
 # ============================================
 # ТОТЕМ ЗАЩИТЫ - Даёт поглощение и сопротивление
 # ============================================
-# 4 использования, каждый раз даёт:
-# - Поглощение урона на 60 секунд
-# - Сопротивление на 30 секунд
-# ============================================
 
 shield-totem:
   type: CONSUMABLE
@@ -34,26 +30,23 @@ shield-totem:
     - ''
 
   max-uses: 4
+  uses-depleted-message: ""
+  cooldown-message: ""
+  equip-message: ""
+  unequip-message: ""
 
-  uses-depleted-message: '&9❌ Тотем разрушился!'
+  click-cooldown: 500
 
-  activation-message: '&9🛡 Тотем активирован!'
+  triggers:
+    on_click_right:
+      - 'effect:ABSORPTION:60:2'
+      - 'effect:RESISTANCE:30:1'
+      - 'particles:TOTEM:80'
+      - 'particles:ENCHANTMENT_TABLE:30'
+      - 'sound:ITEM_TOTEM_USE:1:1'
 
-  trigger-actions:
-    # При ПКМ - защита
-    - 'on_click_right:effect:ABSORPTION:60:2'
-    - 'on_click_right:effect:RESISTANCE:30:1'
-    - 'on_click_right:remove:TOTEM_OF_UNDYING:1'
-    - 'on_click_right:particle:TOTEM:80'
-    - 'on_click_right:particle:ENCHANTMENT_TABLE:30'
-    - 'on_click_right:sound:ITEM_TOTEM_USE:1:1'
-    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:0.5:1.5'
-    - 'on_click_right:title:&9🛡 &fЗАЩИТА АКТИВИРОВАНА!::&aAbsorption + Resistance!:10:40:10'
-    - 'on_click_right:message:&9🛡 &7Вы активировали Тотем Защиты! &aПолная защита!'
+    on_pickup:
+      - 'particles:TOTEM:15'
 
-    # При подборе
-    - 'on_pickup:message:&9🛡 &7Тотем Защиты подобран!'
-    - 'on_pickup:particle:TOTEM:30'
-
-    # При выбрасывании
-    - 'on_drop:message:&9🛡 &7Тотем выброшен.'
+    on_drop:
+      - 'particles:SMOKE:5'

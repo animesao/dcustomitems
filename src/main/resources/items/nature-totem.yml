@@ -1,104 +1,85 @@
 # ============================================
-# ТОТЕМ ПРИРОДЫ - Тотем с целительной силой
+# ТОТЕМ ПРИРОДЫ - Силы природы
 # ============================================
 
 nature-totem:
-  type: RUNE
-  activation-slot: OFFHAND
+  type: TOOL
+  activation-slot: HAND
   placeable: false
   permission: nature.totem
 
   item:
-    type: TOTEM_OF_UNDYING
+    type: NETHERITE_SWORD
     title: '&2[🌿] &fТотем &2Природы'
     glowing: true
     unbreakable: true
-    custom-model-data: 1009
+    item-model: "nature_totem"
+    enchantments:
+      SHARPNESS: 4
+      UNBREAKING: 3
+      MENDING: 1
 
   lore:
     - ''
     - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Древний тотем'
-    - ' &7силы природы'
+    - ' &7Тотем силы природы'
     - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда во второй руке:'
-    - ' &6┌ &eРегенерация &2III &7(&6∞&7)'
-    - ' &6├ &eНасыщение &2II &7(&6∞&7)'
-    - ' &6└ &eСпешка &2I &7(&6∞&7)'
+    - ' &e⚡ &fКогда в основной руке:'
+    - ' &6┌ &eРегенерация &2III'
+    - ' &6└ &eСкорость &2II'
+    - ''
+    - '&2🌿 &fПКМ: Сила природы'
     - ''
 
   effects:
     - 'REGENERATION:3'
-    - 'SATURATION:2'
-    - 'HASTE:1'
+    - 'SPEED:2'
 
-  click-cooldown: 4000
+  attributes:
+    GENERIC_ATTACK_DAMAGE: 8.0
+    GENERIC_ATTACK_SPEED: 1.6
 
-  trigger-actions:
-    # --- При экипировке ---
-    - 'on_equip:effect:REGENERATION:24:3'
-    - 'on_equip:effect:SATURATION:24:2'
-    - 'on_equip:effect:HASTE:24:1'
-    - 'on_equip:particle:VILLAGER_HAPPY:25'
-    - 'on_equip:particle:HAPPY_VILLAGER:20'
-    - 'on_equip:particle:HEART:15'
-    - 'on_equip:sound:BLOCK_GRASS_PLACE:1:1'
-    - 'on_equip:sound:ENTITY_PLAYER_LEVELUP:0.5:1.2'
-    - 'on_equip:message:&2🌿 &7Вы чувствуете силу природы!'
+  click-cooldown: 2000
+  cooldown-message: ""
 
-    # --- При снятии ---
-    - 'on_unequip:particle:CLOUD:10'
-    - 'on_unequip:particle:SMOKE_NORMAL:5'
-    - 'on_unequip:sound:BLOCK_GRASS_BREAK:0.5:0.8'
-    - 'on_unequip:message:&2🌿 &7Сила природы уходит.'
+  triggers:
+    on_equip:
+      - 'particles:VILLAGER_HAPPY:25'
+      - 'sound:ENTITY_PLAYER_LEVELUP:0.5:1.5'
 
-    # --- При ПКМ ---
-    - 'on_click_right:heal:16'
-    - 'on_click_right:effect:REGENERATION:15:2'
-    - 'on_click_right:effect:HEALTH_BOOST:15:1'
-    - 'on_click_right:effect:SATURATION:15:1'
-    - 'on_click_right:particle:HEART:25'
-    - 'on_click_right:particle:VILLAGER_HAPPY:20'
-    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:1:1'
-    - 'on_click_right:title:&2🌿 &7ИСЦЕЛЕНИЕ ПРИРОДЫ!::&aЖизнь наполняет!:10:40:10'
-    - 'on_click_right:message:&2🌿 &7Сила природы исцеляет!'
+    on_unequip:
+      - 'particles:SMOKE:10'
 
-    # --- При ЛКМ ---
-    - 'on_click_left:effect:INCREASE_DAMAGE:8:2'
-    - 'on_click_left:effect:SPEED:8:2'
-    - 'on_click_left:particle:FLAME:15'
-    - 'on_click_left:sound:ENTITY_BLAZE_SHOOT:0.5:1.5'
-    - 'on_click_left:message:&2🌿 &7Сила природы яростна!'
+    on_click_right:
+      - 'heal:15'
+      - 'effect:REGENERATION:15:3'
+      - 'effect:SPEED:10:2'
+      - 'effect:ABSORPTION:30:1'
+      - 'particles:VILLAGER_HAPPY:40'
+      - 'particles:HEART:30'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
+      - 'title:&2🌿 &7СИЛА ПРИРОДЫ!::&aВосстановление + Абсорбция!:10:40:10'
 
-    # --- При убийстве ---
-    - 'on_kill:effect:REGENERATION:15:2'
-    - 'on_kill:effect:HEALTH_BOOST:15:1'
-    - 'on_kill:particle:VILLAGER_HAPPY:15'
-    - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
-    - 'on_kill:message:&2🌿 &7Природа помогает победить!'
+    on_click_left:
+      - 'damage_nearby:10:4'
+      - 'effect:SLOWNESS:5:1'
+      - 'particles:VILLAGER_HAPPY:30'
+      - 'knockback:3'
 
-    # --- При прыжке ---
-    - 'on_jump:effect:HASTE:5:2'
-    - 'on_jump:effect:SPEED:5:1'
-    - 'on_jump:particle:VILLAGER_HAPPY:10'
-    - 'on_jump:sound:ENTITY_SLIME_SQUISH:0.5:1'
-    - 'on_jump:message:&2🌿 &7Сила природы!'
+    on_kill:
+      - 'heal:25'
+      - 'effect:REGENERATION:12:3'
+      - 'particles:HEART:25'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:1.5'
 
-    # --- При нанесении урона ---
-    - 'on_damage_dealt:particle:VILLAGER_HAPPY:8'
-    - 'on_damage_dealt:sound:ENTITY_SLIME_SQUISH:0.3:2'
+    on_damage_taken:
+      - 'effect:REGENERATION:5:2'
+      - 'effect:RESISTANCE:3:1'
+      - 'particles:VILLAGER_HAPPY:10'
 
-    # --- При получении урона ---
-    - 'on_damage_taken:effect:REGENERATION:5:2'
-    - 'on_damage_taken:effect:RESISTANCE:5:1'
-    - 'on_damage_taken:particle:HEART:10'
+    on_pickup:
+      - 'particles:VILLAGER_HAPPY:15'
 
-    # --- При подборе ---
-    - 'on_pickup:message:&2🌿 &7Тотем подобран!'
-    - 'on_pickup:particle:VILLAGER_HAPPY:25'
-    - 'on_pickup:sound:BLOCK_GRASS_PLACE:0.5:1.2'
-
-    # --- При выбрасывании ---
-    - 'on_drop:message:&2🌿 &7Тотем выброшен.'
-    - 'on_drop:particle:CLOUD:10'
+    on_drop:
+      - 'particles:SMOKE:10'

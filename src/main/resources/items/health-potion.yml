@@ -1,9 +1,6 @@
 # ============================================
 # ЗЕЛЬЕ ЗДОРОВЬЯ - Исцеляет и даёт регенерацию
 # ============================================
-# 3 использования, каждый раз восстанавливает
-# здоровье и даёт регенерацию
-# ============================================
 
 health-potion:
   type: CONSUMABLE
@@ -33,25 +30,23 @@ health-potion:
     - ''
 
   max-uses: 3
+  uses-depleted-message: ""
+  cooldown-message: ""
+  equip-message: ""
+  unequip-message: ""
 
-  uses-depleted-message: '&c❌ Зелье закончилось!'
+  click-cooldown: 500
 
-  activation-message: '&c❤ Зелье выпито!'
+  triggers:
+    on_click_right:
+      - 'heal:10'
+      - 'effect:REGENERATION:10:1'
+      - 'particles:HEART:30'
+      - 'particles:VILLAGER_HAPPY:20'
+      - 'sound:ENTITY_PLAYER_BURP:1:1'
 
-  trigger-actions:
-    # При ПКМ - исцеление
-    - 'on_click_right:heal:10'
-    - 'on_click_right:effect:REGENERATION:10:1'
-    - 'on_click_right:remove:GLASS_BOTTLE:1'
-    - 'on_click_right:particle:HEART:30'
-    - 'on_click_right:particle:VILLAGER_HAPPY:20'
-    - 'on_click_right:sound:ENTITY_PLAYER_BURP:1:1'
-    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:0.5:1.5'
-    - 'on_click_right:title:&c❤ &fИСЦЕЛЕНИЕ!::&a+10 HP + Регенерация!:10:30:10'
-    - 'on_click_right:message:&c❤ &7Вы восстановили 10 HP!'
+    on_pickup:
+      - 'particles:HEART:10'
 
-    # При подборе
-    - 'on_pickup:message:&c❤ &7Зелье Здоровья подобрано!'
-
-    # При выбрасывании
-    - 'on_drop:message:&c❤ &7Зелье выброшено.'
+    on_drop:
+      - 'particles:SMOKE:5'

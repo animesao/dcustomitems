@@ -1,9 +1,6 @@
 # ============================================
 # ТАЛИСМАН ПРИРОДЫ - Одноразовый предмет
 # ============================================
-# При использовании (ПКМ) даёт регенерацию
-# и пропадает из инвентаря
-# ============================================
 
 nature-talisman:
   type: CONSUMABLE
@@ -32,31 +29,23 @@ nature-talisman:
     - ' &7Осталось использований: &a%uses%'
     - ''
 
-  # Максимум использований (1 = одноразовый)
   max-uses: 1
+  uses-depleted-message: ""
+  cooldown-message: ""
+  equip-message: ""
+  unequip-message: ""
 
-  # Сообщение когда использования закончились
-  uses-depleted-message: '&c❌ Талисман исчерпан!'
+  click-cooldown: 500
 
-  # Сообщение при активации
-  activation-message: '&a🌿 Талисман активирован!'
+  triggers:
+    on_click_right:
+      - 'effect:REGENERATION:30:2'
+      - 'heal:10'
+      - 'particles:VILLAGER_HAPPY:50'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:1.5'
 
-  # Триггеры
-  trigger-actions:
-    # При ПКМ - активация талисмана
-    - 'on_click_right:effect:REGENERATION:30:2'      # Регенерация II на 30 секунд
-    - 'on_click_right:effect:HEAL:10:1'              # Исцеление на 10 HP
-    - 'on_click_right:remove:PAPER:1'                # Удаляем талисман из инвентаря
-    - 'on_click_right:particle:VILLAGER_HAPPY:50'    # Частички счастья
-    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:1:1.5'  # Звук повышения уровня
-    - 'on_click_right:title:&2🌿 &fПРИРОДА ПОМОГАЕТ!::&aРегенерация на 30 секунд!:10:40:10'
-    - 'on_click_right:message:&2🌿 &7Вы активировали Талисман Природы! &aРегенерация на 30 секунд!'
-    - 'on_click_right:announce:&2🌿 &7%player% &7активировал Талисман Природы!'
+    on_pickup:
+      - 'particles:VILLAGER_HAPPY:10'
 
-    # При подборе
-    - 'on_pickup:message:&2🌿 &7Талисман Природы подобран!'
-    - 'on_pickup:particle:VILLAGER_HAPPY:20'
-
-    # При выбрасывании
-    - 'on_drop:message:&2🌿 &7Талисман выброшен.'
-    - 'on_drop:particle:SMOKE:10'
+    on_drop:
+      - 'particles:SMOKE:5'

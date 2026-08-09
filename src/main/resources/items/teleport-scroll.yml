@@ -1,9 +1,6 @@
 # ============================================
 # СВИТОК ТЕЛЕПОРТАЦИИ - Телепорт к рандом игроку
 # ============================================
-# Телепортирует к случайному онлайн игроку
-# Можно использовать 3 раза
-# ============================================
 
 teleport-scroll:
   type: CONSUMABLE
@@ -35,34 +32,23 @@ teleport-scroll:
     - ' &eОсталось использований: &b%uses% &7из &93'
     - ''
 
-  # 3 использования (не 1 как у талисмана)
   max-uses: 3
+  uses-depleted-message: ""
+  cooldown-message: ""
+  equip-message: ""
+  unequip-message: ""
 
-  # Сообщение когда использования закончились
-  uses-depleted-message: '&c❌ Свиток исчерпан! Он распался...'
+  click-cooldown: 500
 
-  # Сообщение при активации
-  activation-message: '&b🌀 Свиток активирован!'
+  triggers:
+    on_click_right:
+      - 'command:execute at %player% run tp %player% @a[sort=random,limit=1,distance=1..]'
+      - 'particles:PORTAL:100'
+      - 'particles:REVERSE_PORTAL:50'
+      - 'sound:ENTITY_ENDERMAN_TELEPORT:1:1'
 
-  # Триггеры
-  trigger-actions:
-    # При ПКМ - телепортация к случайному игроку
-    # Используем execute + tp с @a[sort=random,limit=1,distance=1..]
-    # distance=1.. чтобы не телепортировать к самому себе
-    - 'on_click_right:command:execute at %player% run tp %player% @a[sort=random,limit=1,distance=1..]'
-    - 'on_click_right:remove:PAPER:1'
-    - 'on_click_right:particle:PORTAL:100'
-    - 'on_click_right:particle:REVERSE_PORTAL:50'
-    - 'on_click_right:sound:ENTITY_ENDERMAN_TELEPORT:1:1'
-    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:0.5:2'
-    - 'on_click_right:title:&3🌀 &fТЕЛЕПОРТАЦИЯ!::&bВы переместились к другому игроку!:10:30:10'
-    - 'on_click_right:message:&3🌀 &7Вы телепортировались к случайному игроку!'
-    - 'on_click_right:announce:&3🌀 &7%player% &7использовал Свиток Телепортации!'
+    on_pickup:
+      - 'particles:PORTAL:15'
 
-    # При подборе
-    - 'on_pickup:message:&3🌀 &7Свиток Телепортации подобран!'
-    - 'on_pickup:particle:PORTAL:30'
-
-    # При выбрасывании
-    - 'on_drop:message:&3🌀 &7Свиток выброшен.'
-    - 'on_drop:particle:SMOKE:10'
+    on_drop:
+      - 'particles:SMOKE:5'

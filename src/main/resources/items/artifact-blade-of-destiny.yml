@@ -1,144 +1,100 @@
 # ============================================
-# КЛИНОК СУДЬБЫ - Легендарный Артефакт Бойца
-# ============================================
-# Уникальная способность: Смертельный режим
-# ЛКМ = Удар Судьбы (оглушение + урон мобам)
-# ПКМ = Режим Судьбы (сила + скорость + кража жизни)
-# Каждое убийство усиливает на 10 секунд
+# КЛИНОК СУДЬБЫ - Ультимативное оружие
 # ============================================
 
 artifact-blade-of-destiny:
   type: TOOL
   activation-slot: HAND
   placeable: false
-  permission: artifact.destiny
+  permission: artifact.blade_of_destiny
 
   item:
     type: NETHERITE_SWORD
-    title: '&6⚔ &e&lКлинок &6&lСудьбы'
+    title: '&6[⚔] &fКлинок &6Судьбы'
     glowing: true
     unbreakable: true
-    custom-model-data: 9002
+    item-model: "blade_of_destiny"
     enchantments:
-      SHARPNESS: 7
-      UNBREAKING: 5
-      SWEEPING_EDGE: 3
+      SHARPNESS: 10
       FIRE_ASPECT: 2
-      LOOTING: 3
+      SWEEPING_EDGE: 3
+      UNBREAKING: 3
+      MENDING: 1
 
   lore:
     - ''
-    - ' &6━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &6&l✦ &eЛегендарный Артефакт Воина'
-    - ' &6━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &6━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Ультимативное оружие'
+    - ' &6━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &7Клинок, выкуренный в пламени'
-    - ' &7Конца Света. Каждый удар'
-    - ' &7решает судьбу врага.'
+    - ' &e⚡ &fКогда в основной руке:'
+    - ' &6┌ &eСила &6V'
+    - ' &6├ &eСкорость &6III'
+    - ' &6└ &eРегенерация &6III'
     - ''
-    - '&c⚔ &fЛКМ: Удар Судьбы'
-    - ' &7→ Оглушение + AoE урон мобам'
-    - ''
-    - '&e🔥 &fПКМ: Режим Судьбы'
-    - ' &7→ Сила IV + Скорость III + Кража жизни'
-    - ''
-    - '&8✦ &7Уникальная способность:'
-    - '&8✦ &7Каждое убийство усиливает на 10 сек'
+    - '&6⚔ &fПКМ: УЛЬТИМАТИВНЫЙ УДАР!'
     - ''
 
   effects:
-    - 'INCREASE_DAMAGE:4'
-    - 'SPEED:2'
-    - 'FIRE_RESISTANCE:1'
+    - 'INCREASE_DAMAGE:5'
+    - 'SPEED:3'
+    - 'REGENERATION:3'
 
   attributes:
-    GENERIC_ATTACK_DAMAGE: 12.0
-    GENERIC_ATTACK_SPEED: 1.8
-    GENERIC_MAX_HEALTH: 8.0
-    GENERIC_ARMOR: 2.0
+    GENERIC_ATTACK_DAMAGE: 20.0
+    GENERIC_ATTACK_SPEED: 2.0
+    GENERIC_MAX_HEALTH: 10.0
 
-  click-cooldown: 1200
+  click-cooldown: 3000
+  cooldown-message: ""
 
-  trigger-actions:
-    # --- При экипировке ---
-    - 'on_equip:particle:FLAME:35'
-    - 'on_equip:particle:ENCHANTMENT_TABLE:30'
-    - 'on_equip:particle:CRIT:25'
-    - 'on_equip:sound:ENTITY_PLAYER_LEVELUP:1:1.3'
-    - 'on_equip:sound:ITEM_TRIDENT_RETURN:1:1.1'
-    - 'on_equip:message:&6⚔ &eВы чувствуете силу Судьбы!'
-    - 'on_equip:title:&6✦ &e&lКЛИНОК СУДЬБЫ &6✦::&7Легенда пробуждается!:10:60:20'
+  triggers:
+    on_equip:
+      - 'particles:FLAME:40'
+      - 'particles:ENCHANTMENT_TABLE:30'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
 
-    # --- При снятии ---
-    - 'on_unequip:particle:SMOKE_NORMAL:15'
-    - 'on_unequip:sound:ITEM_TRIDENT_HIT:0.8:0.8'
-    - 'on_unequip:message:&6⚔ &eСила Судьбы покидает вас.'
+    on_unequip:
+      - 'particles:SMOKE:15'
 
-    # --- ПКМ: Режим Судьбы (кража жизни + баффы) ---
-    - 'on_click_right:effect:INCREASE_DAMAGE:10:4'
-    - 'on_click_right:effect:SPEED:10:3'
-    - 'on_click_right:effect:REGENERATION:10:3'
-    - 'on_click_right:effect:ABSORPTION:10:2'
-    - 'on_click_right:heal:20'
-    - 'on_click_right:particle:FLAME:40'
-    - 'on_click_right:particle:HEART:30'
-    - 'on_click_right:particle:CRIT:25'
-    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
-    - 'on_click_right:sound:ENTITY_WITHER_AMBIENT:0.8:1.2'
-    - 'on_click_right:title:&6🔥 &e&lРЕЖИМ СУДЬБЫ!::&cКража жизни активна!:10:40:15'
-    - 'on_click_right:message:&6🔥 &eВы进入 режим Судьбы! Сила +4, Кража жизни!'
-    - 'on_click_right:announce:&6⚔ &e%player% &7активировал &6&lРежим Судьбы&7!'
+    on_click_right:
+      - 'damage_nearby:30:6'
+      - 'effect:STRENGTH:15:5'
+      - 'effect:SPEED:15:3'
+      - 'effect:REGENERATION:15:3'
+      - 'lightning_forward:100'
+      - 'particles:FLAME:80'
+      - 'particles:EXPLOSION_HUGE:10'
+      - 'sound:ENTITY_ENDER_DRAGON_GROWL:1:1'
+      - 'title:&6⚔ &7УЛЬТИМАТИВНЫЙ УДАР!::&6Все враги уничтожены!:10:60:10'
 
-    # --- ЛКМ: Удар Судьбы (оглушение + AoE мобам) ---
-    - 'on_click_left:damage:25:5'
-    - 'on_click_left:damage-mobs:15:5'
-    - 'on_click_left:stun-mobs:2:5'
-    - 'on_click_left:knockback-mobs:5'
-    - 'on_click_left:launch-mobs:1.5'
-    - 'on_click_left:effect-nearby-mobs:WEAKNESS:5:3:5'
-    - 'on_click_left:effect-nearby-mobs:SLOW:3:1:5'
-    - 'on_click_left:particle:FLAME:35'
-    - 'on_click_left:particle:CRIT:30'
-    - 'on_click_left:particle:EXPLOSION_NORMAL:15'
-    - 'on_click_left:sound:ENTITY_PLAYER_ATTACK_CRIT:1:0.8'
-    - 'on_click_left:sound:ENTITY_IRON_GOLEM_ATTACK:1:1.2'
-    - 'on_click_left:title:&6⚔ &e&lУДАР СУДЬБЫ!::&7Враги оглушены!:10:35:10'
-    - 'on_click_left:message:&6⚔ &eВы обрушили силу Судьбы на врагов!'
+    on_click_left:
+      - 'damage_nearby:25:5'
+      - 'knockback:6'
+      - 'particles:FLAME:50'
+      - 'particles:EXPLOSION_LARGE:8'
+      - 'sound:ENTITY_GENERIC_EXPLODE:1:1'
 
-    # --- При убийстве (ПОЛНОЕ ИСЦЕЛЕНИЕ + усиление) ---
-    - 'on_kill:heal:40'
-    - 'on_kill:effect:INCREASE_DAMAGE:10:5'
-    - 'on_kill:effect:SPEED:10:4'
-    - 'on_kill:effect:REGENERATION:10:4'
-    - 'on_kill:effect:HEALTH_BOOST:10:3'
-    - 'on_kill:particle:FLAME:50'
-    - 'on_kill:particle:HEART:40'
-    - 'on_kill:particle:VILLAGER_HAPPY:30'
-    - 'on_kill:sound:ENTITY_PLAYER_LEVELUP:1:2'
-    - 'on_kill:sound:ENTITY_WITHER_DEATH:0.8:1.5'
-    - 'on_kill:message:&6⚔ &eВы победили! Сила Судьбы усиливается!'
-    - 'on_kill:title:&6✦ &e&lСУДЬБА ВЫНЕСЕНА!::&7+10 секунд могущества!:10:50:15'
+    on_kill:
+      - 'heal:50'
+      - 'effect:REGENERATION:20:4'
+      - 'effect:STRENGTH:15:5'
+      - 'effect:SPEED:15:3'
+      - 'particles:HEART:40'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
 
-    # --- При нанесении урона ---
-    - 'on_damage_dealt:heal:4'
-    - 'on_damage_dealt:particle:FLAME:8'
-    - 'on_damage_dealt:particle:CRIT:6'
-    - 'on_damage_dealt:sound:ENTITY_PLAYER_ATTACK_STRONG:0.5:1.2'
+    on_damage_dealt:
+      - 'heal:10'
+      - 'particles:FLAME:15'
 
-    # --- При прыжке ---
-    - 'on_jump:effect:SPEED:3:1'
-    - 'on_jump:particle:FLAME:8'
+    on_damage_taken:
+      - 'effect:RESISTANCE:8:3'
+      - 'effect:REGENERATION:5:3'
+      - 'particles:ENCHANTMENT_TABLE:10'
 
-    # --- При получении урона ---
-    - 'on_damage_taken:effect:RESISTANCE:5:3'
-    - 'on_damage_taken:effect:FIRE_RESISTANCE:8:1'
-    - 'on_damage_taken:particle:FLAME:12'
-    - 'on_damage_taken:sound:ENTITY_IRON_GOLEM_ATTACK:0.5:1.5'
+    on_pickup:
+      - 'particles:ENCHANTMENT_TABLE:25'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
 
-    # --- При подборе ---
-    - 'on_pickup:message:&6⚔ &eКлинок Судьбы подобран!'
-    - 'on_pickup:particle:FLAME:30'
-
-    # --- При выбрасывании ---
-    - 'on_drop:message:&6⚔ &eКлинок Судьбы выброшен.'
-    - 'on_drop:particle:SMOKE_NORMAL:20'
+    on_drop:
+      - 'particles:SMOKE:15'

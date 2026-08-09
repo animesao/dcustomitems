@@ -1,10 +1,6 @@
 # ============================================
 # СВИТОК ОПЫТА - Даёт опыт и уровни
 # ============================================
-# 1 использование, даёт:
-# - 500 опыта
-# - 5 уровней
-# ============================================
 
 xp-scroll:
   type: CONSUMABLE
@@ -37,25 +33,22 @@ xp-scroll:
     - ''
 
   max-uses: 1
+  uses-depleted-message: ""
+  cooldown-message: ""
+  equip-message: ""
+  unequip-message: ""
 
-  uses-depleted-message: '&a❌ Свиток прочитан! Знания усвоены.'
+  click-cooldown: 500
 
-  activation-message: '&a📜 Свиток прочитан!'
+  triggers:
+    on_click_right:
+      - 'exp:500:5'
+      - 'particles:EXPLOSION_NORMAL:60'
+      - 'particles:ENCHANTMENT_TABLE:40'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:1'
 
-  trigger-actions:
-    # При ПКМ - опыт
-    - 'on_click_right:exp:500:5'
-    - 'on_click_right:remove:PAPER:1'
-    - 'on_click_right:particle:EXPLOSION_NORMAL:60'
-    - 'on_click_right:particle:ENCHANTMENT_TABLE:40'
-    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:1:1'
-    - 'on_click_right:sound:BLOCK_ENCHANTMENT_TABLE_USE:1:1.2'
-    - 'on_click_right:title:&a📜 &fЗНАНИЯ!::&a+500 XP + 5 уровней!:10:40:10'
-    - 'on_click_right:message:&a📜 &7Вы получили знания! &a+500 XP + 5 уровней!'
-    - 'on_click_right:announce:&a📜 &7%player% &7прочитал Свиток Опыта!'
+    on_pickup:
+      - 'particles:ENCHANTMENT_TABLE:10'
 
-    # При подборе
-    - 'on_pickup:message:&a📜 &7Свиток Опыта подобран!'
-
-    # При выбрасывании
-    - 'on_drop:message:&a📜 &7Свиток выброшен.'
+    on_drop:
+      - 'particles:SMOKE:5'

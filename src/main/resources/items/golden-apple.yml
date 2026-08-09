@@ -1,12 +1,6 @@
 # ============================================
 # ЗОЛОТОЕ ЯБЛОКО - Даёт множество эффектов
 # ============================================
-# 2 использования, каждый раз даёт:
-# - Исцеление на 8 HP
-# - Регенерацию на 15 секунд
-# - Поглощение урона на 30 секунд
-# - Сопротивление на 15 секунд
-# ============================================
 
 golden-apple:
   type: CONSUMABLE
@@ -36,29 +30,26 @@ golden-apple:
     - ''
 
   max-uses: 2
+  uses-depleted-message: ""
+  cooldown-message: ""
+  equip-message: ""
+  unequip-message: ""
 
-  uses-depleted-message: '&6❌ Яблоко съедено полностью!'
+  click-cooldown: 500
 
-  activation-message: '&6✨ Золотое яблоко съедено!'
+  triggers:
+    on_click_right:
+      - 'heal:8'
+      - 'effect:REGENERATION:15:2'
+      - 'effect:ABSORPTION:30:1'
+      - 'effect:RESISTANCE:15:1'
+      - 'particles:FLAME:50'
+      - 'particles:HEART:30'
+      - 'particles:VILLAGER_HAPPY:40'
+      - 'sound:ENTITY_PLAYER_BURP:1:1'
 
-  trigger-actions:
-    # При ПКМ - множество эффектов
-    - 'on_click_right:heal:8'
-    - 'on_click_right:effect:REGENERATION:15:2'
-    - 'on_click_right:effect:ABSORPTION:30:1'
-    - 'on_click_right:effect:RESISTANCE:15:1'
-    - 'on_click_right:remove:GOLDEN_APPLE:1'
-    - 'on_click_right:particle:FLAME:50'
-    - 'on_click_right:particle:HEART:30'
-    - 'on_click_right:particle:VILLAGER_HAPPY:40'
-    - 'on_click_right:sound:ENTITY_PLAYER_BURP:1:1'
-    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:1:1.5'
-    - 'on_click_right:title:&6✨ &fЗОЛОТОЕ ЯБЛОКО!::&6+8HP, Regen, Absorb, Resist!:10:40:10'
-    - 'on_click_right:message:&6✨ &7Вы съели Золотое Яблоко! &6Полная защита!'
+    on_pickup:
+      - 'particles:FLAME:15'
 
-    # При подборе
-    - 'on_pickup:message:&6✨ &7Золотое Яблоко подобрано!'
-    - 'on_pickup:particle:FLAME:25'
-
-    # При выбрасывании
-    - 'on_drop:message:&6✨ &7Яблоко выброшено.'
+    on_drop:
+      - 'particles:SMOKE:5'

@@ -1,9 +1,6 @@
 # ============================================
 # ПАЛОЧКА ВОЗДУХА - Молния + Частицы
 # ============================================
-# ПКМ = частицы облака
-# ЛКМ = молния туда куда смотришь!
-# ============================================
 
 air-wand:
   type: TOOL
@@ -32,18 +29,21 @@ air-wand:
     - ''
 
   click-cooldown: 500
+  cooldown-message: ""
+  equip-message: ""
+  unequip-message: ""
 
-  trigger-actions:
-    # === ПКМ - Частицы воздуха ===
-    - 'on_click_right:particle:CLOUD:20'
-    - 'on_click_right:sound:ENTITY_GUARDIAN_AMBIENT:1:1'
+  triggers:
+    on_click_right:
+      - 'particles:CLOUD:20'
+      - 'sound:ENTITY_GUARDIAN_AMBIENT:1:1'
 
-    # === ЛКМ - Молния туда куда смотришь! ===
-    - 'on_click_left:lightning:1'
-    - 'on_click_left:particle:EXPLOSION_HUGE:5'
+    on_click_left:
+      - 'lightning_forward:100'
+      - 'particles:EXPLOSION_HUGE:5'
 
-    # === ЭКИПИРОВКА ===
-    - 'on_equip:particle:CLOUD:15'
+    on_equip:
+      - 'particles:CLOUD:15'
 
-    # === СНЯТИЕ ===
-    - 'on_unequip:particle:SMOKE:10'
+    on_unequip:
+      - 'particles:SMOKE:10'
