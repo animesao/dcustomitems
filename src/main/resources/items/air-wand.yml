@@ -1,0 +1,49 @@
+# ============================================
+# ПАЛОЧКА ВОЗДУХА - Молния + Частицы
+# ============================================
+# ПКМ = частицы облака
+# ЛКМ = молния туда куда смотришь!
+# ============================================
+
+air-wand:
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: wand.air
+
+  item:
+    type: BLAZE_ROD
+    title: '&b✨ &fПалочка Воздуха'
+    glowing: true
+    unbreakable: true
+    item-model: "air_wand"
+
+  lore:
+    - ''
+    - ' &b━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Палочка стихии воздуха'
+    - ' &b━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ''
+    - ' &b✨ &fПКМ: Волшебство воздуха'
+    - ' &7Спавнит частицы облака'
+    - ''
+    - ' &e⚡ &fЛКМ: Молния'
+    - ' &7Бьет молнией туда куда смотришь!'
+    - ''
+
+  click-cooldown: 500
+
+  trigger-actions:
+    # === ПКМ - Частицы воздуха ===
+    - 'on_click_right:particle:CLOUD:20'
+    - 'on_click_right:sound:ENTITY_GUARDIAN_AMBIENT:1:1'
+
+    # === ЛКМ - Молния туда куда смотришь! ===
+    - 'on_click_left:lightning:1'
+    - 'on_click_left:particle:EXPLOSION_HUGE:5'
+
+    # === ЭКИПИРОВКА ===
+    - 'on_equip:particle:CLOUD:15'
+
+    # === СНЯТИЕ ===
+    - 'on_unequip:particle:SMOKE:10'

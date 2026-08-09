@@ -510,8 +510,13 @@ public class TriggerListener implements Listener {
         if (parts.length > 1) {
             try { strikes = Integer.parseInt(parts[1]); } catch (Exception ignored) {}
         }
+        // Вычисляем точку далеко впереди игрока (куда он смотрит)
+        org.bukkit.Location eyeLoc = player.getEyeLocation();
+        org.bukkit.util.Vector direction = eyeLoc.getDirection();
+        // Ударяем на 100 блоков вперед
+        org.bukkit.Location targetLocation = eyeLoc.clone().add(direction.multiply(100));
         for (int i = 0; i < strikes; i++) {
-            player.getWorld().strikeLightning(player.getLocation());
+            player.getWorld().strikeLightning(targetLocation);
         }
     }
 

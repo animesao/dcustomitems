@@ -323,12 +323,20 @@ public class PlayerListener implements Listener {
             } catch (Exception ignored) {}
         }
 
+        // Определяем локацию для молнии
+        org.bukkit.Location targetLocation;
+        if (block != null) {
+            // Если есть блок - бьем туда
+            targetLocation = block.getLocation();
+        } else {
+            // Вычисляем точку далеко впереди игрока (куда он смотрит)
+            org.bukkit.Location eyeLoc = player.getEyeLocation();
+            org.bukkit.util.Vector direction = eyeLoc.getDirection();
+            targetLocation = eyeLoc.clone().add(direction.multiply(100));
+        }
+
         for (int i = 0; i < strikes; i++) {
-            if (block != null) {
-                player.getWorld().strikeLightning(block.getLocation());
-            } else {
-                player.getWorld().strikeLightning(player.getLocation());
-            }
+            player.getWorld().strikeLightning(targetLocation);
         }
     }
 
