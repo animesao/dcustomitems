@@ -1,0 +1,105 @@
+import me.dcplugin.dcustomitems.api.AbstractCustomItem;
+import me.dcplugin.dcustomitems.api.ItemAPI;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlotGroup;
+
+import java.util.List;
+import java.util.UUID;
+
+public class AncientShield extends AbstractCustomItem {
+
+    @Override
+    public String getId() { return "ancient_shield"; }
+
+    @Override
+    public String getDisplayName() { return "&6🛡 &fДревний Щит"; }
+
+    @Override
+    public Material getMaterial() { return Material.SHIELD; }
+
+    @Override
+    public List<String> getLore() {
+        return List.of(
+            "",
+            " &7Мощный щит древних воинов",
+            " &7Увеличивает максимальное здоровье",
+            "",
+            " &6✦ &fЗдоровье: +4 сердца",
+            " &e✦ &fСопротивление I",
+            "",
+            " &7ЛКМ - активировать屏障",
+            " &7ПКМ - восстановление"
+        );
+    }
+
+    @Override
+    public String getItemModel() { return "ancient_shield"; }
+
+    @Override
+    public boolean isUnbreakable() { return true; }
+
+    @Override
+    public boolean isGlowing() { return true; }
+
+    @Override
+    public void onEquip(Player player) {
+        // Увеличить максимальное здоровье
+        if (player.getAttribute(Attribute.MAX_HEALTH) != null) {
+            AttributeModifier modifier = new AttributeModifier(
+                UUID.randomUUID(),
+                "ancient_shield_health",
+                8, // +4 сердца = +8 HP
+                AttributeModifier.Operation.ADD_NUMBER,
+                EquipmentSlotGroup.OFFHAND
+            );
+            player.getAttribute(Attribute.MAX_HEALTH).addTransientModifier(modifier);
+        }
+
+        // Дать сопротивление
+        ItemAPI.effect(player, org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE, 999999, 0);
+
+        ItemAPI.message(player, "&6🛡 &fДревний Щит активирован!");
+        ItemAPI.sound(player, Sound.ITEM_ARMOR_EQUIP_NETHERITE, 1f, 1f);
+    }
+
+    @Override
+    public void onUnequip(Player player) {
+        // Убрать увеличение здоровья
+        if (player.getAttribute(Attribute.MAX_HEALTH) != null) {
+            player.getAttribute(Attribute.MAX_HEALTH).getModifiers().stream()
+                .filter(m -> m.getName().equals("ancient_shield_health"))
+                .forEach(player.getAttribute(Attribute.MAX_HEALTH)::removeModifier);
+        }
+
+        // Убрать сопротивление
+        player.removePotionEffect(org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE);
+
+        ItemAPI.message(player, "&6🛡 &fДревний Щит деактивирован.");
+        ItemAPI.sound(player, Sound.ITEM_ARMOR_EQUIP_NETHERITE, 1f, 0.5f);
+    }
+
+    @Override
+    public void onLeftClick(PlayerInteractEvent event, Player player) {
+        // Активация барьера
+        ItemAPI.effect(player, org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE, 5, 1);
+        ItemAPI.particles(player, Particle.ENCHANTED_HIT, 50);
+        ItemAPI.sound(player, Sound.ITEM_SHIELD_BLOCK, 1f, 1.5f);
+        ItemAPI.title(player, "&6🛡 &fБАРЬЕР!", "&7Сопротивление II на 5 сек!");
+    }
+
+    @Override
+    public void onRightClick(PlayerInteractEvent event, Player player) {
+        // Восстановление
+        ItemAPI.heal(player, 8); // +4 сердца
+        ItemAPI.effect(player, org.bukkit.potion.PotionEffectType.REGENERATION, 5, 1);
+        ItemAPI.particles(player, Particle.HEART, 30);
+        ItemAPI.sound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
+        ItemAPI.title(player, "&a❤ &fВОССТАНОВЛЕНИЕ!", "+8 HP");
+    }
+}
