@@ -1,20 +1,13 @@
 # DC-CustomItems - Полная документация по действиям и триггерам
 
-## 📋 Новый формат YAML (v1.320.225+)
-
-Используйте вложенный `triggers` вместо старого `trigger-actions`:
+## 📋 Формат YAML (v1.320.225+)
 
 ```yaml
-# СТАРЫЙ ФОРМАТ (устарел):
-trigger-actions:
-  - 'on_click_right:effect:SPEED:5:1'
-  - 'on_click_right:lightning:1'
-
-# НОВЫЙ ФОРМАТ (рекомендуется):
-triggers:
-  on_click_right:
-    - 'effect:SPEED:5:1'
-    - 'lightning:1'
+item-id:
+  triggers:
+    on_click_right:
+      - 'action1:param1:param2'
+      - 'action2:param1:param2'
 ```
 
 ---
@@ -37,26 +30,16 @@ triggers:
 
 ---
 
-## Доступные действия
+## Все доступные действия
 
 ### 📢 Коммуникация
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
 | `message` | `message:Текст` | Сообщение игроку |
-| `title` | `title:Заголовок:Подзаголовок:fadeIn:stay:fadeOut` | Заголовок на экране |
+| `title` | `title:Заголовок:Подзаголовок:IN:STAY:OUT` | Заголовок на экране |
 | `actionbar` | `actionbar:Текст` | Текст над хотбаром |
 | `broadcast` | `broadcast:Текст` | Объявление всем игрокам |
-
-**Плейсхолдеры:** `%player%` - Имя игрока
-
-**Примеры:**
-```yaml
-- 'message:&aВы получили алмаз!'
-- 'title:&6ПОБЕДА!::Вы получили силу!:10:40:10'
-- 'actionbar:&eУ вас осталось 5 использований'
-- 'broadcast:&6%player% получил легендарный меч!'
-```
 
 ---
 
@@ -70,27 +53,6 @@ triggers:
 | `glow` | `glow:СЕКУНДЫ` | Сияние |
 | `flight` | `flight:true/false` | Полёт |
 
-**Доступные эффекты:**
-- `SPEED` / `SLOWNESS` / `HASTE` / `MINING_FATIGUE`
-- `STRENGTH` / `INCREASE_DAMAGE` / `JUMP_BOOST`
-- `REGENERATION` / `RESISTANCE` / `DAMAGE_RESISTANCE`
-- `FIRE_RESISTANCE` / `WATER_BREATHING` / `INVISIBILITY`
-- `NIGHT_VISION` / `HEALTH_BOOST` / `ABSORPTION`
-- `SATURATION` / `GLOWING` / `LEVITATION`
-- `SLOW_FALLING` / `CONDUIT_POWER` / `DOLPHINS_GRACE`
-- `BAD_OMEN` / `HERO_OF_THE_VILLAGE` / `DARKNESS`
-
-**Примеры:**
-```yaml
-- 'effect:SPEED:10:2'          # Скорость II на 10 секунд
-- 'effect:STRENGTH:5:3'        # Сила III на 5 секунд
-- 'effect:REGENERATION:15:1'   # Регенерация I на 15 секунд
-- 'speed:30:2'                 # Скорость II на 30 сек (короткий)
-- 'vanish:10'                  # Невидимость на 10 сек
-- 'glow:5'                     # Сияние на 5 сек
-- 'flight:true'                # Включить полёт
-```
-
 ---
 
 ### 💥 Боевые действия
@@ -103,23 +65,11 @@ triggers:
 | `damage_nearby` | `damage_nearby:УРОН:РАДИУС` | AoE урон |
 | `damage_mobs` | `damage_mobs:УРОН:РАДИУС` | Урон только мобам |
 | `damage_players` | `damage_players:УРОН:РАДИУС` | Урон только игрокам |
-| `lightning` | `lightning:КОЛИЧЕСТВО` | Молния на месте игрока |
+| `lightning` | `lightning:КОЛИЧЕСТВО` | Молния на месте |
 | `lightning_forward` | `lightning_forward:ДАЛЬНОСТЬ` | Молния далеко вперед |
 | `knockback` | `knockback:РАДИУС` | Отбросить nearby |
 | `launch` | `launch:СИЛА` | Подбросить nearby |
 | `stun` | `stun:СЕКУНДЫ:РАДИУС` | Оглушить nearby |
-
-**Примеры:**
-```yaml
-- 'heal:10'              # Исцелить на 10 HP
-- 'heal_nearby:10:5'     # Исцелить игроков в радиусе 5 блоков на 10 HP
-- 'damage:6'             # Урон 6 HP
-- 'damage_nearby:20:4'   # AoE урон 20 в радиусе 4 блоков
-- 'damage_mobs:10:3'     # Урон мобам 10 в радиусе 3 блоков
-- 'lightning_forward:100' # Молния на 100 блоков вперед
-- 'knockback:4'          # Отбросить в радиусе 4 блоков
-- 'stun:3:5'             # Оглушить на 3 сек в радиусе 5 блоков
-```
 
 ---
 
@@ -130,12 +80,6 @@ triggers:
 | `teleport` | `teleport:X:Y:Z` | Телепорт в точку |
 | `teleport_relative` | `teleport_relative:X:Y:Z` | Относительный телепорт |
 
-**Примеры:**
-```yaml
-- 'teleport:100:64:200'       # В точку 100 64 200
-- 'teleport_relative:~:5:~'   # На 5 блоков вверх
-```
-
 ---
 
 ### 🎁 Предметы
@@ -145,14 +89,6 @@ triggers:
 | `give` | `give:МАТЕРИАЛ:КОЛИЧЕСТВО` | Выдать предмет |
 | `remove` | `remove:МАТЕРИАЛ:КОЛИЧЕСТВО` | Забрать предмет |
 | `exp` | `exp:ОПЫТ:УРОВНИ` | Выдать опыт |
-
-**Примеры:**
-```yaml
-- 'give:DIAMOND:5'       # 5 алмазов
-- 'give:GOLDEN_APPLE:1'  # 1 золотое яблоко
-- 'remove:DIAMOND:1'     # Забрать 1 алмаз
-- 'exp:500:5'            # 500 опыта + 5 уровней
-```
 
 ---
 
@@ -173,13 +109,6 @@ triggers:
 | `sound` | `sound:ТИП:ГРОМКОСТЬ:ТОНАЛЬНОСТЬ` | Звук |
 | `fireworks` | `fireworks:1` | Фейерверк |
 
-**Примеры:**
-```yaml
-- 'particles:FLAME:50'                    # 50 огненных частиц
-- 'particles:HEART:20'                    # 20 сердец
-- 'sound:ENTITY_PLAYER_LEVELUP:1:1.5'    # Звук повышения уровня
-```
-
 ---
 
 ### 🔧 Команды
@@ -189,63 +118,172 @@ triggers:
 | `command` | `command:КОМАНДА` | Команда от имени игрока |
 | `console_command` | `console_command:КОМАНДА` | Команда от консоли |
 
+---
+
+## 🚀 Продвинутые действия (БЕЗ ОГРАНИЧЕНИЙ!)
+
+### 🎨 Кастомные частицы
+
+```yaml
+# Формат: particles_custom:ТИП:КОЛИЧЕСТВО:X:Y:Z:OFF_X:OFF_Y:OFF_Z
+- 'particles_custom:FLAME:100:0:1:0:2:2:2'
+```
+
 **Примеры:**
 ```yaml
-- 'command:tp %player% 100 64 200'
-- 'command:effect give %player% speed 60 2'
+- 'particles_custom:FLAME:200:0:1:0:3:1:3'           # Огненное кольцо
+- 'particles_custom:DRAGON_BREATH:100:0:2:0:2:2:2'    # Дыхание дракона
+- 'particles_custom:PORTAL:150:0:1:0:2:2:2'           # Портальные частицы
+- 'particles_custom:HEART:50:0:2:0:1:1:1'             # Сердечки
+- 'particles_custom:EXPLOSION_HUGE:10:0:1:0:2:2:2'    # Взрыв
 ```
 
 ---
 
-## Полный пример (новый формат)
+### 🔊 Последовательность звуков
 
 ```yaml
-legendary-fire-sword:
-  material: NETHERITE_SWORD
-  display-name: '&c&l🔥 Огненный Клинок'
-  unbreakable: true
-  glowing: true
-  model: "fire_sword"
+# Формат: sound_sequence:ЗВУК1:ГРОМКОСТЬ1:ТОН1;ЗВУК2:ГРОМКОСТЬ2:ТОН2;...
+- 'sound_sequence:ENTITY_PLAYER_LEVELUP:1:1;ENTITY_ORB_PICKUP:0.5:1.5'
+```
+
+**Примеры:**
+```yaml
+- 'sound_sequence:ENTITY_BLAZE_SHOOT:1:1;ENTITY_GENERIC_EXPLODE:1:0.8'
+- 'sound_sequence:ENTITY_ENDERMAN_TELEPORT:1:1;ENTITY_PLAYER_LEVELUP:0.5:1.5'
+```
+
+---
+
+### 🎬 Последовательность заголовков (анимация!)
+
+```yaml
+# Формат: title_sequence:ЗАГОЛОВОК:ПОД:IN:STAY:OUT;...
+- 'title_sequence:🔥 ПОДГОТОВКА!:::10:20:10;🔥 ОГОНЬ!:::10:30:10;🔥 ШТОРМ!:::10:40:10'
+```
+
+**Примеры:**
+```yaml
+# Анимация перед ударом
+- 'title_sequence:⚡ 3!:::5:10:5;⚡ 2!:::5:10:5;⚡ 1!:::5:10:5;💥 УДАР!:::10:40:10'
+
+# Фазы боя
+- 'title_sequence:🔥 ФАЗА 1!:::10:30:10;🔥 ФАЗА 2!:::10:30:10;🔥 ФАЗА 3!:::10:40:10'
+```
+
+---
+
+### 📜 Последовательность команд с задержками
+
+```yaml
+# Формат: command_sequence:КОМАНДА1:ЗАДЕРЖКА1;КОМАНДА2:ЗАДЕРЖКА2;...
+- 'command_sequence:give %player% diamond 1:20;say Привет!:40;give %player% emerald 1:60'
+```
+
+**Примеры:**
+```yaml
+# Награда поэтапно
+- 'command_sequence:give %player% diamond 5:100;give %player% emerald 3:200;give %player% gold 10:300'
+```
+
+---
+
+### 🌀 Последовательность телепортаций
+
+```yaml
+# Формат: teleport_sequence:X1:Y1:Z1:ЗАДЕРЖКА1;X2:Y2:Z2:ЗАДЕРЖКА2;...
+- 'teleport_sequence:100:64:200:200;200:64:300:200;300:64:400'
+```
+
+**Примеры:**
+```yaml
+# Телепорт-серия
+- 'teleport_sequence:100:64:200:100;200:64:300:100;300:64:400:100;400:64:500'
+```
+
+---
+
+### 💫 Последовательность эффектов
+
+```yaml
+# Формат: effect_sequence:ТИП1:СЕКУНДЫ1:УРОВЕНЬ1:ЗАДЕРЖКА1;...
+- 'effect_sequence:SPEED:10:2:0;STRENGTH:10:3:1000;REGENERATION:10:2:2000'
+```
+
+**Примеры:**
+```yaml
+# Наращивание силы
+- 'effect_sequence:SPEED:10:1:0;SPEED:10:2:2000;SPEED:10:3:4000;SPEED:10:4:6000'
+```
+
+---
+
+### 💥 Кастомный урон (точные размеры)
+
+```yaml
+# Формат: damage_custom:УРОН:ШИРИНА:ВЫСОТА:ГЛУБИНА
+- 'damage_custom:20:5:3:5'  # 20 урона в области 5x3x5 блоков
+```
+
+**Примеры:**
+```yaml
+- 'damage_custom:30:6:4:6'  # Мощный AoE удар
+- 'damage_custom:10:3:2:3'  # Маленький AoE удар
+- 'damage_custom:50:8:6:8'  # Огромный AoE удар
+```
+
+---
+
+### ❤️ Кастомное исцеление (с частицами)
+
+```yaml
+# Формат: heal_custom:ИСЦЕЛЕНИЕ:ШИРИНА:ВЫСОТА:ГЛУБИНА:ЧАСТИЦЫ
+- 'heal_custom:10:5:5:5:HEART'  # Лечит 10 HP в области 5x5x5 с сердечками
+```
+
+**Примеры:**
+```yaml
+- 'heal_custom:15:8:5:8:HEART'      # Лечение союзников
+- 'heal_custom:20:10:8:10:VILLAGER_HAPPY'  # Массовое лечение
+```
+
+---
+
+## 🎮 Полный пример (все действия)
+
+```yaml
+ultimate-fire-sword:
+  type: TOOL
+  activation-slot: HAND
   
-  enchantments:
-    SHARPNESS: 5
-    FIRE_ASPECT: 2
-    UNBREAKING: 3
-    
-  attributes:
-    GENERIC_ATTACK_DAMAGE: 15.0
-    GENERIC_ATTACK_SPEED: 1.8
+  item:
+    type: NETHERITE_SWORD
+    title: '&c🔥 Огненный Клинок'
+    glowing: true
+    unbreakable: true
     
   effects:
-    - 'FIRE_RESISTANCE:999:1'
-    - 'STRENGTH:10:1'
+    - 'INCREASE_DAMAGE:5'
+    - 'SPEED:3'
+    - 'REGENERATION:3'
     
-  cooldown: 1000
-  
   triggers:
     on_equip:
-      - 'particles:FLAME:30'
-      - 'sound:ENTITY_BLAZE_AMBIENT'
-      - 'message:&c🔥 Огненный клинок извлечен!'
-      
-    on_unequip:
-      - 'particles:SMOKE:20'
-      - 'sound:BLOCK_FIRE_EXTINGUISH'
+      - 'particles_custom:FLAME:100:0:1:0:2:2:2'
+      - 'sound_sequence:ENTITY_BLAZE_AMBIENT:1:1;ENTITY_PLAYER_LEVELUP:0.5:2'
+      - 'title:&c🔥 КЛИНОК ИЗВЛЕЧЁН!::&7Стихия огня!:10:40:10'
       
     on_click_right:
-      - 'damage_nearby:15:4'
-      - 'particles:FLAME:100'
-      - 'sound:ENTITY_GENERIC_EXPLODE'
-      - 'effect:STRENGTH:10:2'
-      - 'title:&c🔥 ОГНЕННЫЙ ШТОРМ!::&7Все враги горят!'
-      
-    on_click_left:
-      - 'damage_mobs:10:3'
-      - 'particles:CRIT:50'
+      - 'title_sequence:🔥 ПОДГОТОВКА!:::10:20:10;🔥 ОГОНЬ!:::10:30:10;🔥 ШТОРМ!:::10:40:10'
+      - 'particles_custom:FLAME:200:0:1:0:3:1:3'
+      - 'damage_custom:30:6:4:6'
+      - 'sound_sequence:ENTITY_BLAZE_SHOOT:1:1;ENTITY_GENERIC_EXPLODE:1:0.8'
+      - 'effect_sequence:STRENGTH:15:5:0;SPEED:15:3:500'
       
     on_kill:
-      - 'heal:20'
-      - 'effect:REGENERATION:10:2'
-      - 'particles:HEART:30'
-      - 'sound:ENTITY_PLAYER_LEVELUP'
+      - 'heal:50'
+      - 'effect_sequence:REGENERATION:20:4:0;STRENGTH:20:5:1000'
+      - 'particles_custom:HEART:100:0:2:0:2:2:2'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
+      - 'fireworks:1'
 ```

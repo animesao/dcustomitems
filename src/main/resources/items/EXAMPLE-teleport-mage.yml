@@ -1,0 +1,102 @@
+# ============================================
+# ПРИМЕР: ПАЛОЧКА ТЕЛЕПОРТА МАГА
+# Демонстрация последовательностей и телепортаций
+# ============================================
+
+teleport-mage-staff:
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: example.teleport_mage
+
+  item:
+    type: BLAZE_ROD
+    title: '&d[🌀] &fПалочка Телепорта &dМага'
+    glowing: true
+    unbreakable: true
+    item-model: "teleport_mage_staff"
+    enchantments:
+      UNBREAKING: 3
+      MENDING: 1
+
+  lore:
+    - ''
+    - ' &d━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Палочка мастера телепортаций'
+    - ' &d━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ''
+    - ' &e⚡ &fКогда в основной руке:'
+    - ' &6┌ &eСкорость &dII'
+    - ' &6└ &eНевидимость &dпри приседании'
+    - ''
+    - '&d🌀 &fПКМ: Телепорт к курсору!'
+    - '&d✨ &fЛКМ: Серия телепортов!'
+    - ''
+
+  effects:
+    - 'SPEED:2'
+    - 'NIGHT_VISION:1'
+
+  click-cooldown: 1500
+  cooldown-message: ""
+
+  triggers:
+    on_equip:
+      # Портальные частицы
+      - 'particles_custom:PORTAL:50:0:1:0:1:1:1'
+      - 'particles_custom:REVERSE_PORTAL:30:0:2:0:0.5:0.5:0.5'
+      
+      # Звук телепорта
+      - 'sound_sequence:ENTITY_ENDERMAN_TELEPORT:1:1;ENTITY_PLAYER_LEVELUP:0.5:1.5'
+      
+      # Заголовок
+      - 'title:&d🌀 &lТЕЛЕПОРТ МАГА!::&7Пространство повинуется вам!:10:40:10'
+
+    on_unequip:
+      - 'particles_custom:SMOKE:20:0:1:0:0.5:0.5:0.5'
+      - 'sound:ENTITY_ENDERMAN_TELEPORT:0.5:0.8'
+
+    on_click_right:
+      # Телепорт далеко вперед (куда смотришь)
+      - 'lightning_forward:100'
+      
+      # Частицы телепорта
+      - 'particles_custom:PORTAL:100:0:1:0:2:2:2'
+      - 'particles_custom:REVERSE_PORTAL:50:0:2:0:1:1:1'
+      
+      # Звук телепорта
+      - 'sound:ENTITY_ENDERMAN_TELEPORT:1:1'
+      
+      # Заголовок
+      - 'title:&d🌀 &lТЕЛЕПОРТ!::&7Вы переместились!:10:30:10'
+
+    on_click_left:
+      # Серия телепортов (анимация)
+      - 'teleport_sequence:100:64:200:200;200:64:300:200;300:64:400:200;400:64:500:200;500:64:600'
+      
+      # Частицы следа
+      - 'particles_custom:PORTAL:200:0:1:0:3:1:3'
+      
+      # Звуки с задержками
+      - 'sound_sequence:ENTITY_ENDERMAN_TELEPORT:0.5:1;ENTITY_ENDERMAN_TELEPORT:0.5:1.2;ENTITY_ENDERMAN_TELEPORT:0.5:1.4;ENTITY_PLAYER_LEVELUP:1:2'
+      
+      # Заголовки с задержками
+      - 'title_sequence:🌀 1/4!:::10:20:10;🌀 2/4!:::10:20:10;🌀 3/4!:::10:20:10;🌀 ФИНИШ!:::10:40:10'
+
+    on_jump:
+      # Эффект левитации при прыжке
+      - 'effect:LEVITATION:3:1'
+      - 'particles_custom:PORTAL:30:0:-0.5:0:0.3:0.1:0.3'
+
+    on_damage_taken:
+      # Телепорт при получении урона (уклонение)
+      - 'teleport_relative:~:5:~'
+      - 'particles_custom:PORTAL:50:0:1:0:1:1:1'
+      - 'sound:ENTITY_ENDERMAN_TELEPORT:1:1.5'
+
+    on_pickup:
+      - 'particles_custom:PORTAL:25:0:1:0:0.5:0.5:0.5'
+      - 'sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.2'
+
+    on_drop:
+      - 'particles_custom:SMOKE:15:0:1:0:0.3:0.3:0.3'

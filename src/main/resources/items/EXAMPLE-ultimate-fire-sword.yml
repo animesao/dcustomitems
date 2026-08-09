@@ -1,0 +1,154 @@
+# ============================================
+# ПРИМЕР: УЛЬТИМАТИВНЫЙ ОГНЕННЫЙ КЛИНОК
+# Демонстрация ВСЕХ возможностей плагина
+# ============================================
+
+ultimate-fire-sword:
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: example.fire_sword
+
+  item:
+    type: NETHERITE_SWORD
+    title: '&c&l🔥 Ультимативный Огненный Клинок'
+    glowing: true
+    unbreakable: true
+    item-model: "ultimate_fire_sword"
+    enchantments:
+      SHARPNESS: 10
+      FIRE_ASPECT: 2
+      SWEEPING_EDGE: 3
+      UNBREAKING: 3
+      MENDING: 1
+
+  lore:
+    - ''
+    - ' &c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Легендарное оружие огненных стихий'
+    - ' &c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ''
+    - ' &e⚡ &fКогда в основной руке:'
+    - ' &6┌ &eСила &cV'
+    - ' &6├ &eСкорость &cIII'
+    - ' &6├ &eРегенерация &cIII'
+    - ' &6└ &eСопротивление &cII'
+    - ''
+    - '&c🔥 &fПКМ: Огненный шторм!'
+    - '&c💥 &fЛКМ: AoE урон!'
+    - '&c❤ &fПри убийстве: Полное исцеление!'
+    - ''
+
+  effects:
+    - 'INCREASE_DAMAGE:5'
+    - 'SPEED:3'
+    - 'REGENERATION:3'
+    - 'RESISTANCE:2'
+
+  attributes:
+    GENERIC_ATTACK_DAMAGE: 25.0
+    GENERIC_ATTACK_SPEED: 2.2
+    GENERIC_MAX_HEALTH: 10.0
+    GENERIC_ARMOR: 5.0
+    GENERIC_ARMOR_TOUGHNESS: 5.0
+
+  click-cooldown: 2000
+  cooldown-message: ""
+
+  triggers:
+    on_equip:
+      # Кастомные частицы с offset
+      - 'particles_custom:FLAME:100:0:1:0:2:2:2'
+      - 'particles_custom:DRAGON_BREATH:50:0:2:0:1:1:1'
+      # Последовательность звуков
+      - 'sound_sequence:ENTITY_BLAZE_AMBIENT:1:1;ENTITY_PLAYER_LEVELUP:0.5:2'
+      # Заголовок
+      - 'title:&c🔥 &lОГНЕННЫЙ КЛИНОК ИЗВЛЕЧЁН!::&7Стихия огня повинуется вам!:10:40:10'
+
+    on_unequip:
+      - 'particles_custom:SMOKE:30:0:1:0:1:1:1'
+      - 'sound:ENTITY_BLAZE_SHOOT:0.5:1.5'
+
+    on_click_right:
+      # Последовательность заголовков (анимация)
+      - 'title_sequence:🔥 ПОДГОТОВКА!:::10:20:10;🔥 ОГОНЬ!:::10:30:10;🔥 ШТОРМ!:::10:40:10'
+      
+      # Кастомные частицы (огненное кольцо)
+      - 'particles_custom:FLAME:200:0:1:0:3:1:3'
+      - 'particles_custom:DRAGON_BREATH:100:0:2:0:2:2:2'
+      
+      # Кастомный урон (6x4x6 блоков)
+      - 'damage_custom:30:6:4:6'
+      
+      # Звуки с задержками
+      - 'sound_sequence:ENTITY_BLAZE_SHOOT:1:1;ENTITY_GENERIC_EXPLODE:1:0.8;ENTITY_ENDER_DRAGON_GROWL:1:1'
+      
+      # Эффекты с задержками
+      - 'effect_sequence:STRENGTH:15:5:0;SPEED:15:3:500;FIRE_RESISTANCE:15:1:1000'
+      
+      # Кастомное исцеление для союзников
+      - 'heal_custom:15:8:5:8:HEART'
+
+    on_click_left:
+      # Кастомный урон
+      - 'damage_custom:20:5:3:5'
+      
+      # Частицы взрыва
+      - 'particles_custom:EXPLOSION_HUGE:10:0:1:0:2:2:2'
+      - 'particles_custom:FLAME:150:0:1:0:3:2:3'
+      
+      # Звук взрыва
+      - 'sound:ENTITY_GENERIC_EXPLODE:1:0.8'
+      
+      # Отброс
+      - 'knockback:5'
+
+    on_kill:
+      # Полное исцеление
+      - 'heal:50'
+      
+      # Эффекты исцеления
+      - 'effect_sequence:REGENERATION:20:4:0;STRENGTH:20:5:1000;SPEED:20:3:2000'
+      
+      # Кастомные частицы исцеления
+      - 'particles_custom:HEART:100:0:2:0:2:2:2'
+      - 'particles_custom:VILLAGER_HAPPY:50:0:3:0:1:1:1'
+      
+      # Звук уровня
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
+      
+      # Фейерверк
+      - 'fireworks:1'
+
+    on_damage_dealt:
+      # Кража здоровья
+      - 'heal:8'
+      
+      # Частицы крови
+      - 'particles_custom:DRAGON_BREATH:20:0:1:0:0.5:0.5:0.5'
+      
+      # Звук вампира
+      - 'sound:ENTITY_VAMPIRE_BITE:0.5:2'
+
+    on_damage_taken:
+      # Сопротивление урону
+      - 'effect:RESISTANCE:8:3'
+      
+      # Частицы защиты
+      - 'particles_custom:ENCHANTMENT_TABLE:30:0:1:0:1:1:1'
+
+    on_jump:
+      # Скорость при прыжке
+      - 'effect:SPEED:5:3'
+      
+      # Огненные следы
+      - 'particles_custom:FLAME:20:0:-0.5:0:0.3:0.1:0.3'
+
+    on_pickup:
+      # Приветствие
+      - 'particles_custom:PORTAL:30:0:1:0:1:1:1'
+      - 'sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.2'
+
+    on_drop:
+      # Прощание
+      - 'particles_custom:SMOKE:20:0:1:0:0.5:0.5:0.5'
