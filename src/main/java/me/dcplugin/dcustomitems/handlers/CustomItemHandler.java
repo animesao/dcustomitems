@@ -329,10 +329,22 @@ public class CustomItemHandler {
             if (meta != null) {
                 // ПРИОРИТЕТ: item-model (для 1.21.11) > custom-model-data (legacy)
                 if (itemModel != null && !itemModel.isEmpty()) {
-                    // Используем custom_model_data с строками (Minecraft 1.21.4+)
-                    // Сохраняем строку в PDC для использования в ресурс-паке
+                    // Используем setItemModel() для Minecraft 1.21.4+
+                    // Формат: "minecraft:item/smoke" или просто "smoke"
+                    NamespacedKey modelKey;
+                    if (itemModel.contains(":")) {
+                        // Уже полный путь: "minecraft:item/smoke"
+                        String[] parts = itemModel.split(":", 2);
+                        modelKey = new NamespacedKey(parts[0], parts[1]);
+                    } else {
+                        // Короткий путь: "smoke" -> "minecraft:item/smoke"
+                        modelKey = new NamespacedKey("minecraft", "item/" + itemModel);
+                    }
+                    
+                    meta.setItemModel(modelKey);
                     meta.getPersistentDataContainer().set(itemModelKey, PersistentDataType.STRING, itemModel);
-                    plugin.getLogger().fine("[LOAD] Применён item_model: " + itemModel + " для " + itemId);
+                    
+                    plugin.getLogger().fine("[LOAD] Применён item_model: " + modelKey + " для " + itemId);
                 } else if (customModelData > 0) {
                     // Используем старый custom_model_data (legacy)
                     meta.setCustomModelData(customModelData);
