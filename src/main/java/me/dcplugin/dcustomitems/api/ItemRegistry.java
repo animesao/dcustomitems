@@ -3,7 +3,6 @@ package me.dcplugin.dcustomitems.api;
 import me.dcplugin.dcustomitems.Main;
 import me.dcplugin.dcustomitems.api.commands.CustomCommand;
 import me.dcplugin.dcustomitems.api.placeholders.CustomPlaceholder;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,17 +49,14 @@ public class ItemRegistry {
         loadAll();
         for (CustomCommand cmd : registeredCommands.values()) {
             try {
-                org.bukkit.command.PluginCommand pluginCmd = plugin.getCommand(cmd.getName());
-                if (pluginCmd != null) {
-                    pluginCmd.setExecutor(plugin.getCommandManager());
-                    pluginCmd.setTabCompleter(plugin.getCommandManager());
-                }
                 cmd.onRegister();
+                plugin.getLogger().info("[API] Command: /" + cmd.getName());
             } catch (Exception e) {}
         }
         for (CustomPlaceholder ph : registeredPlaceholders.values()) {
             plugin.getPlaceholderManager().register(ph.getIdentifier(), (player) -> ph.getValue(player));
             ph.onRegister();
+            plugin.getLogger().info("[API] Placeholder: %" + ph.getIdentifier() + "%");
         }
     }
 
