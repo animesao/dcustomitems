@@ -1,306 +1,165 @@
-# DC-CustomItems Plugin Documentation
+# DC-CustomItems Documentation
 
 ## 📚 Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
-- [Requirements](#requirements)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Configuration](#configuration)
+- [Java Items](#java-items)
+- [Java Commands](#java-commands)
+- [Java Placeholders](#java-placeholders)
+- [Messages Config](#messages-config)
 - [Commands](#commands)
-- [Permissions](#permissions)
-- [Resource Pack](#resource-pack)
-- [Java API](#java-api)
-- [Troubleshooting](#troubleshooting)
 - [Support](#support)
 
 ---
 
 ## 📖 Overview
 
-DC-CustomItems is a powerful plugin for Minecraft servers (Spigot/Paper 1.20+) that allows you to create custom items with unique abilities, effects, and mechanics.
+DC-CustomItems is a plugin for Minecraft servers (Spigot/Paper 1.20+) that allows you to create custom items, commands, and placeholders using pure Java code.
 
-### What You Can Create:
-
-- ⚔️ **Custom Weapons** - Swords, axes, bows with special abilities
-- 🛡️ **Custom Armor** - Helmets, chestplates with unique effects
-- 🧪 **Potions & Consumables** - Custom potions, food, scrolls
-- 🔮 **Special Items** - Totems, wands, tools with abilities
-- 🎯 **Any Item** - Full customization with no limits
+**Everything is hot-reloadable!** Just drop a .java file in the `items/` folder and run `/ci reload`.
 
 ---
 
 ## ✨ Features
 
-### Core Features:
-
 | Feature | Description |
 |---------|-------------|
-| **YAML Configuration** | Create items using simple YAML files |
-| **Java API** | Advanced items using Java code |
-| **Hot Reload** | Reload items without server restart |
-| **Custom Models** | Support for resource pack models |
-| **Effects System** | Particles, sounds, potions, titles |
-| **Cooldowns** | Configurable cooldowns for abilities |
-| **Permissions** | Per-item permission system |
-| **Multi-Trigger** | Multiple actions per event |
-
-### Supported Events:
-
-- Left Click (LKM)
-- Right Click (PKM)
-- Equip/Unequip
-- Block Break
-- Entity Damage
-- Player Death
-- And more...
-
----
-
-## 📋 Requirements
-
-| Requirement | Version |
-|-------------|---------|
-| Minecraft Server | 1.20+ (tested on 1.21.11) |
-| Server Software | Spigot, Paper, or compatible |
-| Java | 17 or higher |
-| Plugin Loader | Bukkit/Spigot |
+| **Java Items** | Create custom items with abilities |
+| **Java Commands** | Create custom commands |
+| **Java Placeholders** | Create custom placeholders |
+| **Hot Reload** | Reload without server restart |
+| **Database** | SQLite support for data storage |
+| **Custom Messages** | Edit all plugin messages |
 
 ---
 
 ## 🚀 Installation
 
-### Step 1: Download
-
-Download the latest version from GitHub:
 ```bash
+cd ~/plugins
 curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/latest/download/DC-CustomItems.jar
 ```
 
-### Step 2: Install
-
-Place the JAR file in your server's `plugins/` folder:
-```
-server/
-└── plugins/
-    └── dcustomitems.jar
-```
-
-### Step 3: Restart Server
-
-Restart your Minecraft server or reload with `/ci reload`.
-
-### Step 4: Verify
-
-Check if the plugin is loaded:
-```
-/pl
-```
-
-You should see `DC-CustomItems` in the list.
+Restart server or run `/ci reload`.
 
 ---
 
 ## 🎮 Quick Start
 
-### Creating Your First Item
+### Step 1: Create an Item
 
-1. **Navigate to the items folder:**
-```
-plugins/DC-CustomItems/items/
-```
-
-2. **Create a new file:** `my-sword.yml`
-
-3. **Add this configuration:**
-```yaml
-my_sword:
-  item:
-    type: DIAMOND_SWORD
-    title: '&6My First Sword'
-    glowing: true
-  lore:
-    - ''
-    - '&7A powerful custom sword'
-    - ''
-  type: TOOL
-  activation-slot: HAND
-  trigger-actions:
-    - 'on_click_right:effect:SPEED:10:1'
-    - 'on_click_right:particle:FLAME:50'
-    - 'on_click_right:message:&6Sword activated!'
-```
-
-4. **Reload the plugin:**
-```
-/ci reload
-```
-
-5. **Get your item:**
-```
-/ci give my_sword
-```
-
-### That's it! You've created your first custom item!
-
----
-
-## ⚙️ Configuration
-
-### Item Configuration Structure
-
-```yaml
-item_id:                          # Unique identifier
-  item:
-    type: MATERIAL                # Minecraft material
-    title: '&6Display Name'      # Item name (supports & colors)
-    glowing: true                 # Enchantment glow
-    unbreakable: true             # Cannot be broken
-    custom-model-data: 1001       # Custom model data
-    item-model: "model_name"     # Resource pack model (1.21+)
-    enchantments:
-      SHARPNESS: 5               # Enchantments
-      UNBREAKING: 3
-  lore:                           # Item description
-    - ''
-    - '&7Line 1'
-    - '&eLine 2'
-    - ''
-  type: TOOL                      # Item type (TOOL, ARMOR, RUNE, etc.)
-  activation-slot: HAND           # Where item activates
-  placeable: false                # Can item be placed
-  click-cooldown: 500             # Cooldown in milliseconds
-  permission: "myplugin.use"      # Required permission
-  trigger-actions:                # Actions to perform
-    - 'on_event:action'
-```
-
----
-
-## 📝 Commands
-
-### Basic Commands
-
-| Command | Description | Permission |
-|---------|-------------|------------|
-| `/ci give <item> [player]` | Give custom item | `customitems.give` |
-| `/ci list` | List all items | `customitems.list` |
-| `/ci reload` | Reload all items | `customitems.reload` |
-| `/api-item give <id> [player]` | Give Java API item | `customitems.give` |
-| `/api-item list` | List Java API items | `customitems.list` |
-
-### Command Examples
-
-```bash
-# Give item to yourself
-/ci give my_sword
-
-# Give item to another player
-/ci give my_sword Steve
-
-# List all items
-/ci list
-
-# Reload plugin
-/ci reload
-```
-
----
-
-## 🔐 Permissions
-
-### Default Permissions
-
-| Permission | Description | Default |
-|------------|-------------|---------|
-| `customitems.give` | Give custom items | op |
-| `customitems.list` | List items | true |
-| `customitems.reload` | Reload plugin | op |
-| `customitems.admin` | Admin permissions | op |
-
-### Per-Item Permissions
-
-Add custom permissions to restrict item usage:
-
-```yaml
-legendary_sword:
-  permission: "myplugin.legendary"
-  # Only players with this permission can use
-```
-
----
-
-## 🎨 Resource Pack
-
-### Basic Setup
-
-1. **Create resource pack folder structure:**
-```
-resource-pack/
-├── pack.mcmeta
-└── assets/
-    └── minecraft/
-        ├── models/
-        │   └── item/
-        │       └── my_model.json
-        └── textures/
-            └── item/
-                └── my_model.png
-```
-
-2. **pack.mcmeta:**
-```json
-{
-  "pack": {
-    "description": "Custom Items Resource Pack",
-    "pack_format": 34
-  }
-}
-```
-
-3. **Model file (my_model.json):**
-```json
-{
-  "parent": "minecraft:item/handheld",
-  "textures": {
-    "0": "minecraft:item/my_model"
-  }
-}
-```
-
-4. **Use in item config:**
-```yaml
-my_item:
-  item:
-    item-model: "my_model"
-```
-
----
-
-## ☕ Java API
-
-### Basic Structure
+Create `my-sword.java` in `plugins/DC-CustomItems/items/`:
 
 ```java
 import me.dcplugin.dcustomitems.api.AbstractCustomItem;
-import me.dcplugin.dcustomitems.api.ItemAPI;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 public class MySword extends AbstractCustomItem {
-
+    
     @Override
     public String getId() { return "my_sword"; }
-
+    
     @Override
     public String getDisplayName() { return "&6My Sword"; }
-
+    
     @Override
     public Material getMaterial() { return Material.DIAMOND_SWORD; }
-
+    
     @Override
-    public void onRightClick(PlayerInteractEvent e, Player p) {
-        ItemAPI.heal(p, 5);
-        ItemAPI.effect(p, PotionEffectType.SPEED, 10, 1);
+    public void onRightClick(PlayerInteractEvent event, Player player) {
+        player.setHealth(20);
+        player.sendMessage("Healed!");
+    }
+}
+```
+
+### Step 2: Reload
+
+```
+/ci reload
+```
+
+### Step 3: Get Item
+
+```
+/ci give my_sword
+```
+
+---
+
+## ☕ Java Items
+
+### Base Class
+
+Extend `AbstractCustomItem`:
+
+```java
+public class MyItem extends AbstractCustomItem {
+    @Override
+    public String getId() { return "my_item"; }
+    
+    @Override
+    public String getDisplayName() { return "&6My Item"; }
+    
+    @Override
+    public Material getMaterial() { return Material.DIAMOND_SWORD; }
+}
+```
+
+### Available Methods
+
+| Method | When Called |
+|--------|------------|
+| `onLeftClick(event, player)` | Left click |
+| `onRightClick(event, player)` | Right click |
+| `onEquip(player)` | Equipped |
+| `onUnequip(player)` | Unequipped |
+| `onDamageDealt(event, player)` | Deal damage |
+| `onDamageTaken(event, player)` | Take damage |
+| `onKill(killer, victim)` | Kill entity |
+| `onBlockBreak(player, event)` | Break block |
+
+### ItemAPI Utilities
+
+```java
+ItemAPI.heal(player, 10);
+ItemAPI.effect(player, PotionEffectType.SPEED, 30, 2);
+ItemAPI.particles(player, Particle.FLAME, 50);
+ItemAPI.sound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+ItemAPI.teleport(player, x, y, z);
+ItemAPI.title(player, "Title", "Subtitle");
+```
+
+---
+
+## 📝 Java Commands
+
+### Base Class
+
+Extend `CustomCommand`:
+
+```java
+import me.dcplugin.dcustomitems.api.commands.CustomCommand;
+
+public class HealCommand extends CustomCommand {
+    
+    public HealCommand() {
+        super("heal", "Heal player", "/heal [player]", "dci.heal");
+    }
+    
+    @Override
+    public boolean execute(CommandSender sender, String[] args) {
+        Player target = getTarget(sender, args, 0);
+        if (target == null) return false;
+        
+        target.setHealth(20);
+        msg(sender, "&aHealed " + target.getName());
+        return true;
     }
 }
 ```
@@ -309,84 +168,87 @@ public class MySword extends AbstractCustomItem {
 
 | Method | Description |
 |--------|-------------|
-| `onLeftClick()` | Left click action |
-| `onRightClick()` | Right click action |
-| `onEquip()` | When equipped |
-| `onUnequip()` | When unequipped |
-| `onDamageDealt()` | When dealing damage |
-| `onDamageTaken()` | When taking damage |
-| `onKill()` | When killing entity |
-| `onDeath()` | On player death |
-| `onBlockBreak()` | Breaking blocks |
-
-### ItemAPI Utilities
-
-| Method | Description |
-|--------|-------------|
-| `ItemAPI.heal(player, amount)` | Heal player |
-| `ItemAPI.effect(player, type, sec, lvl)` | Apply potion effect |
-| `ItemAPI.particles(player, particle, count)` | Spawn particles |
-| `ItemAPI.sound(player, sound, vol, pitch)` | Play sound |
-| `ItemAPI.teleport(player, x, y, z)` | Teleport player |
-| `ItemAPI.title(player, title, sub)` | Show title |
+| `msg(sender, text)` | Send colored message |
+| `title(player, title, sub)` | Send title |
+| `getTarget(sender, args, index)` | Get player from args |
+| `getInt(args, index, def)` | Get int from args |
+| `colorize(text)` | Convert & to § |
 
 ---
 
-## 🔧 Troubleshooting
+## 🏷️ Java Placeholders
 
-### Common Issues
+### Base Class
 
-#### Item Not Appearing
+Extend `CustomPlaceholder`:
 
-**Problem:** Item doesn't show up after `/ci give`
+```java
+import me.dcplugin.dcustomitems.api.placeholders.CustomPlaceholder;
 
-**Solution:**
-1. Check item ID matches: `/ci list`
-2. Reload plugin: `/ci reload`
-3. Check console for errors
+public class MoneyPlaceholder extends CustomPlaceholder {
+    
+    public MoneyPlaceholder() {
+        super("money"); // %money%
+    }
+    
+    @Override
+    public String getValue(Player player) {
+        return "1000"; // Your logic here
+    }
+}
+```
 
-#### Effects Not Working
+### Usage
 
-**Problem:** Particles/effects don't show
+```
+Balance: %money%
+```
 
-**Solution:**
-1. Check particle name is correct
-2. Verify player has required permissions
-3. Check console for error messages
+---
 
-#### Plugin Not Loading
+## 🔧 Messages Config
 
-**Problem:** Plugin doesn't appear in `/pl`
+Edit `EXAMPLE-messages.java` in `items/` to customize all messages:
 
-**Solution:**
-1. Verify Java version (17+)
-2. Check plugin.yml exists
-3. Look for errors in console
+```java
+MessagesConfig.PREFIX = "&8[&6MyPlugin&8] &r";
+MessagesConfig.ITEM_GIVEN = PREFIX + "&aYou got &e{item}&a!";
+```
+
+---
+
+## 📋 Commands
+
+| Command | Description |
+|---------|-------------|
+| `/ci give <id> [player]` | Give custom item |
+| `/ci list` | List all items |
+| `/ci reload` | Reload plugin |
+| `/api-item give <id> [player]` | Give API item |
+| `/api-item list` | List API items |
+
+---
+
+## 📁 File Structure
+
+```
+plugins/DC-CustomItems/
+├── items/
+│   ├── my-sword.java         <- Item
+│   ├── heal-command.java     <- Command
+│   ├── money-placeholder.java <- Placeholder
+│   └── messages.java         <- Messages config
+├── compiled/                 <- Auto-generated
+└── data.db                  <- Database
+```
 
 ---
 
 ## 📞 Support
 
-### Getting Help
-
-1. **Check Documentation** - Read relevant docs
-2. **Search Issues** - Look for similar problems
-3. **Create Issue** - Report bugs on GitHub
-4. **Community** - Join our Discord
-
-### Useful Links
-
 - **GitHub:** https://github.com/animesao/dcustomitems
-- **Releases:** https://github.com/animesao/dcustomitems/releases
 - **Issues:** https://github.com/animesao/dcustomitems/issues
 
 ---
 
-## 📄 License
-
-This plugin is open source under the MIT License.
-
----
-
-**Version:** 1.320.237  
-**Last Updated:** August 2026
+**Version:** 1.320.241
