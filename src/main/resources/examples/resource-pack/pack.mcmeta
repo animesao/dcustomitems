@@ -1,0 +1,6 @@
+{
+  "pack": {
+    "pack_format": 34,
+    "description": "DC-CustomItems API Example Models\n\nМодели для Java API предметов:\n- dark_sword - Тёмный Клинок\n- fire_sword - Огненный Клинок\n- teleport_staff - Посох Телепорта\n- dark_helmet - Тёмный Шлем"
+  }
+}
