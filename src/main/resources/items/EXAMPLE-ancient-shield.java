@@ -1,6 +1,7 @@
 import me.dcplugin.dcustomitems.api.AbstractCustomItem;
 import me.dcplugin.dcustomitems.api.ItemAPI;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
@@ -49,17 +50,19 @@ public class AncientShield extends AbstractCustomItem {
 
     @Override
     public void onEquip(Player player) {
-        // Увеличить максимальное здоровье (новый способ без deprecated конструктора)
+        // Увеличить максимальное здоровье ( NamespacedKey способ)
         if (player.getAttribute(Attribute.MAX_HEALTH) != null) {
-            AttributeModifier modifier = AttributeModifier.builder()
-                .name("ancient_shield_health")
-                .amount(8) // +4 сердца = +8 HP
-                .operation(AttributeModifier.Operation.ADD_NUMBER)
-                .build();
+            NamespacedKey key = new NamespacedKey("dcustomitems", "ancient_shield_health");
+            AttributeModifier modifier = new AttributeModifier(
+                key,
+                8, // +4 сердца = +8 HP
+                AttributeModifier.Operation.ADD_NUMBER,
+                EquipmentSlotGroup.OFFHAND
+            );
             player.getAttribute(Attribute.MAX_HEALTH).addTransientModifier(modifier);
         }
 
-        // Дать сопротивление (RESISTANCE вместо DAMAGE_RESISTATION)
+        // Дать сопротивление
         ItemAPI.effect(player, PotionEffectType.RESISTANCE, 999999, 0);
 
         ItemAPI.message(player, "&6🛡 &fДревний Щит активирован!");
@@ -71,11 +74,11 @@ public class AncientShield extends AbstractCustomItem {
         // Убрать увеличение здоровья
         if (player.getAttribute(Attribute.MAX_HEALTH) != null) {
             player.getAttribute(Attribute.MAX_HEALTH).getModifiers().stream()
-                .filter(m -> m.getName().equals("ancient_shield_health"))
+                .filter(m -> m.getKey() != null && m.getKey().getKey().equals("ancient_shield_health"))
                 .forEach(player.getAttribute(Attribute.MAX_HEALTH)::removeModifier);
         }
 
-        // Убрать сопротивление (RESISTANCE)
+        // Убрать сопротивление
         player.removePotionEffect(PotionEffectType.RESISTANCE);
 
         ItemAPI.message(player, "&6🛡 &fДревний Щит деактивирован.");
@@ -84,7 +87,7 @@ public class AncientShield extends AbstractCustomItem {
 
     @Override
     public void onLeftClick(PlayerInteractEvent event, Player player) {
-        // Активация барьера (RESISTANCE)
+        // Активация барьера
         ItemAPI.effect(player, PotionEffectType.RESISTANCE, 5, 1);
         ItemAPI.particles(player, Particle.ENCHANTED_HIT, 50);
         ItemAPI.sound(player, Sound.ITEM_SHIELD_BLOCK, 1f, 1.5f);
