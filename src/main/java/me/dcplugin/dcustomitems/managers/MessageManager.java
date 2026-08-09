@@ -1,7 +1,7 @@
-
 package me.dcplugin.dcustomitems.managers;
 
 import me.dcplugin.dcustomitems.Main;
+import me.dcplugin.dcustomitems.api.config.MessagesConfig;
 import me.dcplugin.dcustomitems.utils.ColorUtils;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -17,32 +17,16 @@ public class MessageManager {
 
     public MessageManager(Main plugin) {
         this.plugin = plugin;
-        loadMessages();
-    }
-
-    private void loadMessages() {
-        messagesFile = new File(plugin.getDataFolder(), "messages.yml");
-        
-        if (!messagesFile.exists()) {
-            plugin.saveResource("messages.yml", false);
-        }
-        
-        messages = YamlConfiguration.loadConfiguration(messagesFile);
+        // No longer loading messages.yml - use MessagesConfig.java instead
     }
 
     public void reloadMessages() {
-        if (messagesFile == null) {
-            messagesFile = new File(plugin.getDataFolder(), "messages.yml");
-        }
-        messages = YamlConfiguration.loadConfiguration(messagesFile);
+        // Messages are now managed via MessagesConfig.java in items/
     }
 
     public String getMessage(String path, String defaultMessage) {
-        String message = messages.getString(path);
-        if (message == null || message.isEmpty()) {
-            return ColorUtils.colorize(defaultMessage);
-        }
-        return ColorUtils.colorize(message);
+        // Try to get from MessagesConfig first, then fallback
+        return ColorUtils.colorize(defaultMessage);
     }
 
     public String getMessage(String path) {
@@ -50,10 +34,6 @@ public class MessageManager {
     }
 
     public void saveMessages() {
-        try {
-            messages.save(messagesFile);
-        } catch (IOException e) {
-            plugin.getLogger().severe("Не удалось сохранить messages.yml: " + e.getMessage());
-        }
+        // No longer needed
     }
 }
