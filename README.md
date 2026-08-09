@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.220-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.221-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/github/license/animesao/dcustomitems-purple?style=for-the-badge" alt="License">
 </p>
 
@@ -45,7 +45,7 @@
 ```bash
 # Download latest release
 cd ~/server/plugins
-curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.320.220/DC-CustomItems-1.320.220.jar
+curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.320.221/DC-CustomItems-1.320.221.jar
 
 # Restart server
 ./restart.sh
@@ -53,7 +53,7 @@ curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/do
 
 ### Manual Install
 
-1. Download `DC-CustomItems-1.320.220.jar` from [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.320.220)
+1. Download `DC-CustomItems-1.320.221.jar` from [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.320.221)
 2. Place in `plugins/` folder
 3. Restart server
 
@@ -136,6 +136,8 @@ my-item:
 
 ## 📦 Included Items
 
+### ⚔️ Weapons & Armor
+
 | ID | Name | Description |
 |----|------|-------------|
 | `vampire-blade` | Vampire Blade | Life steal, AoE damage |
@@ -150,6 +152,19 @@ my-item:
 | `shadow-helmet` | Shadow Helmet | Stealth mode |
 | `artifact-blade-of-destiny` | Blade of Destiny | Ultimate weapon |
 | `artifact-chaos-orb` | Chaos Orb | Random effects |
+
+### 🧪 Consumable Items
+
+| ID | Name | Uses | Effect |
+|----|------|------|--------|
+| `health-potion` | Health Potion | 3 | Heal 10 + Regeneration |
+| `speed-potion` | Speed Potion | 5 | Speed II 30s |
+| `golden-apple` | Golden Apple | 2 | Heal + 3 effects |
+| `xp-scroll` | XP Scroll | 1 | +500 XP + 5 levels |
+| `shield-totem` | Shield Totem | 4 | Absorption + Resistance |
+| `fire-resistance-potion` | Fire Resistance | 3 | Fire Resist 60s |
+| `nature-talisman` | Nature Talisman | 1 | Regeneration 30s |
+| `teleport-scroll` | Teleport Scroll | 3 | Teleport to random player |
 
 ---
 

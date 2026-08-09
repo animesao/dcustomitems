@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.220-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.221-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Paper-1.21.11-red?style=for-the-badge" alt="Paper">
 </p>
 
@@ -38,11 +38,11 @@ Download the latest release from [GitHub Releases](https://github.com/animesao/d
 
 ```bash
 # Copy to plugins folder
-cp DC-CustomItems-1.320.220.jar /path/to/server/plugins/
+cp DC-CustomItems-1.320.221.jar /path/to/server/plugins/
 
 # Or using curl on VDS
 cd ~/server/plugins
-curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.320.220/DC-CustomItems-1.320.220.jar
+curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.320.221/DC-CustomItems-1.320.221.jar
 ```
 
 ### Step 3: Restart Server
@@ -390,6 +390,8 @@ attributes:
 
 ## 📦 Included Items
 
+### ⚔️ Weapons & Armor
+
 | ID | Name | Type | Description |
 |----|------|------|-------------|
 | `vampire-blade` | Vampire Blade | Sword | Life steal, AoE damage |
@@ -404,6 +406,19 @@ attributes:
 | `shadow-helmet` | Shadow Helmet | Armor | Stealth mode |
 | `artifact-blade-of-destiny` | Blade of Destiny | Sword | Ultimate weapon |
 | `artifact-chaos-orb` | Chaos Orb | Orb | Random effects |
+
+### 🧪 Consumable Items
+
+| ID | Name | Uses | Effect |
+|----|------|------|--------|
+| `health-potion` | Health Potion | 3 | Heal 10 + Regeneration |
+| `speed-potion` | Speed Potion | 5 | Speed II 30s |
+| `golden-apple` | Golden Apple | 2 | Heal + 3 effects |
+| `xp-scroll` | XP Scroll | 1 | +500 XP + 5 levels |
+| `shield-totem` | Shield Totem | 4 | Absorption + Resistance |
+| `fire-resistance-potion` | Fire Resistance | 3 | Fire Resist 60s |
+| `nature-talisman` | Nature Talisman | 1 | Regeneration 30s |
+| `teleport-scroll` | Teleport Scroll | 3 | Teleport to random player |
 
 ---
 

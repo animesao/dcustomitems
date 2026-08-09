@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.220-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.221-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Paper-1.21.11-red?style=for-the-badge" alt="Paper">
 </p>
 
@@ -38,11 +38,11 @@
 
 ```bash
 # Скопировать в папку plugins
-cp DC-CustomItems-1.320.220.jar /path/to/server/plugins/
+cp DC-CustomItems-1.320.221.jar /path/to/server/plugins/
 
 # Или через curl на VDS
 cd ~/server/plugins
-curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.320.220/DC-CustomItems-1.320.220.jar
+curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.320.221/DC-CustomItems-1.320.221.jar
 ```
 
 ### Шаг 3: Перезапустить сервер
@@ -390,6 +390,8 @@ attributes:
 
 ## 📦 Включённые предметы
 
+### ⚔️ Оружие и Броня
+
 | ID | Название | Тип | Описание |
 |----|----------|-----|----------|
 | `vampire-blade` | Клинок Вампира | Меч | Кража здоровья, AoE урон |
@@ -404,6 +406,19 @@ attributes:
 | `shadow-helmet` | Теневой Шлем | Броня | Режим скрытности |
 | `artifact-blade-of-destiny` | Клинок Судьбы | Меч | Ультимативное оружие |
 | `artifact-chaos-orb` | Сфера Хаоса | Сфера | Случайные эффекты |
+
+### 🧪 Расходуемые предметы
+
+| ID | Название | Использований | Эффект |
+|----|----------|---------------|--------|
+| `health-potion` | Зелье Здоровья | 3 | Heal 10 + Regeneration |
+| `speed-potion` | Зелье Скорости | 5 | Скорость II 30 сек |
+| `golden-apple` | Золотое Яблоко | 2 | Heal + 3 эффекта |
+| `xp-scroll` | Свиток Опыта | 1 | +500 XP + 5 уровней |
+| `shield-totem` | Тотем Защиты | 4 | Absorption + Resistance |
+| `fire-resistance-potion` | Зелье Огнестойкости | 3 | Огнестойкость 60 сек |
+| `nature-talisman` | Талисман Природы | 1 | Регенерация 30 сек |
+| `teleport-scroll` | Свиток Телепортации | 3 | Телепорт к случайному игроку |
 
 ---
 
