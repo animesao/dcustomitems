@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.228-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.232-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Paper-1.21.11-red?style=for-the-badge" alt="Paper">
 </p>
 
@@ -181,6 +181,24 @@ The plugin supports Minecraft's new `custom_model_data` component with strings (
 | Short | `"smoke"` | Auto-converts to `minecraft:item/smoke` |
 | Full Path | `"minecraft:item/smoke"` | Direct path |
 | Custom NS | `"myplugin:weapons/sword"` | Custom namespace |
+
+### Java API Usage
+
+```java
+public class MySword extends AbstractCustomItem {
+    // Simple name - looks for assets/minecraft/models/item/my_sword.json
+    @Override
+    public String getItemModel() { return "my_sword"; }
+    
+    // Full path - assets/minecraft/models/item/smoke.json
+    @Override
+    public String getItemModel() { return "minecraft:item/smoke"; }
+    
+    // Custom namespace - assets/myplugin/models/item/weapon.json
+    @Override
+    public String getItemModel() { return "myplugin:item/weapon"; }
+}
+```
 
 ### Configuration
 

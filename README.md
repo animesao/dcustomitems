@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.228-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.232-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/github/license/animesao/dcustomitems-purple?style=for-the-badge" alt="License">
 </p>
 
@@ -114,14 +114,32 @@ my-sword:
 
 ## 🎨 Custom Model Support (1.21.11+)
 
+### YAML Format:
 ```yaml
 my-item:
   item:
     type: NETHERITE_SWORD
     # All formats work:
     item-model: "smoke"
-    # item-model: "minecraft:item/smoke"
-    # item-model: "myplugin:custom_sword"
+    item-model: "minecraft:item/smoke"
+    item-model: "myplugin:custom_sword"
+```
+
+### Java API:
+```java
+public class MySword extends AbstractCustomItem {
+    // Simple name
+    @Override
+    public String getItemModel() { return "dark_sword"; }
+    
+    // With namespace
+    @Override
+    public String getItemModel() { return "minecraft:item/smoke"; }
+    
+    // Custom namespace
+    @Override
+    public String getItemModel() { return "myplugin:item/weapon"; }
+}
 ```
 
 ---
@@ -163,6 +181,8 @@ my-item:
 | 🇬🇧 English | [Full Documentation](docs/README_EN.md) |
 | 🇷🇺 Русский | [Полная документация](docs/README_RU.md) |
 | ⚡ Actions & Triggers | [Actions Guide](src/main/resources/items/README-ACTIONS.md) |
+| 🎨 Models Guide | [Custom Models](src/main/resources/examples/README-MODELS.md) |
+| ☕ Java API | [Java API Examples](src/main/resources/items/EXAMPLE-dark-sword.java) |
 
 ---
 

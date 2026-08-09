@@ -2,31 +2,18 @@
  * ============================================================
  * ПРИМЕР: ТЁМНЫЙ КЛИНОК - Java предмет с кастомной моделью
  * ============================================================
- * 
+ *
  * 📁 Структура файлов:
- * 
+ *
  * plugins/DC-CustomItems/
  * └── items/
  *     └── dark-sword.java          ← этот файл
- * 
- * plugins/DC-CustomItems/resource-pack/  (или в папке ресурс-пака сервера)
- * └── assets/minecraft/
- *     ├── models/item/
- *     │   └── dark_sword.json      ← модель
- *     └── textures/item/
- *         └── dark_sword.png       ← текстура
- * 
+ *
  * 🎮 Команды:
  *   /ci reload                     - перезагрузить предметы
  *   /api-item give dark_sword      - выдать предмет
  *   /api-item info dark_sword      - информация о предмете
- * 
- * 🎨 Как работает модель:
- *   1. В Java коде: getItemModel() → "dark_sword"
- *   2. Плагин применяет: CustomModelData.setStrings(["dark_sword"])
- *   3. Ресурс-пак подхватывает модель: models/item/dark_sword.json
- *   4. Предмет отображается с кастомной текстурой!
- * 
+ *
  * ============================================================
  */
 
@@ -67,12 +54,58 @@ public class DarkSword extends AbstractCustomItem {
         );
     }
 
-    // ===== 🎨 КАСТОМНАЯ МОДЕЛЬ =====
-    // Укажи имя модели из ресурс-пака
-    // Файл: assets/minecraft/models/item/dark_sword.json
-    // Текстура: assets/minecraft/textures/item/dark_sword.png
+    // ====================================================================
+    // 🎨 КАСТОМНАЯ МОДЕЛЬ - ВЫБЕРИ ОДИН ИЗ ВАРИАНТОВ:
+    // ====================================================================
+    //
+    // ВАРИАНТ 1: item-model (Рекомендуется для 1.21.11+)
+    // --------------------------------------------------------------------
+    // Использует компонент custom_model_data с strings
+    // Формат команды: /give @s minecraft:netherite_sword[minecraft:custom_model_data={strings:["dark_sword"]}]
+    //
+    // В Ресурс-паке файл: assets/minecraft/models/item/dark_sword.json
+    // Пример JSON:
+    // {
+    //   "parent": "minecraft:item/handheld",
+    //   "textures": {
+    //     "0": "minecraft:item/dark_sword"
+    //   }
+    // }
+    //
     @Override
-    public String getItemModel() { return "dark_sword"; }
+    public String getItemModel() { return "minecraft:item/smoke"; }
+
+    //
+    // ВАРИАНТ 2: item-model с полным namespace
+    // --------------------------------------------------------------------
+    // Если модель в твоём ресурс-паке с уникальным namespace
+    // Формат: "namespace:path/to/model"
+    //
+    // Примеры:
+    //   "myplugin:item/dark_sword"     → assets/myplugin/models/item/dark_sword.json
+    //   "minecraft:item/smoke"         → assets/minecraft/models/item/smoke.json
+    //   "custom:weapons/sword"         → assets/custom/models/weapons/sword.json
+    //
+    // Раскомментируй нужный вариант:
+    //
+    // @Override
+    // public String getItemModel() { return "minecraft:item/smoke"; }
+    //
+    // @Override
+    // public String getItemModel() { return "myplugin:item/dark_sword"; }
+    //
+    //
+    // ВАРИАНТ 3: custom-model-data (Legacy, для старых версий)
+    // --------------------------------------------------------------------
+    // Использует числовое значение custom_model_data
+    // Формат команды: /give @s minecraft:netherite_sword{CustomModelData:10018}
+    //
+    // Не рекомендуется для 1.21.11+, используй getItemModel()
+    //
+    // @Override
+    // public int getCustomModelData() { return 10018; }
+    //
+    // ====================================================================
 
     // ===== ДОПОЛНИТЕЛЬНЫЕ СВОЙСТВА =====
 
