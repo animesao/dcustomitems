@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.223-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.226-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Paper-1.21.11-red?style=for-the-badge" alt="Paper">
 </p>
 
@@ -159,9 +159,11 @@ item-id:
   
   click-cooldown: 1000          # Cooldown in milliseconds
   
-  trigger-actions:
-    - 'on_equip:particle:FLAME:20'
-    - 'on_kill:heal:20'
+  triggers:
+    on_equip:
+      - 'particles:FLAME:20'
+    on_kill:
+      - 'heal:20'
 ```
 
 ---
@@ -268,29 +270,37 @@ rp/assets/minecraft/
 | Action | Format | Description |
 |--------|--------|-------------|
 | `message` | `message:Text` | Send message to player |
-| `announce` | `announce:Text` | Broadcast to all players |
 | `title` | `title:Main:Sub:fadeIn:stay:fadeOut` | Title on screen |
 | `actionbar` | `actionbar:Text` | Text above hotbar |
+| `broadcast` | `broadcast:Text` | Broadcast to all players |
 
-**Placeholders:**
-- `%player%` - Player name
+**Placeholders:** `%player%` - Player name
 
 ### ⚡ Effects
 
 | Action | Format | Description |
 |--------|--------|-------------|
 | `effect` | `effect:TYPE:SECONDS:LEVEL` | Apply potion effect |
+| `speed` | `speed:SECONDS:LEVEL` | Speed (short) |
+| `vanish` | `vanish:SECONDS` | Invisibility |
+| `glow` | `glow:SECONDS` | Glowing |
+| `flight` | `flight:true/false` | Toggle flight |
 
 ### 💥 Combat
 
 | Action | Format | Description |
 |--------|--------|-------------|
-| `lightning` | `lightning:COUNT` | Lightning strike |
-| `damage` | `damage:AMOUNT` | Deal damage |
-| `heal` | `heal:AMOUNT` | Heal player |
-| `stun` | `stun:SECONDS` | Stun enemy |
-| `knockback` | `knockback:POWER` | Knockback |
-| `launch` | `launch:POWER` | Launch up |
+| `heal` | `heal:AMOUNT` | Heal self |
+| `heal_nearby` | `heal_nearby:AMOUNT:RADIUS` | Heal nearby players |
+| `damage` | `damage:AMOUNT` | Damage self |
+| `damage_nearby` | `damage_nearby:DMG:RADIUS` | AoE damage |
+| `damage_mobs` | `damage_mobs:DMG:RADIUS` | Damage mobs only |
+| `damage_players` | `damage_players:DMG:RADIUS` | Damage players only |
+| `lightning` | `lightning:COUNT` | Lightning at player |
+| `lightning_forward` | `lightning_forward:DISTANCE` | Lightning ahead |
+| `knockback` | `knockback:RADIUS` | Knockback nearby |
+| `launch` | `launch:POWER` | Launch nearby up |
+| `stun` | `stun:SECONDS:RADIUS` | Stun nearby |
 
 ### 🎁 Items
 
@@ -305,6 +315,7 @@ rp/assets/minecraft/
 | Action | Format | Description |
 |--------|--------|-------------|
 | `teleport` | `teleport:X:Y:Z` | Teleport |
+| `teleport_relative` | `teleport_relative:X:Y:Z` | Relative teleport |
 | `sethealth` | `sethealth:VALUE` | Set health |
 | `setfood` | `setfood:VALUE` | Set food |
 
@@ -312,17 +323,16 @@ rp/assets/minecraft/
 
 | Action | Format | Description |
 |--------|--------|-------------|
-| `particle` | `particle:TYPE:COUNT` | Spawn particles |
+| `particles` | `particles:TYPE:COUNT` | Spawn particles |
 | `sound` | `sound:TYPE:VOLUME:PITCH` | Play sound |
 | `fireworks` | `fireworks:1` | Spawn firework |
-| `vanish` | `vanish:SECONDS` | Invisibility |
-| `glow` | `glow:SECONDS` | Glowing |
 
 ### 🔧 Commands
 
 | Action | Format | Description |
 |--------|--------|-------------|
-| `command` | `command:COMMAND` | Execute command |
+| `command` | `command:COMMAND` | Execute command as player |
+| `console_command` | `console_command:COMMAND` | Execute command as console |
 
 ---
 
@@ -480,25 +490,25 @@ legendary-sword:
   
   click-cooldown: 2000
   
-  trigger-actions:
-    # Equip effects
-    - 'on_equip:particle:FLAME:30'
-    - 'on_equip:sound:ENTITY_PLAYER_LEVELUP:1:1'
-    - 'on_equip:message:&6⚔ Legendary Sword equipped!'
+  triggers:
+    on_equip:
+      - 'particles:FLAME:30'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:1'
+      - 'message:&6⚔ Legendary Sword equipped!'
     
-    # Right click
-    - 'on_click_right:lightning:3'
-    - 'on_click_right:particle:EXPLOSION_LARGE:20'
-    - 'on_click_right:message:&6⚡ Lightning!'
+    on_click_right:
+      - 'lightning_forward:100'
+      - 'particles:EXPLOSION_LARGE:20'
+      - 'title:&6⚡ LIGHTNING!::&7Beware!'
     
-    # Left click
-    - 'on_click_left:damage:10:4'
-    - 'on_click_left:knockback:3'
+    on_click_left:
+      - 'damage_nearby:10:4'
+      - 'knockback:3'
     
-    # On kill
-    - 'on_kill:heal:20'
-    - 'on_kill:effect:REGENERATION:10:2'
-    - 'on_kill:message:&6❤ Healing!'
+    on_kill:
+      - 'heal:20'
+      - 'effect:REGENERATION:10:2'
+      - 'particles:HEART:20'
 ```
 
 ---

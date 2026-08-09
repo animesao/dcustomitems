@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.223-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.226-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Paper-1.21.11-red?style=for-the-badge" alt="Paper">
 </p>
 
@@ -159,9 +159,11 @@ item-id:
   
   click-cooldown: 1000          # Кулдаун в миллисекундах
   
-  trigger-actions:
-    - 'on_equip:particle:FLAME:20'
-    - 'on_kill:heal:20'
+  triggers:
+    on_equip:
+      - 'particles:FLAME:20'
+    on_kill:
+      - 'heal:20'
 ```
 
 ---
@@ -268,36 +270,44 @@ rp/assets/minecraft/
 | Действие | Формат | Описание |
 |----------|--------|----------|
 | `message` | `message:Текст` | Сообщение игроку |
-| `announce` | `announce:Текст` | Объявление всем игрокам |
 | `title` | `title:Заголовок:Подзаголовок:fadeIn:stay:fadeOut` | Заголовок на экране |
 | `actionbar` | `actionbar:Текст` | Текст над хотбаром |
+| `broadcast` | `broadcast:Текст` | Объявление всем игрокам |
 
-**Плейсхолдеры:**
-- `%player%` - Имя игрока
+**Плейсхолдеры:** `%player%` - Имя игрока
 
-### ⚡ Эффекты зелий
+### ⚡ Эффекты
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
-| `effect` | `effect:ТИП:СЕКУНДЫ:УРОВЕНЬ` | Применить эффект |
+| `effect` | `effect:ТИП:СЕКУНДЫ:УРОВЕНЬ` | Эффект зелья |
+| `speed` | `speed:СЕКУНДЫ:УРОВЕНЬ` | Скорость (короткий) |
+| `vanish` | `vanish:СЕКУНДЫ` | Невидимость |
+| `glow` | `glow:СЕКУНДЫ` | Сияние |
+| `flight` | `flight:true/false` | Полёт |
 
 ### 💥 Боевые
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
-| `lightning` | `lightning:КОЛИЧЕСТВО` | Удар молнией |
-| `damage` | `damage:СУММА` | Нанести урон |
-| `heal` | `heal:СУММА` | Исцелить игрока |
-| `stun` | `stun:СЕКУНДЫ` | Оглушить врага |
-| `knockback` | `knockback:МОЩНОСТЬ` | Отбросить |
-| `launch` | `launch:МОЩНОСТЬ` | Запустить вверх |
+| `heal` | `heal:СУММА` | Исцелить себя |
+| `heal_nearby` | `heal_nearby:СУММА:РАДИУС` | Исцелить ближайших игроков |
+| `damage` | `damage:СУММА` | Урон себе |
+| `damage_nearby` | `damage_nearby:УРОН:РАДИУС` | AoE урон |
+| `damage_mobs` | `damage_mobs:УРОН:РАДИУС` | Урон только мобам |
+| `damage_players` | `damage_players:УРОН:РАДИУС` | Урон только игрокам |
+| `lightning` | `lightning:КОЛИЧЕСТВО` | Молния на месте |
+| `lightning_forward` | `lightning_forward:ДАЛЬНОСТЬ` | Молния вперед |
+| `knockback` | `knockback:РАДИУС` | Отбросить nearby |
+| `launch` | `launch:СИЛА` | Подбросить nearby |
+| `stun` | `stun:СЕКУНДЫ:РАДИУС` | Оглушить nearby |
 
 ### 🎁 Предметы
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
 | `give` | `give:МАТЕРИАЛ:КОЛИЧЕСТВО` | Выдать предмет |
-| `remove` | `remove:МАТЕРИАЛ:КОЛИЧЕСТВО` | Убрать предмет |
+| `remove` | `remove:МАТЕРИАЛ:КОЛИЧЕСТВО` | Забрать предмет |
 | `exp` | `exp:ОПЫТ:УРОВНИ` | Выдать опыт |
 
 ### 🌍 Мир
@@ -305,6 +315,7 @@ rp/assets/minecraft/
 | Действие | Формат | Описание |
 |----------|--------|----------|
 | `teleport` | `teleport:X:Y:Z` | Телепортация |
+| `teleport_relative` | `teleport_relative:X:Y:Z` | Относительный телепорт |
 | `sethealth` | `sethealth:ЗНАЧЕНИЕ` | Установить здоровье |
 | `setfood` | `setfood:ЗНАЧЕНИЕ` | Установить голод |
 
@@ -312,17 +323,16 @@ rp/assets/minecraft/
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
-| `particle` | `particle:ТИП:КОЛИЧЕСТВО` | Спавн частиц |
-| `sound` | `sound:ТИП:ГРОМКОСТЬ:ТОНАЛЬНОСТЬ` | Воспроизвести звук |
-| `fireworks` | `fireworks:1` | Запустить фейерверк |
-| `vanish` | `vanish:СЕКУНДЫ` | Невидимость |
-| `glow` | `glow:СЕКУНДЫ` | Сияние |
+| `particles` | `particles:ТИП:КОЛИЧЕСТВО` | Частицы |
+| `sound` | `sound:ТИП:ГРОМКОСТЬ:ТОНАЛЬНОСТЬ` | Звук |
+| `fireworks` | `fireworks:1` | Фейерверк |
 
 ### 🔧 Команды
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
-| `command` | `command:КОМАНДА` | Выполнить команду |
+| `command` | `command:КОМАНДА` | Команда от имени игрока |
+| `console_command` | `console_command:КОМАНДА` | Команда от консоли |
 
 ---
 
@@ -480,25 +490,25 @@ legendary-sword:
   
   click-cooldown: 2000
   
-  trigger-actions:
-    # Эффекты при экипировке
-    - 'on_equip:particle:FLAME:30'
-    - 'on_equip:sound:ENTITY_PLAYER_LEVELUP:1:1'
-    - 'on_equip:message:&6⚔ Легендарный меч экипирован!'
+  triggers:
+    on_equip:
+      - 'particles:FLAME:30'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:1'
+      - 'message:&6⚔ Легендарный меч экипирован!'
     
-    # ПКМ
-    - 'on_click_right:lightning:3'
-    - 'on_click_right:particle:EXPLOSION_LARGE:20'
-    - 'on_click_right:message:&6⚡ Молния!'
+    on_click_right:
+      - 'lightning_forward:100'
+      - 'particles:EXPLOSION_LARGE:20'
+      - 'title:&6⚡ МОЛНИЯ!::&7Берегись!'
     
-    # ЛКМ
-    - 'on_click_left:damage:10:4'
-    - 'on_click_left:knockback:3'
+    on_click_left:
+      - 'damage_nearby:10:4'
+      - 'knockback:3'
     
-    # При убийстве
-    - 'on_kill:heal:20'
-    - 'on_kill:effect:REGENERATION:10:2'
-    - 'on_kill:message:&6❤ Исцеление!'
+    on_kill:
+      - 'heal:20'
+      - 'effect:REGENERATION:10:2'
+      - 'particles:HEART:20'
 ```
 
 ---

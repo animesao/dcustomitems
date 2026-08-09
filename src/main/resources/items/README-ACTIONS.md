@@ -1,9 +1,32 @@
 # DC-CustomItems - Полная документация по действиям и триггерам
 
-## Доступные триггеры (когда срабатывает действие)
+## 📋 Новый формат YAML (v1.320.225+)
+
+Используйте вложенный `triggers` вместо старого `trigger-actions`:
+
+```yaml
+# СТАРЫЙ ФОРМАТ (устарел):
+trigger-actions:
+  - 'on_click_right:effect:SPEED:5:1'
+  - 'on_click_right:lightning:1'
+
+# НОВЫЙ ФОРМАТ (рекомендуется):
+triggers:
+  on_click_right:
+    - 'effect:SPEED:5:1'
+    - 'lightning:1'
+```
+
+---
+
+## Доступные триггеры
 
 | Триггер | Описание |
 |---------|----------|
+| `on_equip` | При экипировке предмета |
+| `on_unequip` | При снятии предмета |
+| `on_click_right` | ПКМ с предметом |
+| `on_click_left` | ЛКМ с предметом |
 | `on_kill` | При убийстве моба/игрока |
 | `on_death` | При смерти игрока |
 | `on_damage_taken` | При получении урона |
@@ -14,70 +37,58 @@
 
 ---
 
-## Доступные действия (что происходит)
+## Доступные действия
 
 ### 📢 Коммуникация
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
 | `message` | `message:Текст` | Сообщение игроку |
-| `announce` | `announce:Текст` | Сообщение всем игрокам |
 | `title` | `title:Заголовок:Подзаголовок:fadeIn:stay:fadeOut` | Заголовок на экране |
 | `actionbar` | `actionbar:Текст` | Текст над хотбаром |
+| `broadcast` | `broadcast:Текст` | Объявление всем игрокам |
 
-**Плейсхолдеры в сообщениях:**
-- `%player%` - Имя игрока
+**Плейсхолдеры:** `%player%` - Имя игрока
 
 **Примеры:**
 ```yaml
 - 'message:&aВы получили алмаз!'
-- 'announce:&6%player% получил легендарный меч!'
-- 'title:&6恭喜!::Вы получили силу!:10:40:10'
+- 'title:&6ПОБЕДА!::Вы получили силу!:10:40:10'
 - 'actionbar:&eУ вас осталось 5 использований'
+- 'broadcast:&6%player% получил легендарный меч!'
 ```
 
 ---
 
-### ⚡ Эффекты зелий
+### ⚡ Эффекты
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
-| `effect` | `effect:ТИП:ДЛИТЕЛЬНОСТЬ:УРОВЕНЬ` | Применить эффект |
+| `effect` | `effect:ТИП:СЕКУНДЫ:УРОВЕНЬ` | Эффект зелья |
+| `speed` | `speed:СЕКУНДЫ:УРОВЕНЬ` | Скорость (короткий) |
+| `vanish` | `vanish:СЕКУНДЫ` | Невидимость |
+| `glow` | `glow:СЕКУНДЫ` | Сияние |
+| `flight` | `flight:true/false` | Полёт |
 
 **Доступные эффекты:**
-- `SPEED` / `СКОРОСТЬ` - Скорость передвижения
-- `SLOW` / `ЗАМЕДЛЕНИЕ` - Замедление
-- `INCREASE_DAMAGE` / `СИЛА` / `STRENGTH` - Сила атаки
-- `HEAL` / `ИСЦЕЛЕНИЕ` - Мгновенное исцеление
-- `HASTE` / `СПЕШКА` - Ускорение добычи
-- `JUMP` / `ПРЫЖОК` - Усиление прыжка
-- `REGENERATION` / `РЕГЕНЕРАЦИЯ` - Регенерация здоровья
-- `RESISTANCE` / `СОПРОТИВЛЕНИЕ` / `DAMAGE_RESISTANCE` - Сопротивление урону
-- `FIRE_RESISTANCE` / `ОГНЕСТОЙКОСТЬ` - Огнестойкость
-- `WATER_BREATHING` / `ВОДНОЕ_ДЫХАНИЕ` - Водное дыхание
-- `INVISIBILITY` / `НЕВИДИМОСТЬ` - Невидимость
-- `NIGHT_VISION` / `НОЧНОЕ_ЗРЕНИЕ` - Ночное зрение
-- `HEALTH_BOOST` / `ПРИЛИВ_ЗДОРОВЬЯ` - Дополнительное здоровье
-- `ABSORPTION` / `ПОГЛОЩЕНИЕ` - Поглощение урона
-- `SATURATION` / `НАСЫЩЕНИЕ` - Насыщение
-- `LUCK` / `УДАЧА` - Удача
-- `GLOWING` / `СИЯНИЕ` - Сияние
-- `LEVITATION` / `ЛЕВИТАЦИЯ` - Левитация
-- `SLOW_FALLING` / `МЕДЛЕННОЕ_ПАДЕНИЕ` - Медленное падение
-- `DOLPHINS_GRACE` / `БЛАГОДАТЬ_ДЕЛЬФИНА` - Благодать дельфина
-- `HERO_OF_THE_VILLAGE` / `ГЕРОЙ_ДЕРЕВНИ` - Герой деревни
-- `DARKNESS` / `ТЬМА` - Тьма
-- `OOZING` / `СЛИЗНЕНИЕ` - Слизнение
-- `WEAVING` / `ПЛЕТЕНИЕ` - Плетение
-- `INFESTED` / "НАСЕКОМОЕ` - Насекомое
-
-**Формат:** `effect:ТИП:СЕКУНДЫ:УРОВЕНЬ` (уровень с 1, не с 0)
+- `SPEED` / `SLOWNESS` / `HASTE` / `MINING_FATIGUE`
+- `STRENGTH` / `INCREASE_DAMAGE` / `JUMP_BOOST`
+- `REGENERATION` / `RESISTANCE` / `DAMAGE_RESISTANCE`
+- `FIRE_RESISTANCE` / `WATER_BREATHING` / `INVISIBILITY`
+- `NIGHT_VISION` / `HEALTH_BOOST` / `ABSORPTION`
+- `SATURATION` / `GLOWING` / `LEVITATION`
+- `SLOW_FALLING` / `CONDUIT_POWER` / `DOLPHINS_GRACE`
+- `BAD_OMEN` / `HERO_OF_THE_VILLAGE` / `DARKNESS`
 
 **Примеры:**
 ```yaml
 - 'effect:SPEED:10:2'          # Скорость II на 10 секунд
-- 'effect:INCREASE_DAMAGE:5:3' # Сила III на 5 секунд
+- 'effect:STRENGTH:5:3'        # Сила III на 5 секунд
 - 'effect:REGENERATION:15:1'   # Регенерация I на 15 секунд
+- 'speed:30:2'                 # Скорость II на 30 сек (короткий)
+- 'vanish:10'                  # Невидимость на 10 сек
+- 'glow:5'                     # Сияние на 5 сек
+- 'flight:true'                # Включить полёт
 ```
 
 ---
@@ -86,56 +97,71 @@
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
-| `lightning` | `lightning:КОЛИЧЕСТВО` | Удар молнией |
-| `damage` | `damage:СУММА` | Нанести урон игроку |
-| `heal` | `heal:СУММА` | Исцелить игрока (в HP) |
+| `heal` | `heal:СУММА` | Исцелить себя |
+| `heal_nearby` | `heal_nearby:СУММА:РАДИУС` | Исцелить ближайших игроков |
+| `damage` | `damage:СУММА` | Урон себе |
+| `damage_nearby` | `damage_nearby:УРОН:РАДИУС` | AoE урон |
+| `damage_mobs` | `damage_mobs:УРОН:РАДИУС` | Урон только мобам |
+| `damage_players` | `damage_players:УРОН:РАДИУС` | Урон только игрокам |
+| `lightning` | `lightning:КОЛИЧЕСТВО` | Молния на месте игрока |
+| `lightning_forward` | `lightning_forward:ДАЛЬНОСТЬ` | Молния далеко вперед |
+| `knockback` | `knockback:РАДИУС` | Отбросить nearby |
+| `launch` | `launch:СИЛА` | Подбросить nearby |
+| `stun` | `stun:СЕКУНДЫ:РАДИУС` | Оглушить nearby |
 
 **Примеры:**
 ```yaml
-- 'lightning:3'    # 3 удара молнией
-- 'damage:6'       # 6 единиц урона (3 сердца)
-- 'heal:10'        # Исцелить на 10 HP (5 сердец)
+- 'heal:10'              # Исцелить на 10 HP
+- 'heal_nearby:10:5'     # Исцелить игроков в радиусе 5 блоков на 10 HP
+- 'damage:6'             # Урон 6 HP
+- 'damage_nearby:20:4'   # AoE урон 20 в радиусе 4 блоков
+- 'damage_mobs:10:3'     # Урон мобам 10 в радиусе 3 блоков
+- 'lightning_forward:100' # Молния на 100 блоков вперед
+- 'knockback:4'          # Отбросить в радиусе 4 блоков
+- 'stun:3:5'             # Оглушить на 3 сек в радиусе 5 блоков
 ```
 
 ---
 
-### 🎁 Предметы и ресурсы
+### 🌍 Телепортация
+
+| Действие | Формат | Описание |
+|----------|--------|----------|
+| `teleport` | `teleport:X:Y:Z` | Телепорт в точку |
+| `teleport_relative` | `teleport_relative:X:Y:Z` | Относительный телепорт |
+
+**Примеры:**
+```yaml
+- 'teleport:100:64:200'       # В точку 100 64 200
+- 'teleport_relative:~:5:~'   # На 5 блоков вверх
+```
+
+---
+
+### 🎁 Предметы
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
 | `give` | `give:МАТЕРИАЛ:КОЛИЧЕСТВО` | Выдать предмет |
-| `remove` | `remove:МАТЕРИАЛ:КОЛИЧЕСТВО` | Убрать предмет из инвентаря |
+| `remove` | `remove:МАТЕРИАЛ:КОЛИЧЕСТВО` | Забрать предмет |
 | `exp` | `exp:ОПЫТ:УРОВНИ` | Выдать опыт |
 
 **Примеры:**
 ```yaml
-- 'give:DIAMOND:5'     # 5 алмазов
-- 'give:GOLDEN_APPLE:1' # 1 золотое яблоко
-- 'remove:DIAMOND:1'    # Убрать 1 алмаз
-- 'exp:100:5'           # 100 опыта + 5 уровней
+- 'give:DIAMOND:5'       # 5 алмазов
+- 'give:GOLDEN_APPLE:1'  # 1 золотое яблоко
+- 'remove:DIAMOND:1'     # Забрать 1 алмаз
+- 'exp:500:5'            # 500 опыта + 5 уровней
 ```
 
 ---
 
-### 🌍 Мир и телепортация
+### 🌎 Мир
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
-| `teleport` | `teleport:X:Y:Z` | Телепортация |
 | `sethealth` | `sethealth:ЗНАЧЕНИЕ` | Установить здоровье |
 | `setfood` | `setfood:ЗНАЧЕНИЕ` | Установить голод |
-
-**Телепортация с относительными координатами:**
-- `~` = текущая координата + смещение
-- Без `~` = абсолютная координата
-
-**Примеры:**
-```yaml
-- 'teleport:~:5:~'       # Телепортировать на 5 блоков вверх
-- 'teleport:100:64:200'  # Телепортировать в точку 100 64 200
-- 'sethealth:20'         # Полное здоровье
-- 'setfood:20'           # Полный голод
-```
 
 ---
 
@@ -143,22 +169,15 @@
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
-| `particle` | `particle:ТИП:КОЛИЧЕСТВО` | Спавн частиц |
-| `sound` | `sound:ТИП:ГРОМКОСТЬ:ТОНАЛЬНОСТЬ` | Воспроизвести звук |
-| `fireworks` | `fireworks:1` | Запустить фейерверк |
-| `vanish` | `vanish:СЕКУНДЫ` | Невидимость на N секунд |
-| `glow` | `glow:СЕКУНДЫ` | Сияние на N секунд |
+| `particles` | `particles:ТИП:КОЛИЧЕСТВО` | Частицы |
+| `sound` | `sound:ТИП:ГРОМКОСТЬ:ТОНАЛЬНОСТЬ` | Звук |
+| `fireworks` | `fireworks:1` | Фейерверк |
 
 **Примеры:**
 ```yaml
-- 'particle:FLAME:50'                    # 50 огненных частиц
-- 'particle:HEART:20'                    # 20 сердец
-- 'particle:SNOWFLAKE:30'                # 30 снежинок
-- 'sound:ENTITY_LIGHTNING_BOLT_THUNDER:1:1' # Звук молнии
-- 'sound:ENTITY_PLAYER_LEVELUP:1:1.5'       # Звук повышения уровня
-- 'fireworks:1'                          # Фейерверк
-- 'vanish:10'                            # Невидимость на 10 сек
-- 'glow:5'                               # Сияние на 5 сек
+- 'particles:FLAME:50'                    # 50 огненных частиц
+- 'particles:HEART:20'                    # 20 сердец
+- 'sound:ENTITY_PLAYER_LEVELUP:1:1.5'    # Звук повышения уровня
 ```
 
 ---
@@ -167,76 +186,66 @@
 
 | Действие | Формат | Описание |
 |----------|--------|----------|
-| `command` | `command:КОМАНДА` | Выполнить команду от имени консоли |
+| `command` | `command:КОМАНДА` | Команда от имени игрока |
+| `console_command` | `console_command:КОМАНДА` | Команда от консоли |
 
 **Примеры:**
 ```yaml
-- 'command:give %player% diamond 1'
-- 'command:effect give %player% speed 60 2'
 - 'command:tp %player% 100 64 200'
+- 'command:effect give %player% speed 60 2'
 ```
 
 ---
 
-## Полный пример предмета
+## Полный пример (новый формат)
 
 ```yaml
-legendary-sword:
-  item:
-    type: NETHERITE_SWORD
-    title: '&6[⚔] &fЛегендарный Меч'
-    glowing: true
-    unbreakable: true
-    custom-model-data: 1001
-    enchantments:
-      SHARPNESS: 5
-      DURABILITY: 3
-  lore:
-    - ''
-    - ' &7Когда в основной руке:'
-    - ' &6┌ &eСила &6III &7(&6∞&7)'
-    - ' &6└ &eСкорость &6II &7(&6∞&7)'
-    - ''
-    - '&6✦ &fПКМ: Огненный шар'
-    - '&6✦ &fПри убийстве: Исцеление'
-    - ''
-  type: TOOL
-  activation-slot: HAND
-  placeable: false
+legendary-fire-sword:
+  material: NETHERITE_SWORD
+  display-name: '&c&l🔥 Огненный Клинок'
+  unbreakable: true
+  glowing: true
+  model: "fire_sword"
+  
+  enchantments:
+    SHARPNESS: 5
+    FIRE_ASPECT: 2
+    UNBREAKING: 3
+    
+  attributes:
+    GENERIC_ATTACK_DAMAGE: 15.0
+    GENERIC_ATTACK_SPEED: 1.8
+    
   effects:
-    - 'INCREASE_DAMAGE:3'
-    - 'SPEED:2'
-  click-cooldown: 1000
-  equip-particles:
-    - 'FLAME:20'
-  equip-sounds:
-    - 'ITEM_TRIDENT_RETURN:1:1.2'
-  activation-message: '&6⚔ Меч извлечен!'
-  deactivation-message: '&6⚔ Меч убран.'
-  right-click-actions:
-    - 'lightning:2'
-    - 'particle:FLAME:30'
-    - 'sound:ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
-    - 'message:&6🔥 Огненный шар!'
-  trigger-actions:
-    - 'on_kill:heal:20'
-    - 'on_kill:message:&6❤ Исцеление!'
-    - 'on_kill:particle:HEART:15'
-    - 'on_damage_dealt:particle:CRIT:10'
-    - 'on_jump:effect:SPEED:3:2'
-    - 'on_pickup:message:&6⚔ Меч подобран!'
-    - 'on_drop:message:&6⚔ Меч выброшен.'
-```
-
----
-
-## Per-item сообщения
-
-```yaml
-equip-message: '&aПредмет экипирован!'
-unequip-message: '&cПредмет снят.'
-activation-message: '&aЭффекты активированы!'
-deactivation-message: '&cЭффекты деактивированы.'
-cooldown-message: '&cКулдаун {seconds} сек!'
-uses-depleted-message: '&cИсчерпано!'
+    - 'FIRE_RESISTANCE:999:1'
+    - 'STRENGTH:10:1'
+    
+  cooldown: 1000
+  
+  triggers:
+    on_equip:
+      - 'particles:FLAME:30'
+      - 'sound:ENTITY_BLAZE_AMBIENT'
+      - 'message:&c🔥 Огненный клинок извлечен!'
+      
+    on_unequip:
+      - 'particles:SMOKE:20'
+      - 'sound:BLOCK_FIRE_EXTINGUISH'
+      
+    on_click_right:
+      - 'damage_nearby:15:4'
+      - 'particles:FLAME:100'
+      - 'sound:ENTITY_GENERIC_EXPLODE'
+      - 'effect:STRENGTH:10:2'
+      - 'title:&c🔥 ОГНЕННЫЙ ШТОРМ!::&7Все враги горят!'
+      
+    on_click_left:
+      - 'damage_mobs:10:3'
+      - 'particles:CRIT:50'
+      
+    on_kill:
+      - 'heal:20'
+      - 'effect:REGENERATION:10:2'
+      - 'particles:HEART:30'
+      - 'sound:ENTITY_PLAYER_LEVELUP'
 ```
