@@ -1,6 +1,7 @@
 package me.dcplugin.dcustomitems.utils;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -192,6 +193,32 @@ public class ActionParser {
                     executeConsoleCommand(actionValue);
                     return true;
 
+                // === ПРОДВИНУТЫЕ ===
+                case "particles_custom":
+                    executeParticleCustom(player, actionValue);
+                    return true;
+                case "sound_sequence":
+                    executeSoundSequence(player, actionValue);
+                    return true;
+                case "title_sequence":
+                    executeTitleSequence(player, actionValue);
+                    return true;
+                case "command_sequence":
+                    executeCommandSequence(player, actionValue);
+                    return true;
+                case "teleport_sequence":
+                    executeTeleportSequence(player, actionValue);
+                    return true;
+                case "effect_sequence":
+                    executeEffectSequence(player, actionValue);
+                    return true;
+                case "damage_custom":
+                    executeDamageCustom(player, actionValue);
+                    return true;
+                case "heal_custom":
+                    executeHealCustom(player, actionValue);
+                    return true;
+
                 default:
                     return false;
             }
@@ -239,7 +266,6 @@ public class ActionParser {
     // === ЭФФЕКТЫ ===
 
     private static void executeEffect(Player player, String value) {
-        // Формат: EFFECT:SECONDS:LEVEL:AMBIENT:SHOW_PARTICLES
         String[] parts = value.split(":");
         if (parts.length < 2) return;
 
@@ -273,7 +299,6 @@ public class ActionParser {
     }
 
     private static void executeDamageNearby(Player player, String value) {
-        // Формат: DAMAGE:RADIUS
         String[] parts = value.split(":");
         double amount = parts.length > 0 ? Double.parseDouble(parts[0]) : 5.0;
         double range = parts.length > 1 ? Double.parseDouble(parts[1]) : 3.0;
@@ -310,7 +335,6 @@ public class ActionParser {
     }
 
     private static void executeHealNearby(Player player, String value) {
-        // Формат: HEAL:RADIUS
         String[] parts = value.split(":");
         double amount = parts.length > 0 ? Double.parseDouble(parts[0]) : 10.0;
         double range = parts.length > 1 ? Double.parseDouble(parts[1]) : 5.0;
@@ -469,7 +493,6 @@ public class ActionParser {
     }
 
     private static void executeSpeed(Player player, String value) {
-        // Формат: SECONDS:LEVEL
         String[] parts = value.split(":");
         int duration = parts.length > 0 ? Integer.parseInt(parts[0]) : 30;
         int level = parts.length > 1 ? Integer.parseInt(parts[1]) : 1;
@@ -509,7 +532,6 @@ public class ActionParser {
     }
 
     private static void executeStun(Player player, String value) {
-        // Формат: SECONDS:RADIUS
         String[] parts = value.split(":");
         int duration = parts.length > 0 ? Integer.parseInt(parts[0]) : 3;
         double range = parts.length > 1 ? Double.parseDouble(parts[1]) : 4.0;
@@ -533,5 +555,199 @@ public class ActionParser {
 
     private static void executeConsoleCommand(String value) {
         Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), value);
+    }
+
+    // === ПРОДВИНУТЫЕ ДЕЙСТВИЯ ===
+
+    /**
+     * Кастомные частицы с полным контролем
+     * Формат: particles_custom:ТИП:КОЛИЧЕСТВО:X:Y:Z:OFF_X:OFF_Y:OFF_Z
+     */
+    private static void executeParticleCustom(Player player, String value) {
+        String[] parts = value.split(":");
+        if (parts.length < 2) return;
+        
+        Particle particle = Particle.valueOf(parts[0].toUpperCase());
+        int count = Integer.parseInt(parts[1]);
+        double x = parts.length > 2 ? Double.parseDouble(parts[2]) : 0;
+        double y = parts.length > 3 ? Double.parseDouble(parts[3]) : 1;
+        double z = parts.length > 4 ? Double.parseDouble(parts[4]) : 0;
+        double offX = parts.length > 5 ? Double.parseDouble(parts[5]) : 0.5;
+        double offY = parts.length > 6 ? Double.parseDouble(parts[6]) : 0.5;
+        double offZ = parts.length > 7 ? Double.parseDouble(parts[7]) : 0.5;
+        
+        Location loc = player.getLocation().add(x, y, z);
+        player.getWorld().spawnParticle(particle, loc, count, offX, offY, offZ);
+    }
+
+    /**
+     * Последовательность звуков с задержками
+     * Формат: sound_sequence:ЗВУК1:ГРОМКОСТЬ1:ТОН1;ЗВУК2:ГРОМКОСТЬ2:ТОН2;...
+     */
+    private static void executeSoundSequence(Player player, String value) {
+        String[] sounds = value.split(";");
+        for (String soundStr : sounds) {
+            String[] parts = soundStr.split(":");
+            if (parts.length < 1) continue;
+            
+            Sound sound = Sound.valueOf(parts[0].toUpperCase());
+            float volume = parts.length > 1 ? Float.parseFloat(parts[1]) : 1.0f;
+            float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
+            
+            player.playSound(player.getLocation(), sound, volume, pitch);
+        }
+    }
+
+    /**
+     * Пословательность заголовков
+     * Формат: title_sequence:ЗАГОЛОВОК:ПОДЗАГОЛОВОК:FADEIN:STAY:FADEOUT;...
+     */
+    private static void executeTitleSequence(Player player, String value) {
+        String[] titles = value.split(";");
+        for (String titleStr : titles) {
+            String[] parts = titleStr.split(":");
+            if (parts.length < 1) continue;
+            
+            String title = parts.length > 0 ? ColorUtils.colorize(parts[0]) : "";
+            String subtitle = parts.length > 1 ? ColorUtils.colorize(parts[1]) : "";
+            int fadeIn = parts.length > 2 ? Integer.parseInt(parts[2]) : 10;
+            int stay = parts.length > 3 ? Integer.parseInt(parts[3]) : 40;
+            int fadeOut = parts.length > 4 ? Integer.parseInt(parts[4]) : 10;
+            
+            player.sendTitle(title, subtitle, fadeIn, stay, fadeOut);
+        }
+    }
+
+    /**
+     * Последовательность команд с задержками
+     * Формат: command_sequence:КОМАНДА1:ЗАДЕРЖКА1;КОМАНДА2:ЗАДЕРЖКА2;...
+     */
+    private static void executeCommandSequence(Player player, String value) {
+        String[] commands = value.split(";");
+        long delay = 0;
+        for (String cmdStr : commands) {
+            String[] parts = cmdStr.split(":");
+            if (parts.length < 1) continue;
+            
+            String command = parts[0].replace("%player%", player.getName());
+            long cmdDelay = parts.length > 1 ? Long.parseLong(parts[1]) : 0;
+            
+            final long finalDelay = delay;
+            Bukkit.getScheduler().runTaskLater(Bukkit.getPluginManager().getPlugin("DC-CustomItems"), () -> {
+                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+            }, finalDelay / 50); // Конвертация мс в тики
+            
+            delay += cmdDelay;
+        }
+    }
+
+    /**
+     * Последовательность телепортаций
+     * Формат: teleport_sequence:X1:Y1:Z1:ЗАДЕРЖКА1;X2:Y2:Z2:ЗАДЕРЖКА2;...
+     */
+    private static void executeTeleportSequence(Player player, String value) {
+        String[] points = value.split(";");
+        long delay = 0;
+        for (String pointStr : points) {
+            String[] parts = pointStr.split(":");
+            if (parts.length < 3) continue;
+            
+            double x = Double.parseDouble(parts[0]);
+            double y = Double.parseDouble(parts[1]);
+            double z = Double.parseDouble(parts[2]);
+            long tpDelay = parts.length > 3 ? Long.parseLong(parts[3]) : 0;
+            
+            final long finalDelay = delay;
+            final Location loc = new Location(player.getWorld(), x, y, z);
+            Bukkit.getScheduler().runTaskLater(Bukkit.getPluginManager().getPlugin("DC-CustomItems"), () -> {
+                player.teleport(loc);
+            }, finalDelay / 50);
+            
+            delay += tpDelay;
+        }
+    }
+
+    /**
+     * Последовательность эффектов
+     * Формат: effect_sequence:ТИП1:ДЛИТЕЛЬНОСТЬ1:УРОВЕНЬ1:ЗАДЕРЖКА1;...
+     */
+    private static void executeEffectSequence(Player player, String value) {
+        String[] effects = value.split(";");
+        long delay = 0;
+        for (String effectStr : effects) {
+            String[] parts = effectStr.split(":");
+            if (parts.length < 2) continue;
+            
+            String effectName = parts[0].toUpperCase();
+            int duration = Integer.parseInt(parts[1]);
+            int level = parts.length > 2 ? Integer.parseInt(parts[2]) - 1 : 0;
+            long effectDelay = parts.length > 3 ? Long.parseLong(parts[3]) : 0;
+            
+            PotionEffectType effectType = EFFECT_MAP.get(effectName);
+            if (effectType == null) {
+                effectType = PotionEffectType.getByName(effectName);
+            }
+            
+            if (effectType != null) {
+                final PotionEffectType finalType = effectType;
+                final int finalLevel = level;
+                final long finalDelay = delay;
+                Bukkit.getScheduler().runTaskLater(Bukkit.getPluginManager().getPlugin("DC-CustomItems"), () -> {
+                    player.addPotionEffect(new PotionEffect(finalType, duration * 20, finalLevel, false, false));
+                }, finalDelay / 50);
+            }
+            
+            delay += effectDelay;
+        }
+    }
+
+    /**
+     * Кастомный урон с параметрами
+     * Формат: damage_custom:УРОН:ШИРИНА:ВЫСОТА:ГЛУБИНА:СВЕЧЕНИЕ
+     */
+    private static void executeDamageCustom(Player player, String value) {
+        String[] parts = value.split(":");
+        if (parts.length < 1) return;
+        
+        double amount = Double.parseDouble(parts[0]);
+        double width = parts.length > 1 ? Double.parseDouble(parts[1]) : 3.0;
+        double height = parts.length > 2 ? Double.parseDouble(parts[2]) : 3.0;
+        double depth = parts.length > 3 ? Double.parseDouble(parts[3]) : 3.0;
+        
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(width, height, depth)) {
+            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
+                ((org.bukkit.entity.LivingEntity) entity).damage(amount, player);
+            }
+        }
+    }
+
+    /**
+     * Кастомное исцеление с параметрами
+     * Формат: heal_custom:ИСЦЕЛЕНИЕ:ШИРИНА:ВЫСОТА:ГЛУБИНА:ЧАСТИЦЫ
+     */
+    private static void executeHealCustom(Player player, String value) {
+        String[] parts = value.split(":");
+        if (parts.length < 1) return;
+        
+        double amount = Double.parseDouble(parts[0]);
+        double width = parts.length > 1 ? Double.parseDouble(parts[1]) : 5.0;
+        double height = parts.length > 2 ? Double.parseDouble(parts[2]) : 5.0;
+        double depth = parts.length > 3 ? Double.parseDouble(parts[3]) : 5.0;
+        String particleType = parts.length > 4 ? parts[4] : "HEART";
+        
+        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(width, height, depth)) {
+            if (entity instanceof Player && entity != player) {
+                Player target = (Player) entity;
+                if (target.getAttribute(Attribute.MAX_HEALTH) != null) {
+                    double max = target.getAttribute(Attribute.MAX_HEALTH).getValue();
+                    target.setHealth(Math.min(target.getHealth() + amount, max));
+                }
+                // Частицы исцеления
+                try {
+                    Particle particle = Particle.valueOf(particleType.toUpperCase());
+                    target.getWorld().spawnParticle(particle, target.getLocation().add(0, 2, 0), 20);
+                } catch (Exception ignored) {}
+            }
+        }
     }
 }
