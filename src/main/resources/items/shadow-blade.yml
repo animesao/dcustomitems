@@ -45,7 +45,7 @@ shadow-blade:
 
   triggers:
     on_equip:
-      - 'particles:SMOKE_LARGE:25'
+      - 'particles:SMOKE:25'
       - 'particles:ENCHANTMENT_TABLE:20'
       - 'particles:PORTAL:15'
       - 'sound:ITEM_TRIDENT_RETURN:1:1.2'
@@ -58,7 +58,7 @@ shadow-blade:
     on_click_right:
       - 'effect:STRENGTH:8:3'
       - 'effect:SPEED:8:2'
-      - 'particles:SMOKE_LARGE:30'
+      - 'particles:SMOKE:30'
       - 'particles:ENCHANTMENT_TABLE:20'
       - 'sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
       - 'title:&8⚔ &7Активация теней!::&8Тени окружают вас!:10:40:10'

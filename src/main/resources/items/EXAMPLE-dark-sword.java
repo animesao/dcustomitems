@@ -127,7 +127,7 @@ public class DarkSword extends AbstractCustomItem {
     public void onRightClick(PlayerInteractEvent event, Player player) {
         // ПКМ - Невидимость на 5 сек
         ItemAPI.vanish(player, 5);
-        ItemAPI.particles(player, Particle.SMOKE_LARGE, 50);
+        ItemAPI.particles(player, Particle.SMOKE, 50);
         ItemAPI.sound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 0.5f);
         ItemAPI.title(player, "&5ТЁМНАЯ ТЕНЬ", "&7Вы стали невидимы!");
     }
@@ -136,7 +136,7 @@ public class DarkSword extends AbstractCustomItem {
     public void onLeftClick(PlayerInteractEvent event, Player player) {
         // ЛКМ - Тёмная волна (AoE урон)
         ItemAPI.damageNearby(player, 8, 5);
-        ItemAPI.particles(player, Particle.SMOKE_LARGE, 100);
+        ItemAPI.particles(player, Particle.SMOKE, 100);
         ItemAPI.sound(player, Sound.ENTITY_ENDER_DRAGON_GROWL, 0.5f, 2f);
         ItemAPI.title(player, "&5ТЁМНАЯ ВОЛНА", "");
     }
@@ -154,7 +154,7 @@ public class DarkSword extends AbstractCustomItem {
             ItemAPI.message(player, "&5Вы吸收или жизнь!");
         }
 
-        ItemAPI.particlesAt(event.getEntity().getLocation(), Particle.SMOKE_LARGE, 20);
+        ItemAPI.particlesAt(event.getEntity().getLocation(), Particle.SMOKE, 20);
     }
 
     @Override
@@ -162,7 +162,7 @@ public class DarkSword extends AbstractCustomItem {
         // При убийстве - исцеление + сила
         ItemAPI.heal(killer, 5);
         ItemAPI.effect(killer, PotionEffectType.STRENGTH, 15, 2);
-        ItemAPI.particles(killer, Particle.SMOKE_LARGE, 80);
+        ItemAPI.particles(killer, Particle.SMOKE, 80);
         ItemAPI.sound(killer, Sound.ENTITY_WITHER_DEATH, 0.3f, 2f);
         ItemAPI.title(killer, "&5УБИЙСТВО!", "&7+5 ❤ &5+Сила II");
     }
@@ -171,7 +171,7 @@ public class DarkSword extends AbstractCustomItem {
     public void onEquip(Player player) {
         // При экипировке
         ItemAPI.effect(player, PotionEffectType.DARKNESS, 999, 1);
-        ItemAPI.particles(player, Particle.SMOKE_LARGE, 30);
+        ItemAPI.particles(player, Particle.SMOKE, 30);
     }
 
     @Override

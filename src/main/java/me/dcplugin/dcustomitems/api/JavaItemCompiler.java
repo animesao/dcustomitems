@@ -198,7 +198,8 @@ public class JavaItemCompiler {
             // Настройки компиляции
             List<String> options = List.of(
                 "-classpath", getClasspath(),
-                "-d", compiledDir.toString()
+                "-d", compiledDir.toString(),
+                "-proc:none"  // Отключаем annotation processing
             );
 
             // Компилируем
