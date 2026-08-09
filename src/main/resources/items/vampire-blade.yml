@@ -16,7 +16,9 @@ vampire-blade:
     title: '&4[🦇] &fКлинок &4Вампира'
     glowing: true
     unbreakable: true
-    custom-model-data: 1007
+    # НОВЫЙ ПАРАМЕТР для Minecraft 1.21.11
+    # Используйте item-model вместо custom-model-data
+    item-model: "minecraft:item/smoke"
     enchantments:
       SHARPNESS: 5
       UNBREAKING: 3
@@ -117,4 +119,4 @@ vampire-blade:
 
     # --- При выбрасывании ---
     - 'on_drop:message:&4🦇 &7Клинок выброшен.'
-    - 'on_drop:particle:SMOKE_NORMAL:20'
+    - 'on_drop:particle:SMOKE_NORMAL:20'

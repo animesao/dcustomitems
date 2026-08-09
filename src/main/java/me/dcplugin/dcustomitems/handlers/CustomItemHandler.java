@@ -27,12 +27,14 @@ public class CustomItemHandler {
     private final Map<String, CustomItem> customItems;
     private final NamespacedKey customItemKey;
     private final NamespacedKey itemUsesKey;
+    private final NamespacedKey itemModelKey;
 
     public CustomItemHandler(Main plugin) {
         this.plugin = plugin;
         this.customItems = new HashMap<>();
         this.customItemKey = new NamespacedKey(plugin, "custom_item_id");
         this.itemUsesKey = new NamespacedKey(plugin, "item_uses");
+        this.itemModelKey = new NamespacedKey(plugin, "item_model");
     }
 
     public void loadCustomItems() {
@@ -236,7 +238,7 @@ public class CustomItemHandler {
             
             if (!lorePre.isEmpty()) {
                 for (String line : lorePre) {
-                    // Создаёмprocessed версию для отображения
+                    // Создаём processed версию для отображения
                     String processed = line.replace("%cooldown%", "0.0");
                     if (maxUses > 0) {
                         processed = processed.replace("%uses%", String.valueOf(maxUses));
@@ -306,6 +308,7 @@ public class CustomItemHandler {
 
             // Загружаем новые параметры
             int customModelData = itemSection.getInt("custom-model-data", -1);
+            String itemModel = itemSection.getString("item-model", null); // НОВЫЙ ПАРАМЕТР для 1.21.11
             String permission = section.getString("permission", null);
             List<String> equipParticles = section.getStringList("equip-particles");
             List<String> equipSounds = section.getStringList("equip-sounds");
@@ -321,13 +324,35 @@ public class CustomItemHandler {
             String deactivationMessage = section.getString("deactivation-message", null);
             String usesDepletedMessage = section.getString("uses-depleted-message", null);
 
-            // Применяем CustomModelData к предмету
-            if (customModelData > 0) {
-                ItemMeta cmdMeta = itemStack.getItemMeta();
-                if (cmdMeta != null) {
-                    cmdMeta.setCustomModelData(customModelData);
-                    itemStack.setItemMeta(cmdMeta);
+            // Применяем CustomModelData или ItemModel к предмету
+            meta = itemStack.getItemMeta();
+            if (meta != null) {
+                // ПРИОРИТЕТ: item-model (для 1.21.11) > custom-model-data (legacy)
+                if (itemModel != null && !itemModel.isEmpty()) {
+                    // Используем item_model компонент (Minecraft 1.21.4+)
+                    try {
+                        NamespacedKey modelKey = NamespacedKey.fromString(itemModel);
+                        if (modelKey != null) {
+                            meta.setItemModel(modelKey);
+                            plugin.getLogger().fine("[LOAD] Применён item_model: " + itemModel + " для " + itemId);
+                        } else {
+                            plugin.getLogger().warning("Неверный item_model: " + itemModel + " для предмета: " + itemId);
+                        }
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("Ошибка при установке item_model: " + e.getMessage());
+                    }
+                } else if (customModelData > 0) {
+                    // Используем старый custom_model_data (legacy)
+                    meta.setCustomModelData(customModelData);
+                    plugin.getLogger().fine("[LOAD] Применён custom_model_data: " + customModelData + " для " + itemId);
                 }
+                
+                // Сохраняем item_model в PDC для совместимости
+                if (itemModel != null) {
+                    meta.getPersistentDataContainer().set(itemModelKey, PersistentDataType.STRING, itemModel);
+                }
+                
+                itemStack.setItemMeta(meta);
             }
 
             CustomItem customItem = new CustomItem(itemId, itemStack, type, activationSlot, placeable, effects, attributes, armorSetId, hasSetBonus, leftClickActions, rightClickActions, clickCooldown, maxUses, loreTemplate, customModelData, permission, equipParticles, equipSounds, unequipParticles, unequipSounds, triggerActions, equipMessage, unequipMessage, cooldownMessage, activationMessage, deactivationMessage, usesDepletedMessage);
