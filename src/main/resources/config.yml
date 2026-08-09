@@ -597,32 +597,6 @@ command-staff:
     - 'on_equip:message:&9📜 &7Посох извлечен!'
     - 'on_unequip:message:&9📜 &7Посох убран.'
 
-breaker-pickaxe:
-  item:
-    type: DIAMOND_PICKAXE
-    title: '&a⛏ &fДетонирующая Кирка'
-    glowing: true
-    unbreakable: true
-    enchantments:
-      EFFICIENCY: 5
-  lore:
-    - ''
-    - ' &7ЛКМ - разбить блок'
-    - ' &7ПКМ - спешка'
-    - ''
-  type: TOOL
-  activation-slot: HAND
-  placeable: false
-  click-cooldown: 500
-  trigger-actions:
-    - 'on_click_left:break'
-    - 'on_click_left:particle:EXPLOSION_NORMAL:5'
-    - 'on_click_right:effect:SPEED:5:1'
-    - 'on_click_right:particle:CRIT:10'
-    - 'on_click_right:message:&a⚡ Спешка на 5 сек!'
-    - 'on_equip:message:&a⛏ &7Кирка извлечена!'
-    - 'on_unequip:message:&a⛏ &7Кирка убрана.'
-
 healing-staff:
   item:
     type: STICK
