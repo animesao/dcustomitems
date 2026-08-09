@@ -1,28 +1,27 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Minecraft-1.21.8-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
+  <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.214-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.220-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/github/license/animesao/dcustomitems-purple?style=for-the-badge" alt="License">
 </p>
 
 <h1 align="center">⚔️ DC-CustomItems</h1>
 
 <p align="center">
-  <b>Powerful custom items plugin for Minecraft</b><br>
-  Effects, attributes, armor sets, triggers and more!
+  <b>Powerful custom items plugin for Minecraft 1.21.11</b><br>
+  Effects, attributes, armor sets, triggers, custom models and more!
 </p>
 
 <p align="center">
   <a href="#installation">Installation</a> •
+  <a href="#quick-start">Quick Start</a> •
   <a href="#commands">Commands</a> •
-  <a href="#configuration">Configuration</a> •
-  <a href="#features">Features</a> •
   <a href="#documentation">Documentation</a>
 </p>
 
 ---
 
-## Features
+## ✨ Features
 
 | Feature | Description |
 |---------|-------------|
@@ -33,173 +32,147 @@
 | 🎯 Click Actions | Lightning, commands, effects, particles, sounds |
 | 🔄 Triggers | Auto-actions on events |
 | 📦 Per-Item Files | Each item in separate YAML |
-| 🎨 CustomModelData | Resource pack support |
+| 🎨 Custom Models | Resource pack support with `item-model` |
 | 🔐 Permissions | Per-item permissions |
 | ✨ Particles & Sounds | Equip/unequip effects |
 
 ---
 
-## Installation
+## 📦 Installation
 
-1. Download the latest release from [GitHub Releases](https://github.com/animesao/dcustomitems/releases/latest)
-2. Place `DC-CustomItems.jar` in your `plugins/` folder
-3. Restart the server
-4. Configure items in `plugins/DC-CustomItems/items/`
+### Quick Install
+
+```bash
+# Download latest release
+cd ~/server/plugins
+curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.320.220/DC-CustomItems-1.320.220.jar
+
+# Restart server
+./restart.sh
+```
+
+### Manual Install
+
+1. Download `DC-CustomItems-1.320.220.jar` from [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.320.220)
+2. Place in `plugins/` folder
+3. Restart server
 
 ---
 
-## Commands
+## 🚀 Quick Start
 
-| Command | Description |
-|---------|-------------|
-| `/customitems list` | List all items |
-| `/customitems give <id> [player]` | Give item |
-| `/customitems reload` | Reload config |
-| `/customitems update` | Check updates |
+### 1. Give yourself an item
 
----
-
-## Configuration
-
-### File Structure
-
-```
-plugins/DC-CustomItems/
-├── config.yml              # Main settings
-├── messages.yml            # Plugin messages
-└── items/                  # Items folder
-    ├── shadow-blade.yml
-    ├── vampire-blade.yml
-    ├── thunder-axe.yml
-    └── ... (10 items)
+```bash
+/ci give vampire-blade
 ```
 
-### Item Example
+### 2. Create your own item
+
+Create a new file `plugins/DC-CustomItems/items/my-item.yml`:
 
 ```yaml
 my-sword:
   type: TOOL
   activation-slot: HAND
-  placeable: false
-  permission: my.sword
-
+  
   item:
-    type: NETHERITE_SWORD
-    title: '&6My Sword'
-    glowing: true
-    unbreakable: true
-    enchantments:
-      SHARPNESS: 5
-
+    type: DIAMOND_SWORD
+    title: '&bMy Sword'
+    item-model: "smoke"  # Use resource pack model
+  
   effects:
-    - 'INCREASE_DAMAGE:3'
-    - 'SPEED:2'
-
+    - 'SPEED:1'
+  
   trigger-actions:
-    # On equip
-    - 'on_equip:particle:FLAME:20'
-    - 'on_equip:message:&aSword equipped!'
-    
-    # On unequip
-    - 'on_unequip:message:&cSword unequipped.'
-    
-    # On right click
-    - 'on_click_right:lightning:3'
-    - 'on_click_right:particle:FLAME:30'
-    - 'on_click_right:message:&6Lightning called!'
-    
-    # On left click (4x damage like Evoker!)
-    - 'on_click_left:effect:INCREASE_DAMAGE:8:4'
-    - 'on_click_left:lightning:2'
-    - 'on_click_left:knockback:3'
-    
-    # Auto triggers
-    - 'on_kill:heal:20'
-    - 'on_jump:effect:SPEED:3:2'
+    - 'on_click_right:lightning:1'
+    - 'on_click_right:message:&6⚡ Lightning!'
+```
+
+### 3. Reload and use
+
+```bash
+/ci reload
+/ci give my-sword
 ```
 
 ---
 
-## Triggers
+## 🎮 Commands
 
-| Trigger | Description |
+| Command | Description |
 |---------|-------------|
-| `on_equip` | On equip item |
-| `on_unequip` | On unequip item |
-| `on_click_right` | On right click |
-| `on_click_left` | On left click |
-| `on_kill` | On kill mob/player |
-| `on_death` | On player death |
-| `on_damage_taken` | On damage taken |
-| `on_damage_dealt` | On damage dealt |
-| `on_jump` | On jump |
-| `on_pickup` | On pickup item |
-| `on_drop` | On drop item |
+| `/ci list` | List all items |
+| `/ci give <id>` | Give item to yourself |
+| `/ci give <id> <player>` | Give item to player |
+| `/ci reload` | Reload plugin |
+| `/ci update` | Check for updates |
 
 ---
 
-## Actions
+## 🎨 Custom Model Support (1.21.11+)
 
-### 📢 Communication
-- `message` - Send message to player
-- `announce` - Broadcast message
-- `title` - Title on screen
-- `actionbar` - Text above hotbar
-
-### ⚡ Effects
-- `effect:TYPE:SECONDS:LEVEL` - Potion effect
-
-### 💥 Combat
-- `lightning:COUNT` - Lightning strike
-- `damage:AMOUNT` - Deal damage
-- `heal:AMOUNT` - Heal player
-- `stun:SECONDS` - Stun enemy
-- `knockback:POWER` - Knockback enemy
-- `launch:POWER` - Launch enemy up
-
-### 🎁 Items
-- `give:MATERIAL:COUNT` - Give item
-- `remove:MATERIAL:COUNT` - Remove item
-- `exp:XP:LEVELS` - Give experience
-
-### 🌍 World
-- `teleport:X:Y:Z` - Teleport
-- `sethealth:VALUE` - Set health
-- `setfood:VALUE` - Set food
-
-### 🎆 Effects
-- `particle:TYPE:COUNT` - Particles
-- `sound:TYPE:VOLUME:PITCH` - Sound
-- `fireworks:1` - Spawn firework
-- `vanish:SECONDS` - Invisibility
-- `glow:SECONDS` - Glowing
-
-### 🔧 Commands
-- `command:COMMAND` - Execute command
-
-### ⏱️ Cooldown
-- `cooldown:MS` - Set cooldown in milliseconds
+```yaml
+my-item:
+  item:
+    type: NETHERITE_SWORD
+    # All formats work:
+    item-model: "smoke"
+    # item-model: "minecraft:item/smoke"
+    # item-model: "myplugin:custom_sword"
+```
 
 ---
 
-## Documentation
+## 📚 Documentation
 
-📄 **[Full Documentation (Russian)](docs.md)**
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for information on how to contribute.
+| Language | Link |
+|----------|------|
+| 🇬🇧 English | [Full Documentation](docs/README_EN.md) |
+| 🇷🇺 Русский | [Полная документация](docs/README_RU.md) |
+| ⚡ Actions & Triggers | [Actions Guide](src/main/resources/items/README-ACTIONS.md) |
 
 ---
 
-## License
+## 📦 Included Items
 
-This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
+| ID | Name | Description |
+|----|------|-------------|
+| `vampire-blade` | Vampire Blade | Life steal, AoE damage |
+| `shadow-blade` | Shadow Blade | Critical strikes |
+| `thunder-axe` | Thunder Axe | Lightning attacks |
+| `frost-wand` | Frost Wand | Ice spells |
+| `elemental-staff` | Elemental Staff | Multiple elements |
+| `berserker-axe` | Berserker Axe | Rage mode |
+| `healer-amulet` | Healer Amulet | Healing abilities |
+| `nature-totem` | Nature Totem | Nature powers |
+| `archer-bow` | Archer Bow | Special arrows |
+| `shadow-helmet` | Shadow Helmet | Stealth mode |
+| `artifact-blade-of-destiny` | Blade of Destiny | Ultimate weapon |
+| `artifact-chaos-orb` | Chaos Orb | Random effects |
 
 ---
 
-## Authors
+## 🛠️ Requirements
 
-- **DC-CustomItems** - [GitHub](https://github.com/animesao/dcustomitems)
+- Minecraft 1.21.11+
+- Paper/Spigot
+- Java 17+
+
+---
+
+## 🔗 Links
+
+- [GitHub Repository](https://github.com/animesao/dcustomitems)
+- [Releases](https://github.com/animesao/dcustomitems/releases)
+- [Issues](https://github.com/animesao/dcustomitems/issues)
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+**Made with ❤️ by animesao**
