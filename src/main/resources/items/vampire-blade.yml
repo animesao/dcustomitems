@@ -119,4 +119,4 @@ vampire-blade:
 
     # --- При выбрасывании ---
     - 'on_drop:message:&4🦇 &7Клинок выброшен.'
-    - 'on_drop:particle:SMOKE:20'
+    - 'on_drop:particle:SMOKE:20'
