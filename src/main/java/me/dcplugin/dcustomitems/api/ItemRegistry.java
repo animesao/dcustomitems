@@ -7,58 +7,134 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.*;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * Реестр кастомных предметов, загружаемых из JAR файлов.
+ * Реестр кастомных предметов.
  *
- * Предметы загружаются из папки plugins/YourPlugin/items/
- * Каждый JAR файл сканируется на наличие классов, наследующих AbstractCustomItem.
+ * Поддерживает 3 типа загрузки:
+ * 1. YAML файлы (.yml) — через CustomItemHandler
+ * 2. JAR файлы (.jar) — через API
+ * 3. Java файлы (.java) — runtime компиляция!
  *
  * Пример структуры:
  * plugins/DC-CustomItems/
  *   items/
- *     my-items.jar          <-- JAR с кастомными предметами
- *       com/example/
- *         FireSword.class   <-- extends AbstractCustomItem
- *         IceStaff.class    <-- extends AbstractCustomItem
+ *     my-items.jar          <-- JAR с предметами
+ *     vampire-blade.yml     <-- YAML предмет
+ *     dark-sword.java       <-- Java предмет (runtime компиляция!)
+ *     ice-staff.java        <-- Ещё один Java предмет
  */
 public class ItemRegistry {
 
     private final JavaPlugin plugin;
     private final Map<String, AbstractCustomItem> registeredItems;
-    private final List<Class<? extends AbstractCustomItem>> itemClasses;
+    private final JavaItemCompiler compiler;
 
     public ItemRegistry(JavaPlugin plugin) {
         this.plugin = plugin;
         this.registeredItems = new LinkedHashMap<>();
-        this.itemClasses = new ArrayList<>();
+        this.compiler = new JavaItemCompiler(plugin);
     }
 
     /**
      * Загружает все предметы из папки items/.
      */
     public void loadAll() {
+        registeredItems.clear();
+
         File itemsDir = new File(plugin.getDataFolder(), "items");
         if (!itemsDir.exists()) {
             itemsDir.mkdirs();
-            plugin.getLogger().info("[API] Создана папка items/ для Java API предметов");
+            plugin.getLogger().info("[API] Создана папка items/ для кастомных предметов");
             return;
         }
 
+        // 1. Загружаем JAR файлы
+        loadJarFiles(itemsDir);
+
+        // 2. Компилируем и загружаем .java файлы
+        loadJavaFiles(itemsDir);
+
+        plugin.getLogger().info("[API] Загружено " + registeredItems.size() + " Java API предметов");
+    }
+
+    /**
+     * Перезагружает все предметы (для /ci reload).
+     */
+    public void reload() {
+        registeredItems.clear();
+        compiler.clear();
+        loadAll();
+    }
+
+    /**
+     * Загружает JAR файлы из папки.
+     */
+    private void loadJarFiles(File itemsDir) {
         File[] jarFiles = itemsDir.listFiles((dir, name) -> name.endsWith(".jar"));
-        if (jarFiles == null || jarFiles.length == 0) {
-            plugin.getLogger().info("[API] Папка items/ пуста. Добавьте JAR файлы с предметами.");
-            return;
-        }
+        if (jarFiles == null || jarFiles.length == 0) return;
 
         for (File jarFile : jarFiles) {
             loadFromJar(jarFile);
         }
+    }
 
-        plugin.getLogger().info("[API] Загружено " + registeredItems.size() + " Java API предметов из " + jarFiles.length + " JAR файлов");
+    /**
+     * Загружает .java файлы из папки.
+     */
+    private void loadJavaFiles(File itemsDir) {
+        File[] javaFiles = itemsDir.listFiles((dir, name) ->
+            name.endsWith(".java") && !name.startsWith("_")
+        );
+        if (javaFiles == null || javaFiles.length == 0) return;
+
+        plugin.getLogger().info("[API] Найдено " + javaFiles.length + " .java файлов, компиляция...");
+
+        int compiled = compiler.compileAll();
+
+        if (compiled > 0) {
+            // Ищем все классы наследующие AbstractCustomItem
+            for (File javaFile : javaFiles) {
+                String fileName = javaFile.getName().replace(".java", "");
+                String className = inferPackageName(javaFile) + "." + fileName;
+
+                try {
+                    AbstractCustomItem item = compiler.createItemInstance(className);
+                    if (item != null) {
+                        registeredItems.put(item.getId(), item);
+                        plugin.getLogger().info("[API] ✅ Загружен .java предмет: " + item.getId() +
+                            " (" + item.getDisplayName() + ")");
+                    }
+                } catch (Exception e) {
+                    plugin.getLogger().warning("[API] ❌ Не удалось загрузить " + fileName + ": " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    /**
+     * Определяет пакет из расположения файла.
+     * Если файл в items/sword/dark.java → package items.sword
+     */
+    private String inferPackageName(File javaFile) {
+        Path itemsPath = new File(plugin.getDataFolder(), "items").toPath();
+        Path filePath = javaFile.toPath();
+        Path relativePath = itemsPath.relativize(filePath.getParent() != null ? filePath.getParent() : filePath);
+
+        String packageName = relativePath.toString()
+            .replace(File.separator, ".")
+            .replace("\\", ".");
+
+        // Убираем начальную точку
+        if (packageName.startsWith(".")) {
+            packageName = packageName.substring(1);
+        }
+
+        return packageName.isEmpty() ? "items" : "items." + packageName;
     }
 
     /**
@@ -80,7 +156,6 @@ public class ItemRegistry {
                 }
             }
 
-            // Используем URLClassLoader для загрузки классов из JAR
             URL jarUrl = jarFile.toURI().toURL();
             ClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl}, plugin.getClass().getClassLoader());
 
@@ -93,26 +168,25 @@ public class ItemRegistry {
 
                         AbstractCustomItem item = itemClass.getDeclaredConstructor().newInstance();
                         registeredItems.put(item.getId(), item);
-                        itemClasses.add(itemClass);
 
-                        plugin.getLogger().info("[API] Загружен предмет: " + item.getId() + " (" + item.getDisplayName() + ")");
+                        plugin.getLogger().info("[API] Загружен JAR предмет: " + item.getId());
                     }
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | java.lang.reflect.InvocationTargetException | NoSuchMethodException e) {
-                    plugin.getLogger().warning("[API] Не удалось загрузить класс " + className + ": " + e.getMessage());
+                } catch (Exception e) {
+                    plugin.getLogger().warning("[API] Не удалось загрузить " + className + ": " + e.getMessage());
                 }
             }
 
         } catch (IOException e) {
-            plugin.getLogger().severe("[API] Ошибка при чтении JAR файла " + jarFile.getName() + ": " + e.getMessage());
+            plugin.getLogger().severe("[API] Ошибка чтения JAR " + jarFile.getName() + ": " + e.getMessage());
         }
     }
 
     /**
-     * Регистрирует предмет программно (без JAR файла).
+     * Регистрирует предмет программно.
      */
     public void register(AbstractCustomItem item) {
         registeredItems.put(item.getId(), item);
-        plugin.getLogger().info("[API] Зарегистрирован предмет: " + item.getId());
+        plugin.getLogger().info("[API] Зарегистрирован: " + item.getId());
     }
 
     /**
@@ -123,30 +197,37 @@ public class ItemRegistry {
     }
 
     /**
-     * Получает все зарегистрированные предметы.
+     * Получает все предметы.
      */
     public Map<String, AbstractCustomItem> getAllItems() {
         return Collections.unmodifiableMap(registeredItems);
     }
 
     /**
-     * Получает список всех ID предметов.
+     * Получает все ID.
      */
     public Set<String> getAllIds() {
         return registeredItems.keySet();
     }
 
     /**
-     * Проверяет, зарегистрирован ли предмет.
+     * Проверяет регистрацию.
      */
     public boolean isRegistered(String id) {
         return registeredItems.containsKey(id);
     }
 
     /**
-     * Получает количество загруженных предметов.
+     * Количество предметов.
      */
     public int getCount() {
         return registeredItems.size();
+    }
+
+    /**
+     * Получает компилятор.
+     */
+    public JavaItemCompiler getCompiler() {
+        return compiler;
     }
 }

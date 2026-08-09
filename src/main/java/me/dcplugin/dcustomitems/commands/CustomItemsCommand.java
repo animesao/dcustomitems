@@ -139,7 +139,17 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
             plugin.getConfigManager().reloadConfig();
             plugin.getItemHandler().reloadItems();
             plugin.getArmorSetManager().reload();
-            sender.sendMessage(plugin.getMessageManager().getMessage("plugin.reloaded", "&aПлагин успешно перезагружен!"));
+            
+            // Перезагружаем Java API предметы (.java файлы)
+            if (plugin.getApiItemRegistry() != null) {
+                int beforeCount = plugin.getApiItemRegistry().getCount();
+                plugin.getApiItemRegistry().reload();
+                int afterCount = plugin.getApiItemRegistry().getCount();
+                sender.sendMessage("&aПлагин перезагружен! &e(YAML: " + plugin.getItemHandler().getAllCustomItems().size() + 
+                    ", Java API: " + afterCount + ")");
+            } else {
+                sender.sendMessage(plugin.getMessageManager().getMessage("plugin.reloaded", "&aПлагин успешно перезагружен!"));
+            }
         } catch (Exception e) {
             sender.sendMessage(plugin.getMessageManager().getMessage("commands.reload-error", "&cОшибка при перезагрузке: {error}").replace("{error}", e.getMessage()));
             plugin.getLogger().severe("Ошибка при перезагрузке: " + e.getMessage());
