@@ -8,6 +8,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import javax.tools.*;
 import java.io.*;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
@@ -33,7 +35,6 @@ public class JavaItemCompiler {
         this.plugin = plugin;
         this.itemsDir = plugin.getDataFolder().toPath().resolve("items");
         this.compiledDir = plugin.getDataFolder().toPath().resolve("compiled");
-        this.classLoader = new CustomClassLoader(getClass().getClassLoader());
     }
 
     /**
@@ -50,12 +51,12 @@ public class JavaItemCompiler {
             return result;
         }
 
-        // Ищем все .java файлы (кроме базовых классов)
+        // Ищем все .java файлы (кроме базовых классов и EXAMPLE)
         File[] javaFiles = itemsDir.toFile().listFiles((dir, name) ->
             name.endsWith(".java") && 
-            !name.startsWith("Abstract") && 
+            !name.startsWith("Abstract") &&
             !name.startsWith("Custom") &&
-            !name.startsWith("EXAMPLE-") // Примеры не компилируем
+            !name.startsWith("EXAMPLE-")
         );
 
         if (javaFiles == null || javaFiles.length == 0) {
@@ -70,7 +71,7 @@ public class JavaItemCompiler {
             }
         }
 
-        // Загружаем классы
+        // Загружаем классы с правильным classloader
         if (result.compiled > 0) {
             try {
                 classLoader = new CustomClassLoader(getClass().getClassLoader());
@@ -246,20 +247,26 @@ public class JavaItemCompiler {
     private String getClasspath() {
         StringBuilder classpath = new StringBuilder();
 
+        // Добавляем jar плагина
         try {
             File pluginFile = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
-            classpath.append(pluginFile.getAbsolutePath()).append(File.pathSeparator);
-        } catch (Exception ignored) {}
+            classpath.append(pluginFile.getAbsolutePath());
+        } catch (Exception ignored) {
+            // fallback
+            classpath.append("plugins/DC-CustomItems.jar");
+        }
 
+        // Добавляем server jar
         String[] serverJarPaths = {"server.jar", "paper.jar", "../server.jar", "../paper.jar"};
         for (String path : serverJarPaths) {
             File serverJar = new File(path);
             if (serverJar.exists()) {
-                classpath.append(serverJar.getAbsolutePath()).append(File.pathSeparator);
+                classpath.append(File.pathSeparator).append(serverJar.getAbsolutePath());
                 break;
             }
         }
 
+        // Добавляем библиотеки
         String[] libPaths = {"libraries", "../libraries"};
         for (String libPath : libPaths) {
             File libsDir = new File(libPath);
@@ -267,6 +274,9 @@ public class JavaItemCompiler {
                 addJarsFromClassDir(libsDir, classpath);
             }
         }
+
+        // Добавляем текущую директорию для скомпилированных классов
+        classpath.append(File.pathSeparator).append(compiledDir.toString());
 
         return classpath.toString();
     }
@@ -278,7 +288,7 @@ public class JavaItemCompiler {
                 if (file.isDirectory()) {
                     addJarsFromClassDir(file, classpath);
                 } else if (file.getName().endsWith(".jar")) {
-                    classpath.append(file.getAbsolutePath()).append(File.pathSeparator);
+                    classpath.append(File.pathSeparator).append(file.getAbsolutePath());
                 }
             }
         }
@@ -287,6 +297,12 @@ public class JavaItemCompiler {
     // ===== МЕТОДЫ ЗАГРУЗКИ =====
 
     public Class<?> loadClass(String className) {
+        if (classLoader == null) {
+            classLoader = new CustomClassLoader(getClass().getClassLoader());
+            for (Map.Entry<String, byte[]> entry : compiledClasses.entrySet()) {
+                classLoader.addClass(entry.getKey(), entry.getValue());
+            }
+        }
         try {
             return classLoader.findClass(className);
         } catch (ClassNotFoundException e) {
@@ -297,13 +313,21 @@ public class JavaItemCompiler {
     public AbstractCustomItem createItemInstance(String className) {
         try {
             Class<?> clazz = loadClass(className);
-            if (clazz != null && AbstractCustomItem.class.isAssignableFrom(clazz)) {
+            if (clazz == null) {
+                plugin.getLogger().severe("[JavaCompiler] Class not found: " + className);
+                return null;
+            }
+            if (AbstractCustomItem.class.isAssignableFrom(clazz)) {
                 return (AbstractCustomItem) clazz.getDeclaredConstructor().newInstance();
+            } else {
+                plugin.getLogger().warning("[JavaCompiler] " + className + " does not extend AbstractCustomItem");
+                return null;
             }
         } catch (Exception e) {
-            plugin.getLogger().severe("[JavaCompiler] Error creating item: " + className);
+            plugin.getLogger().severe("[JavaCompiler] Error creating item: " + className + " - " + e.getMessage());
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     public CustomCommand createCommandInstance(String className) {
@@ -336,6 +360,7 @@ public class JavaItemCompiler {
 
     public void clear() {
         compiledClasses.clear();
+        classLoader = null;
     }
 
     // ===== КЛАССЫ =====
