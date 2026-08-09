@@ -524,7 +524,10 @@ public class TriggerListener implements Listener {
     private void executeMessage(Player player, String actionStr) {
         String message = actionStr.replace("message:", "").trim();
         message = message.replace("%player%", player.getName());
-        player.sendMessage(ColorUtils.colorize(message));
+        // Отправляем сообщение ТОЛЬКО если оно не пустое
+        if (!message.isEmpty()) {
+            player.sendMessage(ColorUtils.colorize(message));
+        }
     }
 
     private void executeEffect(Player player, String actionStr) {

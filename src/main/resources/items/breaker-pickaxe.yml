@@ -1,0 +1,60 @@
+# ============================================
+# ДЕТОНИРУЮЩАЯ КИРКА - Разбивает блоки + спешка
+# ============================================
+# ЛКМ = разбить блок + частицы (БЕЗ сообщений!)
+# ПКМ = спешка на 5 секунд
+# ============================================
+
+breaker-pickaxe:
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: pickaxe.breaker
+
+  item:
+    type: DIAMOND_PICKAXE
+    title: '&a⛏ &fДетонирующая Кирка'
+    glowing: true
+    unbreakable: true
+    item-model: "breaker_pickaxe"
+    enchantments:
+      EFFICIENCY: 5
+      UNBREAKING: 3
+      SILK_TOUCH: 1
+
+  lore:
+    - ''
+    - ' &a━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Кирка с детонирующей силой'
+    - ' &a━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ''
+    - ' &a⛏ &fЛКМ: Разбить блок'
+    - ' &7Мгновенно разбивает блок + частицы'
+    - ''
+    - ' &e⚡ &fПКМ: Спешка'
+    - ' &7Даёт Спешку на 5 секунд'
+    - ''
+
+  # Кулдаун 500мс
+  click-cooldown: 500
+
+  # Пустые строки - плагин НЕ будет показывать сообщения!
+  cooldown-message: ""
+  equip-message: ""
+  unequip-message: ""
+
+  trigger-actions:
+    # === ЛКМ - ТОЛЬКО ЭФФЕКТЫ, БЕЗ ТЕКСТА ===
+    - 'on_click_left:particle:EXPLOSION_NORMAL:5'
+    - 'on_click_left:sound:ENTITY_TNT_PRIMED:0.5:1.5'
+
+    # === ПКМ - ТОЛЬКО ЭФФЕКТЫ, БЕЗ ТЕКСТА ===
+    - 'on_click_right:effect:SPEED:5:1'
+    - 'on_click_right:particle:CRIT:10'
+    - 'on_click_right:sound:ENTITY_PLAYER_BURP:0.5:1.2'
+
+    # === ЭКИПИРОВКА - БЕЗ СООБЩЕНИЙ ===
+    - 'on_equip:particle:VILLAGER_HAPPY:15'
+
+    # === СНЯТИЕ - БЕЗ СООБЩЕНИЙ ===
+    - 'on_unequip:particle:SMOKE:10'
