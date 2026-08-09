@@ -140,13 +140,18 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
             plugin.getItemHandler().reloadItems();
             plugin.getArmorSetManager().reload();
             
-            // Перезагружаем Java API предметы (.java файлы)
+            // Перезагружаем Java API (.java файлы)
             if (plugin.getApiItemRegistry() != null) {
-                int beforeCount = plugin.getApiItemRegistry().getCount();
                 plugin.getApiItemRegistry().reload();
-                int afterCount = plugin.getApiItemRegistry().getCount();
-                sender.sendMessage("&aПлагин перезагружен! &e(YAML: " + plugin.getItemHandler().getAllCustomItems().size() + 
-                    ", Java API: " + afterCount + ")");
+                int items = plugin.getApiItemRegistry().getItemCount();
+                int cmds = plugin.getApiItemRegistry().getCommandCount();
+                int phs = plugin.getApiItemRegistry().getPlaceholderCount();
+                
+                sender.sendMessage("&a&lПлагин перезагружен!");
+                sender.sendMessage("&7YAML: &e" + plugin.getItemHandler().getAllCustomItems().size());
+                sender.sendMessage("&7Java Items: &e" + items);
+                sender.sendMessage("&7Java Commands: &e" + cmds);
+                sender.sendMessage("&7Java Placeholders: &e" + phs);
             } else {
                 sender.sendMessage(plugin.getMessageManager().getMessage("plugin.reloaded", "&aПлагин успешно перезагружен!"));
             }

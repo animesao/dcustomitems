@@ -1,233 +1,116 @@
 package me.dcplugin.dcustomitems.api;
 
-import org.bukkit.Bukkit;
+import me.dcplugin.dcustomitems.Main;
+import me.dcplugin.dcustomitems.api.commands.CustomCommand;
+import me.dcplugin.dcustomitems.api.placeholders.CustomPlaceholder;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.*;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-/**
- * Реестр кастомных предметов.
- *
- * Поддерживает 3 типа загрузки:
- * 1. YAML файлы (.yml) — через CustomItemHandler
- * 2. JAR файлы (.jar) — через API
- * 3. Java файлы (.java) — runtime компиляция!
- *
- * Пример структуры:
- * plugins/DC-CustomItems/
- *   items/
- *     my-items.jar          <-- JAR с предметами
- *     vampire-blade.yml     <-- YAML предмет
- *     dark-sword.java       <-- Java предмет (runtime компиляция!)
- *     ice-staff.java        <-- Ещё один Java предмет
- */
 public class ItemRegistry {
 
-    private final JavaPlugin plugin;
+    private final Main plugin;
     private final Map<String, AbstractCustomItem> registeredItems;
+    private final Map<String, CustomCommand> registeredCommands;
+    private final Map<String, CustomPlaceholder> registeredPlaceholders;
     private final JavaItemCompiler compiler;
 
-    public ItemRegistry(JavaPlugin plugin) {
+    public ItemRegistry(Main plugin) {
         this.plugin = plugin;
         this.registeredItems = new LinkedHashMap<>();
+        this.registeredCommands = new LinkedHashMap<>();
+        this.registeredPlaceholders = new LinkedHashMap<>();
         this.compiler = new JavaItemCompiler(plugin);
     }
 
-    /**
-     * Загружает все предметы из папки items/.
-     */
     public void loadAll() {
         registeredItems.clear();
-
+        registeredCommands.clear();
+        registeredPlaceholders.clear();
         File itemsDir = new File(plugin.getDataFolder(), "items");
-        if (!itemsDir.exists()) {
-            itemsDir.mkdirs();
-            plugin.getLogger().info("[API] Создана папка items/ для кастомных предметов");
-            return;
-        }
-
-        // 1. Загружаем JAR файлы
+        if (!itemsDir.exists()) { itemsDir.mkdirs(); return; }
         loadJarFiles(itemsDir);
-
-        // 2. Компилируем и загружаем .java файлы
         loadJavaFiles(itemsDir);
-
-        plugin.getLogger().info("[API] Загружено " + registeredItems.size() + " Java API предметов");
+        plugin.getLogger().info("[API] Loaded: " + registeredItems.size() + " items, " + registeredCommands.size() + " commands, " + registeredPlaceholders.size() + " placeholders");
     }
 
-    /**
-     * Перезагружает все предметы (для /ci reload).
-     */
     public void reload() {
+        for (CustomCommand cmd : registeredCommands.values()) cmd.onUnregister();
+        for (CustomPlaceholder ph : registeredPlaceholders.values()) ph.onUnregister();
         registeredItems.clear();
+        registeredCommands.clear();
+        registeredPlaceholders.clear();
         compiler.clear();
         loadAll();
-    }
-
-    /**
-     * Загружает JAR файлы из папки.
-     */
-    private void loadJarFiles(File itemsDir) {
-        File[] jarFiles = itemsDir.listFiles((dir, name) -> name.endsWith(".jar"));
-        if (jarFiles == null || jarFiles.length == 0) return;
-
-        for (File jarFile : jarFiles) {
-            loadFromJar(jarFile);
-        }
-    }
-
-    /**
-     * Загружает .java файлы из папки.
-     */
-    private void loadJavaFiles(File itemsDir) {
-        File[] javaFiles = itemsDir.listFiles((dir, name) ->
-            name.endsWith(".java") && !name.startsWith("_")
-        );
-        if (javaFiles == null || javaFiles.length == 0) return;
-
-        plugin.getLogger().info("[API] Найдено " + javaFiles.length + " .java файлов, компиляция...");
-
-        int compiled = compiler.compileAll();
-
-        if (compiled > 0) {
-            // Все скомпилированные классы в пакете items
-            // Ищем классы наследующие AbstractCustomItem
-            for (Map.Entry<String, byte[]> entry : compiler.getCompiledClasses().entrySet()) {
-                String fullClassName = entry.getKey();
-                try {
-                    Class<?> clazz = compiler.loadClass(fullClassName);
-                    if (clazz != null && AbstractCustomItem.class.isAssignableFrom(clazz)) {
-                        AbstractCustomItem item = (AbstractCustomItem) clazz.getDeclaredConstructor().newInstance();
-                        registeredItems.put(item.getId(), item);
-                        plugin.getLogger().info("[API] ✅ Загружен .java предмет: " + item.getId() +
-                            " (" + item.getDisplayName() + ")");
-                    }
-                } catch (Exception e) {
-                    plugin.getLogger().warning("[API] ❌ Не удалось загрузить " + fullClassName + ": " + e.getMessage());
+        for (CustomCommand cmd : registeredCommands.values()) {
+            try {
+                org.bukkit.command.PluginCommand pluginCmd = plugin.getCommand(cmd.getName());
+                if (pluginCmd != null) {
+                    pluginCmd.setExecutor(plugin.getCommandManager());
+                    pluginCmd.setTabCompleter(plugin.getCommandManager());
                 }
-            }
+                cmd.onRegister();
+            } catch (Exception e) {}
+        }
+        for (CustomPlaceholder ph : registeredPlaceholders.values()) {
+            plugin.getPlaceholderManager().register(ph.getIdentifier(), (player) -> ph.getValue(player));
+            ph.onRegister();
         }
     }
 
-    /**
-     * Определяет пакет из расположения файла.
-     * Если файл в items/sword/dark.java → package items.sword
-     */
-    private String inferPackageName(File javaFile) {
-        Path itemsPath = new File(plugin.getDataFolder(), "items").toPath();
-        Path filePath = javaFile.toPath();
-        Path relativePath = itemsPath.relativize(filePath.getParent() != null ? filePath.getParent() : filePath);
-
-        String packageName = relativePath.toString()
-            .replace(File.separator, ".")
-            .replace("\\", ".");
-
-        // Убираем начальную точку
-        if (packageName.startsWith(".")) {
-            packageName = packageName.substring(1);
-        }
-
-        return packageName.isEmpty() ? "items" : "items." + packageName;
+    private void loadJarFiles(File itemsDir) {
+        File[] jars = itemsDir.listFiles((d, n) -> n.endsWith(".jar"));
+        if (jars != null) for (File jar : jars) loadFromJar(jar);
     }
 
-    /**
-     * Загружает предметы из одного JAR файла.
-     */
+    private void loadJavaFiles(File itemsDir) {
+        File[] files = itemsDir.listFiles((d, n) -> n.endsWith(".java") && !n.startsWith("EXAMPLE-"));
+        if (files == null || files.length == 0) return;
+        plugin.getLogger().info("[API] Compiling " + files.length + " .java files...");
+        JavaItemCompiler.CompileResult result = compiler.compileAll();
+        for (String cn : result.items) { AbstractCustomItem item = compiler.createItemInstance(cn); if (item != null) registeredItems.put(item.getId(), item); }
+        for (String cn : result.commands) { CustomCommand cmd = compiler.createCommandInstance(cn); if (cmd != null) registeredCommands.put(cmd.getName(), cmd); }
+        for (String cn : result.placeholders) { CustomPlaceholder ph = compiler.createPlaceholderInstance(cn); if (ph != null) registeredPlaceholders.put(ph.getIdentifier(), ph); }
+    }
+
     private void loadFromJar(File jarFile) {
         try (JarFile jar = new JarFile(jarFile)) {
             Enumeration<JarEntry> entries = jar.entries();
             List<String> classNames = new ArrayList<>();
-
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
-                if (entry.getName().endsWith(".class")) {
-                    String className = entry.getName()
-                        .replace("/", ".")
-                        .replace("\\", ".")
-                        .replace(".class", "");
-                    classNames.add(className);
-                }
+                if (entry.getName().endsWith(".class")) classNames.add(entry.getName().replace("/", ".").replace(".class", ""));
             }
-
             URL jarUrl = jarFile.toURI().toURL();
-            ClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl}, plugin.getClass().getClassLoader());
-
-            for (String className : classNames) {
+            ClassLoader cl = new URLClassLoader(new URL[]{jarUrl}, plugin.getClass().getClassLoader());
+            for (String cn : classNames) {
                 try {
-                    Class<?> clazz = Class.forName(className, false, classLoader);
-                    if (AbstractCustomItem.class.isAssignableFrom(clazz) && !java.lang.reflect.Modifier.isAbstract(clazz.getModifiers())) {
-                        @SuppressWarnings("unchecked")
-                        Class<? extends AbstractCustomItem> itemClass = (Class<? extends AbstractCustomItem>) clazz;
-
-                        AbstractCustomItem item = itemClass.getDeclaredConstructor().newInstance();
+                    Class<?> clazz = Class.forName(cn, false, cl);
+                    if (AbstractCustomItem.class.isAssignableFrom(clazz)) {
+                        AbstractCustomItem item = (AbstractCustomItem) clazz.getDeclaredConstructor().newInstance();
                         registeredItems.put(item.getId(), item);
-
-                        plugin.getLogger().info("[API] Загружен JAR предмет: " + item.getId());
                     }
-                } catch (Exception e) {
-                    plugin.getLogger().warning("[API] Не удалось загрузить " + className + ": " + e.getMessage());
-                }
+                } catch (Exception ignored) {}
             }
-
-        } catch (IOException e) {
-            plugin.getLogger().severe("[API] Ошибка чтения JAR " + jarFile.getName() + ": " + e.getMessage());
-        }
+        } catch (IOException e) {}
     }
 
-    /**
-     * Регистрирует предмет программно.
-     */
-    public void register(AbstractCustomItem item) {
-        registeredItems.put(item.getId(), item);
-        plugin.getLogger().info("[API] Зарегистрирован: " + item.getId());
-    }
-
-    /**
-     * Получает предмет по ID.
-     */
-    public AbstractCustomItem getItem(String id) {
-        return registeredItems.get(id);
-    }
-
-    /**
-     * Получает все предметы.
-     */
-    public Map<String, AbstractCustomItem> getAllItems() {
-        return Collections.unmodifiableMap(registeredItems);
-    }
-
-    /**
-     * Получает все ID.
-     */
-    public Set<String> getAllIds() {
-        return registeredItems.keySet();
-    }
-
-    /**
-     * Проверяет регистрацию.
-     */
-    public boolean isRegistered(String id) {
-        return registeredItems.containsKey(id);
-    }
-
-    /**
-     * Количество предметов.
-     */
-    public int getCount() {
-        return registeredItems.size();
-    }
-
-    /**
-     * Получает компилятор.
-     */
-    public JavaItemCompiler getCompiler() {
-        return compiler;
-    }
+    public AbstractCustomItem getItem(String id) { return registeredItems.get(id); }
+    public Map<String, AbstractCustomItem> getAllItems() { return Collections.unmodifiableMap(registeredItems); }
+    public Set<String> getAllIds() { return registeredItems.keySet(); }
+    public int getItemCount() { return registeredItems.size(); }
+    public CustomCommand getCommand(String name) { return registeredCommands.get(name.toLowerCase()); }
+    public Map<String, CustomCommand> getAllCommands() { return Collections.unmodifiableMap(registeredCommands); }
+    public int getCommandCount() { return registeredCommands.size(); }
+    public CustomPlaceholder getPlaceholder(String id) { return registeredPlaceholders.get(id.toLowerCase()); }
+    public Map<String, CustomPlaceholder> getAllPlaceholders() { return Collections.unmodifiableMap(registeredPlaceholders); }
+    public int getPlaceholderCount() { return registeredPlaceholders.size(); }
+    public JavaItemCompiler getCompiler() { return compiler; }
+    public int getCount() { return getItemCount(); }
 }

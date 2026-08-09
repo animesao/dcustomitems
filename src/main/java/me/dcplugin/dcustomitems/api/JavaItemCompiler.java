@@ -1,64 +1,35 @@
 package me.dcplugin.dcustomitems.api;
 
-import org.bukkit.Bukkit;
+import me.dcplugin.dcustomitems.Main;
+import me.dcplugin.dcustomitems.api.commands.CustomCommand;
+import me.dcplugin.dcustomitems.api.placeholders.CustomPlaceholder;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticCollector;
-import javax.tools.FileObject;
-import javax.tools.ForwardingJavaFileManager;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
-import javax.tools.SimpleJavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
+import javax.tools.*;
 import java.io.*;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Runtime компилятор для .java файлов.
- *
- * Позволяет загружать Java предметы без Maven/JAR.
- * Просто положи .java файл в папку items/ и сделай /ci reload.
- *
- * Пример файла items/my_sword.java:
- * <pre>
- * import me.dcplugin.dcustomitems.api.AbstractCustomItem;
- * import me.dcplugin.dcustomitems.api.ItemAPI;
- * import org.bukkit.Material;
- * import org.bukkit.Particle;
- * import org.bukkit.Sound;
- * import org.bukkit.entity.Player;
- * import org.bukkit.event.player.PlayerInteractEvent;
- *
- * public class MySword extends AbstractCustomItem {
- *     public String getId() { return "my_sword"; }
- *     public String getDisplayName() { return "&6Мой Меч"; }
- *     public Material getMaterial() { return Material.DIAMOND_SWORD; }
- *     public void onRightClick(PlayerInteractEvent e, Player p) {
- *         ItemAPI.heal(p, 5);
- *     }
- * }
- * </pre>
+ * Runtime компилятор для .java файлов
+ * 
+ * Поддерживает:
+ * - AbstractCustomItem (предметы)
+ * - CustomCommand (команды)
+ * - CustomPlaceholder (плейсхолдеры)
  */
 public class JavaItemCompiler {
 
-    private final JavaPlugin plugin;
+    private final Main plugin;
     private final Path itemsDir;
     private final Path compiledDir;
     private final Map<String, byte[]> compiledClasses = new ConcurrentHashMap<>();
-
-    // Класс-загрузчик для скомпилированных классов
     private CustomClassLoader classLoader;
 
-    public JavaItemCompiler(JavaPlugin plugin) {
+    public JavaItemCompiler(Main plugin) {
         this.plugin = plugin;
         this.itemsDir = plugin.getDataFolder().toPath().resolve("items");
         this.compiledDir = plugin.getDataFolder().toPath().resolve("compiled");
@@ -66,100 +37,99 @@ public class JavaItemCompiler {
     }
 
     /**
-     * Компилирует все .java файлы из папки items/.
-     * Возвращает количество успешно скомпилированных классов.
+     * Компилирует все .java файлы из папки items/
      */
-    public int compileAll() {
+    public CompileResult compileAll() {
         compiledClasses.clear();
+        CompileResult result = new CompileResult();
 
-        // Создаём папку для скомпилированных классов
         try {
             Files.createDirectories(compiledDir);
         } catch (IOException e) {
-            plugin.getLogger().severe("[JavaCompiler] Не удалось создать папку compiled/: " + e.getMessage());
-            return 0;
+            plugin.getLogger().severe("[JavaCompiler] Cannot create compiled/: " + e.getMessage());
+            return result;
         }
 
-        // Ищем все .java файлы
+        // Ищем все .java файлы (кроме базовых классов)
         File[] javaFiles = itemsDir.toFile().listFiles((dir, name) ->
-            name.endsWith(".java") && !name.startsWith("Abstract") && !name.startsWith("Item")
+            name.endsWith(".java") && 
+            !name.startsWith("Abstract") && 
+            !name.startsWith("Custom") &&
+            !name.startsWith("EXAMPLE-") // Примеры не компилируем
         );
 
         if (javaFiles == null || javaFiles.length == 0) {
-            return 0;
+            return result;
         }
 
-        plugin.getLogger().info("[JavaCompiler] Найдено " + javaFiles.length + " .java файлов");
+        plugin.getLogger().info("[JavaCompiler] Found " + javaFiles.length + " .java files");
 
-        int compiled = 0;
         for (File javaFile : javaFiles) {
-            if (compileFile(javaFile)) {
-                compiled++;
+            if (compileFile(javaFile, result)) {
+                result.compiled++;
             }
         }
 
-        // Создаём новый ClassLoader со скомпилированными классами
-        if (compiled > 0) {
+        // Загружаем классы
+        if (result.compiled > 0) {
             try {
                 classLoader = new CustomClassLoader(getClass().getClassLoader());
                 for (Map.Entry<String, byte[]> entry : compiledClasses.entrySet()) {
                     classLoader.addClass(entry.getKey(), entry.getValue());
                 }
-                plugin.getLogger().info("[JavaCompiler] Загружено " + compiled + " классов");
             } catch (Exception e) {
-                plugin.getLogger().severe("[JavaCompiler] Ошибка загрузки классов: " + e.getMessage());
+                plugin.getLogger().severe("[JavaCompiler] Error loading classes: " + e.getMessage());
             }
         }
 
-        return compiled;
+        return result;
     }
 
-    /**
-     * Компилирует один .java файл.
-     */
-    private boolean compileFile(File javaFile) {
+    private boolean compileFile(File javaFile, CompileResult result) {
         try {
             String sourceCode = new String(Files.readAllBytes(javaFile.toPath()), StandardCharsets.UTF_8);
             String fileName = javaFile.getName().replace(".java", "");
 
-            // Добавляем импорт API если нет
+            // Добавляем импорты если нет
             if (!sourceCode.contains("import me.dcplugin.dcustomitems.api")) {
                 sourceCode = "import me.dcplugin.dcustomitems.api.AbstractCustomItem;\n" +
                              "import me.dcplugin.dcustomitems.api.ItemAPI;\n" +
+                             "import me.dcplugin.dcustomitems.api.commands.CustomCommand;\n" +
+                             "import me.dcplugin.dcustomitems.api.placeholders.CustomPlaceholder;\n" +
                              sourceCode;
             }
 
-            // Извлекаем имя класса из файла
+            // Извлекаем имя класса
             String className = extractClassName(sourceCode);
             if (className == null) {
-                plugin.getLogger().warning("[JavaCompiler] Не удалось найти имя класса в " + javaFile.getName());
+                plugin.getLogger().warning("[JavaCompiler] Cannot find class name in " + javaFile.getName());
+                result.errors.add(javaFile.getName() + ": no class found");
                 return false;
             }
 
-            // Если имя класса не совпадает с именем файла, добавляем package
+            // Проверяем тип класса
+            ClassType classType = detectClassType(sourceCode);
+
+            // Переименовываем если нужно
             String packageName = "items";
             if (!fileName.equals(className.toLowerCase())) {
-                // Переименовываем класс чтобы избежать конфликта имён
-                // Используем fileName как основу для уникального имени
                 className = fileName.replace("-", "_").replace(" ", "_") + "Item";
                 sourceCode = replaceClassName(sourceCode, className);
             }
 
-            final String finalClassName = className;
             final String fullClassName = packageName + "." + className;
             final String finalSourceCode = "package " + packageName + ";\n" + sourceCode;
 
             // Компилируем
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
             if (compiler == null) {
-                plugin.getLogger().severe("[JavaCompiler] JavaCompiler не найден! Убедитесь что JDK установлен.");
+                plugin.getLogger().severe("[JavaCompiler] JavaCompiler not found! JDK required.");
                 return false;
             }
 
             DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
             StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
 
-            // Виртуальный файл с исходным кодом
             JavaFileObject source = new SimpleJavaFileObject(
                 URI.create("string:///" + className + ".java"),
                 JavaFileObject.Kind.SOURCE
@@ -170,7 +140,6 @@ public class JavaItemCompiler {
                 }
             };
 
-            // Виртуальный файл для записи скомпилированных байтов
             final Map<String, byte[]> classBytesHolder = new HashMap<>();
 
             JavaFileManager virtualFileManager = new ForwardingJavaFileManager<StandardJavaFileManager>(fileManager) {
@@ -195,14 +164,12 @@ public class JavaItemCompiler {
                 }
             };
 
-            // Настройки компиляции
             List<String> options = List.of(
                 "-classpath", getClasspath(),
                 "-d", compiledDir.toString(),
-                "-proc:none"  // Отключаем annotation processing
+                "-proc:none"
             );
 
-            // Компилируем
             JavaCompiler.CompilationTask task = compiler.getTask(
                 null, virtualFileManager, diagnostics, options, null, List.of(source)
             );
@@ -211,50 +178,54 @@ public class JavaItemCompiler {
             fileManager.close();
 
             if (success) {
-                // Сохраняем байты классов
                 compiledClasses.putAll(classBytesHolder);
-                plugin.getLogger().info("[JavaCompiler] ✅ Скомпилирован: " + javaFile.getName() + " -> " + fullClassName);
+
+                // Определяем тип и добавляем в результат
+                switch (classType) {
+                    case ITEM:
+                        result.items.add(className);
+                        plugin.getLogger().info("[JavaCompiler] ✅ Item: " + javaFile.getName());
+                        break;
+                    case COMMAND:
+                        result.commands.add(className);
+                        plugin.getLogger().info("[JavaCompiler] ✅ Command: " + javaFile.getName());
+                        break;
+                    case PLACEHOLDER:
+                        result.placeholders.add(className);
+                        plugin.getLogger().info("[JavaCompiler] ✅ Placeholder: " + javaFile.getName());
+                        break;
+                }
+
                 return true;
             } else {
-                // Выводим ошибки
                 for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
-                    plugin.getLogger().warning("[JavaCompiler] ❌ " + javaFile.getName() +
-                        ":" + diagnostic.getLineNumber() + " - " + diagnostic.getMessage(null));
+                    String error = javaFile.getName() + ":" + diagnostic.getLineNumber() + " - " + diagnostic.getMessage(null);
+                    plugin.getLogger().warning("[JavaCompiler] ❌ " + error);
+                    result.errors.add(error);
                 }
                 return false;
             }
 
         } catch (Exception e) {
-            plugin.getLogger().severe("[JavaCompiler] Ошибка компиляции " + javaFile.getName() + ": " + e.getMessage());
+            plugin.getLogger().severe("[JavaCompiler] Error: " + javaFile.getName() + ": " + e.getMessage());
+            result.errors.add(javaFile.getName() + ": " + e.getMessage());
             return false;
         }
     }
 
-    /**
-     * Извлекает имя public класса из исходного кода.
-     */
+    private ClassType detectClassType(String sourceCode) {
+        if (sourceCode.contains("extends AbstractCustomItem")) return ClassType.ITEM;
+        if (sourceCode.contains("extends CustomCommand")) return ClassType.COMMAND;
+        if (sourceCode.contains("extends CustomPlaceholder")) return ClassType.PLACEHOLDER;
+        return ClassType.ITEM;
+    }
+
     private String extractClassName(String sourceCode) {
-        // Ищем public class ...
         String[] lines = sourceCode.split("\n");
         for (String line : lines) {
             line = line.trim();
             if (line.startsWith("public class ")) {
                 String afterClass = line.substring("public class ".length()).trim();
-                // Берём имя до пробела или скобки
-                int spaceIdx = afterClass.indexOf(' ');
-                int braceIdx = afterClass.indexOf('{');
-                int endIdx = Math.min(
-                    spaceIdx > 0 ? spaceIdx : afterClass.length(),
-                    braceIdx > 0 ? braceIdx : afterClass.length()
-                );
-                return afterClass.substring(0, endIdx).trim();
-            }
-        }
-        // Ищем просто class ...
-        for (String line : lines) {
-            line = line.trim();
-            if (line.startsWith("class ") && !line.contains("extends")) {
-                String afterClass = line.substring("class ".length()).trim();
                 int spaceIdx = afterClass.indexOf(' ');
                 int braceIdx = afterClass.indexOf('{');
                 int endIdx = Math.min(
@@ -267,37 +238,20 @@ public class JavaItemCompiler {
         return null;
     }
 
-    /**
-     * Заменяет имя класса в исходном коде.
-     */
     private String replaceClassName(String sourceCode, String newClassName) {
-        // Заменяем public class OldName на public class NewName
         return sourceCode.replaceAll("public class \\w+", "public class " + newClassName)
                        .replaceAll("class \\w+ extends", "class " + newClassName + " extends");
     }
 
-    /**
-     * Получает classpath для компиляции.
-     */
     private String getClasspath() {
         StringBuilder classpath = new StringBuilder();
 
-        // Добавляем текущий JAR плагина (содержит AbstractCustomItem, ItemAPI и т.д)
         try {
             File pluginFile = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
             classpath.append(pluginFile.getAbsolutePath()).append(File.pathSeparator);
         } catch (Exception ignored) {}
 
-        // Добавляем серверный класспасс (Paper/Spigot)
-        // Ищем в разных местах
-        String[] serverJarPaths = {
-            "server.jar",
-            "paper.jar",
-            "../server.jar",
-            "../paper.jar",
-            "plugins/DC-CustomItems/../../server.jar",
-            "/data/server.jar"
-        };
+        String[] serverJarPaths = {"server.jar", "paper.jar", "../server.jar", "../paper.jar"};
         for (String path : serverJarPaths) {
             File serverJar = new File(path);
             if (serverJar.exists()) {
@@ -306,30 +260,11 @@ public class JavaItemCompiler {
             }
         }
 
-        // Добавляем папку libraries/ (Paper хранит зависимости здесь)
-        String[] libPaths = {"libraries", "../libraries", "/data/libraries"};
+        String[] libPaths = {"libraries", "../libraries"};
         for (String libPath : libPaths) {
             File libsDir = new File(libPath);
             if (libsDir.exists() && libsDir.isDirectory()) {
                 addJarsFromClassDir(libsDir, classpath);
-            }
-        }
-
-        // Добавляем папку versions/ (Paper хранит версии здесь)
-        String[] versionsPaths = {"versions", "../versions", "/data/versions"};
-        for (String versionsPath : versionsPaths) {
-            File versionsDir = new File(versionsPath);
-            if (versionsDir.exists() && versionsDir.isDirectory()) {
-                addJarsFromClassDir(versionsDir, classpath);
-            }
-        }
-
-        // Добавляем все JAR файлы из текущей папки
-        File currentDir = new File(".");
-        File[] rootJars = currentDir.listFiles((dir, name) -> name.endsWith(".jar"));
-        if (rootJars != null) {
-            for (File jar : rootJars) {
-                classpath.append(jar.getAbsolutePath()).append(File.pathSeparator);
             }
         }
 
@@ -349,21 +284,16 @@ public class JavaItemCompiler {
         }
     }
 
-    /**
-     * Загружает класс по имени.
-     */
+    // ===== МЕТОДЫ ЗАГРУЗКИ =====
+
     public Class<?> loadClass(String className) {
         try {
             return classLoader.findClass(className);
         } catch (ClassNotFoundException e) {
-            plugin.getLogger().warning("[JavaCompiler] Класс не найден: " + className);
             return null;
         }
     }
 
-    /**
-     * Получает экземпляр AbstractCustomItem по имени класса.
-     */
     public AbstractCustomItem createItemInstance(String className) {
         try {
             Class<?> clazz = loadClass(className);
@@ -371,38 +301,61 @@ public class JavaItemCompiler {
                 return (AbstractCustomItem) clazz.getDeclaredConstructor().newInstance();
             }
         } catch (Exception e) {
-            plugin.getLogger().severe("[JavaCompiler] Ошибка создания экземпляра " + className + ": " + e.getMessage());
+            plugin.getLogger().severe("[JavaCompiler] Error creating item: " + className);
         }
         return null;
     }
 
-    /**
-     * Получает все скомпилированные классы.
-     */
-    public Map<String, byte[]> getCompiledClasses() {
-        return Collections.unmodifiableMap(compiledClasses);
+    public CustomCommand createCommandInstance(String className) {
+        try {
+            Class<?> clazz = loadClass(className);
+            if (clazz != null && CustomCommand.class.isAssignableFrom(clazz)) {
+                CustomCommand cmd = (CustomCommand) clazz.getDeclaredConstructor().newInstance();
+                cmd.setPlugin(plugin);
+                return cmd;
+            }
+        } catch (Exception e) {
+            plugin.getLogger().severe("[JavaCompiler] Error creating command: " + className);
+        }
+        return null;
     }
 
-    /**
-     * Очищает скомпилированные классы.
-     */
+    public CustomPlaceholder createPlaceholderInstance(String className) {
+        try {
+            Class<?> clazz = loadClass(className);
+            if (clazz != null && CustomPlaceholder.class.isAssignableFrom(clazz)) {
+                CustomPlaceholder ph = (CustomPlaceholder) clazz.getDeclaredConstructor().newInstance();
+                ph.setPlugin(plugin);
+                return ph;
+            }
+        } catch (Exception e) {
+            plugin.getLogger().severe("[JavaCompiler] Error creating placeholder: " + className);
+        }
+        return null;
+    }
+
     public void clear() {
         compiledClasses.clear();
     }
 
-    /**
-     * Кастомный ClassLoader для загрузки скомпилированных классов.
-     */
+    // ===== КЛАССЫ =====
+
+    public enum ClassType { ITEM, COMMAND, PLACEHOLDER }
+
+    public static class CompileResult {
+        public int compiled = 0;
+        public List<String> items = new ArrayList<>();
+        public List<String> commands = new ArrayList<>();
+        public List<String> placeholders = new ArrayList<>();
+        public List<String> errors = new ArrayList<>();
+    }
+
     private static class CustomClassLoader extends ClassLoader {
         private final Map<String, byte[]> classBytes = new HashMap<>();
 
-        CustomClassLoader(ClassLoader parent) {
-            super(parent);
-        }
+        CustomClassLoader(ClassLoader parent) { super(parent); }
 
-        void addClass(String name, byte[] bytes) {
-            classBytes.put(name, bytes);
-        }
+        void addClass(String name, byte[] bytes) { classBytes.put(name, bytes); }
 
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
