@@ -43,9 +43,6 @@ public class InfinityPotion extends AbstractCustomItem {
     public String getItemModel() { return "infinity_potion"; }
 
     @Override
-    public int getMaxUses() { return 1; }
-
-    @Override
     public void onRightClick(org.bukkit.event.player.PlayerInteractEvent event, Player player) {
         // Применяем мощные эффекты
         ItemAPI.effect(player, PotionEffectType.SPEED, 30, 3);        // Скорость III
