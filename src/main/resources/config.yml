@@ -620,31 +620,6 @@ healing-staff:
     - 'on_equip:message:&c❤ &7Посох извлечен!'
     - 'on_unequip:message:&c❤ &7Посох убран.'
 
-air-wand:
-  item:
-    type: BLAZE_ROD
-    title: '&b✨ &fПалочка Воздуха'
-    glowing: true
-    unbreakable: true
-  lore:
-    - ''
-    - ' &7ПКМ - частицы'
-    - ' &7ЛКМ - молния'
-    - ''
-  type: TOOL
-  activation-slot: HAND
-  placeable: false
-  click-cooldown: 500
-  trigger-actions:
-    - 'on_click_right:particle:CLOUD:20'
-    - 'on_click_right:sound:ENTITY_GUARDIAN_AMBIENT:1:1'
-    - 'on_click_right:message:&b☁ &7Волшебство воздуха!'
-    - 'on_click_left:lightning:1'
-    - 'on_click_left:particle:EXPLOSION_HUGE:5'
-    - 'on_click_left:message:&b⚡ &7Молния!'
-    - 'on_equip:message:&b✨ &7Палочка извлечена!'
-    - 'on_unequip:message:&b✨ &7Палочка убрана.'
-
 energy-blast:
   item:
     type: DIAMOND_SWORD
