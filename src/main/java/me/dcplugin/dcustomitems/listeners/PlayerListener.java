@@ -126,12 +126,12 @@ public class PlayerListener implements Listener {
                 // Показываем оставшееся время кулдауна в lore
                 long remaining = cooldown - (currentTime - lastClickTime);
                 double secondsLeft = remaining / 1000.0;
-                String cdMsg = customItem.hasCooldownMessage()
-                    ? ColorUtils.colorize(customItem.getCooldownMessage().replace("{seconds}", String.format("%.1f", secondsLeft)))
-                    : "&c⏳ Подождите " + String.format("%.1f", secondsLeft) + " сек!";
-                // Отправляем сообщение кулдауна ТОЛЬКО если оно не пустое и не пробел
-                if (cdMsg != null && !cdMsg.trim().isEmpty()) {
-                    player.sendMessage(cdMsg);
+                // Показываем кулдаун ТОЛЬКО если задан custom cooldown-message
+                if (customItem.hasCooldownMessage()) {
+                    String cdMsg = ColorUtils.colorize(customItem.getCooldownMessage().replace("{seconds}", String.format("%.1f", secondsLeft)));
+                    if (!cdMsg.trim().isEmpty()) {
+                        player.sendMessage(cdMsg);
+                    }
                 }
                 // Обновляем lore с кулдауном
                 ItemStack updated = plugin.getItemHandler().updateItemWithCooldown(actualItem, lastClickTime, cooldown);
@@ -768,19 +768,17 @@ public class PlayerListener implements Listener {
             Set<String> newlyEquipped = new HashSet<>(currentActiveItemIds);
             newlyEquipped.removeAll(previousIds);
             Set<String> newlyUnequipped = new HashSet<>(previousIds);
-            newlyUnequipped.removeAll(currentActiveItemIds);
-
-            // Спавним эффекты и вызываем триггеры для экипированных предметов
+            newlyUnequipped.removeAll(currentActiveItemIds);                    // Спавним эффекты и вызываем триггеры для экипированных предметов
             for (String itemId : newlyEquipped) {
                 CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
                 if (customItem != null) {
                     spawnEquipEffects(player, customItem, true);
-                    String msg = customItem.hasEquipMessage() 
-                        ? ColorUtils.colorize(customItem.getEquipMessage()) 
-                        : plugin.getMessageManager().getMessage("effects.applied", "&aЭффекты применены!");
-                    // Отправляем сообщение ТОЛЬКО если оно не пустое и не пробел
-                    if (msg != null && !msg.trim().isEmpty()) {
-                        player.sendMessage(msg);
+                    // Показываем сообщение ТОЛЬКО если задан custom equip-message
+                    if (customItem.hasEquipMessage()) {
+                        String msg = ColorUtils.colorize(customItem.getEquipMessage());
+                        if (!msg.trim().isEmpty()) {
+                            player.sendMessage(msg);
+                        }
                     }
                     // Вызываем триггер on_equip
                     plugin.getTriggerListener().executeEquipTriggers(player, customItem);
@@ -792,12 +790,12 @@ public class PlayerListener implements Listener {
                 CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
                 if (customItem != null) {
                     spawnEquipEffects(player, customItem, false);
-                    String msg = customItem.hasUnequipMessage() 
-                        ? ColorUtils.colorize(customItem.getUnequipMessage()) 
-                        : plugin.getMessageManager().getMessage("effects.removed", "&cЭффекты удалены!");
-                    // Отправляем сообщение ТОЛЬКО если оно не пустое и не пробел
-                    if (msg != null && !msg.trim().isEmpty()) {
-                        player.sendMessage(msg);
+                    // Показываем сообщение ТОЛЬКО если задан custom unequip-message
+                    if (customItem.hasUnequipMessage()) {
+                        String msg = ColorUtils.colorize(customItem.getUnequipMessage());
+                        if (!msg.trim().isEmpty()) {
+                            player.sendMessage(msg);
+                        }
                     }
                     // Вызываем триггер on_unequip
                     plugin.getTriggerListener().executeUnequipTriggers(player, customItem);

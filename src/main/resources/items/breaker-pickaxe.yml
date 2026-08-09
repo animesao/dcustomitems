@@ -29,7 +29,7 @@ breaker-pickaxe:
     - ' &e⚡ &fПКМ: Спешка'
     - ''
 
-  click-cooldown: 500
+  click-cooldown: 1000
   cooldown-message: ""
   equip-message: ""
   unequip-message: ""

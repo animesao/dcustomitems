@@ -220,27 +220,27 @@ public class CustomItem {
     }
 
     public boolean hasEquipMessage() {
-        return equipMessage != null && !equipMessage.isEmpty();
+        return equipMessage != null && !equipMessage.trim().isEmpty();
     }
 
     public boolean hasUnequipMessage() {
-        return unequipMessage != null && !unequipMessage.isEmpty();
+        return unequipMessage != null && !unequipMessage.trim().isEmpty();
     }
 
     public boolean hasCooldownMessage() {
-        return cooldownMessage != null && !cooldownMessage.isEmpty();
+        return cooldownMessage != null && !cooldownMessage.trim().isEmpty();
     }
 
     public boolean hasActivationMessage() {
-        return activationMessage != null && !activationMessage.isEmpty();
+        return activationMessage != null && !activationMessage.trim().isEmpty();
     }
 
     public boolean hasDeactivationMessage() {
-        return deactivationMessage != null && !deactivationMessage.isEmpty();
+        return deactivationMessage != null && !deactivationMessage.trim().isEmpty();
     }
 
     public boolean hasUsesDepletedMessage() {
-        return usesDepletedMessage != null && !usesDepletedMessage.isEmpty();
+        return usesDepletedMessage != null && !usesDepletedMessage.trim().isEmpty();
     }
 
     public enum ItemType {

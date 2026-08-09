@@ -315,7 +315,25 @@ public class CustomItemHandler {
             List<String> equipSounds = section.getStringList("equip-sounds");
             List<String> unequipParticles = section.getStringList("unequip-particles");
             List<String> unequipSounds = section.getStringList("unequip-sounds");
+            // Загружаем trigger-actions (старый формат) ИЛИ triggers (новый формат)
             List<String> triggerActions = section.getStringList("trigger-actions");
+            if (triggerActions.isEmpty()) {
+                // Поддержка нового формата triggers:
+                // triggers:
+                //   on_click_left:
+                //     - 'particles:FLAME:10'
+                ConfigurationSection triggersSection = section.getConfigurationSection("triggers");
+                if (triggersSection != null) {
+                    triggerActions = new ArrayList<>();
+                    for (String triggerName : triggersSection.getKeys(false)) {
+                        List<String> actions = triggersSection.getStringList(triggerName);
+                        for (String action : actions) {
+                            // Форматируем как "trigger:action" для совместимости
+                            triggerActions.add(triggerName + ":" + action);
+                        }
+                    }
+                }
+            }
 
             // Загружаем per-item сообщения
             String equipMessage = section.getString("equip-message", null);
