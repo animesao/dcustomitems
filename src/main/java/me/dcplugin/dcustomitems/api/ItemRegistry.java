@@ -97,20 +97,20 @@ public class ItemRegistry {
         int compiled = compiler.compileAll();
 
         if (compiled > 0) {
-            // Ищем все классы наследующие AbstractCustomItem
-            for (File javaFile : javaFiles) {
-                String fileName = javaFile.getName().replace(".java", "");
-                String className = inferPackageName(javaFile) + "." + fileName;
-
+            // Все скомпилированные классы в пакете items
+            // Ищем классы наследующие AbstractCustomItem
+            for (Map.Entry<String, byte[]> entry : compiler.getCompiledClasses().entrySet()) {
+                String fullClassName = entry.getKey();
                 try {
-                    AbstractCustomItem item = compiler.createItemInstance(className);
-                    if (item != null) {
+                    Class<?> clazz = compiler.loadClass(fullClassName);
+                    if (clazz != null && AbstractCustomItem.class.isAssignableFrom(clazz)) {
+                        AbstractCustomItem item = (AbstractCustomItem) clazz.getDeclaredConstructor().newInstance();
                         registeredItems.put(item.getId(), item);
                         plugin.getLogger().info("[API] ✅ Загружен .java предмет: " + item.getId() +
                             " (" + item.getDisplayName() + ")");
                     }
                 } catch (Exception e) {
-                    plugin.getLogger().warning("[API] ❌ Не удалось загрузить " + fileName + ": " + e.getMessage());
+                    plugin.getLogger().warning("[API] ❌ Не удалось загрузить " + fullClassName + ": " + e.getMessage());
                 }
             }
         }

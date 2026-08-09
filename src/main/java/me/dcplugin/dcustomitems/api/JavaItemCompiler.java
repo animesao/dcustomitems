@@ -128,8 +128,26 @@ public class JavaItemCompiler {
                              "import me.dcplugin.dcustomitems.api.ItemAPI;\n" +
                              sourceCode;
             }
-            // Копируем в effectively final переменную для inner class
-            final String finalSourceCode = sourceCode;
+
+            // Извлекаем имя класса из файла
+            String className = extractClassName(sourceCode);
+            if (className == null) {
+                plugin.getLogger().warning("[JavaCompiler] Не удалось найти имя класса в " + javaFile.getName());
+                return false;
+            }
+
+            // Если имя класса не совпадает с именем файла, добавляем package
+            String packageName = "items";
+            if (!fileName.equals(className.toLowerCase())) {
+                // Переименовываем класс чтобы избежать конфликта имён
+                // Используем fileName как основу для уникального имени
+                className = fileName.replace("-", "_").replace(" ", "_") + "Item";
+                sourceCode = replaceClassName(sourceCode, className);
+            }
+
+            final String finalClassName = className;
+            final String fullClassName = packageName + "." + className;
+            final String finalSourceCode = "package " + packageName + ";\n" + sourceCode;
 
             // Компилируем
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -143,7 +161,7 @@ public class JavaItemCompiler {
 
             // Виртуальный файл с исходным кодом
             JavaFileObject source = new SimpleJavaFileObject(
-                URI.create("string:///" + fileName + ".java"),
+                URI.create("string:///" + className + ".java"),
                 JavaFileObject.Kind.SOURCE
             ) {
                 @Override
@@ -153,7 +171,6 @@ public class JavaItemCompiler {
             };
 
             // Виртуальный файл для записи скомпилированных байтов
-            // Используем массив как wrapper для effectively final
             final Map<String, byte[]> classBytesHolder = new HashMap<>();
 
             JavaFileManager virtualFileManager = new ForwardingJavaFileManager<StandardJavaFileManager>(fileManager) {
@@ -195,7 +212,7 @@ public class JavaItemCompiler {
             if (success) {
                 // Сохраняем байты классов
                 compiledClasses.putAll(classBytesHolder);
-                plugin.getLogger().info("[JavaCompiler] ✅ Скомпилирован: " + javaFile.getName());
+                plugin.getLogger().info("[JavaCompiler] ✅ Скомпилирован: " + javaFile.getName() + " -> " + fullClassName);
                 return true;
             } else {
                 // Выводим ошибки
@@ -213,38 +230,122 @@ public class JavaItemCompiler {
     }
 
     /**
+     * Извлекает имя public класса из исходного кода.
+     */
+    private String extractClassName(String sourceCode) {
+        // Ищем public class ...
+        String[] lines = sourceCode.split("\n");
+        for (String line : lines) {
+            line = line.trim();
+            if (line.startsWith("public class ")) {
+                String afterClass = line.substring("public class ".length()).trim();
+                // Берём имя до пробела или скобки
+                int spaceIdx = afterClass.indexOf(' ');
+                int braceIdx = afterClass.indexOf('{');
+                int endIdx = Math.min(
+                    spaceIdx > 0 ? spaceIdx : afterClass.length(),
+                    braceIdx > 0 ? braceIdx : afterClass.length()
+                );
+                return afterClass.substring(0, endIdx).trim();
+            }
+        }
+        // Ищем просто class ...
+        for (String line : lines) {
+            line = line.trim();
+            if (line.startsWith("class ") && !line.contains("extends")) {
+                String afterClass = line.substring("class ".length()).trim();
+                int spaceIdx = afterClass.indexOf(' ');
+                int braceIdx = afterClass.indexOf('{');
+                int endIdx = Math.min(
+                    spaceIdx > 0 ? spaceIdx : afterClass.length(),
+                    braceIdx > 0 ? braceIdx : afterClass.length()
+                );
+                return afterClass.substring(0, endIdx).trim();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Заменяет имя класса в исходном коде.
+     */
+    private String replaceClassName(String sourceCode, String newClassName) {
+        // Заменяем public class OldName на public class NewName
+        return sourceCode.replaceAll("public class \\w+", "public class " + newClassName)
+                       .replaceAll("class \\w+ extends", "class " + newClassName + " extends");
+    }
+
+    /**
      * Получает classpath для компиляции.
      */
     private String getClasspath() {
         StringBuilder classpath = new StringBuilder();
 
-        // Добавляем серверный класспасс (Paper/Spigot)
-        File serverJar = new File("server.jar");
-        if (serverJar.exists()) {
-            classpath.append(serverJar.getAbsolutePath()).append(File.pathSeparator);
-        }
+        // Добавляем текущий JAR плагина (содержит AbstractCustomItem, ItemAPI и т.д)
+        try {
+            File pluginFile = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+            classpath.append(pluginFile.getAbsolutePath()).append(File.pathSeparator);
+        } catch (Exception ignored) {}
 
-        // Добавляем папку libraries/
-        File libsDir = new File("libraries");
-        if (libsDir.exists()) {
-            File[] jars = libsDir.listFiles();
-            if (jars != null) {
-                for (File lib : jars) {
-                    if (lib.getName().endsWith(".jar")) {
-                        classpath.append(lib.getAbsolutePath()).append(File.pathSeparator);
-                    }
-                }
+        // Добавляем серверный класспасс (Paper/Spigot)
+        // Ищем в разных местах
+        String[] serverJarPaths = {
+            "server.jar",
+            "paper.jar",
+            "../server.jar",
+            "../paper.jar",
+            "plugins/DC-CustomItems/../../server.jar",
+            "/data/server.jar"
+        };
+        for (String path : serverJarPaths) {
+            File serverJar = new File(path);
+            if (serverJar.exists()) {
+                classpath.append(serverJar.getAbsolutePath()).append(File.pathSeparator);
+                break;
             }
         }
 
-        // Добавляем текущий JAR плагина (используем getDataFolder для определения пути)
-        File pluginFile = new File(plugin.getDataFolder(), "../" + plugin.getName() + ".jar");
-        try {
-            pluginFile = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
-        } catch (Exception ignored) {}
-        classpath.append(pluginFile.getAbsolutePath());
+        // Добавляем папку libraries/ (Paper хранит зависимости здесь)
+        String[] libPaths = {"libraries", "../libraries", "/data/libraries"};
+        for (String libPath : libPaths) {
+            File libsDir = new File(libPath);
+            if (libsDir.exists() && libsDir.isDirectory()) {
+                addJarsFromClassDir(libsDir, classpath);
+            }
+        }
+
+        // Добавляем папку versions/ (Paper хранит версии здесь)
+        String[] versionsPaths = {"versions", "../versions", "/data/versions"};
+        for (String versionsPath : versionsPaths) {
+            File versionsDir = new File(versionsPath);
+            if (versionsDir.exists() && versionsDir.isDirectory()) {
+                addJarsFromClassDir(versionsDir, classpath);
+            }
+        }
+
+        // Добавляем все JAR файлы из текущей папки
+        File currentDir = new File(".");
+        File[] rootJars = currentDir.listFiles((dir, name) -> name.endsWith(".jar"));
+        if (rootJars != null) {
+            for (File jar : rootJars) {
+                classpath.append(jar.getAbsolutePath()).append(File.pathSeparator);
+            }
+        }
 
         return classpath.toString();
+    }
+
+    private void addJarsFromClassDir(File dir, StringBuilder classpath) {
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    addJarsFromClassDir(file, classpath);
+                } else if (file.getName().endsWith(".jar")) {
+                    classpath.append(file.getAbsolutePath()).append(File.pathSeparator);
+                }
+            }
+        }
     }
 
     /**
