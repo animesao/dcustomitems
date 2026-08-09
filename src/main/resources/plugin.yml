@@ -1,27 +1,145 @@
 name: DC-CustomItems
-version: 1.320.237
+version: 1.320.238
 main: me.dcplugin.dcustomitems.Main
 api-version: '1.21'
-description: Custom items plugin with YAML config and Java API
+description: Custom items plugin with YAML config, Java API, Commands, Database, Placeholders
 author: animesao
+
 commands:
+  # Основные команды плагина
   customitems:
     description: Custom item commands
     usage: /customitems <give|list|reload> [args]
     aliases: [ci]
+  
   api-item:
     description: Java API item commands
     usage: /api-item <give|list|info> [args]
+  
+  # Встроенные команды (примеры из commands.yml)
+  heal:
+    description: Heal yourself or player
+    usage: /heal [player]
+    aliases: [healme]
+  
+  healall:
+    description: Heal all players
+    usage: /healall
+  
+  berserk:
+    description: Toggle berserk mode
+    usage: /berserk [on|off|status]
+    aliases: [brk, rage]
+  
+  gmc:
+    description: Creative mode
+    usage: /gmc
+  
+  gms:
+    description: Survival mode
+    usage: /gms
+  
+  gma:
+    description: Adventure mode
+    usage: /gma
+  
+  fly:
+    description: Toggle flight
+    usage: /fly
+  
+  feed:
+    description: Feed yourself
+    usage: /feed
+    cooldown: 30
+  
+  stats:
+    description: Show player stats
+    usage: /stats
+
 permissions:
+  # Основные права
   customitems.give:
     description: Give custom items
     default: op
+  
   customitems.reload:
     description: Reload items
     default: op
+  
   customitems.list:
     description: List custom items
     default: true
+  
   customitems.admin:
     description: Admin permissions
+    default: op
+  
+  # Права для команд
+  dci.command.heal:
+    description: Use /heal
+    default: op
+  
+  dci.command.healall:
+    description: Use /healall
+    default: op
+  
+  dci.command.berserk:
+    description: Use /berserk
+    default: op
+  
+  dci.command.gmc:
+    description: Use /gmc
+    default: op
+  
+  dci.command.gms:
+    description: Use /gms
+    default: op
+  
+  dci.command.gma:
+    description: Use /gma
+    default: op
+  
+  dci.command.fly:
+    description: Use /fly
+    default: op
+  
+  dci.command.feed:
+    description: Use /feed
+    default: true
+  
+  dci.command.stats:
+    description: Use /stats
+    default: true
+  
+  dci.command.tp:
+    description: Use /tp
+    default: op
+  
+  dci.command.back:
+    description: Use /back
+    default: op
+  
+  dci.command.god:
+    description: Use /god
+    default: op
+  
+  dci.command.invisible:
+    description: Use /invisible
+    default: op
+  
+  dci.command.speed:
+    description: Use /speed
+    default: op
+  
+  dci.command.clearchat:
+    description: Use /clearchat
+    default: op
+  
+  dci.command.kickall:
+    description: Use /kickall
+    default: op
+  
+  # Широкие права
+  dci.command.*
+    description: All commands
     default: op

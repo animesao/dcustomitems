@@ -5,6 +5,9 @@ import me.dcplugin.dcustomitems.api.ApiCommand;
 import me.dcplugin.dcustomitems.api.ApiEventListener;
 import me.dcplugin.dcustomitems.api.ItemAPI;
 import me.dcplugin.dcustomitems.api.ItemRegistry;
+import me.dcplugin.dcustomitems.api.commands.CommandManager;
+import me.dcplugin.dcustomitems.api.database.DatabaseManager;
+import me.dcplugin.dcustomitems.api.placeholders.PlaceholderManager;
 import me.dcplugin.dcustomitems.commands.CustomItemsCommand;
 import me.dcplugin.dcustomitems.handlers.CustomItemHandler;
 import me.dcplugin.dcustomitems.listeners.PlayerListener;
@@ -32,6 +35,9 @@ public class Main extends JavaPlugin {
     private ArmorSetManager armorSetManager;
     private UpdateChecker updateChecker;
     private ItemRegistry apiItemRegistry;
+    private CommandManager commandManager;
+    private DatabaseManager databaseManager;
+    private PlaceholderManager placeholderManager;
 
     @Override
     public void onEnable() {
@@ -78,6 +84,21 @@ public class Main extends JavaPlugin {
             getServer().getPluginManager().registerEvents(triggerListener, this);
             getServer().getPluginManager().registerEvents(new ApiEventListener(apiItemRegistry), this);
 
+            // Инициализируем систему команд
+            commandManager = new CommandManager(this);
+            commandManager.loadCommandsFromConfig();
+            
+            // Инициализируем базу данных
+            databaseManager = new DatabaseManager(this);
+            databaseManager.connect();
+            
+            // Инициализируем плейсхолдеры
+            placeholderManager = new PlaceholderManager(this);
+            
+            getLogger().info("[API] CommandManager инициализирован");
+            getLogger().info("[API] DatabaseManager подключен");
+            getLogger().info("[API] PlaceholderManager инициализирован");
+
             // Проверяем обновления
             updateChecker = new UpdateChecker(this);
             updateChecker.checkForUpdates(message -> {
@@ -100,8 +121,12 @@ public class Main extends JavaPlugin {
     }
 
     @Override
-    public void onDisable() {
-        getLogger().info("CustomItems отключается...");
+    public void onDisable() {            getLogger().info("CustomItems отключается...");
+            
+            // Отключаем базу данных
+            if (databaseManager != null) {
+                databaseManager.disconnect();
+            }
 
         // Останавливаем все активные эффекты
         if (effectManager != null) {
@@ -181,5 +206,17 @@ public class Main extends JavaPlugin {
 
     public ItemRegistry getApiItemRegistry() {
         return apiItemRegistry;
+    }
+    
+    public CommandManager getCommandManager() {
+        return commandManager;
+    }
+    
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+    
+    public PlaceholderManager getPlaceholderManager() {
+        return placeholderManager;
     }
 }
