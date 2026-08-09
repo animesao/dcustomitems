@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.221-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.223-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Paper-1.21.11-red?style=for-the-badge" alt="Paper">
 </p>
 
@@ -38,11 +38,11 @@ Download the latest release from [GitHub Releases](https://github.com/animesao/d
 
 ```bash
 # Copy to plugins folder
-cp DC-CustomItems-1.320.221.jar /path/to/server/plugins/
+cp DC-CustomItems-1.320.223.jar /path/to/server/plugins/
 
 # Or using curl on VDS
 cd ~/server/plugins
-curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.320.221/DC-CustomItems-1.320.221.jar
+curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.320.223/DC-CustomItems-1.320.223.jar
 ```
 
 ### Step 3: Restart Server
