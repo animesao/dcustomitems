@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.223-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.228-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/github/license/animesao/dcustomitems-purple?style=for-the-badge" alt="License">
 </p>
 
@@ -84,9 +84,11 @@ my-sword:
   effects:
     - 'SPEED:1'
   
-  trigger-actions:
-    - 'on_click_right:lightning:1'
-    - 'on_click_right:message:&6⚡ Lightning!'
+  triggers:
+    on_click_right:
+      - 'lightning_forward:100'
+      - 'title:&6⚡ LIGHTNING!::&7Beware!'
+      - 'particles_custom:FLAME:50:0:1:0:1:1:1'
 ```
 
 ### 3. Reload and use
@@ -124,6 +126,36 @@ my-item:
 
 ---
 
+## 🚀 Advanced Triggers System
+
+```yaml
+my-item:
+  triggers:
+    on_equip:
+      - 'particles_custom:FLAME:100:0:1:0:2:2:2'
+      - 'sound_sequence:ENTITY_BLAZE_AMBIENT:1:1;ENTITY_PLAYER_LEVELUP:0.5:2'
+    on_click_right:
+      - 'title_sequence:🔥 READY!:::10:20:10;🔥 FIRE!:::10:30:10'
+      - 'damage_custom:30:6:4:6'
+      - 'effect_sequence:STRENGTH:15:5:0;SPEED:15:3:500'
+    on_kill:
+      - 'heal:50'
+      - 'heal_custom:15:8:5:8:HEART'
+```
+
+**All Available Actions:**
+- `effect`, `heal`, `damage`, `damage_nearby`, `damage_mobs`, `damage_players`
+- `lightning`, `lightning_forward`, `knockback`, `launch`, `stun`
+- `particles`, `particles_custom`, `sound`, `sound_sequence`
+- `title`, `title_sequence`, `message`, `actionbar`, `broadcast`
+- `teleport`, `teleport_relative`, `teleport_sequence`
+- `give`, `remove`, `exp`, `sethealth`, `setfood`
+- `command`, `console_command`, `command_sequence`
+- `vanish`, `glow`, `speed`, `flight`, `fireworks`
+- `effect_sequence`, `damage_custom`, `heal_custom`, `heal_nearby`
+
+---
+
 ## 📚 Documentation
 
 | Language | Link |
@@ -150,6 +182,8 @@ my-item:
 | `nature-totem` | Nature Totem | Nature powers |
 | `archer-bow` | Archer Bow | Special arrows |
 | `shadow-helmet` | Shadow Helmet | Stealth mode |
+| `air-wand` | Air Wand | Lightning forward |
+| `breaker-pickaxe` | Breaker Pickaxe | Instant block break |
 | `artifact-blade-of-destiny` | Blade of Destiny | Ultimate weapon |
 | `artifact-chaos-orb` | Chaos Orb | Random effects |
 
@@ -165,6 +199,14 @@ my-item:
 | `fire-resistance-potion` | Fire Resistance | 3 | Fire Resist 60s |
 | `nature-talisman` | Nature Talisman | 1 | Regeneration 30s |
 | `teleport-scroll` | Teleport Scroll | 3 | Teleport to random player |
+
+### 📝 Example Items
+
+| ID | Name | Description |
+|----|------|-------------|
+| `EXAMPLE-ultimate-fire-sword` | Ultimate Fire Sword | Full demo of all actions |
+| `EXAMPLE-teleport-mage` | Teleport Mage Staff | Teleport sequences |
+| `EXAMPLE-ultimate-potion` | Ultimate Potion | Effect sequences |
 
 ---
 

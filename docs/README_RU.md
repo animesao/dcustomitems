@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.226-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.228-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Paper-1.21.11-red?style=for-the-badge" alt="Paper">
 </p>
 
@@ -429,6 +429,46 @@ attributes:
 | `fire-resistance-potion` | Зелье Огнестойкости | 3 | Огнестойкость 60 сек |
 | `nature-talisman` | Талисман Природы | 1 | Регенерация 30 сек |
 | `teleport-scroll` | Свиток Телепортации | 3 | Телепорт к случайному игроку |
+
+---
+
+## 🚀 Продвинутые действия (БЕЗ ОГРАНИЧЕНИЙ!)
+
+### 🎨 Кастомные частицы
+```yaml
+# Формат: particles_custom:ТИП:КОЛИЧЕСТВО:X:Y:Z:OFF_X:OFF_Y:OFF_Z
+- 'particles_custom:FLAME:100:0:1:0:2:2:2'
+```
+
+### 🔊 Последовательность звуков
+```yaml
+# Формат: sound_sequence:ЗВУК1:ГРОМКОСТЬ1:ТОН1;ЗВУК2:...
+- 'sound_sequence:ENTITY_PLAYER_LEVELUP:1:1;ENTITY_ORB_PICKUP:0.5:1.5'
+```
+
+### 🎬 Последовательность заголовков (анимация!)
+```yaml
+# Формат: title_sequence:ЗАГОЛОВОК:ПОД:IN:STAY:OUT;...
+- 'title_sequence:🔥 ПОДГОТОВКА!:::10:20:10;🔥 ОГОНЬ!:::10:30:10;🔥 ШТОРМ!:::10:40:10'
+```
+
+### 📜 Команды с задержками
+```yaml
+# Формат: command_sequence:КОМАНДА1:ЗАДЕРЖКА1;КОМАНДА2:...
+- 'command_sequence:give %player% diamond 1:20;say Привет!:40'
+```
+
+### 💥 Кастомный урон (точные размеры)
+```yaml
+# Формат: damage_custom:УРОН:ШИРИНА:ВЫСОТА:ГЛУБИНА
+- 'damage_custom:30:6:4:6'  # 30 урона в области 6x4x6
+```
+
+### ❤️ Кастомное исцеление с частицами
+```yaml
+# Формат: heal_custom:ИСЦЕЛЕНИЕ:ШИРИНА:ВЫСОТА:ГЛУБИНА:ЧАСТИЦЫ
+- 'heal_custom:15:8:5:8:HEART'  # Лечение союзников в области 8x5x8
+```
 
 ---
 

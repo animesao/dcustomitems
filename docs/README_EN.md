@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.226-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.228-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Paper-1.21.11-red?style=for-the-badge" alt="Paper">
 </p>
 
@@ -429,6 +429,46 @@ attributes:
 | `fire-resistance-potion` | Fire Resistance | 3 | Fire Resist 60s |
 | `nature-talisman` | Nature Talisman | 1 | Regeneration 30s |
 | `teleport-scroll` | Teleport Scroll | 3 | Teleport to random player |
+
+---
+
+## 🚀 Advanced Actions (No Limits!)
+
+### 🎨 Custom Particles
+```yaml
+# Format: particles_custom:TYPE:COUNT:X:Y:Z:OFF_X:OFF_Y:OFF_Z
+- 'particles_custom:FLAME:100:0:1:0:2:2:2'
+```
+
+### 🔊 Sound Sequence
+```yaml
+# Format: sound_sequence:SOUND1:VOL1:PITCH1;SOUND2:...
+- 'sound_sequence:ENTITY_PLAYER_LEVELUP:1:1;ENTITY_ORB_PICKUP:0.5:1.5'
+```
+
+### 🎬 Title Sequence (Animation!)
+```yaml
+# Format: title_sequence:TITLE:SUB:IN:STAY:OUT;...
+- 'title_sequence:🔥 READY!:::10:20:10;🔥 FIRE!:::10:30:10;🔥 STORM!:::10:40:10'
+```
+
+### 📜 Command Sequence with Delays
+```yaml
+# Format: command_sequence:CMD1:DELAY1;CMD2:DELAY2;...
+- 'command_sequence:give %player% diamond 1:20;say Hi!:40'
+```
+
+### 💥 Custom Damage (Precise Area)
+```yaml
+# Format: damage_custom:DAMAGE:WIDTH:HEIGHT:DEPTH
+- 'damage_custom:30:6:4:6'  # 30 damage in 6x4x6 area
+```
+
+### ❤️ Custom Heal with Particles
+```yaml
+# Format: heal_custom:HEAL:W:H:D:PARTICLE
+- 'heal_custom:15:8:5:8:HEART'  # Heal allies in 8x5x8
+```
 
 ---
 
