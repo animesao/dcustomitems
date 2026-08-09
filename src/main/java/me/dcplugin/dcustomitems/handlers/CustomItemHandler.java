@@ -11,6 +11,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 import org.bukkit.persistence.PersistentDataType;
 
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -327,24 +328,17 @@ public class CustomItemHandler {
             // Применяем CustomModelData или ItemModel к предмету
             meta = itemStack.getItemMeta();
             if (meta != null) {
-                // ПРИОРИТЕТ: item-model (для 1.21.11) > custom-model-data (legacy)
+                // ПРИОРИТЕТ: item-model (для 1.21.11 custom_model_data strings) > custom-model-data (legacy int)
                 if (itemModel != null && !itemModel.isEmpty()) {
-                    // Используем setItemModel() для Minecraft 1.21.4+
-                    // Формат: "minecraft:item/smoke" или просто "smoke"
-                    NamespacedKey modelKey;
-                    if (itemModel.contains(":")) {
-                        // Уже полный путь: "minecraft:item/smoke"
-                        String[] parts = itemModel.split(":", 2);
-                        modelKey = new NamespacedKey(parts[0], parts[1]);
-                    } else {
-                        // Короткий путь: "smoke" -> "minecraft:item/smoke"
-                        modelKey = new NamespacedKey("minecraft", "item/" + itemModel);
-                    }
+                    // Используем CustomModelDataComponent.setStrings() для Minecraft 1.21.4+
+                    // Это эквивалент: /give @s sword[minecraft:custom_model_data={strings:["smoke"]}]
+                    CustomModelDataComponent cmdComponent = meta.getCustomModelDataComponent();
+                    cmdComponent.setStrings(List.of(itemModel));
+                    meta.setCustomModelDataComponent(cmdComponent);
                     
-                    meta.setItemModel(modelKey);
                     meta.getPersistentDataContainer().set(itemModelKey, PersistentDataType.STRING, itemModel);
                     
-                    plugin.getLogger().fine("[LOAD] Применён item_model: " + modelKey + " для " + itemId);
+                    plugin.getLogger().fine("[LOAD] Применён custom_model_data strings: [" + itemModel + "] для " + itemId);
                 } else if (customModelData > 0) {
                     // Используем старый custom_model_data (legacy)
                     meta.setCustomModelData(customModelData);
