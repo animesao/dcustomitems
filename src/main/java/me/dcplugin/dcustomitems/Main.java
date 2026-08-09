@@ -1,6 +1,10 @@
 
 package me.dcplugin.dcustomitems;
 
+import me.dcplugin.dcustomitems.api.ApiCommand;
+import me.dcplugin.dcustomitems.api.ApiEventListener;
+import me.dcplugin.dcustomitems.api.ItemAPI;
+import me.dcplugin.dcustomitems.api.ItemRegistry;
 import me.dcplugin.dcustomitems.commands.CustomItemsCommand;
 import me.dcplugin.dcustomitems.handlers.CustomItemHandler;
 import me.dcplugin.dcustomitems.listeners.PlayerListener;
@@ -27,6 +31,7 @@ public class Main extends JavaPlugin {
     private TriggerListener triggerListener;
     private ArmorSetManager armorSetManager;
     private UpdateChecker updateChecker;
+    private ItemRegistry apiItemRegistry;
 
     @Override
     public void onEnable() {
@@ -45,14 +50,24 @@ public class Main extends JavaPlugin {
             itemHandler = new CustomItemHandler(this);
             armorSetManager = new ArmorSetManager(this);
 
-            // Загружаем кастомные предметы
+            // Загружаем кастомные предметы (YAML)
             itemHandler.loadCustomItems();
+
+            // Инициализируем Java API
+            ItemAPI.init(this);
+            apiItemRegistry = new ItemRegistry(this);
+            apiItemRegistry.loadAll();
 
             // Регистрируем команды (отложенно для предотвращения ConcurrentModificationException)
             Bukkit.getScheduler().runTaskLater(this, () -> {
                 CustomItemsCommand command = new CustomItemsCommand(this);
                 getCommand("customitems").setExecutor(command);
                 getCommand("customitems").setTabCompleter(command);
+
+                // Команда для Java API предметов
+                ApiCommand apiCommand = new ApiCommand(apiItemRegistry);
+                getCommand("api-item").setExecutor(apiCommand);
+                getCommand("api-item").setTabCompleter(apiCommand);
             }, 1L);
 
             // Регистрируем события
@@ -61,6 +76,7 @@ public class Main extends JavaPlugin {
             getServer().getPluginManager().registerEvents(playerListener, this);
             getServer().getPluginManager().registerEvents(new me.dcplugin.dcustomitems.listeners.BlockPlaceListener(this), this);
             getServer().getPluginManager().registerEvents(triggerListener, this);
+            getServer().getPluginManager().registerEvents(new ApiEventListener(apiItemRegistry), this);
 
             // Проверяем обновления
             updateChecker = new UpdateChecker(this);
@@ -74,6 +90,7 @@ public class Main extends JavaPlugin {
             });
 
             getLogger().info("CustomItems успешно включен!");
+            getLogger().info("Java API: загружено " + apiItemRegistry.getCount() + " предметов");
 
         } catch (Exception e) {
             getLogger().severe("Ошибка при включении плагина: " + e.getMessage());
@@ -160,5 +177,9 @@ public class Main extends JavaPlugin {
 
     public UpdateChecker getUpdateChecker() {
         return updateChecker;
+    }
+
+    public ItemRegistry getApiItemRegistry() {
+        return apiItemRegistry;
     }
 }

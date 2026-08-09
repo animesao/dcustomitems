@@ -1,21 +1,27 @@
 name: DC-CustomItems
-version: 2.0.0
+version: 1.320.229
 main: me.dcplugin.dcustomitems.Main
 api-version: '1.21'
-description: Custom items plugin with JavaScript scripting engine
+description: Custom items plugin with YAML config and Java API
 author: animesao
 commands:
-  customitem:
+  customitems:
     description: Custom item commands
-    usage: /customitem <give|list|reload> [args]
-    aliases: [ci, customitems]
+    usage: /customitems <give|list|reload> [args]
+    aliases: [ci]
+  api-item:
+    description: Java API item commands
+    usage: /api-item <give|list|info> [args]
 permissions:
   customitems.give:
     description: Give custom items
     default: op
   customitems.reload:
-    description: Reload scripts
+    description: Reload items
     default: op
   customitems.list:
     description: List custom items
     default: true
+  customitems.admin:
+    description: Admin permissions
+    default: op
