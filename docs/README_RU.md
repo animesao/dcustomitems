@@ -1,616 +1,392 @@
-# ⚔️ DC-CustomItems - Полная документация
+# DC-CustomItems Документация Плагина
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
-  <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.232-blue?style=for-the-badge" alt="Version">
-  <img src="https://img.shields.io/badge/Paper-1.21.11-red?style=for-the-badge" alt="Paper">
-</p>
+## 📚 Оглавление
 
-**DC-CustomItems** — мощный плагин для Minecraft для создания кастомных предметов с эффектами, атрибутами, триггерами и поддержкой ресурс-паков.
-
----
-
-## 📑 Содержание
-
+- [Обзор](#обзор)
+- [Возможности](#возможности)
+- [Требования](#требования)
 - [Установка](#установка)
+- [Быстрый Старт](#быстрый-старт)
 - [Конфигурация](#конфигурация)
 - [Команды](#команды)
-- [Разрешения](#разрешения)
-- [Конфигурация предметов](#конфигурация-предметов)
-- [Система моделей](#система-моделей)
-- [Триггеры](#триггеры)
-- [Действия](#действия)
-- [Эффекты](#эффекты)
-- [Атрибуты](#атрибуты)
-- [Примеры](#примеры)
-- [Решение проблем](#решение-проблем)
+- [Права](#права)
+- [Ресурс-Пак](#ресурс-пак)
+- [Java API](#java-api)
+- [Решение Проблем](#решение-проблем)
+- [Поддержка](#поддержка)
 
 ---
 
-## 📦 Установка
+## 📖 Обзор
+
+DC-CustomItems — это мощный плагин для серверов Minecraft (Spigot/Paper 1.20+), который позволяет создавать кастомные предметы с уникальными способностями, эффектами и механиками.
+
+### Что Можно Создать:
+
+- ⚔️ **Кастомные Оружия** — Мечи, топоры, луки со.special способностями
+- 🛡️ **Кастомная Броня** — Шлемы, нагрудники с уникальными эффектами
+- 🧪 **Зелья и Расходники** — Кастомные зелья, еда, свитки
+- 🔮 **Особые Предметы** — Тотемы, палочки, инструменты
+- 🎯 **Любые Предметы** — Полная кастомизация без ограничений
+
+---
+
+## ✨ Возможности
+
+### Основные Функции:
+
+| Функция | Описание |
+|---------|----------|
+| **YAML Конфигурация** | Создавайте предметы через YAML файлы |
+| **Java API** | Продвинутые предметы на Java |
+| **Горячая Перезагрузка** | Обновляйте предметы без перезапуска |
+| **Кастомные Модели** | Поддержка моделей из ресурс-пака |
+| **Система Эффектов** | Частицы, звуки, зелья, заголовки |
+| **Кулдауны** | Настраиваемые кулдауны для способностей |
+| **Права** | Система прав для каждого предмета |
+| **Мульти-Триггер** | Несколько действий на одно событие |
+
+### Поддерживаемые События:
+
+- Левый Клик (ЛКМ)
+- Правый Клик (ПКМ)
+- Экипировка/Снятие
+- Ломание Блоков
+- Получение Урона
+- Смерть Игрока
+- И многое другое...
+
+---
+
+## 📋 Требования
+
+| Требование | Версия |
+|------------|--------|
+| Minecraft Сервер | 1.20+ (протестировано на 1.21.11) |
+| Серверное ПО | Spigot, Paper или совместимое |
+| Java | 17 или выше |
+| Загрузчик Плагинов | Bukkit/Spigot |
+
+---
+
+## 🚀 Установка
 
 ### Шаг 1: Скачать
 
-Скачайте последний релиз с [GitHub Releases](https://github.com/animesao/dcustomitems/releases/latest)
+Скачайте последнюю версию с GitHub:
+```bash
+curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/latest/download/DC-CustomItems.jar
+```
 
 ### Шаг 2: Установить
 
-```bash
-# Скопировать в папку plugins
-cp DC-CustomItems-1.320.223.jar /path/to/server/plugins/
-
-# Или через curl на VDS
-cd ~/server/plugins
-curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.320.223/DC-CustomItems-1.320.223.jar
+Поместите JAR файл в папку `plugins/` вашего сервера:
+```
+server/
+└── plugins/
+    └── dcustomitems.jar
 ```
 
-### Шаг 3: Перезапустить сервер
+### Шаг 3: Перезапустить Сервер
 
-```bash
-# Перезапустите сервер Minecraft
-./restart.sh
-# или
-systemctl restart minecraft
+Перезапустите сервер или выполните `/ci reload`.
+
+### Шаг 4: Проверить
+
+Проверьте загрузку плагина:
+```
+/pl
 ```
 
-### Шаг 4: Настроить предметы
-
-Предметы хранятся в папке `plugins/DC-CustomItems/items/`.
+Вы должны увидеть `DC-CustomItems` в списке.
 
 ---
 
-## 📁 Конфигурация
+## 🎮 Быстрый Старт
 
-### Структура файлов
+### Создание Первого Предмета
 
+1. **Перейдите в папку предметов:**
 ```
-plugins/DC-CustomItems/
-├── config.yml              # Основные настройки плагина
-├── messages.yml            # Сообщения плагина
-└── items/                  # Папка предметов
-    ├── vampire-blade.yml
-    ├── shadow-blade.yml
-    ├── thunder-axe.yml
-    ├── frost-wand.yml
-    └── ... (12 предметов в комплекте)
+plugins/DC-CustomItems/items/
+```
+
+2. **Создайте новый файл:** `my-sword.yml`
+
+3. **Добавьте конфигурацию:**
+```yaml
+my_sword:
+  item:
+    type: DIAMOND_SWORD
+    title: '&6Мой Первый Меч'
+    glowing: true
+  lore:
+    - ''
+    - '&7Мощный кастомный меч'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  trigger-actions:
+    - 'on_click_right:effect:SPEED:10:1'
+    - 'on_click_right:particle:FLAME:50'
+    - 'on_click_right:message:&6Меч активирован!'
+```
+
+4. **Перезагрузите плагин:**
+```
+/ci reload
+```
+
+5. **Получите предмет:**
+```
+/ci give my_sword
+```
+
+### Готово! Вы создали свой первый кастомный предмет!
+
+---
+
+## ⚙️ Конфигурация
+
+### Структура Конфигурации Предмета
+
+```yaml
+item_id:                          # Уникальный идентификатор
+  item:
+    type: MATERIAL                # Материал Minecraft
+    title: '&6Название'          # Название предмета (поддерживает & цвета)
+    glowing: true                 # Свечение чар
+    unbreakable: true             # Неломаемость
+    custom-model-data: 1001       # Кастомные данные модели
+    item-model: "model_name"     # Модель из ресурс-пака (1.21+)
+    enchantments:
+      SHARPNESS: 5               # Чары
+      UNBREAKING: 3
+  lore:                           # Описание предмета
+    - ''
+    - '&7Строка 1'
+    - '&eСтрока 2'
+    - ''
+  type: TOOL                      # Тип предмета (TOOL, ARMOR, RUNE и т.д.)
+  activation-slot: HAND           # Где предмет активируется
+  placeable: false                # Можно ли разместить
+  click-cooldown: 500             # Кулдаун в миллисекундах
+  permission: "myplugin.use"      # Требуемое право
+  trigger-actions:                # Действия для выполнения
+    - 'on_event:action'
 ```
 
 ---
 
-## 🎮 Команды
+## 📝 Команды
 
-| Команда | Алиасы | Описание |
-|---------|--------|----------|
-| `/ci list` | `/customitems list` | Список всех предметов |
-| `/ci give <id>` | `/customitems give <id>` | Выдать предмет себе |
-| `/ci give <id> <player>` | `/customitems give <id> <player>` | Выдать предмет игроку |
-| `/ci reload` | `/customitems reload` | Перезагрузить предметы |
-| `/ci update` | `/customitems update` | Проверить обновления |
+### Основные Команды
 
-### Примеры
+| Команда | Описание | Право |
+|---------|----------|-------|
+| `/ci give <предмет> [игрок]` | Выдать кастомный предмет | `customitems.give` |
+| `/ci list` | Список всех предметов | `customitems.list` |
+| `/ci reload` | Перезагрузить плагин | `customitems.reload` |
+| `/api-item give <id> [игрок]` | Выдать Java API предмет | `customitems.give` |
+| `/api-item list` | Список Java API предметов | `customitems.list` |
+
+### Примеры Команд
 
 ```bash
-# Выдать vampire-blade себе
-/ci give vampire-blade
+# Выдать предмет себе
+/ci give my_sword
 
-# Выдать shadow-blade игроку
-/ci give shadow-blade Steve
+# Выдать предмет другому игроку
+/ci give my_sword Steve
 
-# Список всех предметов
+# Список предметов
 /ci list
 
-# Перезагрузить плагин
+# Перезагрузка плагина
 /ci reload
 ```
 
 ---
 
-## 🔐 Разрешения
+## 🔐 Права
 
-| Разрешение | Описание | По умолчанию |
-|------------|----------|--------------|
-| `customitems.use` | Базовое использование | op |
-| `customitems.give` | Выдача предметов | op |
-| `customitems.reload` | Перезагрузка плагина | op |
-| `customitems.update` | Проверка обновлений | op |
-| `customitems.*` | Все разрешения | op |
+### Права по Умолчанию
 
----
+| Право | Описание | По умолчанию |
+|-------|----------|--------------|
+| `customitems.give` | Выдавать предметы | op |
+| `customitems.list` | Список предметов | true |
+| `customitems.reload` | Перезагрузка | op |
+| `customitems.admin` | Админ права | op |
 
-## 📝 Конфигурация предметов
+### Права для Предметов
 
-### Базовая структура предмета
+Добавьте кастомные права для ограничения использования:
 
 ```yaml
-item-id:
-  type: TOOL                    # RUNE, TOOL, ARMOR, CONSUMABLE
-  activation-slot: HAND         # HAND, OFFHAND, HEAD, CHEST, LEGS, FEET
-  placeable: false              # Можно ли разместить?
-  permission: custom.permission # Требуемое разрешение
-  
-  item:
-    type: NETHERITE_SWORD       # Материал
-    title: '&6Мой Меч'         # Отображаемое имя
-    glowing: true               # Свечение чар
-    unbreakable: true           # Неломаемость
-    item-model: "smoke"         # Модель из ресурс-пака (1.21.11+)
-    
-    enchantments:
-      SHARPNESS: 5
-      UNBREAKING: 3
-    
-    item-flags:
-      - HIDE_ENCHANTS
-      - HIDE_UNBREAKABLE
-  
-  lore:
-    - ''
-    - ' &7Кастомное описание'
-    - ''
-  
-  effects:
-    - 'INCREASE_DAMAGE:3'
-    - 'SPEED:2'
-  
-  attributes:
-    GENERIC_ATTACK_DAMAGE: 10.0
-    GENERIC_ATTACK_SPEED: 1.6
-  
-  click-cooldown: 1000          # Кулдаун в миллисекундах
-  
-  triggers:
-    on_equip:
-      - 'particles:FLAME:20'
-    on_kill:
-      - 'heal:20'
+legendary_sword:
+  permission: "myplugin.legendary"
+  # Только игроки с этим правом могут использовать
 ```
 
 ---
 
-## 🎨 Система моделей (Minecraft 1.21.11+)
+## 🎨 Ресурс-Пак
 
-### Обзор
+### Базовая Настройка
 
-Плагин поддерживает новую систему `custom_model_data` со строками (1.21.4+).
-
-### Поддерживаемые форматы
-
-| Формат | Пример | Описание |
-|--------|--------|----------|
-| Короткий | `"smoke"` | Автоматически конвертируется в `minecraft:item/smoke` |
-| Полный путь | `"minecraft:item/smoke"` | Прямой путь |
-| Кастомный NS | `"myplugin:weapons/sword"` | Кастомное пространство имён |
-
-### Использование Java API
-
-```java
-public class MySword extends AbstractCustomItem {
-    // Простое имя - ищет assets/minecraft/models/item/my_sword.json
-    @Override
-    public String getItemModel() { return "my_sword"; }
-    
-    // Полный путь - assets/minecraft/models/item/smoke.json
-    @Override
-    public String getItemModel() { return "minecraft:item/smoke"; }
-    
-    // Кастомный namespace - assets/myplugin/models/item/weapon.json
-    @Override
-    public String getItemModel() { return "myplugin:item/weapon"; }
-}
+1. **Создайте структуру папок:**
+```
+resource-pack/
+├── pack.mcmeta
+└── assets/
+    └── minecraft/
+        ├── models/
+        │   └── item/
+        │       └── my_model.json
+        └── textures/
+            └── item/
+                └── my_model.png
 ```
 
-### Конфигурация
-
-```yaml
-my-item:
-  item:
-    type: NETHERITE_SWORD
-    # Все форматы работают:
-    item-model: "smoke"
-    # item-model: "minecraft:item/smoke"
-    # item-model: "myplugin:custom_sword"
-```
-
-### Структура ресурс-пака
-
-```
-rp/assets/minecraft/
-├── items/
-│   └── netherite_sword.json    # Выбор модели
-├── models/item/
-│   ├── smoke.json              # 3D модель
-│   ├── custom_sword.json       # Другая модель
-│   └── ...
-└── textures/item/
-    ├── smoke.png               # Текстура
-    ├── custom_sword.png        # Другая текстура
-    └── ...
-```
-
-### Определение предметов (items/netherite_sword.json)
-
+2. **pack.mcmeta:**
 ```json
 {
-  "model": {
-    "type": "minecraft:select",
-    "property": "minecraft:custom_model_data",
-    "index": 0,
-    "cases": [
-      {
-        "when": "smoke",
-        "model": { "model": "minecraft:item/smoke" }
-      },
-      {
-        "when": "minecraft:item/smoke",
-        "model": { "model": "minecraft:item/smoke" }
-      }
-    ],
-    "fallback": { "model": "minecraft:item/netherite_sword" }
+  "pack": {
+    "description": "Кастомные Предметы",
+    "pack_format": 34
   }
 }
 ```
 
-### Команды
-
-```bash
-# Использование custom_model_data со строками
-/give @s minecraft:netherite_sword[minecraft:custom_model_data={strings:["smoke"]}]
-
-# Использование item_model компонента (альтернатива)
-/give @s minecraft:netherite_sword[item_model="minecraft:item/smoke"]
+3. **Файл модели (my_model.json):**
+```json
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "0": "minecraft:item/my_model"
+  }
+}
 ```
 
----
-
-## 🔄 Триггеры
-
-| Триггер | Описание |
-|---------|----------|
-| `on_equip` | При экипировке предмета |
-| `on_unequip` | При снятии предмета |
-| `on_click_right` | ПКМ с предметом |
-| `on_click_left` | ЛКМ с предметом |
-| `on_kill` | Убийство моба/игрока |
-| `on_death` | Смерть игрока |
-| `on_damage_taken` | Получение урона |
-| `on_damage_dealt` | Нанесение урона |
-| `on_jump` | Прыжок |
-| `on_pickup` | Подбор предмета |
-| `on_drop` | Выбрасывание предмета |
-
----
-
-## ⚡ Действия
-
-### 📢 Коммуникация
-
-| Действие | Формат | Описание |
-|----------|--------|----------|
-| `message` | `message:Текст` | Сообщение игроку |
-| `title` | `title:Заголовок:Подзаголовок:fadeIn:stay:fadeOut` | Заголовок на экране |
-| `actionbar` | `actionbar:Текст` | Текст над хотбаром |
-| `broadcast` | `broadcast:Текст` | Объявление всем игрокам |
-
-**Плейсхолдеры:** `%player%` - Имя игрока
-
-### ⚡ Эффекты
-
-| Действие | Формат | Описание |
-|----------|--------|----------|
-| `effect` | `effect:ТИП:СЕКУНДЫ:УРОВЕНЬ` | Эффект зелья |
-| `speed` | `speed:СЕКУНДЫ:УРОВЕНЬ` | Скорость (короткий) |
-| `vanish` | `vanish:СЕКУНДЫ` | Невидимость |
-| `glow` | `glow:СЕКУНДЫ` | Сияние |
-| `flight` | `flight:true/false` | Полёт |
-
-### 💥 Боевые
-
-| Действие | Формат | Описание |
-|----------|--------|----------|
-| `heal` | `heal:СУММА` | Исцелить себя |
-| `heal_nearby` | `heal_nearby:СУММА:РАДИУС` | Исцелить ближайших игроков |
-| `damage` | `damage:СУММА` | Урон себе |
-| `damage_nearby` | `damage_nearby:УРОН:РАДИУС` | AoE урон |
-| `damage_mobs` | `damage_mobs:УРОН:РАДИУС` | Урон только мобам |
-| `damage_players` | `damage_players:УРОН:РАДИУС` | Урон только игрокам |
-| `lightning` | `lightning:КОЛИЧЕСТВО` | Молния на месте |
-| `lightning_forward` | `lightning_forward:ДАЛЬНОСТЬ` | Молния вперед |
-| `knockback` | `knockback:РАДИУС` | Отбросить nearby |
-| `launch` | `launch:СИЛА` | Подбросить nearby |
-| `stun` | `stun:СЕКУНДЫ:РАДИУС` | Оглушить nearby |
-
-### 🎁 Предметы
-
-| Действие | Формат | Описание |
-|----------|--------|----------|
-| `give` | `give:МАТЕРИАЛ:КОЛИЧЕСТВО` | Выдать предмет |
-| `remove` | `remove:МАТЕРИАЛ:КОЛИЧЕСТВО` | Забрать предмет |
-| `exp` | `exp:ОПЫТ:УРОВНИ` | Выдать опыт |
-
-### 🌍 Мир
-
-| Действие | Формат | Описание |
-|----------|--------|----------|
-| `teleport` | `teleport:X:Y:Z` | Телепортация |
-| `teleport_relative` | `teleport_relative:X:Y:Z` | Относительный телепорт |
-| `sethealth` | `sethealth:ЗНАЧЕНИЕ` | Установить здоровье |
-| `setfood` | `setfood:ЗНАЧЕНИЕ` | Установить голод |
-
-### 🎆 Эффекты
-
-| Действие | Формат | Описание |
-|----------|--------|----------|
-| `particles` | `particles:ТИП:КОЛИЧЕСТВО` | Частицы |
-| `sound` | `sound:ТИП:ГРОМКОСТЬ:ТОНАЛЬНОСТЬ` | Звук |
-| `fireworks` | `fireworks:1` | Фейерверк |
-
-### 🔧 Команды
-
-| Действие | Формат | Описание |
-|----------|--------|----------|
-| `command` | `command:КОМАНДА` | Команда от имени игрока |
-| `console_command` | `console_command:КОМАНДА` | Команда от консоли |
-
----
-
-## 💊 Эффекты
-
-### Доступные эффекты
-
-| Эффект | Название |
-|--------|----------|
-| SPEED | Скорость |
-| SLOW | Замедление |
-| INCREASE_DAMAGE | Сила |
-| HEAL | Мгновенное исцеление |
-| HASTE | Спешка |
-| JUMP | Усиление прыжка |
-| REGENERATION | Регенерация |
-| RESISTANCE | Сопротивление |
-| FIRE_RESISTANCE | Огнестойкость |
-| WATER_BREATHING | Водное дыхание |
-| INVISIBILITY | Невидимость |
-| NIGHT_VISION | Ночное зрение |
-| HEALTH_BOOST | Прилив здоровья |
-| ABSORPTION | Поглощение |
-| SATURATION | Насыщение |
-
-### Формат
-
-```
-effect:ТИП:СЕКУНДЫ:УРОВЕНЬ
-```
-
-**Примеры:**
+4. **Использование в конфиге:**
 ```yaml
-- 'effect:SPEED:10:2'          # Скорость II на 10 секунд
-- 'effect:INCREASE_DAMAGE:5:3' # Сила III на 5 секунд
-- 'effect:REGENERATION:15:1'   # Регенерация I на 15 секунд
-```
-
----
-
-## 📊 Атрибуты
-
-### Доступные атрибуты
-
-| Атрибут | Описание |
-|---------|----------|
-| GENERIC_ATTACK_DAMAGE | Урон атаки |
-| GENERIC_ATTACK_SPEED | Скорость атаки |
-| GENERIC_MAX_HEALTH | Максимальное здоровье |
-| GENERIC_MOVEMENT_SPEED | Скорость передвижения |
-| GENERIC_ARMOR | Броня |
-| GENERIC_ARMOR_TOUGHNESS | Прочность брони |
-| GENERIC_KNOCKBACK_RESISTANCE | Сопротивление отбрасыванию |
-| GENERIC_LUCK | Удача |
-
-### Формат
-
-```yaml
-attributes:
-  GENERIC_ATTACK_DAMAGE: 10.0
-  GENERIC_ATTACK_SPEED: 1.6
-```
-
----
-
-## 📦 Включённые предметы
-
-### ⚔️ Оружие и Броня
-
-| ID | Название | Тип | Описание |
-|----|----------|-----|----------|
-| `vampire-blade` | Клинок Вампира | Меч | Кража здоровья, AoE урон |
-| `shadow-blade` | Теневой Клинок | Меч | Критические удары |
-| `thunder-axe` | Громовой Топор | Топор | Атаки молнией |
-| `frost-wand` | Ледяная Палочка | Палочка | Ледяные заклинания |
-| `elemental-staff` | Стихийный Посох | Посох | М стихии |
-| `berserker-axe` | Топор Берсерка | Топор | Режим ярости |
-| `healer-amulet` | Амулет Целителя | Амулет | Исцеляющие способности |
-| `nature-totem` | Тотем Природы | Тотем | Силы природы |
-| `archer-bow` | Лук Лучника | Лук | Специальные стрелы |
-| `shadow-helmet` | Теневой Шлем | Броня | Режим скрытности |
-| `artifact-blade-of-destiny` | Клинок Судьбы | Меч | Ультимативное оружие |
-| `artifact-chaos-orb` | Сфера Хаоса | Сфера | Случайные эффекты |
-
-### 🧪 Расходуемые предметы
-
-| ID | Название | Использований | Эффект |
-|----|----------|---------------|--------|
-| `health-potion` | Зелье Здоровья | 3 | Heal 10 + Regeneration |
-| `speed-potion` | Зелье Скорости | 5 | Скорость II 30 сек |
-| `golden-apple` | Золотое Яблоко | 2 | Heal + 3 эффекта |
-| `xp-scroll` | Свиток Опыта | 1 | +500 XP + 5 уровней |
-| `shield-totem` | Тотем Защиты | 4 | Absorption + Resistance |
-| `fire-resistance-potion` | Зелье Огнестойкости | 3 | Огнестойкость 60 сек |
-| `nature-talisman` | Талисман Природы | 1 | Регенерация 30 сек |
-| `teleport-scroll` | Свиток Телепортации | 3 | Телепорт к случайному игроку |
-
----
-
-## 🚀 Продвинутые действия (БЕЗ ОГРАНИЧЕНИЙ!)
-
-### 🎨 Кастомные частицы
-```yaml
-# Формат: particles_custom:ТИП:КОЛИЧЕСТВО:X:Y:Z:OFF_X:OFF_Y:OFF_Z
-- 'particles_custom:FLAME:100:0:1:0:2:2:2'
-```
-
-### 🔊 Последовательность звуков
-```yaml
-# Формат: sound_sequence:ЗВУК1:ГРОМКОСТЬ1:ТОН1;ЗВУК2:...
-- 'sound_sequence:ENTITY_PLAYER_LEVELUP:1:1;ENTITY_ORB_PICKUP:0.5:1.5'
-```
-
-### 🎬 Последовательность заголовков (анимация!)
-```yaml
-# Формат: title_sequence:ЗАГОЛОВОК:ПОД:IN:STAY:OUT;...
-- 'title_sequence:🔥 ПОДГОТОВКА!:::10:20:10;🔥 ОГОНЬ!:::10:30:10;🔥 ШТОРМ!:::10:40:10'
-```
-
-### 📜 Команды с задержками
-```yaml
-# Формат: command_sequence:КОМАНДА1:ЗАДЕРЖКА1;КОМАНДА2:...
-- 'command_sequence:give %player% diamond 1:20;say Привет!:40'
-```
-
-### 💥 Кастомный урон (точные размеры)
-```yaml
-# Формат: damage_custom:УРОН:ШИРИНА:ВЫСОТА:ГЛУБИНА
-- 'damage_custom:30:6:4:6'  # 30 урона в области 6x4x6
-```
-
-### ❤️ Кастомное исцеление с частицами
-```yaml
-# Формат: heal_custom:ИСЦЕЛЕНИЕ:ШИРИНА:ВЫСОТА:ГЛУБИНА:ЧАСТИЦЫ
-- 'heal_custom:15:8:5:8:HEART'  # Лечение союзников в области 8x5x8
-```
-
----
-
-## 💡 Примеры
-
-### Пример 1: Простой меч
-
-```yaml
-my-sword:
-  type: TOOL
-  activation-slot: HAND
-  placeable: false
-  
+my_item:
   item:
-    type: DIAMOND_SWORD
-    title: '&bАлмазный меч'
-    glowing: true
-    enchantments:
-      SHARPNESS: 3
-  
-  effects:
-    - 'SPEED:1'
-```
-
-### Пример 2: Полноценный предмет
-
-```yaml
-legendary-sword:
-  type: TOOL
-  activation-slot: HAND
-  placeable: false
-  permission: legendary.sword
-  
-  item:
-    type: NETHERITE_SWORD
-    title: '&6[⚔] &fЛегендарный Меч'
-    glowing: true
-    unbreakable: true
-    item-model: "smoke"
-    enchantments:
-      SHARPNESS: 5
-      UNBREAKING: 3
-  
-  lore:
-    - ''
-    - ' &7Легендарное оружие героев'
-    - ''
-    - ' &eПКМ: Удар молнией'
-    - ' &eЛКМ: AoE урон'
-    - ''
-  
-  effects:
-    - 'INCREASE_DAMAGE:3'
-    - 'SPEED:2'
-  
-  attributes:
-    GENERIC_ATTACK_DAMAGE: 12.0
-    GENERIC_ATTACK_SPEED: 1.8
-  
-  click-cooldown: 2000
-  
-  triggers:
-    on_equip:
-      - 'particles:FLAME:30'
-      - 'sound:ENTITY_PLAYER_LEVELUP:1:1'
-      - 'message:&6⚔ Легендарный меч экипирован!'
-    
-    on_click_right:
-      - 'lightning_forward:100'
-      - 'particles:EXPLOSION_LARGE:20'
-      - 'title:&6⚡ МОЛНИЯ!::&7Берегись!'
-    
-    on_click_left:
-      - 'damage_nearby:10:4'
-      - 'knockback:3'
-    
-    on_kill:
-      - 'heal:20'
-      - 'effect:REGENERATION:10:2'
-      - 'particles:HEART:20'
+    item-model: "my_model"
 ```
 
 ---
 
-## 🔧 Решение проблем
+## ☕ Java API
 
-### Модель предмета не работает
+### Базовая Структура
 
-1. **Проверьте установку ресурс-пака:**
-   - Скопируйте `SmokeSword_ResourcePack.zip` в `%appdata%\.minecraft\resourcepacks\`
-   - Активируйте в Options → Resource Packs
+```java
+import me.dcplugin.dcustomitems.api.AbstractCustomItem;
+import me.dcplugin.dcustomitems.api.ItemAPI;
 
-2. **Перезагрузите ресурсы:**
-   - Нажмите `F3 + T` в игре
+public class MySword extends AbstractCustomItem {
 
-3. **Проверьте формат:**
-   - Используйте `item-model: "smoke"` в конфиге
-   - Убедитесь что `items/netherite_sword.json` имеет совпадающее значение `when`
+    @Override
+    public String getId() { return "my_sword"; }
 
-### Плагин не загружается
+    @Override
+    public String getDisplayName() { return "&6Мой Меч"; }
 
-1. **Проверьте версию Java:** Требуется Java 17+
-2. **Проверьте версию Paper:** Требуется Paper 1.21.11+
-3. **Проверьте логи:** Ищите ошибки в `logs/latest.log`
+    @Override
+    public Material getMaterial() { return Material.DIAMOND_SWORD; }
 
-### Команды не работают
+    @Override
+    public void onRightClick(PlayerInteractEvent e, Player p) {
+        ItemAPI.heal(p, 5);
+        ItemAPI.effect(p, PotionEffectType.SPEED, 10, 1);
+    }
+}
+```
 
-1. **Проверьте разрешения:** Убедитесь что у вас есть разрешение `customitems.use`
-2. **Проверьте ID предмета:** Используйте `/ci list` для просмотра доступных предметов
+### Доступные Методы
+
+| Метод | Описание |
+|-------|----------|
+| `onLeftClick()` | Действие при ЛКМ |
+| `onRightClick()` | Действие при ПКМ |
+| `onEquip()` | При экипировке |
+| `onUnequip()` | При снятии |
+| `onDamageDealt()` | При нанесении урона |
+| `onDamageTaken()` | При получении урона |
+| `onKill()` | При убийстве |
+| `onDeath()` | При смерти |
+| `onBlockBreak()` | При ломании блоков |
+
+### Утилиты ItemAPI
+
+| Метод | Описание |
+|-------|----------|
+| `ItemAPI.heal(player, amount)` | Лечение игрока |
+| `ItemAPI.effect(player, type, sec, lvl)` | Эффект зелья |
+| `ItemAPI.particles(player, particle, count)` | Частицы |
+| `ItemAPI.sound(player, sound, vol, pitch)` | Звук |
+| `ItemAPI.teleport(player, x, y, z)` | Телепортация |
+| `ItemAPI.title(player, title, sub)` | Заголовок |
 
 ---
 
-## 📚 Дополнительные ресурсы
+## 🔧 Решение Проблем
 
-- [GitHub репозиторий](https://github.com/animesao/dcustomitems)
-- [Трекер ошибок](https://github.com/animesao/dcustomitems/issues)
-- [Релизы](https://github.com/animesao/dcustomitems/releases)
+### Частые Проблемы
+
+#### Предмет Не Появляется
+
+**Проблема:** Предмет не появляется после `/ci give`
+
+**Решение:**
+1. Проверьте ID предмета: `/ci list`
+2. Перезагрузите плагин: `/ci reload`
+3. Проверьте консоль на ошибки
+
+#### Эффекты Не Работают
+
+**Проблема:** Частицы/эффекты не отображаются
+
+**Решение:**
+1. Проверьте название частицы
+2. Убедитесь что у игрока есть права
+3. Проверьте консоль
+
+#### Плагин Не Загружается
+
+**Проблема:** Плагин не появляется в `/pl`
+
+**Решение:**
+1. Проверьте версию Java (17+)
+2. Проверьте наличие plugin.yml
+3. Смотрите ошибки в консоли
+
+---
+
+## 📞 Поддержка
+
+### Получить Помощь
+
+1. **Читайте Документацию** — Изучите нужные разделы
+2. **Ищите Проблемы** — Поищите похожие проблемы
+3. **Создайте Issue** — Сообщите о багах на GitHub
+4. **Сообщество** — Присоединяйтесь к Discord
+
+### Полезные Ссылки
+
+- **GitHub:** https://github.com/animesao/dcustomitems
+- **Релизы:** https://github.com/animesao/dcustomitems/releases
+- **Issues:** https://github.com/animesao/dcustomitems/issues
 
 ---
 
 ## 📄 Лицензия
 
-Этот проект лицензирован под MIT License.
+Плагин является открытым под лицензией MIT.
 
 ---
 
-**Сделано с ❤️ by animesao**
+**Версия:** 1.320.237  
+**Последнее обновление:** Август 2026
