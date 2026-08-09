@@ -30,6 +30,9 @@ public class JavaItemCompiler {
     private final Path compiledDir;
     private final Map<String, byte[]> compiledClasses = new ConcurrentHashMap<>();
     private CustomClassLoader classLoader;
+    
+    // Package для компиляции
+    private static final String PACKAGE = "items";
 
     public JavaItemCompiler(Main plugin) {
         this.plugin = plugin;
@@ -78,6 +81,7 @@ public class JavaItemCompiler {
                 for (Map.Entry<String, byte[]> entry : compiledClasses.entrySet()) {
                     classLoader.addClass(entry.getKey(), entry.getValue());
                 }
+                plugin.getLogger().info("[JavaCompiler] Loaded " + compiledClasses.size() + " classes into classloader");
             } catch (Exception e) {
                 plugin.getLogger().severe("[JavaCompiler] Error loading classes: " + e.getMessage());
             }
@@ -111,15 +115,19 @@ public class JavaItemCompiler {
             // Проверяем тип класса
             ClassType classType = detectClassType(sourceCode);
 
-            // Переименовываем если нужно
-            String packageName = "items";
-            if (!fileName.equals(className.toLowerCase())) {
-                className = fileName.replace("-", "_").replace(" ", "_") + "Item";
-                sourceCode = replaceClassName(sourceCode, className);
-            }
+            // Генерируем имя класса на основе имени файла
+            String generatedClassName = fileName.replace("-", "_").replace(" ", "_") + "Item";
+            
+            // Переименовываем класс в исходнике
+            sourceCode = replaceClassName(sourceCode, generatedClassName);
+            
+            // Добавляем package
+            final String finalSourceCode = "package " + PACKAGE + ";\n" + sourceCode;
+            
+            // Полное имя класса с package
+            final String fullClassName = PACKAGE + "." + generatedClassName;
 
-            final String fullClassName = packageName + "." + className;
-            final String finalSourceCode = "package " + packageName + ";\n" + sourceCode;
+            plugin.getLogger().info("[JavaCompiler] Compiling " + javaFile.getName() + " -> " + fullClassName);
 
             // Компилируем
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -132,7 +140,7 @@ public class JavaItemCompiler {
             StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
 
             JavaFileObject source = new SimpleJavaFileObject(
-                URI.create("string:///" + className + ".java"),
+                URI.create("string:///" + generatedClassName + ".java"),
                 JavaFileObject.Kind.SOURCE
             ) {
                 @Override
@@ -158,6 +166,7 @@ public class JavaItemCompiler {
                                 public void close() throws IOException {
                                     super.close();
                                     classBytesHolder.put(className, toByteArray());
+                                    plugin.getLogger().info("[JavaCompiler] Compiled class: " + className);
                                 }
                             };
                         }
@@ -179,21 +188,22 @@ public class JavaItemCompiler {
             fileManager.close();
 
             if (success) {
+                plugin.getLogger().info("[JavaCompiler] Compiled classes: " + classBytesHolder.keySet());
                 compiledClasses.putAll(classBytesHolder);
 
-                // Определяем тип и добавляем в результат
+                // Определяем тип и добавляем в результат (с полным именем package.class)
                 switch (classType) {
                     case ITEM:
-                        result.items.add(className);
-                        plugin.getLogger().info("[JavaCompiler] ✅ Item: " + javaFile.getName());
+                        result.items.add(fullClassName);
+                        plugin.getLogger().info("[JavaCompiler] ✅ Item: " + javaFile.getName() + " -> " + fullClassName);
                         break;
                     case COMMAND:
-                        result.commands.add(className);
-                        plugin.getLogger().info("[JavaCompiler] ✅ Command: " + javaFile.getName());
+                        result.commands.add(fullClassName);
+                        plugin.getLogger().info("[JavaCompiler] ✅ Command: " + javaFile.getName() + " -> " + fullClassName);
                         break;
                     case PLACEHOLDER:
-                        result.placeholders.add(className);
-                        plugin.getLogger().info("[JavaCompiler] ✅ Placeholder: " + javaFile.getName());
+                        result.placeholders.add(fullClassName);
+                        plugin.getLogger().info("[JavaCompiler] ✅ Placeholder: " + javaFile.getName() + " -> " + fullClassName);
                         break;
                 }
 
@@ -240,8 +250,8 @@ public class JavaItemCompiler {
     }
 
     private String replaceClassName(String sourceCode, String newClassName) {
-        return sourceCode.replaceAll("public class \\w+", "public class " + newClassName)
-                       .replaceAll("class \\w+ extends", "class " + newClassName + " extends");
+        // Заменяем public class OldName на public class NewName
+        return sourceCode.replaceAll("public\\s+class\\s+\\w+", "public class " + newClassName);
     }
 
     private String getClasspath() {
@@ -252,7 +262,6 @@ public class JavaItemCompiler {
             File pluginFile = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
             classpath.append(pluginFile.getAbsolutePath());
         } catch (Exception ignored) {
-            // fallback
             classpath.append("plugins/DC-CustomItems.jar");
         }
 
@@ -296,64 +305,68 @@ public class JavaItemCompiler {
 
     // ===== МЕТОДЫ ЗАГРУЗКИ =====
 
-    public Class<?> loadClass(String className) {
+    public Class<?> loadClass(String fullClassName) {
         if (classLoader == null) {
-            classLoader = new CustomClassLoader(getClass().getClassLoader());
-            for (Map.Entry<String, byte[]> entry : compiledClasses.entrySet()) {
-                classLoader.addClass(entry.getKey(), entry.getValue());
-            }
+            plugin.getLogger().severe("[JavaCompiler] ClassLoader is null!");
+            return null;
         }
+        
+        plugin.getLogger().info("[JavaCompiler] Loading class: " + fullClassName);
+        plugin.getLogger().info("[JavaCompiler] Available classes: " + compiledClasses.keySet());
+        
         try {
-            return classLoader.findClass(className);
+            return classLoader.findClass(fullClassName);
         } catch (ClassNotFoundException e) {
+            plugin.getLogger().severe("[JavaCompiler] Class not found: " + fullClassName);
             return null;
         }
     }
 
-    public AbstractCustomItem createItemInstance(String className) {
+    public AbstractCustomItem createItemInstance(String fullClassName) {
         try {
-            Class<?> clazz = loadClass(className);
+            Class<?> clazz = loadClass(fullClassName);
             if (clazz == null) {
-                plugin.getLogger().severe("[JavaCompiler] Class not found: " + className);
                 return null;
             }
             if (AbstractCustomItem.class.isAssignableFrom(clazz)) {
-                return (AbstractCustomItem) clazz.getDeclaredConstructor().newInstance();
+                AbstractCustomItem item = (AbstractCustomItem) clazz.getDeclaredConstructor().newInstance();
+                plugin.getLogger().info("[JavaCompiler] Created item instance: " + item.getId());
+                return item;
             } else {
-                plugin.getLogger().warning("[JavaCompiler] " + className + " does not extend AbstractCustomItem");
+                plugin.getLogger().warning("[JavaCompiler] " + fullClassName + " does not extend AbstractCustomItem");
                 return null;
             }
         } catch (Exception e) {
-            plugin.getLogger().severe("[JavaCompiler] Error creating item: " + className + " - " + e.getMessage());
+            plugin.getLogger().severe("[JavaCompiler] Error creating item: " + fullClassName + " - " + e.getMessage());
             e.printStackTrace();
             return null;
         }
     }
 
-    public CustomCommand createCommandInstance(String className) {
+    public CustomCommand createCommandInstance(String fullClassName) {
         try {
-            Class<?> clazz = loadClass(className);
+            Class<?> clazz = loadClass(fullClassName);
             if (clazz != null && CustomCommand.class.isAssignableFrom(clazz)) {
                 CustomCommand cmd = (CustomCommand) clazz.getDeclaredConstructor().newInstance();
                 cmd.setPlugin(plugin);
                 return cmd;
             }
         } catch (Exception e) {
-            plugin.getLogger().severe("[JavaCompiler] Error creating command: " + className);
+            plugin.getLogger().severe("[JavaCompiler] Error creating command: " + fullClassName);
         }
         return null;
     }
 
-    public CustomPlaceholder createPlaceholderInstance(String className) {
+    public CustomPlaceholder createPlaceholderInstance(String fullClassName) {
         try {
-            Class<?> clazz = loadClass(className);
+            Class<?> clazz = loadClass(fullClassName);
             if (clazz != null && CustomPlaceholder.class.isAssignableFrom(clazz)) {
                 CustomPlaceholder ph = (CustomPlaceholder) clazz.getDeclaredConstructor().newInstance();
                 ph.setPlugin(plugin);
                 return ph;
             }
         } catch (Exception e) {
-            plugin.getLogger().severe("[JavaCompiler] Error creating placeholder: " + className);
+            plugin.getLogger().severe("[JavaCompiler] Error creating placeholder: " + fullClassName);
         }
         return null;
     }
@@ -380,7 +393,9 @@ public class JavaItemCompiler {
 
         CustomClassLoader(ClassLoader parent) { super(parent); }
 
-        void addClass(String name, byte[] bytes) { classBytes.put(name, bytes); }
+        void addClass(String name, byte[] bytes) { 
+            classBytes.put(name, bytes); 
+        }
 
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
