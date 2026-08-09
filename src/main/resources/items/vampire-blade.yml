@@ -54,13 +54,13 @@ vampire-blade:
   trigger-actions:
     # --- При экипировке ---
     - 'on_equip:particle:DRAGON_BREATH:20'
-    - 'on_equip:particle:REDSTONE:25'
-    - 'on_equip:particle:SPELL_WITCH:15'
+    - 'on_equip:particle:DUST:25'
+    - 'on_equip:particle:WITCH:15'
     - 'on_equip:sound:ENTITY_WITHER_AMBIENT:1:1.2'
     - 'on_equip:message:&4👁 &7Вы чувствуете жажду крови!'
 
     # --- При снятии ---
-    - 'on_unequip:particle:SMOKE_NORMAL:15'
+    - 'on_unequip:particle:SMOKE:15'
     - 'on_unequip:particle:CLOUD:10'
     - 'on_unequip:sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
     - 'on_unequip:message:&4👁 &7Жажд утихает.'
@@ -70,7 +70,7 @@ vampire-blade:
     - 'on_click_right:effect:REGENERATION:10:3'
     - 'on_click_right:effect:SPEED:10:2'
     - 'on_click_right:particle:DRAGON_BREATH:30'
-    - 'on_click_right:particle:REDSTONE:20'
+    - 'on_click_right:particle:DUST:20'
     - 'on_click_right:sound:ENTITY_VAMPIRE_BITE:1:1'
     - 'on_click_right:title:&4🦇 &7КРОВАВЫЙ РЕЖИМ!::&cКража здоровья активна!:10:40:10'
     - 'on_click_right:message:&4🦇 &7Режим вампира активирован!'
@@ -81,8 +81,8 @@ vampire-blade:
     - 'on_click_left:effect:INCREASE_DAMAGE:8:4'
     - 'on_click_left:effect:SPEED:8:3'
     - 'on_click_left:particle:DRAGON_BREATH:50'
-    - 'on_click_left:particle:REDSTONE:40'
-    - 'on_click_left:particle:SPELL_WITCH:30'
+    - 'on_click_left:particle:DUST:40'
+    - 'on_click_left:particle:WITCH:30'
     - 'on_click_left:sound:ENTITY_ENDER_DRAGON_GROWL:1:1'
     - 'on_click_left:sound:ENTITY_VAMPIRE_BITE:1:0.8'
     - 'on_click_left:knockback:4'
@@ -107,11 +107,11 @@ vampire-blade:
 
     # --- При прыжке ---
     - 'on_jump:effect:SPEED:3:1'
-    - 'on_jump:particle:SMOKE_NORMAL:8'
+    - 'on_jump:particle:SMOKE:8'
 
     # --- При получении урона ---
     - 'on_damage_taken:effect:REGENERATION:5:2'
-    - 'on_damage_taken:particle:REDSTONE:10'
+    - 'on_damage_taken:particle:DUST:10'
 
     # --- При подборе ---
     - 'on_pickup:message:&4🦇 &7Клинок подобран!'
@@ -119,4 +119,4 @@ vampire-blade:
 
     # --- При выбрасывании ---
     - 'on_drop:message:&4🦇 &7Клинок выброшен.'
-    - 'on_drop:particle:SMOKE_NORMAL:20'
+    - 'on_drop:particle:SMOKE:20'
