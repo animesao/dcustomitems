@@ -1,6 +1,6 @@
 package me.dcplugin.dcustomitems.api;
 
-import me.dcplugin.dcustomitems.utils.ColorUtils;
+import me.dcplugin.dcustomitems.api.config.MessagesConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -12,14 +12,6 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Команда /api-item для работы с Java API предметами.
- *
- * Использование:
- *   /api-item give <id> [игрок]  - выдать предмет
- *   /api-item list               - список всех предметов
- *   /api-item info <id>          - информация о предмете
- */
 public class ApiCommand implements CommandExecutor, TabCompleter {
 
     private final ItemRegistry registry;
@@ -35,31 +27,24 @@ public class ApiCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        String sub = args[0].toLowerCase();
-
-        switch (sub) {
-            case "give":
-                return handleGive(sender, args);
-            case "list":
-                return handleList(sender);
-            case "info":
-                return handleInfo(sender, args);
-            default:
-                sendHelp(sender);
-                return true;
+        switch (args[0].toLowerCase()) {
+            case "give": return handleGive(sender, args);
+            case "list": return handleList(sender);
+            case "info": return handleInfo(sender, args);
+            default: sendHelp(sender); return true;
         }
     }
 
     private boolean handleGive(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(ColorUtils.colorize("&cИспользование: /api-item give <id> [игрок]"));
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.API_GIVE_USAGE));
             return true;
         }
 
         String itemId = args[1];
         AbstractCustomItem item = registry.getItem(itemId);
         if (item == null) {
-            sender.sendMessage(ColorUtils.colorize("&cПредмет не найден: " + itemId));
+            sender.sendMessage(MessagesConfig.format(MessagesConfig.ITEM_NOT_FOUND, "{item}", itemId));
             return true;
         }
 
@@ -67,38 +52,38 @@ public class ApiCommand implements CommandExecutor, TabCompleter {
         if (args.length >= 3) {
             target = Bukkit.getPlayer(args[2]);
             if (target == null) {
-                sender.sendMessage(ColorUtils.colorize("&cИгрок не найден: " + args[2]));
+                sender.sendMessage(MessagesConfig.colorize(MessagesConfig.PLAYER_NOT_FOUND));
                 return true;
             }
         } else if (sender instanceof Player) {
             target = (Player) sender;
         } else {
-            sender.sendMessage(ColorUtils.colorize("&cУкажите игрока: /api-item give <id> <игрок>"));
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.API_GIVE_USAGE));
             return true;
         }
 
         ItemStack stack = item.createItemStack();
         target.getInventory().addItem(stack);
-        target.sendMessage(ColorUtils.colorize("&aВыдан предмет: " + item.getDisplayName()));
+        target.sendMessage(MessagesConfig.format(MessagesConfig.CI_GIVE_RECEIVED, "{item}", item.getDisplayName()));
 
         if (!sender.equals(target)) {
-            sender.sendMessage(ColorUtils.colorize("&aВыдан " + item.getDisplayName() + " игроку " + target.getName()));
+            sender.sendMessage(MessagesConfig.format(MessagesConfig.API_GIVE_OTHER,
+                "{item}", item.getDisplayName(), "{player}", target.getName()));
         }
 
         return true;
     }
 
     private boolean handleList(CommandSender sender) {
-        var allItems = registry.getAllItems();
-        if (allItems.isEmpty()) {
-            sender.sendMessage(ColorUtils.colorize("&eНет загруженных Java API предметов"));
+        if (registry.getAllItems().isEmpty()) {
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.API_LIST_EMPTY));
             return true;
         }
 
-        sender.sendMessage(ColorUtils.colorize("&6=== Java API Предметы (" + allItems.size() + ") ==="));
-        for (var entry : allItems.entrySet()) {
+        sender.sendMessage(MessagesConfig.format(MessagesConfig.API_HEADER, "{count}", String.valueOf(registry.getAllItems().size())));
+        for (var entry : registry.getAllItems().entrySet()) {
             AbstractCustomItem item = entry.getValue();
-            sender.sendMessage(ColorUtils.colorize(
+            sender.sendMessage(MessagesConfig.colorize(
                 " &e" + item.getId() + " &7- " + item.getDisplayName() + " &7[" + item.getType() + "]"
             ));
         }
@@ -107,41 +92,41 @@ public class ApiCommand implements CommandExecutor, TabCompleter {
 
     private boolean handleInfo(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(ColorUtils.colorize("&cИспользование: /api-item info <id>"));
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.API_GIVE_USAGE));
             return true;
         }
 
         String itemId = args[1];
         AbstractCustomItem item = registry.getItem(itemId);
         if (item == null) {
-            sender.sendMessage(ColorUtils.colorize("&cПредмет не найден: " + itemId));
+            sender.sendMessage(MessagesConfig.format(MessagesConfig.ITEM_NOT_FOUND, "{item}", itemId));
             return true;
         }
 
-        sender.sendMessage(ColorUtils.colorize("&6=== Информация о предмете ==="));
-        sender.sendMessage(ColorUtils.colorize(" &eID: &f" + item.getId()));
-        sender.sendMessage(ColorUtils.colorize(" &eНазвание: " + item.getDisplayName()));
-        sender.sendMessage(ColorUtils.colorize(" &eМатериал: &f" + item.getMaterial().name()));
-        sender.sendMessage(ColorUtils.colorize(" &eТип: &f" + item.getType()));
-        sender.sendMessage(ColorUtils.colorize(" &eСлот: &f" + item.getActivationSlot()));
-        sender.sendMessage(ColorUtils.colorize(" &eКулдаун: &f" + item.getClickCooldown() + "мс"));
-        sender.sendMessage(ColorUtils.colorize(" &eНеломаемость: &f" + item.isUnbreakable()));
-        sender.sendMessage(ColorUtils.colorize(" &eСвечение: &f" + item.isGlowing()));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.API_INFO_HEADER));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.format(MessagesConfig.API_INFO_ID, "{id}", item.getId())));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.format(MessagesConfig.API_INFO_NAME, "{name}", item.getDisplayName())));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.format(MessagesConfig.API_INFO_MATERIAL, "{material}", item.getMaterial().name())));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.format(MessagesConfig.API_INFO_TYPE, "{type}", item.getType())));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.format(MessagesConfig.API_INFO_SLOT, "{slot}", item.getActivationSlot())));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.format(MessagesConfig.API_INFO_COOLDOWN, "{cooldown}", String.valueOf(item.getClickCooldown()))));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.format(MessagesConfig.API_INFO_UNBREAKABLE, "{value}", String.valueOf(item.isUnbreakable()))));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.format(MessagesConfig.API_INFO_GLOWING, "{value}", String.valueOf(item.isGlowing()))));
         if (item.getItemModel() != null) {
-            sender.sendMessage(ColorUtils.colorize(" &eМодель: &f" + item.getItemModel()));
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.format(MessagesConfig.API_INFO_MODEL, "{model}", item.getItemModel())));
         }
         if (item.getPermission() != null) {
-            sender.sendMessage(ColorUtils.colorize(" &eПраво: &f" + item.getPermission()));
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.format(MessagesConfig.API_INFO_PERMISSION, "{perm}", item.getPermission())));
         }
 
         return true;
     }
 
     private void sendHelp(CommandSender sender) {
-        sender.sendMessage(ColorUtils.colorize("&6=== Java API Команды ==="));
-        sender.sendMessage(ColorUtils.colorize(" &e/api-item give <id> [игрок] &7- выдать предмет"));
-        sender.sendMessage(ColorUtils.colorize(" &e/api-item list &7- список предметов"));
-        sender.sendMessage(ColorUtils.colorize(" &e/api-item info <id> &7- информация о предмете"));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.API_HEADER));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.API_HELP_GIVE));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.API_HELP_LIST));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.API_HELP_INFO));
     }
 
     @Override

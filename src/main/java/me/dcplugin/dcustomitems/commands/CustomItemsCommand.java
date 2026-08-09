@@ -1,7 +1,7 @@
-
 package me.dcplugin.dcustomitems.commands;
 
 import me.dcplugin.dcustomitems.Main;
+import me.dcplugin.dcustomitems.api.config.MessagesConfig;
 import me.dcplugin.dcustomitems.models.CustomItem;
 import me.dcplugin.dcustomitems.utils.ColorUtils;
 import org.bukkit.Bukkit;
@@ -47,20 +47,21 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
     }
 
     private void sendHelpMessage(CommandSender sender) {
-        sender.sendMessage(plugin.getMessageManager().getMessage("help.header", "&6=== DC-CustomItems Помощь ==="));
-        sender.sendMessage(plugin.getMessageManager().getMessage("help.give", "&e/customitems give <предмет> [игрок] &7- Выдать предмет"));
-        sender.sendMessage(plugin.getMessageManager().getMessage("help.list", "&e/customitems list &7- Список предметов"));
-        sender.sendMessage(plugin.getMessageManager().getMessage("help.reload", "&e/customitems reload &7- Перезагрузить плагин"));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.CI_HEADER));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.CI_HELP_GIVE));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.CI_HELP_LIST));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.CI_HELP_RELOAD));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.CI_HELP_UPDATE));
     }
 
     private boolean handleGiveCommand(CommandSender sender, String[] args) {
         if (!sender.hasPermission("customitems.give")) {
-            sender.sendMessage(plugin.getMessageManager().getMessage("commands.no-permission", "&cУ вас нет прав на использование этой команды!"));
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.NO_PERMISSION));
             return false;
         }
 
         if (args.length < 2) {
-            sender.sendMessage(plugin.getMessageManager().getMessage("commands.give-usage", "&cИспользование: /customitems give <предмет> [игрок]"));
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.CI_GIVE_USAGE));
             return false;
         }
 
@@ -68,13 +69,12 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
         CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
 
         if (customItem == null) {
-            sender.sendMessage(plugin.getMessageManager().getMessage("commands.item-not-found", "&cПредмет с ID '{item}' не найден!").replace("{item}", itemId));
+            sender.sendMessage(MessagesConfig.format(MessagesConfig.ITEM_NOT_FOUND, "{item}", itemId));
             return false;
         }
 
-        // Проверка права на конкретный предмет
         if (customItem.hasPermission() && !sender.hasPermission(customItem.getPermission())) {
-            sender.sendMessage(plugin.getMessageManager().getMessage("commands.no-item-permission", "&cУ вас нет прав на использование этого предмета!"));
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.CI_GIVE_NO_PERM));
             return false;
         }
 
@@ -82,12 +82,12 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
         if (args.length >= 3) {
             target = plugin.getServer().getPlayer(args[2]);
             if (target == null) {
-                sender.sendMessage(plugin.getMessageManager().getMessage("commands.player-not-found", "&cИгрок не найден!"));
+                sender.sendMessage(MessagesConfig.colorize(MessagesConfig.PLAYER_NOT_FOUND));
                 return false;
             }
         } else {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(plugin.getMessageManager().getMessage("commands.specify-player", "&cУкажите игрока!"));
+                sender.sendMessage(MessagesConfig.colorize(MessagesConfig.CI_GIVE_USAGE));
                 return false;
             }
             target = (Player) sender;
@@ -97,33 +97,35 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
         itemStack = plugin.getItemHandler().updateItemWithUses(itemStack);
         target.getInventory().addItem(itemStack);
 
-        sender.sendMessage(plugin.getMessageManager().getMessage("commands.item-given", "&aПредмет '{item}' выдан игроку {player}").replace("{item}", itemId).replace("{player}", target.getName()));
-        if (!sender.equals(target)) {
-            target.sendMessage(plugin.getMessageManager().getMessage("commands.item-received", "&aВы получили кастомный предмет: {item}").replace("{item}", itemId));
+        if (sender.equals(target)) {
+            sender.sendMessage(MessagesConfig.format(MessagesConfig.CI_GIVE_SELF, "{item}", itemId));
+        } else {
+            sender.sendMessage(MessagesConfig.format(MessagesConfig.CI_GIVE_OTHER, "{item}", itemId, "{player}", target.getName()));
+            target.sendMessage(MessagesConfig.format(MessagesConfig.CI_GIVE_RECEIVED, "{item}", itemId));
         }
 
         return true;
     }
 
     private boolean handleListCommand(CommandSender sender) {
-        if (!sender.hasPermission("customitems.use")) {
-            sender.sendMessage(plugin.getMessageManager().getMessage("commands.no-permission", "&cУ вас нет прав на использование этой команды!"));
+        if (!sender.hasPermission("customitems.list")) {
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.NO_PERMISSION));
             return false;
         }
 
-        sender.sendMessage(plugin.getMessageManager().getMessage("commands.list-header", "&6=== Список кастомных предметов ==="));
-        
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.LIST_HEADER));
+
         if (plugin.getItemHandler().getAllCustomItems().isEmpty()) {
-            sender.sendMessage(plugin.getMessageManager().getMessage("commands.list-empty", "&cНет загруженных предметов"));
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.LIST_EMPTY));
             return true;
         }
 
         for (String itemId : plugin.getItemHandler().getAllCustomItems().keySet()) {
             CustomItem item = plugin.getItemHandler().getCustomItem(itemId);
-            sender.sendMessage(plugin.getMessageManager().getMessage("commands.list-item", "&e{item} &7- &f{type} &7({slot})")
-                .replace("{item}", itemId)
-                .replace("{type}", item.getType())
-                .replace("{slot}", item.getActivationSlot()));
+            sender.sendMessage(MessagesConfig.format(MessagesConfig.LIST_ITEM,
+                "{item}", itemId,
+                "{type}", item.getType(),
+                "{slot}", item.getActivationSlot()));
         }
 
         return true;
@@ -131,7 +133,7 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
 
     private boolean handleReloadCommand(CommandSender sender) {
         if (!sender.hasPermission("customitems.reload")) {
-            sender.sendMessage(plugin.getMessageManager().getMessage("commands.no-permission", "&cУ вас нет прав на использование этой команды!"));
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.NO_PERMISSION));
             return false;
         }
 
@@ -139,25 +141,24 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
             plugin.getConfigManager().reloadConfig();
             plugin.getItemHandler().reloadItems();
             plugin.getArmorSetManager().reload();
-            
-            // Перезагружаем Java API (.java файлы)
+
             if (plugin.getApiItemRegistry() != null) {
                 plugin.getApiItemRegistry().reload();
                 int items = plugin.getApiItemRegistry().getItemCount();
                 int cmds = plugin.getApiItemRegistry().getCommandCount();
                 int phs = plugin.getApiItemRegistry().getPlaceholderCount();
-                
-                sender.sendMessage("&a&lПлагин перезагружен!");
-                sender.sendMessage("&7YAML: &e" + plugin.getItemHandler().getAllCustomItems().size());
-                sender.sendMessage("&7Java Items: &e" + items);
-                sender.sendMessage("&7Java Commands: &e" + cmds);
-                sender.sendMessage("&7Java Placeholders: &e" + phs);
+
+                sender.sendMessage(MessagesConfig.colorize(MessagesConfig.RELOAD_SUCCESS));
+                sender.sendMessage(MessagesConfig.format(MessagesConfig.RELOAD_YAML, "{count}", String.valueOf(plugin.getItemHandler().getAllCustomItems().size())));
+                sender.sendMessage(MessagesConfig.format(MessagesConfig.RELOAD_JAVA_ITEMS, "{count}", String.valueOf(items)));
+                sender.sendMessage(MessagesConfig.format(MessagesConfig.RELOAD_JAVA_COMMANDS, "{count}", String.valueOf(cmds)));
+                sender.sendMessage(MessagesConfig.format(MessagesConfig.RELOAD_JAVA_PLACEHOLDERS, "{count}", String.valueOf(phs)));
             } else {
-                sender.sendMessage(plugin.getMessageManager().getMessage("plugin.reloaded", "&aПлагин успешно перезагружен!"));
+                sender.sendMessage(MessagesConfig.colorize(MessagesConfig.RELOAD_SUCCESS));
             }
         } catch (Exception e) {
-            sender.sendMessage(plugin.getMessageManager().getMessage("commands.reload-error", "&cОшибка при перезагрузке: {error}").replace("{error}", e.getMessage()));
-            plugin.getLogger().severe("Ошибка при перезагрузке: " + e.getMessage());
+            sender.sendMessage(MessagesConfig.format(MessagesConfig.RELOAD_ERROR, "{error}", e.getMessage()));
+            plugin.getLogger().severe("Reload error: " + e.getMessage());
         }
 
         return true;
@@ -165,11 +166,11 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
 
     private boolean handleUpdateCommand(CommandSender sender) {
         if (!sender.hasPermission("customitems.update")) {
-            sender.sendMessage(plugin.getMessageManager().getMessage("commands.no-permission", "&cУ вас нет прав на использование этой команды!"));
+            sender.sendMessage(MessagesConfig.colorize(MessagesConfig.NO_PERMISSION));
             return false;
         }
 
-        sender.sendMessage(plugin.getMessageManager().getMessage("commands.update-checking", "&eПроверка обновлений..."));
+        sender.sendMessage(MessagesConfig.colorize(MessagesConfig.UPDATE_CHECKING));
         plugin.getUpdateChecker().checkForUpdates(message -> {
             Bukkit.getScheduler().runTask(plugin, () -> {
                 sender.sendMessage(ColorUtils.colorize(message));
@@ -184,10 +185,9 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
         List<String> completions = new ArrayList<>();
 
         if (args.length == 1) {
-            List<String> subcommands = Arrays.asList("give", "list", "reload", "update");
-            for (String subcommand : subcommands) {
-                if (subcommand.toLowerCase().startsWith(args[0].toLowerCase())) {
-                    completions.add(subcommand);
+            for (String sub : Arrays.asList("give", "list", "reload", "update")) {
+                if (sub.startsWith(args[0].toLowerCase())) {
+                    completions.add(sub);
                 }
             }
         } else if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
@@ -198,9 +198,8 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
             }
         } else if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
             for (Player player : plugin.getServer().getOnlinePlayers()) {
-                String name = player.getName();
-                if (name.toLowerCase().startsWith(args[2].toLowerCase())) {
-                    completions.add(name);
+                if (player.getName().toLowerCase().startsWith(args[2].toLowerCase())) {
+                    completions.add(player.getName());
                 }
             }
         }
