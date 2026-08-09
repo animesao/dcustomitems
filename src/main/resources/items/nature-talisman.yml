@@ -1,0 +1,62 @@
+# ============================================
+# ТАЛИСМАН ПРИРОДЫ - Одноразовый предмет
+# ============================================
+# При использовании (ПКМ) даёт регенерацию
+# и пропадает из инвентаря
+# ============================================
+
+nature-talisman:
+  type: CONSUMABLE
+  activation-slot: HAND
+  placeable: false
+  permission: nature.talisman
+
+  item:
+    type: PAPER
+    title: '&a[🌿] &fТалисман &aПрироды'
+    glowing: true
+    unbreakable: false
+    item-model: "nature_talisman"
+    amount: 1
+
+  lore:
+    - ''
+    - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Древний талисман природы'
+    - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ''
+    - ' &a🌿 &fПКМ: Активировать'
+    - ' &7Даёт регенерацию на 30 секунд'
+    - ''
+    - ' &c⚠ Одноразовый предмет!'
+    - ' &7Осталось использований: &a%uses%'
+    - ''
+
+  # Максимум использований (1 = одноразовый)
+  max-uses: 1
+
+  # Сообщение когда использования закончились
+  uses-depleted-message: '&c❌ Талисман исчерпан!'
+
+  # Сообщение при активации
+  activation-message: '&a🌿 Талисман активирован!'
+
+  # Триггеры
+  trigger-actions:
+    # При ПКМ - активация талисмана
+    - 'on_click_right:effect:REGENERATION:30:2'      # Регенерация II на 30 секунд
+    - 'on_click_right:effect:HEAL:10:1'              # Исцеление на 10 HP
+    - 'on_click_right:remove:PAPER:1'                # Удаляем талисман из инвентаря
+    - 'on_click_right:particle:VILLAGER_HAPPY:50'    # Частички счастья
+    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:1:1.5'  # Звук повышения уровня
+    - 'on_click_right:title:&2🌿 &fПРИРОДА ПОМОГАЕТ!::&aРегенерация на 30 секунд!:10:40:10'
+    - 'on_click_right:message:&2🌿 &7Вы активировали Талисман Природы! &aРегенерация на 30 секунд!'
+    - 'on_click_right:announce:&2🌿 &7%player% &7активировал Талисман Природы!'
+
+    # При подборе
+    - 'on_pickup:message:&2🌿 &7Талисман Природы подобран!'
+    - 'on_pickup:particle:VILLAGER_HAPPY:20'
+
+    # При выбрасывании
+    - 'on_drop:message:&2🌿 &7Талисман выброшен.'
+    - 'on_drop:particle:SMOKE:10'

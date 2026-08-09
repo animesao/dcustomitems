@@ -1,0 +1,55 @@
+# ============================================
+# ЗЕЛЬЕ СКОРОСТИ - Увеличивает скорость бега
+# ============================================
+# 5 использований, каждый раз даёт скорость
+# на 30 секунд
+# ============================================
+
+speed-potion:
+  type: CONSUMABLE
+  activation-slot: HAND
+  placeable: false
+  permission: potion.speed
+
+  item:
+    type: GLASS_BOTTLE
+    title: '&e[⚡] &fЗелье &eСкорости'
+    glowing: true
+    unbreakable: false
+    item-model: "speed_potion"
+    amount: 1
+
+  lore:
+    - ''
+    - ' &e━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Зелье быстрого бега'
+    - ' &e━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ''
+    - ' &e⚡ &fПКМ: Выпить'
+    - ' &7Даёт Скорость II на 30 секунд'
+    - ''
+    - ' &eОсталось глотков: &e%uses% &7из &65'
+    - ''
+
+  max-uses: 5
+
+  uses-depleted-message: '&e❌ Зелье закончилось!'
+
+  activation-message: '&e⚡ Скорость активирована!'
+
+  trigger-actions:
+    # При ПКМ - скорость
+    - 'on_click_right:effect:SPEED:30:2'
+    - 'on_click_right:remove:GLASS_BOTTLE:1'
+    - 'on_click_right:particle:CLOUD:40'
+    - 'on_click_right:particle:CRIT:25'
+    - 'on_click_right:sound:ENTITY_PLAYER_BURP:1:1'
+    - 'on_click_right:sound:ENTITY_HORSE_GALLOP:0.8:1.5'
+    - 'on_click_right:title:&e⚡ &fСКОРОСТЬ!::&aСкорость II на 30 секунд!:10:30:10'
+    - 'on_click_right:message:&e⚡ &7Вы ускорились! Скорость II на 30 секунд!'
+
+    # При подборе
+    - 'on_pickup:message:&e⚡ &7Зелье Скорости подобрано!'
+
+    # При выбрасывании
+    - 'on_drop:message:&e⚡ &7Зелье выброшено.'

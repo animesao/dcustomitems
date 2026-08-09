@@ -1,0 +1,68 @@
+# ============================================
+# СВИТОК ТЕЛЕПОРТАЦИИ - Телепорт к рандом игроку
+# ============================================
+# Телепортирует к случайному онлайн игроку
+# Можно использовать 3 раза
+# ============================================
+
+teleport-scroll:
+  type: CONSUMABLE
+  activation-slot: HAND
+  placeable: false
+  permission: teleport.scroll
+
+  item:
+    type: PAPER
+    title: '&b[🌀] &fСвиток &bТелепортации'
+    glowing: true
+    unbreakable: false
+    item-model: "teleport_scroll"
+    enchantments:
+      MENDING: 1
+    item-flags:
+      - HIDE_ENCHANTS
+    amount: 1
+
+  lore:
+    - ''
+    - ' &3━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Магический свиток телепортации'
+    - ' &3━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ''
+    - ' &b🌀 &fПКМ: Телепортироваться'
+    - ' &7Телепортирует к случайному игроку'
+    - ''
+    - ' &eОсталось использований: &b%uses% &7из &93'
+    - ''
+
+  # 3 использования (не 1 как у талисмана)
+  max-uses: 3
+
+  # Сообщение когда использования закончились
+  uses-depleted-message: '&c❌ Свиток исчерпан! Он распался...'
+
+  # Сообщение при активации
+  activation-message: '&b🌀 Свиток активирован!'
+
+  # Триггеры
+  trigger-actions:
+    # При ПКМ - телепортация к случайному игроку
+    # Используем execute + tp с @a[sort=random,limit=1,distance=1..]
+    # distance=1.. чтобы не телепортировать к самому себе
+    - 'on_click_right:command:execute at %player% run tp %player% @a[sort=random,limit=1,distance=1..]'
+    - 'on_click_right:remove:PAPER:1'
+    - 'on_click_right:particle:PORTAL:100'
+    - 'on_click_right:particle:REVERSE_PORTAL:50'
+    - 'on_click_right:sound:ENTITY_ENDERMAN_TELEPORT:1:1'
+    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:0.5:2'
+    - 'on_click_right:title:&3🌀 &fТЕЛЕПОРТАЦИЯ!::&bВы переместились к другому игроку!:10:30:10'
+    - 'on_click_right:message:&3🌀 &7Вы телепортировались к случайному игроку!'
+    - 'on_click_right:announce:&3🌀 &7%player% &7использовал Свиток Телепортации!'
+
+    # При подборе
+    - 'on_pickup:message:&3🌀 &7Свиток Телепортации подобран!'
+    - 'on_pickup:particle:PORTAL:30'
+
+    # При выбрасывании
+    - 'on_drop:message:&3🌀 &7Свиток выброшен.'
+    - 'on_drop:particle:SMOKE:10'

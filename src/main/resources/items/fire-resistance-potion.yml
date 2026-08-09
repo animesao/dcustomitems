@@ -1,0 +1,55 @@
+# ============================================
+# ЗЕЛЬЕ ОГНЕСТОЙКОСТИ - Защита от огня
+# ============================================
+# 3 использования, каждый раз даёт:
+# - Огнестойкость на 60 секунд
+# ============================================
+
+fire-resistance-potion:
+  type: CONSUMABLE
+  activation-slot: HAND
+  placeable: false
+  permission: potion.fire_resistance
+
+  item:
+    type: GLASS_BOTTLE
+    title: '&c[🔥] &fЗелье &cОгнестойкости'
+    glowing: true
+    unbreakable: false
+    item-model: "fire_resistance_potion"
+    amount: 1
+
+  lore:
+    - ''
+    - ' &c━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Зелье огненной защиты'
+    - ' &c━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ''
+    - ' &c🔥 &fПКМ: Выпить'
+    - ' &7Даёт Огнестойкость на 60 секунд'
+    - ''
+    - ' &eОсталось глотков: &c%uses% &7из &43'
+    - ''
+
+  max-uses: 3
+
+  uses-depleted-message: '&c❌ Зелье закончилось!'
+
+  activation-message: '&c🔥 Огнестойкость активирована!'
+
+  trigger-actions:
+    # При ПКМ - огнестойкость
+    - 'on_click_right:effect:FIRE_RESISTANCE:60:1'
+    - 'on_click_right:remove:GLASS_BOTTLE:1'
+    - 'on_click_right:particle:FLAME:60'
+    - 'on_click_right:particle:LAVA:30'
+    - 'on_click_right:sound:ENTITY_PLAYER_BURP:1:1'
+    - 'on_click_right:sound:BLOCK_FIRE_AMBIENT:1:1.2'
+    - 'on_click_right:title:&c🔥 &fОГОНЕСТОЙКОСТЬ!::&aЗащита от огня на 60 секунд!:10:30:10'
+    - 'on_click_right:message:&c🔥 &7Вы выпили Зелье Огнестойкости! &a60 секунд защиты!'
+
+    # При подборе
+    - 'on_pickup:message:&c🔥 &7Зелье Огнестойкости подобрано!'
+
+    # При выбрасывании
+    - 'on_drop:message:&c🔥 &7Зелье выброшено.'

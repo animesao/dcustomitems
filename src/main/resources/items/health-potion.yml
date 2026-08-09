@@ -1,0 +1,57 @@
+# ============================================
+# ЗЕЛЬЕ ЗДОРОВЬЯ - Исцеляет и даёт регенерацию
+# ============================================
+# 3 использования, каждый раз восстанавливает
+# здоровье и даёт регенерацию
+# ============================================
+
+health-potion:
+  type: CONSUMABLE
+  activation-slot: HAND
+  placeable: false
+  permission: potion.health
+
+  item:
+    type: GLASS_BOTTLE
+    title: '&c[❤] &fЗелье &cЗдоровья'
+    glowing: true
+    unbreakable: false
+    item-model: "health_potion"
+    amount: 1
+
+  lore:
+    - ''
+    - ' &c━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Исцеляющее зелье природы'
+    - ' &c━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ''
+    - ' &c❤ &fПКМ: Выпить'
+    - ' &7Восстанавливает 10 HP'
+    - ' &7Даёт регенерацию на 10 секунд'
+    - ''
+    - ' &eОсталось глотков: &c%uses% &7из &43'
+    - ''
+
+  max-uses: 3
+
+  uses-depleted-message: '&c❌ Зелье закончилось!'
+
+  activation-message: '&c❤ Зелье выпито!'
+
+  trigger-actions:
+    # При ПКМ - исцеление
+    - 'on_click_right:heal:10'
+    - 'on_click_right:effect:REGENERATION:10:1'
+    - 'on_click_right:remove:GLASS_BOTTLE:1'
+    - 'on_click_right:particle:HEART:30'
+    - 'on_click_right:particle:VILLAGER_HAPPY:20'
+    - 'on_click_right:sound:ENTITY_PLAYER_BURP:1:1'
+    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:0.5:1.5'
+    - 'on_click_right:title:&c❤ &fИСЦЕЛЕНИЕ!::&a+10 HP + Регенерация!:10:30:10'
+    - 'on_click_right:message:&c❤ &7Вы восстановили 10 HP!'
+
+    # При подборе
+    - 'on_pickup:message:&c❤ &7Зелье Здоровья подобрано!'
+
+    # При выбрасывании
+    - 'on_drop:message:&c❤ &7Зелье выброшено.'
