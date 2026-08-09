@@ -4,6 +4,7 @@ import me.dcplugin.dcustomitems.api.ApiCommand;
 import me.dcplugin.dcustomitems.api.ApiEventListener;
 import me.dcplugin.dcustomitems.api.ItemAPI;
 import me.dcplugin.dcustomitems.api.ItemRegistry;
+import me.dcplugin.dcustomitems.api.config.MessagesConfig;
 import me.dcplugin.dcustomitems.api.database.DatabaseManager;
 import me.dcplugin.dcustomitems.api.placeholders.PlaceholderManager;
 import me.dcplugin.dcustomitems.commands.CustomItemsCommand;
@@ -19,7 +20,7 @@ import me.dcplugin.dcustomitems.utils.UpdateChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
+import java.io.*;
 
 public class Main extends JavaPlugin {
 
@@ -41,9 +42,14 @@ public class Main extends JavaPlugin {
         try {
             getLogger().info("CustomItems starting...");
 
+            // Save default configs
             saveDefaultConfig();
             saveResourceItems();
+            
+            // Auto-create messages.java if not exists
+            createDefaultMessagesFile();
 
+            // Initialize managers
             configManager = new ConfigManager(this);
             messageManager = new MessageManager(this);
             effectManager = new EffectManager(this);
@@ -107,16 +113,154 @@ public class Main extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("CustomItems disabling...");
-
         if (databaseManager != null) databaseManager.disconnect();
-
         if (effectManager != null) {
             getServer().getOnlinePlayers().forEach(effectManager::stopPeriodicEffects);
         }
-
         if (attributeManager != null) attributeManager.cleanup();
-
         getLogger().info("CustomItems disabled!");
+    }
+
+    /**
+     * Auto-create default messages.java if not exists
+     */
+    private void createDefaultMessagesFile() {
+        File itemsDir = new File(getDataFolder(), "items");
+        if (!itemsDir.exists()) itemsDir.mkdirs();
+        
+        File messagesFile = new File(itemsDir, "messages.java");
+        if (!messagesFile.exists()) {
+            try {
+                String defaultContent = generateDefaultMessagesContent();
+                FileWriter writer = new FileWriter(messagesFile);
+                writer.write(defaultContent);
+                writer.close();
+                getLogger().info("[Config] Created default messages.java");
+            } catch (Exception e) {
+                getLogger().warning("Failed to create messages.java: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Generate default messages.java content
+     */
+    private String generateDefaultMessagesContent() {
+        return "import me.dcplugin.dcustomitems.api.config.MessagesConfig;\n" +
+               "\n" +
+               "/**\n" +
+               " * Plugin Messages Configuration\n" +
+               " * Edit this file to customize all plugin messages!\n" +
+               " * Run /ci reload after changes.\n" +
+               " */\n" +
+               "public class messages {\n" +
+               "\n" +
+               "    public static void load() {\n" +
+               "        // Prefix\n" +
+               "        MessagesConfig.PREFIX = \"&8[&6DCI&8] &r\";\n" +
+               "\n" +
+               "        // General\n" +
+               "        MessagesConfig.NO_PERMISSION = MessagesConfig.PREFIX + \"&cNo permission!\";\n" +
+               "        MessagesConfig.PLAYER_NOT_FOUND = MessagesConfig.PREFIX + \"&cPlayer not found!\";\n" +
+               "        MessagesConfig.ITEM_NOT_FOUND = MessagesConfig.PREFIX + \"&cItem not found: {item}\";\n" +
+               "\n" +
+               "        // /ci commands\n" +
+               "        MessagesConfig.CI_HEADER = \"&6=== DC-CustomItems ===\";\n" +
+               "        MessagesConfig.CI_HELP_GIVE = \"&e/ci give <id> [player] &7- Give item\";\n" +
+               "        MessagesConfig.CI_HELP_LIST = \"&e/ci list &7- List items\";\n" +
+               "        MessagesConfig.CI_HELP_RELOAD = \"&e/ci reload &7- Reload plugin\";\n" +
+               "        MessagesConfig.CI_GIVE_SELF = MessagesConfig.PREFIX + \"&aGiven: &e{item}\";\n" +
+               "        MessagesConfig.CI_GIVE_OTHER = MessagesConfig.PREFIX + \"&aGiven &e{item} &ato &e{player}\";\n" +
+               "        MessagesConfig.CI_GIVE_RECEIVED = MessagesConfig.PREFIX + \"&aYou received: &e{item}\";\n" +
+               "\n" +
+               "        // List\n" +
+               "        MessagesConfig.LIST_HEADER = MessagesConfig.PREFIX + \"&6=== Items ===\";\n" +
+               "        MessagesConfig.LIST_ITEM = MessagesConfig.PREFIX + \"&e{item} &7- &f{type}\";\n" +
+               "        MessagesConfig.LIST_EMPTY = MessagesConfig.PREFIX + \"&cNo items loaded\";\n" +
+               "\n" +
+               "        // Reload\n" +
+               "        MessagesConfig.RELOAD_SUCCESS = MessagesConfig.PREFIX + \"&a&lReloaded!\";\n" +
+               "        MessagesConfig.RELOAD_YAML = MessagesConfig.PREFIX + \"&7YAML: &e{count}\";\n" +
+               "        MessagesConfig.RELOAD_JAVA_ITEMS = MessagesConfig.PREFIX + \"&7Java Items: &e{count}\";\n" +
+               "        MessagesConfig.RELOAD_JAVA_COMMANDS = MessagesConfig.PREFIX + \"&7Java Commands: &e{count}\";\n" +
+               "        MessagesConfig.RELOAD_JAVA_PLACEHOLDERS = MessagesConfig.PREFIX + \"&7Java Placeholders: &e{count}\";\n" +
+               "\n" +
+               "        // Updates\n" +
+               "        MessagesConfig.UPDATE_LATEST = MessagesConfig.PREFIX + \"&aLatest version! ({version})\";\n" +
+               "        MessagesConfig.UPDATE_AVAILABLE = MessagesConfig.PREFIX + \"&cNew version: {version}\";\n" +
+               "\n" +
+               "        // /api-item\n" +
+               "        MessagesConfig.API_HEADER = MessagesConfig.PREFIX + \"&6=== Java API ===\";\n" +
+               "        MessagesConfig.API_GIVE_SELF = MessagesConfig.PREFIX + \"&aGiven: &e{item}\";\n" +
+               "        MessagesConfig.API_LIST_EMPTY = MessagesConfig.PREFIX + \"&cNo Java API items\";\n" +
+               "\n" +
+               "        // Cooldowns\n" +
+               "        MessagesConfig.COOLDOWN = MessagesConfig.PREFIX + \"&cWait {seconds}s!\";\n" +
+               "\n" +
+               "        // Actions\n" +
+               "        MessagesConfig.ACTION_HEAL = \"&a+{amount} HP\";\n" +
+               "        MessagesConfig.ACTION_TELEPORT = \"&dTeleported!\";\n" +
+               "        MessagesConfig.ACTION_GIVE = \"&a+{amount} {material}\";\n" +
+               "        MessagesConfig.ACTION_REMOVE = \"&c-{amount} {material}\";\n" +
+               "\n" +
+               "        // Heal\n" +
+               "        MessagesConfig.HEAL_SELF = MessagesConfig.PREFIX + \"&aHealed!\";\n" +
+               "        MessagesConfig.HEAL_OTHER = MessagesConfig.PREFIX + \"&aHealed {player}\";\n" +
+               "\n" +
+               "        // Teleport\n" +
+               "        MessagesConfig.TELEPORT_SELF = MessagesConfig.PREFIX + \"&bTeleported to {player}\";\n" +
+               "\n" +
+               "        // Fly\n" +
+               "        MessagesConfig.FLY_ON = MessagesConfig.PREFIX + \"&aFly enabled!\";\n" +
+               "        MessagesConfig.FLY_OFF = MessagesConfig.PREFIX + \"&cFly disabled!\";\n" +
+               "\n" +
+               "        // Gamemode\n" +
+               "        MessagesConfig.GAMEMODE_SURVIVAL = MessagesConfig.PREFIX + \"&aSurvival mode\";\n" +
+               "        MessagesConfig.GAMEMODE_CREATIVE = MessagesConfig.PREFIX + \"&aCreative mode\";\n" +
+               "        MessagesConfig.GAMEMODE_ADVENTURE = MessagesConfig.PREFIX + \"&aAdventure mode\";\n" +
+               "        MessagesConfig.GAMEMODE_SPECTATOR = MessagesConfig.PREFIX + \"&aSpectator mode\";\n" +
+               "\n" +
+               "        // Berserk\n" +
+               "        MessagesConfig.BERSERK_ENABLED = MessagesConfig.PREFIX + \"&4BERSERK!\";\n" +
+               "        MessagesConfig.BERSERK_DISABLED = MessagesConfig.PREFIX + \"&7Berserk off.\";\n" +
+               "\n" +
+               "        // God mode\n" +
+               "        MessagesConfig.GOD_ON = MessagesConfig.PREFIX + \"&6God mode for {seconds}s!\";\n" +
+               "        MessagesConfig.GOD_OFF = MessagesConfig.PREFIX + \"&7God mode off.\";\n" +
+               "\n" +
+               "        // Invisible\n" +
+               "        MessagesConfig.INVISIBLE_ON = MessagesConfig.PREFIX + \"&7Invisible!\";\n" +
+               "        MessagesConfig.INVISIBLE_OFF = MessagesConfig.PREFIX + \"&7Visible.\";\n" +
+               "\n" +
+               "        // Speed\n" +
+               "        MessagesConfig.SPEED_ON = MessagesConfig.PREFIX + \"&bSpeed up!\";\n" +
+               "        MessagesConfig.SPEED_OFF = MessagesConfig.PREFIX + \"&7Normal speed.\";\n" +
+               "\n" +
+               "        // Feed\n" +
+               "        MessagesConfig.FEED_SELF = MessagesConfig.PREFIX + \"&aFed!\";\n" +
+               "        MessagesConfig.FEED_OTHER = MessagesConfig.PREFIX + \"&aFed {player}\";\n" +
+               "\n" +
+               "        // XP\n" +
+               "        MessagesConfig.XP_GIVEN = MessagesConfig.PREFIX + \"+{amount} levels\";\n" +
+               "\n" +
+               "        // Chat\n" +
+               "        MessagesConfig.CHAT_CLEARED = MessagesConfig.PREFIX + \"&aChat cleared!\";\n" +
+               "\n" +
+               "        // Stats\n" +
+               "        MessagesConfig.STATS_HEADER = \"&6=== Stats ===\";\n" +
+               "        MessagesConfig.STATS_HEALTH = \"&7HP: &c{health}/{max}\";\n" +
+               "        MessagesConfig.STATS_FOOD = \"&7Food: &e{food}\";\n" +
+               "        MessagesConfig.STATS_LEVEL = \"&7Level: &a{level}\";\n" +
+               "        MessagesConfig.STATS_WORLD = \"&7World: &b{world}\";\n" +
+               "        MessagesConfig.STATS_POSITION = \"&7Pos: &f{x} {y} {z}\";\n" +
+               "        MessagesConfig.STATS_GAMEMODE = \"&7Mode: &d{gamemode}\";\n" +
+               "        MessagesConfig.STATS_FOOTER = \"&6=========\";\n" +
+               "\n" +
+               "        // Errors\n" +
+               "        MessagesConfig.ERROR_COMMAND = MessagesConfig.PREFIX + \"&cError: {error}\";\n" +
+               "        MessagesConfig.ERROR_ITEM = MessagesConfig.PREFIX + \"&cItem error: {error}\";\n" +
+               "    }\n" +
+               "}\n";
     }
 
     private void saveResourceItems() {
