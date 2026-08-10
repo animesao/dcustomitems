@@ -1,0 +1,30 @@
+# ============================================
+# Shop Module
+# ============================================
+name: "Магазин"
+version: "1.0"
+enabled: true
+
+# Команды модуля
+commands:
+  - shop
+
+# Права
+permissions:
+  - shop.use
+  - shop.admin
+
+# Меню
+menu:
+  title: "&6Магазин"
+  size: 27
+  fill:
+    material: GRAY_STAINED_GLASS_PANE
+    name: " "
+  items:
+    11:
+      item: diamond
+    13:
+      item: emerald
+    15:
+      item: gold

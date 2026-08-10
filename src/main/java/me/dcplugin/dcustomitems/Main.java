@@ -7,6 +7,7 @@ import me.dcplugin.dcustomitems.api.ItemRegistry;
 import me.dcplugin.dcustomitems.api.commands.CustomCommand;
 import me.dcplugin.dcustomitems.api.commands.CustomCommandExecutor;
 import me.dcplugin.dcustomitems.api.gui.GUIManager;
+import me.dcplugin.dcustomitems.api.modules.ModuleManager;
 import me.dcplugin.dcustomitems.api.config.MessagesConfig;
 import me.dcplugin.dcustomitems.api.database.DatabaseManager;
 import me.dcplugin.dcustomitems.api.placeholders.PlaceholderManager;
@@ -45,6 +46,7 @@ public class Main extends JavaPlugin {
     private DatabaseManager databaseManager;
     private PlaceholderManager placeholderManager;
     private GUIManager guiManager;
+    private ModuleManager moduleManager;
 
     @Override
     public void onEnable() {
@@ -74,6 +76,9 @@ public class Main extends JavaPlugin {
             
             guiManager = new GUIManager(this);
             guiManager.loadAll();
+            
+            moduleManager = new ModuleManager(this);
+            moduleManager.loadAll();
 
             Bukkit.getScheduler().runTaskLater(this, () -> {
                 CustomItemsCommand command = new CustomItemsCommand(this);
@@ -311,6 +316,7 @@ public class Main extends JavaPlugin {
     public DatabaseManager getDatabaseManager() { return databaseManager; }
     public PlaceholderManager getPlaceholderManager() { return placeholderManager; }
     public GUIManager getGUIManager() { return guiManager; }
+    public ModuleManager getModuleManager() { return moduleManager; }
 
     /**
      * Register all custom commands with the Bukkit server

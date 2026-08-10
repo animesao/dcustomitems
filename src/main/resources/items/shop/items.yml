@@ -1,0 +1,39 @@
+# ============================================
+# Shop Items
+# ============================================
+items:
+  diamond:
+    material: DIAMOND
+    name: "&bАлмаз"
+    lore:
+      - ""
+      - "&7Купить 1 алмаз"
+      - "&7Цена: &a100$"
+      - ""
+    price: 100
+    command: "give %player% diamond 1"
+    message: "&aВы купили алмаз!"
+
+  emerald:
+    material: EMERALD
+    name: "&aИзумруд"
+    lore:
+      - ""
+      - "&7Купить 1 изумруд"
+      - "&7Цена: &a150$"
+      - ""
+    price: 150
+    command: "give %player% emerald 1"
+    message: "&aВы купили изумруд!"
+
+  gold:
+    material: GOLD_INGOT
+    name: "&6Золото"
+    lore:
+      - ""
+      - "&7Купить 1 золото"
+      - "&7Цена: &a50$"
+      - ""
+    price: 50
+    command: "give %player% gold_ingot 1"
+    message: "&aВы купили золото!"
