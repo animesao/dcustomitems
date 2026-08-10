@@ -391,45 +391,14 @@ public class Main extends JavaPlugin {
                 }
             }
             
-            // Try to register using reflection
-            boolean registered = false;
-            
-            // Try 3-arg register: register(String fallbackPrefix, String label, Command command)
+            // Register using 2-arg method (no namespace prefix)
             try {
-                java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", String.class, String.class, org.bukkit.command.Command.class);
-                registerMethod.invoke(commandMap, "dcustomitems", name, command);
-                registered = true;
-                getLogger().info("[API] ✅ Registered (3-arg): /" + name);
-            } catch (NoSuchMethodException e) {
-                getLogger().info("[API] 3-arg register not found, trying 2-arg...");
-            }
-            
-            // Try 2-arg register: register(String fallbackPrefix, Command command)
-            if (!registered) {
-                try {
-                    java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", String.class, org.bukkit.command.Command.class);
-                    registerMethod.invoke(commandMap, "dcustomitems", command);
-                    registered = true;
-                    getLogger().info("[API] ✅ Registered (2-arg): /" + name);
-                } catch (NoSuchMethodException e) {
-                    getLogger().info("[API] 2-arg register not found, trying 1-arg...");
-                }
-            }
-            
-            // Try 1-arg register: register(Command command)
-            if (!registered) {
-                try {
-                    java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", org.bukkit.command.Command.class);
-                    registerMethod.invoke(commandMap, command);
-                    registered = true;
-                    getLogger().info("[API] ✅ Registered (1-arg): /" + name);
-                } catch (NoSuchMethodException e) {
-                    getLogger().info("[API] 1-arg register not found");
-                }
-            }
-            
-            if (!registered) {
-                getLogger().warning("[API] ❌ Could not register /" + name + " - no suitable register method found");
+                java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", String.class, org.bukkit.command.Command.class);
+                registerMethod.invoke(commandMap, "dcustomitems", command);
+                getLogger().info("[API] ✅ Registered command: /" + name);
+            } catch (Exception e) {
+                getLogger().warning("[API] ❌ Failed to register /" + name + ": " + e.getMessage());
+                e.printStackTrace();
             }
             
         } catch (Exception e) {
