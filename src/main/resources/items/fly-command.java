@@ -16,9 +16,9 @@ import java.util.List;
  * 
  * Право: dci.command.fly
  */
-public class FlyCommand extends CustomCommand {
+public class fly_commandItem extends CustomCommand {
 
-    public FlyCommand() {
+    public fly_commandItem() {
         super(
             "fly",           // ID команды
             "Включить/выключить полёт",  // Описание
