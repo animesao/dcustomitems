@@ -148,6 +148,9 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
                 int cmds = plugin.getApiItemRegistry().getCommandCount();
                 int phs = plugin.getApiItemRegistry().getPlaceholderCount();
 
+                // Re-register custom commands with server
+                plugin.registerCustomCommands();
+
                 sender.sendMessage(MessagesConfig.colorize(MessagesConfig.RELOAD_SUCCESS));
                 sender.sendMessage(MessagesConfig.format(MessagesConfig.RELOAD_YAML, "{count}", String.valueOf(plugin.getItemHandler().getAllCustomItems().size())));
                 sender.sendMessage(MessagesConfig.format(MessagesConfig.RELOAD_JAVA_ITEMS, "{count}", String.valueOf(items)));

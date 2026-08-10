@@ -309,7 +309,7 @@ public class Main extends JavaPlugin {
     /**
      * Register all custom commands with the Bukkit server
      */
-    private void registerCustomCommands() {
+    public void registerCustomCommands() {
         if (apiItemRegistry == null) return;
         
         CustomCommandExecutor executor = new CustomCommandExecutor(apiItemRegistry);
