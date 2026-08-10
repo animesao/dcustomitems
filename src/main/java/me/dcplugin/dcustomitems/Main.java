@@ -345,21 +345,35 @@ public class Main extends JavaPlugin {
             // Get CraftServer class
             Class<?> craftServerClass = getServer().getClass();
             
-            // Get command map via reflection
-            java.lang.reflect.Method getCommandMap = craftServerClass.getMethod("getCommandMap");
-            Object commandMap = getCommandMap.invoke(getServer());
+            // Try to get command map
+            java.lang.reflect.Method getCommandMapMethod = craftServerClass.getMethod("getCommandMap");
+            Object commandMap = getCommandMapMethod.invoke(getServer());
             
-            // Create command
+            if (commandMap == null) {
+                getLogger().warning("[API] Command map is null for /" + name);
+                return;
+            }
+            
+            // Create command with proper implementations
             org.bukkit.command.Command command = new org.bukkit.command.Command(name) {
                 @Override
                 public boolean execute(CommandSender sender, String label, String[] args) {
-                    return executor.onCommand(sender, this, label, args);
+                    try {
+                        return executor.onCommand(sender, this, label, args);
+                    } catch (Exception e) {
+                        getLogger().warning("Error executing command: " + e.getMessage());
+                        return false;
+                    }
                 }
                 
                 @Override
                 public java.util.List<String> tabComplete(CommandSender sender, String alias, String[] args) {
-                    if (executor instanceof TabCompleter) {
-                        return ((TabCompleter) executor).onTabComplete(sender, this, alias, args);
+                    try {
+                        if (executor instanceof TabCompleter) {
+                            return ((TabCompleter) executor).onTabComplete(sender, this, alias, args);
+                        }
+                    } catch (Exception e) {
+                        // ignore
                     }
                     return java.util.Collections.emptyList();
                 }
@@ -367,25 +381,57 @@ public class Main extends JavaPlugin {
             
             command.setPermission("dci.command." + name);
             command.setDescription("Custom command: " + name);
+            command.setUsage("/" + name);
             
-            // Register to command map - try different method signatures
-            try {
-                // Paper 1.21+ method
-                java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", String.class, org.bukkit.command.Command.class);
-                registerMethod.invoke(commandMap, "dcustomitems", command);
-            } catch (NoSuchMethodException e) {
-                // Try alternative method signature
-                try {
-                    java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", String.class, String.class, org.bukkit.command.Command.class);
-                    registerMethod.invoke(commandMap, "dcustomitems", name, command);
-                } catch (NoSuchMethodException e2) {
-                    // Last resort - try with just name
-                    java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", org.bukkit.command.Command.class);
-                    registerMethod.invoke(commandMap, command);
+            // Log all methods of commandMap class
+            getLogger().info("[API] CommandMap class: " + commandMap.getClass().getName());
+            for (java.lang.reflect.Method m : commandMap.getClass().getMethods()) {
+                if (m.getName().equals("register")) {
+                    getLogger().info("[API] Found register method: " + m.toString());
                 }
             }
             
-            getLogger().info("[API] ✅ Registered command via reflection: /" + name);
+            // Try to register using reflection
+            boolean registered = false;
+            
+            // Try 3-arg register: register(String fallbackPrefix, String label, Command command)
+            try {
+                java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", String.class, String.class, org.bukkit.command.Command.class);
+                registerMethod.invoke(commandMap, "dcustomitems", name, command);
+                registered = true;
+                getLogger().info("[API] ✅ Registered (3-arg): /" + name);
+            } catch (NoSuchMethodException e) {
+                getLogger().info("[API] 3-arg register not found, trying 2-arg...");
+            }
+            
+            // Try 2-arg register: register(String fallbackPrefix, Command command)
+            if (!registered) {
+                try {
+                    java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", String.class, org.bukkit.command.Command.class);
+                    registerMethod.invoke(commandMap, "dcustomitems", command);
+                    registered = true;
+                    getLogger().info("[API] ✅ Registered (2-arg): /" + name);
+                } catch (NoSuchMethodException e) {
+                    getLogger().info("[API] 2-arg register not found, trying 1-arg...");
+                }
+            }
+            
+            // Try 1-arg register: register(Command command)
+            if (!registered) {
+                try {
+                    java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", org.bukkit.command.Command.class);
+                    registerMethod.invoke(commandMap, command);
+                    registered = true;
+                    getLogger().info("[API] ✅ Registered (1-arg): /" + name);
+                } catch (NoSuchMethodException e) {
+                    getLogger().info("[API] 1-arg register not found");
+                }
+            }
+            
+            if (!registered) {
+                getLogger().warning("[API] ❌ Could not register /" + name + " - no suitable register method found");
+            }
+            
         } catch (Exception e) {
             getLogger().warning("[API] ❌ Reflection registration failed for /" + name + ": " + e.getMessage());
             e.printStackTrace();
