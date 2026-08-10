@@ -2,6 +2,7 @@ package me.dcplugin.dcustomitems.api.modules;
 
 import me.dcplugin.dcustomitems.Main;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.*;
@@ -94,6 +95,13 @@ public abstract class Module {
         disable();
         loadConfig();
         enable();
+    }
+
+    /**
+     * Открыть меню модуля. Меню-модули могут переопределить этот метод.
+     */
+    public boolean openMenu(Player player, String menuId) {
+        return false;
     }
 
     // ===== АБСТРАКТНЫЕ МЕТОДЫ =====

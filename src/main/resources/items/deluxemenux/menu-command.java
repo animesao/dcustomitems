@@ -94,9 +94,7 @@ public class menu_commandItem extends CustomCommand {
         if (plugin == null) return;
         
         Module module = plugin.getModuleManager().getModule("deluxemenux");
-        if (module instanceof deluxemenuxModule) {
-            ((deluxemenuxModule) module).openMenu(player, menuId);
-        }
+        module.openMenu(player, menuId);
     }
 
     @Override

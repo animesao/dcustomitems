@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.320.269-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.320.270-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/github/license/animesao/dcustomitems-purple?style=for-the-badge" alt="License">
 </p>
 
@@ -45,7 +45,7 @@
 ```bash
 # Download latest release
 cd ~/server/plugins
-curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.320.269/DC-CustomItems-1.320.269.jar
+curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.320.270/DC-CustomItems-1.320.270.jar
 
 # Restart server
 ./restart.sh
@@ -53,7 +53,7 @@ curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/do
 
 ### Manual Install
 
-1. Download `DC-CustomItems-1.320.269.jar` from [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.320.269)
+1. Download `DC-CustomItems-1.320.270.jar` from [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.320.270)
 2. Place in `plugins/` folder
 3. Restart server
 

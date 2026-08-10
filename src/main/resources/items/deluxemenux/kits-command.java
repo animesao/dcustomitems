@@ -40,12 +40,9 @@ public class kits_commandItem extends CustomCommand {
         }
 
         Module module = plugin.getModuleManager().getModule("deluxemenux");
-        if (!(module instanceof deluxemenuxModule)) {
-            msg(sender, "&cМодуль DeluxeMenuX не загружен!");
-            return true;
+        if (!module.openMenu((Player) sender, "kits")) {
+            msg(sender, "&cМеню kits не найдено!");
         }
-
-        ((deluxemenuxModule) module).openMenu((Player) sender, "kits");
         return true;
     }
 
