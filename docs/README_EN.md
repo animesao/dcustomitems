@@ -1,6 +1,6 @@
 # DC-CustomItems — Complete Documentation
 
-**Documentation version:** 1.320.278
+**Documentation version:** 1.320.280
 **Minecraft:** Paper/Spigot 1.21.x
 **Server Java:** Java 21 is recommended for Paper 1.21.11; Java 17+ is required to build the project.
 
@@ -75,7 +75,7 @@ Important: DC-CustomItems compiles user Java files while the server is running. 
 
 ```bash
 cd ~/test/plugins
-curl -fL -o dcustomitems.jar "https://github.com/animesao/dcustomitems/releases/download/v1.320.278/DC-CustomItems-1.320.278.jar"
+curl -fL -o dcustomitems.jar "https://github.com/animesao/dcustomitems/releases/download/v1.320.280/DC-CustomItems-1.320.280.jar"
 ```
 
 Replace `~/test/plugins` with your server's `plugins/` directory when needed.
@@ -698,7 +698,7 @@ Do not run heavy SQL every tick and never delete `data.db` without a backup.
 
 Default message fields live in `MessagesConfig.java` inside the JAR. On first start, the plugin creates `items/messages.java` as a reference template containing message settings.
 
-**Important for version 1.320.278:** the current runtime compiler does not call a `load()` method automatically. Editing `items/messages.java` therefore does not change plugin messages after `/ci reload`; the file is classified as an ordinary Java source file and is not loaded as a message configuration. Keep it as a reference unless you are working on the source project.
+**Important for version 1.320.280:** the current runtime compiler does not call a `load()` method automatically. Editing `items/messages.java` therefore does not change plugin messages after `/ci reload`; the file is classified as an ordinary Java source file and is not loaded as a message configuration. Keep it as a reference unless you are working on the source project.
 
 To change standard messages in the current version, edit `src/main/java/me/dcplugin/dcustomitems/api/config/MessagesConfig.java` in the source project and rebuild the JAR. Editing a file in the server's `plugins/DC-CustomItems/items/` directory is not currently a supported message-configuration mechanism.
 
@@ -747,7 +747,7 @@ Update the JAR:
 ```bash
 dck stop test2
 cd ~/test/plugins
-curl -fL -o dcustomitems.jar "https://github.com/animesao/dcustomitems/releases/download/v1.320.278/DC-CustomItems-1.320.278.jar"
+curl -fL -o dcustomitems.jar "https://github.com/animesao/dcustomitems/releases/download/v1.320.280/DC-CustomItems-1.320.280.jar"
 # clear cache/compiled only when the Java compiler system changed
 rm -rf DC-CustomItems/cache DC-CustomItems/compiled
 dck start test2

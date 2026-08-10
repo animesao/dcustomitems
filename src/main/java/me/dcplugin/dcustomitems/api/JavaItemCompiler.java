@@ -127,10 +127,16 @@ public class JavaItemCompiler {
                 // Файл не изменился - пропускаем компиляцию
                 String fullClassName = PACKAGE + "." + getGeneratedClassName(javaFile);
                 
-                // Пытаемся загрузить из кэша
-                byte[] cachedBytes = loadFromCache(fullClassName);
-                if (cachedBytes != null) {
-                    compiledClasses.put(fullClassName, cachedBytes);
+                // Загружаем из кэша весь класс-пакет: основной класс и его
+                // вложенные классы (например, Outer$MenuItem). Раньше здесь
+                // загружался только Outer.class, из-за чего модули с nested
+                // classes падали после рестарта при режиме Skipped.
+                Map<String, byte[]> cachedBundle = loadClassBundleFromCache(
+                    fullClassName,
+                    readFileContent(javaFile)
+                );
+                if (!cachedBundle.isEmpty()) {
+                    compiledClasses.putAll(cachedBundle);
                     ClassType classType = detectClassType(readFileContent(javaFile));
                     addToResult(result, fullClassName, classType);
                     skipped++;
@@ -392,14 +398,55 @@ public class JavaItemCompiler {
         } catch (Exception ignored) {}
     }
 
-    private byte[] loadFromCache(String className) {
+    private Map<String, byte[]> loadClassBundleFromCache(String mainClassName, String sourceCode) {
+        Map<String, byte[]> bundle = new LinkedHashMap<>();
         try {
-            Path cacheFile = cacheDir.resolve(className.replace('.', '/') + ".class");
-            if (Files.exists(cacheFile)) {
-                return Files.readAllBytes(cacheFile);
+            Path mainClassPath = cacheDir.resolve(mainClassName.replace('.', '/') + ".class");
+            if (!Files.exists(mainClassPath)) return bundle;
+
+            String classPrefix = mainClassName + "$";
+            Path packageDirectory = mainClassPath.getParent();
+            if (packageDirectory == null || !Files.exists(packageDirectory)) return bundle;
+
+            try (java.util.stream.Stream<Path> paths = Files.walk(packageDirectory)) {
+                paths.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".class"))
+                    .forEach(path -> {
+                        String relative = cacheDir.relativize(path).toString()
+                            .replace(File.separatorChar, '.')
+                            .replace('/', '.');
+                        String className = relative.substring(0, relative.length() - ".class".length());
+                        if (className.equals(mainClassName) || className.startsWith(classPrefix)) {
+                            try {
+                                bundle.put(className, Files.readAllBytes(path));
+                            } catch (IOException ignored) {
+                                // The whole bundle will be treated as unavailable below.
+                            }
+                        }
+                    });
             }
-        } catch (Exception ignored) {}
-        return null;
+
+            // A legacy cache can contain Outer.class but miss Outer$Inner.class.
+            // Validate every named nested declaration before accepting Skipped.
+            java.util.regex.Matcher nestedMatcher = java.util.regex.Pattern
+                .compile("\\b(?:class|interface|enum|record)\\s+(\\w+)")
+                .matcher(sourceCode);
+            boolean firstDeclaration = true;
+            while (nestedMatcher.find()) {
+                if (firstDeclaration) {
+                    firstDeclaration = false;
+                    continue;
+                }
+                String nestedClassName = mainClassName + "$" + nestedMatcher.group(1);
+                if (!bundle.containsKey(nestedClassName)) {
+                    bundle.clear();
+                    return bundle;
+                }
+            }
+        } catch (Exception ignored) {
+            bundle.clear();
+        }
+        return bundle;
     }
 
     private void saveToCache(String className, byte[] bytes) {
