@@ -6,7 +6,6 @@ import me.dcplugin.dcustomitems.api.ItemAPI;
 import me.dcplugin.dcustomitems.api.ItemRegistry;
 import me.dcplugin.dcustomitems.api.commands.CustomCommand;
 import me.dcplugin.dcustomitems.api.commands.CustomCommandExecutor;
-import me.dcplugin.dcustomitems.api.gui.GUIManager;
 import me.dcplugin.dcustomitems.api.modules.ModuleManager;
 import me.dcplugin.dcustomitems.api.config.MessagesConfig;
 import me.dcplugin.dcustomitems.api.database.DatabaseManager;
@@ -45,7 +44,6 @@ public class Main extends JavaPlugin {
     private ItemRegistry apiItemRegistry;
     private DatabaseManager databaseManager;
     private PlaceholderManager placeholderManager;
-    private GUIManager guiManager;
     private ModuleManager moduleManager;
 
     @Override
@@ -73,9 +71,6 @@ public class Main extends JavaPlugin {
             ItemAPI.init(this);
             apiItemRegistry = new ItemRegistry(this);
             apiItemRegistry.loadAll();
-            
-            guiManager = new GUIManager(this);
-            guiManager.loadAll();
             
             moduleManager = new ModuleManager(this);
             moduleManager.loadAll();
@@ -315,7 +310,6 @@ public class Main extends JavaPlugin {
     public ItemRegistry getApiItemRegistry() { return apiItemRegistry; }
     public DatabaseManager getDatabaseManager() { return databaseManager; }
     public PlaceholderManager getPlaceholderManager() { return placeholderManager; }
-    public GUIManager getGUIManager() { return guiManager; }
     public ModuleManager getModuleManager() { return moduleManager; }
 
     /**
