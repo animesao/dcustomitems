@@ -9,9 +9,12 @@ items/deluxemenux/
 ├── config.yml          # Настройки модуля
 ├── deluxemenux.java    # Основной класс
 ├── menu-command.java   # Команда /menu
+├── kits-command.java   # Команда /kits
+├── shop-command.java   # Команда /shop
 ├── README.md           # Документация
 └── menus/              # Папка с меню
-    ├── shop.yml        # Меню магазина
+    ├── shop.yml        # Меню магазина, открывается через /shop
+    ├── kits.yml        # Меню наборов, открывается через /kits
     ├── main.yml        # Главное меню
     └── ...
 ```
@@ -215,6 +218,24 @@ items:
 | `/menu <id>` | Открыть меню по ID |
 | `/menu list` | Список всех меню |
 | `/menu reload` | Перезагрузить меню |
+| `/kits` | Открыть меню наборов `menus/kits.yml` |
+| `/kit` | Алиас команды `/kits` |
+| `/shop` | Открыть магазин `menus/shop.yml` |
+
+Права:
+
+```text
+deluxemenux.use       # /menu, /kits и /shop
+deluxemenux.admin     # /menu reload
+deluxemenux.kit.start # стартовый набор
+deluxemenux.kit.iron  # железный набор
+deluxemenux.kit.diamond
+deluxemenux.shop.diamond
+deluxemenux.shop.emerald
+deluxemenux.shop.gold
+```
+
+Файлы `kits.yml` и `shop.yml` создаются автоматически только при их отсутствии. Если ты изменишь YAML, `/ci reload` не перезапишет его.
 
 ## 🔧 Плейсхолдеры
 

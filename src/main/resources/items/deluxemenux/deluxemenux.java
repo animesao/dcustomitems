@@ -65,8 +65,10 @@ public class deluxemenuxModule extends Module implements Listener {
         File menusDir = new File(folder, "menus");
         if (!menusDir.exists()) {
             menusDir.mkdirs();
-            createDefaultMenus(menusDir);
         }
+
+        // Создаём только отсутствующие примеры. Пользовательские YAML не перезаписываются.
+        createDefaultMenus(menusDir);
         
         File[] menuFiles = menusDir.listFiles((dir, name) -> name.endsWith(".yml"));
         if (menuFiles == null) return;
@@ -144,11 +146,15 @@ public class deluxemenuxModule extends Module implements Listener {
      * Создать дефолтные меню
      */
     private void createDefaultMenus(File menusDir) {
-        // Меню магазина
+        // Создаём только отсутствующие файлы, чтобы не затирать настройки владельца.
+        if (!new File(menusDir, "shop.yml").exists()) createShopMenu(menusDir);
+        if (!new File(menusDir, "main.yml").exists()) createMainMenu(menusDir);
+        if (!new File(menusDir, "kits.yml").exists()) createKitsMenu(menusDir);
+    }
+
+    private void createShopCommandMenu(File menusDir) {
+        if (new File(menusDir, "shop.yml").exists()) return;
         createShopMenu(menusDir);
-        
-        // Главное меню
-        createMainMenu(menusDir);
     }
 
     private void createShopMenu(File menusDir) {
@@ -204,6 +210,78 @@ public class deluxemenuxModule extends Module implements Listener {
         } catch (Exception e) {
             plugin.getLogger().warning("[DeluxeMenuX] Error creating shop menu");
         }
+    }
+
+    private void createKitsMenu(File menusDir) {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("title", "&6&lНаборы");
+        config.set("size", 27);
+        config.set("open-sound", "UI_BUTTON_CLICK");
+        config.set("close-sound", "UI_BUTTON_CLICK");
+        config.set("fill.material", "BLACK_STAINED_GLASS_PANE");
+        config.set("fill.name", " ");
+        config.set("items.11.material", "STONE_SWORD");
+        config.set("items.11.name", "&a&lСтартовый набор");
+        config.set("items.11.lore", Arrays.asList("", "&7Получить стартовый комплект", "", "&eНажмите, чтобы получить"));
+        config.set("items.11.permission", "deluxemenux.kit.start");
+        config.set("items.11.command", "give %player% stone_sword 1");
+        config.set("items.11.message", "&aСтартовый набор выдан!");
+        config.set("items.11.sound", "ENTITY_PLAYER_LEVELUP");
+        config.set("items.13.material", "IRON_CHESTPLATE");
+        config.set("items.13.name", "&b&lЖелезный набор");
+        config.set("items.13.lore", Arrays.asList("", "&7Железная броня и инструменты", "", "&eНажмите, чтобы получить"));
+        config.set("items.13.permission", "deluxemenux.kit.iron");
+        config.set("items.13.command", "give %player% iron_chestplate 1");
+        config.set("items.13.message", "&bЖелезный набор выдан!");
+        config.set("items.13.sound", "ENTITY_PLAYER_LEVELUP");
+        config.set("items.15.material", "DIAMOND");
+        config.set("items.15.name", "&b&lАлмазный набор");
+        config.set("items.15.lore", Arrays.asList("", "&7Премиальный набор", "", "&eНажмите, чтобы получить"));
+        config.set("items.15.permission", "deluxemenux.kit.diamond");
+        config.set("items.15.command", "give %player% diamond 3");
+        config.set("items.15.message", "&bАлмазный набор выдан!");
+        config.set("items.15.sound", "ENTITY_PLAYER_LEVELUP");
+        config.set("items.22.material", "BARRIER");
+        config.set("items.22.name", "&cЗакрыть");
+        config.set("items.22.close", true);
+        try { config.save(new File(menusDir, "kits.yml")); }
+        catch (Exception e) { plugin.getLogger().warning("[DeluxeMenuX] Error creating kits menu"); }
+    }
+
+    private void createShopCommandMenu(File menusDir) {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("title", "&6&lМагазин");
+        config.set("size", 27);
+        config.set("open-sound", "UI_BUTTON_CLICK");
+        config.set("close-sound", "UI_BUTTON_CLICK");
+        config.set("fill.material", "GRAY_STAINED_GLASS_PANE");
+        config.set("fill.name", " ");
+        config.set("items.10.material", "DIAMOND");
+        config.set("items.10.name", "&bАлмаз");
+        config.set("items.10.lore", Arrays.asList("", "&7Купить 1 алмаз", "&7Цена: &e100 монет", "", "&eНажмите, чтобы купить"));
+        config.set("items.10.permission", "deluxemenux.shop.diamond");
+        config.set("items.10.command", "give %player% diamond 1");
+        config.set("items.10.message", "&aВы купили алмаз!");
+        config.set("items.10.sound", "ENTITY_PLAYER_LEVELUP");
+        config.set("items.13.material", "EMERALD");
+        config.set("items.13.name", "&aИзумруд");
+        config.set("items.13.lore", Arrays.asList("", "&7Купить 1 изумруд", "&7Цена: &e250 монет", "", "&eНажмите, чтобы купить"));
+        config.set("items.13.permission", "deluxemenux.shop.emerald");
+        config.set("items.13.command", "give %player% emerald 1");
+        config.set("items.13.message", "&aВы купили изумруд!");
+        config.set("items.13.sound", "ENTITY_PLAYER_LEVELUP");
+        config.set("items.16.material", "GOLD_INGOT");
+        config.set("items.16.name", "&6Золотой слиток");
+        config.set("items.16.lore", Arrays.asList("", "&7Купить 1 золотой слиток", "&7Цена: &e150 монет", "", "&eНажмите, чтобы купить"));
+        config.set("items.16.permission", "deluxemenux.shop.gold");
+        config.set("items.16.command", "give %player% gold_ingot 1");
+        config.set("items.16.message", "&aВы купили золото!");
+        config.set("items.16.sound", "ENTITY_PLAYER_LEVELUP");
+        config.set("items.22.material", "BARRIER");
+        config.set("items.22.name", "&cЗакрыть");
+        config.set("items.22.close", true);
+        try { config.save(new File(menusDir, "shop.yml")); }
+        catch (Exception e) { plugin.getLogger().warning("[DeluxeMenuX] Error creating shop menu"); }
     }
 
     private void createMainMenu(File menusDir) {

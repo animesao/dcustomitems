@@ -1,0 +1,57 @@
+title: "&6&lНаборы"
+size: 27
+open-sound: "UI_BUTTON_CLICK"
+close-sound: "UI_BUTTON_CLICK"
+
+fill:
+  material: "BLACK_STAINED_GLASS_PANE"
+  name: " "
+
+items:
+  11:
+    material: "STONE_SWORD"
+    name: "&a&lСтартовый набор"
+    lore:
+      - ""
+      - "&7Каменный меч, кирка и еда"
+      - "&7Получить стартовый комплект"
+      - ""
+      - "&eНажмите, чтобы получить"
+    permission: "deluxemenux.kit.start"
+    command: "give %player% stone_sword 1"
+    message: "&aСтартовый набор выдан!"
+    sound: "ENTITY_PLAYER_LEVELUP"
+
+  13:
+    material: "IRON_CHESTPLATE"
+    name: "&b&lЖелезный набор"
+    lore:
+      - ""
+      - "&7Железная броня и инструменты"
+      - ""
+      - "&eНажмите, чтобы получить"
+    permission: "deluxemenux.kit.iron"
+    command: "give %player% iron_chestplate 1"
+    message: "&bЖелезный набор выдан!"
+    sound: "ENTITY_PLAYER_LEVELUP"
+
+  15:
+    material: "DIAMOND"
+    name: "&b&lАлмазный набор"
+    lore:
+      - ""
+      - "&7Премиальный алмазный набор"
+      - ""
+      - "&eНажмите, чтобы получить"
+    permission: "deluxemenux.kit.diamond"
+    command: "give %player% diamond 3"
+    message: "&bАлмазный набор выдан!"
+    sound: "ENTITY_PLAYER_LEVELUP"
+
+  22:
+    material: "BARRIER"
+    name: "&cЗакрыть"
+    lore:
+      - "&7Закрыть меню наборов"
+    close: true
+    sound: "UI_BUTTON_CLICK"

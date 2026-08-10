@@ -18,8 +18,17 @@ settings:
 commands:
   - menu
   - deluxemenu
+  - kits
+  - kit
+  - shop
 
 # Права
 permissions:
   - deluxemenux.use
   - deluxemenux.admin
+  - deluxemenux.kit.start
+  - deluxemenux.kit.iron
+  - deluxemenux.kit.diamond
+  - deluxemenux.shop.diamond
+  - deluxemenux.shop.emerald
+  - deluxemenux.shop.gold

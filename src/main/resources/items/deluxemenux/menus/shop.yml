@@ -1,0 +1,59 @@
+title: "&6&lМагазин"
+size: 27
+open-sound: "UI_BUTTON_CLICK"
+close-sound: "UI_BUTTON_CLICK"
+
+fill:
+  material: "GRAY_STAINED_GLASS_PANE"
+  name: " "
+
+items:
+  10:
+    material: "DIAMOND"
+    name: "&bАлмаз"
+    lore:
+      - ""
+      - "&7Купить 1 алмаз"
+      - "&7Цена: &e100 монет"
+      - ""
+      - "&eНажмите, чтобы купить"
+    permission: "deluxemenux.shop.diamond"
+    command: "give %player% diamond 1"
+    message: "&aВы купили алмаз!"
+    sound: "ENTITY_PLAYER_LEVELUP"
+
+  13:
+    material: "EMERALD"
+    name: "&aИзумруд"
+    lore:
+      - ""
+      - "&7Купить 1 изумруд"
+      - "&7Цена: &e250 монет"
+      - ""
+      - "&eНажмите, чтобы купить"
+    permission: "deluxemenux.shop.emerald"
+    command: "give %player% emerald 1"
+    message: "&aВы купили изумруд!"
+    sound: "ENTITY_PLAYER_LEVELUP"
+
+  16:
+    material: "GOLD_INGOT"
+    name: "&6Золотой слиток"
+    lore:
+      - ""
+      - "&7Купить 1 золотой слиток"
+      - "&7Цена: &e150 монет"
+      - ""
+      - "&eНажмите, чтобы купить"
+    permission: "deluxemenux.shop.gold"
+    command: "give %player% gold_ingot 1"
+    message: "&aВы купили золото!"
+    sound: "ENTITY_PLAYER_LEVELUP"
+
+  22:
+    material: "BARRIER"
+    name: "&cЗакрыть"
+    lore:
+      - "&7Закрыть магазин"
+    close: true
+    sound: "UI_BUTTON_CLICK"
