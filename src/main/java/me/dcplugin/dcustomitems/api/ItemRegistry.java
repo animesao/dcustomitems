@@ -13,6 +13,7 @@ import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -24,7 +25,7 @@ public class ItemRegistry {
     private final Map<String, CustomPlaceholder> registeredPlaceholders;
     private final Map<String, Module> registeredModules;
     private final JavaItemCompiler compiler;
-    private volatile boolean loading = false;
+    private final AtomicBoolean loading = new AtomicBoolean(false);
 
     public ItemRegistry(Main plugin) {
         this.plugin = plugin;
@@ -58,18 +59,16 @@ public class ItemRegistry {
      * Bukkit/plugin operations are marshalled back to the main thread.
      */
     public CompletableFuture<Void> reloadAsync() {
-        if (loading) {
+        if (!loading.compareAndSet(false, true)) {
             plugin.getLogger().info("[API] Already loading, skipping...");
             return CompletableFuture.completedFuture(null);
         }
-
-        loading = true;
         if (Bukkit.isPrimaryThread()) {
             try {
                 reloadSynchronously();
                 return CompletableFuture.completedFuture(null);
             } finally {
-                loading = false;
+                loading.set(false);
             }
         }
 
@@ -85,29 +84,35 @@ public class ItemRegistry {
             } catch (ExecutionException e) {
                 throw new RuntimeException("Reload failed", e.getCause());
             } finally {
-                loading = false;
+                loading.set(false);
             }
         });
     }
 
     /** Synchronous reload used by /ci reload on the main Bukkit thread. */
     public void reload() {
-        if (!Bukkit.isPrimaryThread()) {
-            try {
+        if (!loading.compareAndSet(false, true)) {
+            plugin.getLogger().info("[API] Already loading, skipping...");
+            return;
+        }
+
+        try {
+            if (!Bukkit.isPrimaryThread()) {
                 Bukkit.getScheduler().callSyncMethod(plugin, () -> {
                     reloadSynchronously();
                     return null;
                 }).get();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IllegalStateException("Reload interrupted", e);
-            } catch (ExecutionException e) {
-                throw new IllegalStateException("Reload failed", e.getCause());
+            } else {
+                reloadSynchronously();
             }
-            return;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Reload interrupted", e);
+        } catch (ExecutionException e) {
+            throw new IllegalStateException("Reload failed", e.getCause());
+        } finally {
+            loading.set(false);
         }
-
-        reloadSynchronously();
     }
 
     private void reloadSynchronously() {
@@ -119,6 +124,9 @@ public class ItemRegistry {
             plugin.getModuleManager().unloadAll();
         }
 
+        // Remove dynamic Bukkit command nodes before dropping the old classloader.
+        // Otherwise a reload can retain command objects backed by stale Java classes.
+        plugin.unregisterCustomCommands();
         for (CustomCommand cmd : registeredCommands.values()) {
             try { cmd.onUnregister(); } catch (Exception ignored) {}
         }
@@ -181,17 +189,9 @@ public class ItemRegistry {
             if (ph != null) registeredPlaceholders.put(ph.getIdentifier(), ph);
         }
 
-        for (String cn : result.commands) {
-            CustomCommand cmd = registeredCommands.get(compilerCommandName(cn));
-            if (cmd != null) {
-                plugin.getLogger().info("[API] Command: /" + cmd.getName());
-            }
+        for (CustomCommand cmd : registeredCommands.values()) {
+            plugin.getLogger().info("[API] Command: /" + cmd.getName());
         }
-    }
-
-    private String compilerCommandName(String fullClassName) {
-        CustomCommand command = compiler.createCommandInstance(fullClassName);
-        return command == null ? "" : command.getName();
     }
 
     private void collectJavaFiles(File directory, List<File> files) {
@@ -257,5 +257,5 @@ public class ItemRegistry {
     public int getModuleCount() { return registeredModules.size(); }
     public JavaItemCompiler getCompiler() { return compiler; }
     public int getCount() { return getItemCount(); }
-    public boolean isLoading() { return loading; }
+    public boolean isLoading() { return loading.get(); }
 }

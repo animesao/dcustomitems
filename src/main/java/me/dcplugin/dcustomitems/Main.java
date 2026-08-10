@@ -21,14 +21,18 @@ import me.dcplugin.dcustomitems.managers.AttributeManager;
 import me.dcplugin.dcustomitems.managers.ArmorSetManager;
 import me.dcplugin.dcustomitems.utils.UpdateChecker;
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 
 public class Main extends JavaPlugin {
 
@@ -47,6 +51,7 @@ public class Main extends JavaPlugin {
     private DatabaseManager databaseManager;
     private PlaceholderManager placeholderManager;
     private ModuleManager moduleManager;
+    private final Set<Command> dynamicCommands = Collections.newSetFromMap(new IdentityHashMap<>());
 
     @Override
     public void onEnable() {
@@ -137,6 +142,7 @@ public class Main extends JavaPlugin {
             getServer().getOnlinePlayers().forEach(effectManager::stopPeriodicEffects);
         }
         if (attributeManager != null) attributeManager.cleanup();
+        unregisterCustomCommands();
         getLogger().info("CustomItems disabled!");
     }
 
@@ -453,8 +459,14 @@ public class Main extends JavaPlugin {
             // Register using 2-arg method (no namespace prefix)
             try {
                 java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", String.class, org.bukkit.command.Command.class);
-                registerMethod.invoke(commandMap, "dcustomitems", command);
-                getLogger().info("[API] ✅ Registered command: /" + name);
+                Object registrationResult = registerMethod.invoke(commandMap, "dcustomitems", command);
+                if (registrationResult instanceof Boolean && (Boolean) registrationResult) {
+                    dynamicCommands.add(command);
+                    getLogger().info("[API] ✅ Registered command: /" + name);
+                } else {
+                    getLogger().warning("[API] ❌ Command name is already occupied: /" + name);
+                }
+
             } catch (Exception e) {
                 getLogger().warning("[API] ❌ Failed to register /" + name + ": " + e.getMessage());
                 e.printStackTrace();
@@ -464,5 +476,58 @@ public class Main extends JavaPlugin {
             getLogger().warning("[API] ❌ Reflection registration failed for /" + name + ": " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /** Remove commands registered dynamically by the Java API before a reload. */
+    public void unregisterCustomCommands() {
+        if (dynamicCommands.isEmpty()) return;
+
+        CommandMap commandMap = null;
+        java.util.Map<?, ?> knownCommands = null;
+        try {
+            java.lang.reflect.Method getCommandMapMethod = getServer().getClass().getMethod("getCommandMap");
+            Object commandMapObject = getCommandMapMethod.invoke(getServer());
+            if (commandMapObject instanceof CommandMap) {
+                commandMap = (CommandMap) commandMapObject;
+                java.lang.reflect.Field knownCommandsField = null;
+                Class<?> type = commandMap.getClass();
+                while (type != null && knownCommandsField == null) {
+                    try {
+                        knownCommandsField = type.getDeclaredField("knownCommands");
+                    } catch (NoSuchFieldException ignored) {
+                        type = type.getSuperclass();
+                    }
+                }
+                if (knownCommandsField != null) {
+                    knownCommandsField.setAccessible(true);
+                    Object value = knownCommandsField.get(commandMap);
+                    if (value instanceof java.util.Map) {
+                        knownCommands = (java.util.Map<?, ?>) value;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            getLogger().warning("[API] Could not inspect dynamic commands: " + e.getMessage());
+        }
+
+        Set<Command> failed = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (Command command : new java.util.ArrayList<>(dynamicCommands)) {
+            boolean removed = false;
+            try {
+                if (knownCommands != null) {
+                    removed = knownCommands.entrySet().removeIf(entry -> entry.getValue() == command);
+                }
+                if (commandMap != null) {
+                    removed = command.unregister(commandMap) || removed;
+                }
+            } catch (Exception e) {
+                removed = false;
+                getLogger().warning("[API] Failed to unregister dynamic command: " + e.getMessage());
+            }
+            if (!removed) failed.add(command);
+        }
+
+        dynamicCommands.clear();
+        dynamicCommands.addAll(failed);
     }
 }
