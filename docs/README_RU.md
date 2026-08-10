@@ -1,254 +1,814 @@
-# DC-CustomItems Документация
+# DC-CustomItems — полная документация
 
-## 📚 Оглавление
+**Версия документации:** 1.320.278
+**Minecraft:** Paper/Spigot 1.21.x
+**Java для сервера:** Java 21 рекомендуется для Paper 1.21.11; Java 17+ требуется для сборки проекта.
 
-- [Обзор](#обзор)
-- [Возможности](#возможности)
-- [Установка](#установка)
-- [Быстрый Старт](#быстрый-старт)
-- [Java Предметы](#java-предметы)
-- [Java Команды](#java-команды)
-- [Java Плейсхолдеры](#java-плейсхолдеры)
-- [Конфигурация Сообщений](#конфигурация-сообщений)
-- [Команды](#команды)
-- [Поддержка](#поддержка)
+DC-CustomItems позволяет создавать кастомные предметы, способности, команды, плейсхолдеры и GUI. Начать можно **без знания Java**: обычные предметы создаются в YAML. Java нужна только для сложных механик, собственных команд и модулей.
 
 ---
 
-## 📖 Обзор
+## 1. С чего начать
 
-DC-CustomItems - плагин для серверов Minecraft (Spigot/Paper 1.20+), который позволяет создавать кастомные предметы, команды и плейсхолдеры на чистом Java.
+Если вы впервые видите YAML и Java, читайте в таком порядке:
 
-**Всё горячо перезагружается!** Просто положи .java файл в папку `items/` и сделай `/ci reload`.
+1. [Установка и первый запуск](GETTING_STARTED_RU.md)
+2. [Основы YAML](YAML_ITEMS_RU.md)
+3. [Команды плагина](COMMANDS_RU.md)
+4. [Сообщения и структура файлов](MESSAGES_DATABASE_RU.md)
+5. [GUI и модули](MODULES_GUI_RU.md)
+6. [Хранение данных: SQLite, MySQL и YAML](DATABASE_RU.md)
+7. [Java с нуля](JAVA_API_RU.md)
+8. [Оптимизация и решение проблем](TROUBLESHOOTING_RU.md)
+9. [Resource pack и модели](RESOURCE_PACK_RU.md)
 
----
-
-## ✨ Возможности
-
-| Функция | Описание |
-|---------|----------|
-| **Java Предметы** | Создавай предметы с способностями |
-| **Java Команды** | Создавай кастомные команды |
-| **Java Плейсхолдеры** | Создавай кастомные плейсхолдеры |
-| **Горячая Перезагрузка** | Обновление без перезапуска |
-| **База Данных** | SQLite для хранения данных |
-| **Кастомные Сообщения** | Редактируй все сообщения |
+Если вы хотите сразу посмотреть рабочие примеры, откройте `src/main/resources/items/` в репозитории. Файлы с префиксом `EXAMPLE-` являются образцами и не должны автоматически загружаться.
 
 ---
 
-## 🚀 Установка
+## 2. Что умеет плагин
+
+### Без программирования
+
+Через YAML можно создавать:
+
+- мечи, топоры, кирки и луки;
+- броню со способностями при надевании и снятии;
+- зелья, еду, свитки и тотемы;
+- эффекты зелий;
+- лечение и урон;
+- частицы и звуки;
+- телепортацию;
+- выдачу и удаление обычных предметов;
+- команды от имени игрока или консоли;
+- кулдауны;
+- ограниченное число использований;
+- права на предметы;
+- кастомные названия, lore и модели.
+
+### С программированием на Java
+
+Через `.java` можно создавать:
+
+- предметы с любыми Bukkit/Paper-событиями;
+- собственные команды и алиасы;
+- плейсхолдеры;
+- периодические эффекты;
+- RPG-классы, квесты, боссы и мини-игры;
+- модули со своими `config.yml`, `items.yml` и GUI;
+- хранение прогресса в SQLite или MySQL;
+
+Важно: DC-CustomItems компилирует пользовательские Java-файлы во время работы сервера. Поэтому запускайте только код, которому доверяете, и делайте резервную копию перед изменениями.
+
+---
+
+## 3. Установка
+
+### Требования
+
+- Paper или Spigot 1.21.x;
+- Java 21 для Paper 1.21.11;
+- права администратора сервера;
+- резервная копия мира и папки `plugins/`.
+
+### Скачать релиз
 
 ```bash
-cd ~/plugins
-curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/latest/download/DC-CustomItems.jar
+cd ~/test/plugins
+curl -fL -o dcustomitems.jar "https://github.com/animesao/dcustomitems/releases/download/v1.320.278/DC-CustomItems-1.320.278.jar"
 ```
 
-Перезапусти сервер или сделай `/ci reload`.
+Для обычного сервера замените `~/test/plugins` на путь к своей папке `plugins/`.
+
+### Первый запуск
+
+1. Положите `dcustomitems.jar` в `plugins/`.
+2. Запустите сервер.
+3. Дождитесь сообщения `CustomItems enabled!`.
+4. Плагин создаст папку `plugins/DC-CustomItems/`.
+5. Проверьте версию командой `/version DC-CustomItems` или по консоли.
+
+При первом запуске создаются примерно такие файлы:
+
+```text
+plugins/DC-CustomItems/
+├── config.yml       # встроенные YAML-предметы и настройки
+├── data.db          # SQLite-база (если выбран sqlite)
+├── storage/         # небольшие YAML-хранилища
+├── items/           # ваши YAML и Java-файлы
+├── cache/           # кэш компилятора
+└── compiled/        # скомпилированные классы
+```
+
+Плагин автоматически создаёт `items/messages.java`, если файла нет. Не удаляйте его без резервной копии, если используете настройку сообщений.
 
 ---
 
-## 🎮 Быстрый Старт
+## 4. Самый простой предмет без Java
 
-### Шаг 1: Создай Предмет
+Создайте файл:
 
-Создай `my-sword.java` в `plugins/DC-CustomItems/items/`:
+```text
+plugins/DC-CustomItems/items/hello-sword.yml
+```
+
+Содержимое:
+
+```yaml
+hello_sword:
+  type: TOOL
+  activation-slot: HAND
+  click-cooldown: 3000
+
+  item:
+    type: DIAMOND_SWORD
+    title: '&aПриветственный меч'
+    glowing: true
+    unbreakable: true
+
+  lore:
+    - ''
+    - '&7Это ваш первый предмет.'
+    - '&eПКМ — получить скорость.'
+
+  trigger-actions:
+    - 'on_click_right:message:&aМеч работает!'
+    - 'on_click_right:effect:SPEED:10:2'
+    - 'on_click_right:particle:HEART:20'
+    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:1:1'
+```
+
+После сохранения выполните:
+
+```text
+/ci reload
+/ci list
+/ci give hello_sword
+```
+
+Возьмите меч в основную руку и нажмите ПКМ.
+
+### Что означает каждая строка
+
+- `hello_sword` — ID предмета. Используется в `/ci give hello_sword`.
+- `type` — логический тип предмета: `TOOL`, `ARMOR`, `RUNE` или `CONSUMABLE`.
+- `activation-slot` — где предмет активен.
+- `click-cooldown` — задержка между срабатываниями в миллисекундах.
+- `item.type` — настоящий материал Minecraft.
+- `item.title` — название предмета.
+- `glowing` — визуальное свечение.
+- `unbreakable` — неломаемость.
+- `lore` — список строк описания.
+- `trigger-actions` — события и действия.
+
+YAML чувствителен к отступам. Используйте пробелы, не табуляцию.
+
+---
+
+## 5. Как писать YAML, если вы новичок
+
+YAML — это текстовый формат с отступами. В нём:
+
+```yaml
+ключ: значение
+```
+
+Список записывается через `-`:
+
+```yaml
+lore:
+  - '&7Первая строка'
+  - '&eВторая строка'
+```
+
+Вложенный раздел получает дополнительный отступ:
+
+```yaml
+item:
+  type: DIAMOND_SWORD
+  title: '&bМеч'
+```
+
+Правильно:
+
+```yaml
+item:
+  type: DIAMOND_SWORD
+```
+
+Неправильно:
+
+```yaml
+item:
+ type: DIAMOND_SWORD
+```
+
+Для текста с `:` используйте кавычки:
+
+```yaml
+- 'on_click_right:title:&6Сила!::&7Активирована:10:40:10'
+```
+
+Цвета Minecraft:
+
+```text
+&0 чёрный   &1 тёмно-синий  &2 тёмно-зелёный  &3 бирюзовый
+&4 красный  &5 фиолетовый   &6 золотой       &7 серый
+&8 тёмно-серый  &9 синий     &a зелёный       &b aqua
+&c светло-красный &d розовый &e жёлтый        &f белый
+&l жирный   &o курсив       &n подчёркивание &m зачёркивание
+&r сброс форматирования
+```
+
+---
+
+## 6. События предметов
+
+Старый удобный формат:
+
+```yaml
+trigger-actions:
+  - 'on_click_right:message:&aПКМ'
+```
+
+Также поддерживается структурированный формат:
+
+```yaml
+triggers:
+  on_click_right:
+    - 'message:&aПКМ'
+    - 'effect:SPEED:5:1'
+```
+
+В текущем обработчике `trigger-actions` гарантированно подключены такие события:
+
+| Событие | Когда срабатывает |
+|---|---|
+| `on_click_left` | ЛКМ с предметом |
+| `on_click_right` | ПКМ с предметом |
+| `on_equip` | Предмет экипирован |
+| `on_unequip` | Предмет снят |
+| `on_damage_dealt` | Игрок нанёс урон |
+| `on_damage_taken` | Игрок получил урон |
+| `on_kill` | Игрок убил другого игрока (текущий listener) |
+| `on_death` | Игрок умер |
+| `on_jump` | Игрок прыгнул |
+| `on_drop` | Кастомный предмет выброшен |
+| `on_pickup` | Кастомный предмет подобран |
+
+Имена `on_block_break`, `on_block_place`, `on_sneak`, `on_sprint`, `on_swim` встречаются в моделях/старых примерах, но не следует считать их универсально активными в текущем `TriggerListener`. Проверяйте конкретную реализацию перед использованием.
+
+Для Java API доступны отдельные методы `onMove`, `onBlockBreak`, `onSwapHand` и другие методы `AbstractCustomItem`; это другой путь обработки, не тот же самый, что YAML `trigger-actions`. `on_move` и `onMove` вызываются часто и могут нагрузить сервер.
+
+---
+
+## 7. Действия YAML
+
+В обычном `trigger-actions` строка имеет формат:
+
+```text
+событие:действие:параметр1:параметр2
+```
+
+Текущий `TriggerListener` выполняет базовые действия: `message`, `effect`, `particle`, `sound`, `heal`, `teleport`, `damage`, `fireworks`, `title`, `actionbar`, `exp`, `give`, `remove`, `announce`, `sethealth`, `setfood`, `vanish`, `glow`, `stun`, `knockback`, `launch`, а также варианты для мобов/игроков. Действие должно быть проверено на тестовом сервере.
+
+`ActionParser` содержит дополнительные действия (`console_command`, `particles_custom`, sequence и другие), но текущий путь YAML `trigger-actions` не вызывает `ActionParser.execute()` автоматически. Не переносите расширенные примеры ниже в `trigger-actions` без проверки: они могут не выполниться.
+
+### Сообщения и интерфейс
+
+```yaml
+- 'on_click_right:message:&aПривет, %player%!'
+- 'on_click_right:actionbar:&eСпособность готова'
+- 'on_click_right:broadcast:&6%player% активировал артефакт'
+- 'on_click_right:announce:&6%player% активировал артефакт'
+- 'on_click_right:title:&6Сила!|&7На 10 секунд|10|40|10'
+```
+
+В разных старых примерах встречается `::` в title. Для текущего Java-listener безопаснее использовать разделитель `|`.
+
+### Эффекты
+
+```yaml
+# effect:ТИП:СЕКУНДЫ:УРОВЕНЬ
+- 'on_click_right:effect:SPEED:10:2'
+- 'on_click_right:effect:STRENGTH:5:1'
+```
+
+Уровень записывается как привычный уровень Minecraft: `1` — первый уровень, `2` — второй.
+
+Поддерживаются, среди прочего: `SPEED`, `SLOWNESS`, `HASTE`, `MINING_FATIGUE`, `STRENGTH`, `JUMP_BOOST`, `REGENERATION`, `RESISTANCE`, `FIRE_RESISTANCE`, `WATER_BREATHING`, `INVISIBILITY`, `NIGHT_VISION`, `POISON`, `WITHER`, `HEALTH_BOOST`, `ABSORPTION`, `GLOWING`, `LUCK`, `UNLUCK`, `DOLPHINS_GRACE`, `CONDUIT_POWER`, `SLOW_FALLING`, `BAD_OMEN`, `HERO_OF_THE_VILLAGE` и эффекты новых версий Paper.
+
+### Лечение и урон
+
+```yaml
+- 'on_click_right:heal:10'
+- 'on_damage_dealt:damage:5'
+- 'on_click_right:damage_nearby:8:4'
+- 'on_click_right:damage_mobs:8:5'
+- 'on_click_right:damage_players:4:3'
+- 'on_click_right:heal_nearby:5:5'
+```
+
+В обработчике YAML `heal` использует величину здоровья Minecraft (обычно `10` = 5 сердец). Проверяйте результат на тестовом сервере.
+
+### Предметы и опыт
+
+```yaml
+- 'on_kill:give:DIAMOND:1'
+- 'on_click_right:remove:DIAMOND:1'
+- 'on_click_right:exp:100:1'
+```
+
+### Телепортация
+
+```yaml
+- 'on_click_right:teleport:100:64:200'
+- 'on_click_right:teleport_relative:~:2:~'
+```
+
+### Частицы и звуки
+
+```yaml
+- 'on_click_right:particle:FLAME:50'
+- 'on_click_right:particles_custom:FLAME:100:0:1:0:0.5:0.5:0.5'
+- 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:1:1'
+- 'on_click_right:fireworks:1'
+```
+
+Названия должны существовать в вашей версии Paper. Ошибки вроде `Unknown particle` или `Unknown sound` означают, что имя устарело или написано неверно.
+
+### Состояние игрока
+
+```yaml
+- 'on_click_right:sethealth:20'
+- 'on_click_right:setfood:20'
+- 'on_click_right:vanish:10'
+- 'on_click_right:glow:10'
+- 'on_click_right:speed:10:2'
+- 'on_click_right:flight:true'
+- 'on_click_right:knockback:4'
+- 'on_click_right:launch:1.5'
+- 'on_click_right:stun:3:4'
+```
+
+### Команды и расширенные действия
+
+В текущем YAML-trigger пути подтверждено действие `command`:
+
+```yaml
+# Команда выполняется текущим обработчиком предмета
+- 'on_click_right:command:spawn'
+```
+
+`console_command`, `sound_sequence`, `effect_sequence`, `command_sequence`, `particles_custom` и другие расширенные действия реализованы в отдельном `ActionParser`, но не вызываются текущим `TriggerListener` автоматически. Используйте их только из собственной Java-механики, которая явно вызывает `ActionParser.execute(player, action)`, либо сначала добавьте и протестируйте соответствующий вызов в исходном коде.
+
+Команды из пользовательского YAML могут быть опасными. Не давайте редактировать такие файлы обычным игрокам.
+
+Полный перечень расширенных действий в `README-ACTIONS.md` не означает, что каждое из них доступно в каждом YAML-событии.
+
+Дополнительная таблица действий находится в [README-ACTIONS.md](../src/main/resources/items/README-ACTIONS.md). Это справочный файл для старого и расширенного формата; при конфликте ориентируйтесь на текущую версию обработчика и проверяйте действие на тестовом сервере.
+
+---
+
+## 8. Поля YAML-предмета
+
+```yaml
+my_item:
+  type: RUNE
+  activation-slot: HAND
+  placeable: false
+  permission: 'myplugin.item.use'
+  click-cooldown: 3000
+  max-uses: 5
+
+  item:
+    type: BLAZE_ROD
+    amount: 1
+    title: '&dПосох'
+    glowing: true
+    unbreakable: true
+    item-model: 'myplugin:staff'
+    custom-model-data: 1001
+    item-flags:
+      - HIDE_ATTRIBUTES
+    enchantments:
+      UNBREAKING: 3
+
+  lore:
+    - '&7Использований: %uses%'
+    - '&7Кулдаун: %cooldown% сек.'
+
+  effects:
+    - 'SPEED:1'
+
+  trigger-actions:
+    - 'on_click_right:lightning_forward:10'
+```
+
+`item-model` используется в современных версиях Minecraft. `custom-model-data` оставлен для совместимости со старыми ресурс-паками. Если указаны оба, приоритет имеет `item-model`.
+
+`max-uses` используется обработчиком ограниченных применений; отображение `%uses%` зависит от конкретного обработчика и должно быть проверено на тестовом предмете.
+
+---
+
+## 9. Команды плагина
+
+### YAML-предметы
+
+```text
+/ci                         # помощь
+/ci give <id>               # выдать себе предмет
+/ci give <id> <игрок>       # выдать игроку
+/ci list                    # список YAML-предметов
+/ci reload                  # перезагрузить YAML, Java и модули
+/ci update                  # проверить обновление
+```
+
+Алиас основной команды: `/customitems`.
+
+### Java API-предметы
+
+```text
+/api-item                  # помощь
+/api-item give <id>         # выдать себе Java-предмет
+/api-item give <id> <игрок> # выдать игроку
+/api-item list              # список Java-предметов
+/api-item info <id>         # подробная информация
+```
+
+### Права
+
+```text
+customitems.give
+customitems.list
+customitems.reload
+customitems.update (проверяется кодом, но не объявлен в текущем plugin.yml — при необходимости выдайте право через систему permissions)
+customitems.admin (зарезервировано как общее admin-право; команды /ci используют отдельные права)
+```
+
+Если команда не работает, сначала проверьте `/plugins`, OP-статус и консоль.
+
+---
+
+## 10. Java для человека, который не знает Java
+
+Java-файл — это инструкция для сервера. В нём есть:
+
+- `class` — описание объекта;
+- `method` — действие или функция;
+- `String` — текст;
+- `int`/`double` — числа;
+- `boolean` — `true` или `false`;
+- `@Override` — мы заменяем стандартное поведение базового класса.
+
+Минимальный Java-предмет:
 
 ```java
 import me.dcplugin.dcustomitems.api.AbstractCustomItem;
+import me.dcplugin.dcustomitems.api.ItemAPI;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-public class MySword extends AbstractCustomItem {
-    
+public class WelcomeItem extends AbstractCustomItem {
     @Override
-    public String getId() { return "my_sword"; }
-    
+    public String getId() {
+        return "welcome_item";
+    }
+
     @Override
-    public String getDisplayName() { return "&6Мой Меч"; }
-    
+    public String getDisplayName() {
+        return "&aПриветственный предмет";
+    }
+
     @Override
-    public Material getMaterial() { return Material.DIAMOND_SWORD; }
-    
+    public Material getMaterial() {
+        return Material.EMERALD;
+    }
+
     @Override
     public void onRightClick(PlayerInteractEvent event, Player player) {
-        player.setHealth(20);
-        player.sendMessage("Исцелён!");
+        ItemAPI.message(player, "&aВы нажали ПКМ!");
+        ItemAPI.particles(player, Particle.HEART, 20);
     }
 }
 ```
 
-### Шаг 2: Перезагрузи
+Сохраните как `WelcomeItem.java` или, для встроенного компилятора, используйте имя файла без пробелов и дефисов, например `welcome-item.java`. Имя публичного класса должно соответствовать правилам компилятора и быть уникальным.
 
-```
+Затем:
+
+```text
 /ci reload
+/api-item list
+/api-item give welcome_item
 ```
 
-### Шаг 3: Получи Предмет
+Если Java не компилируется, предмет не будет загружен — исправьте первую ошибку в консоли, а не последнюю строку стека.
 
-```
-/ci give my_sword
-```
+Подробно: [JAVA_API_RU.md](JAVA_API_RU.md).
 
 ---
 
-## ☕ Java Предметы
+## 11. Java-команды
 
-### Базовый Класс
-
-Наследуй `AbstractCustomItem`:
-
-```java
-public class MyItem extends AbstractCustomItem {
-    @Override
-    public String getId() { return "my_item"; }
-    
-    @Override
-    public String getDisplayName() { return "&6Мой Предмет"; }
-    
-    @Override
-    public Material getMaterial() { return Material.DIAMOND_SWORD; }
-}
-```
-
-### Доступные Методы
-
-| Метод | Когда Вызывается |
-|-------|------------------|
-| `onLeftClick(event, player)` | ЛКМ |
-| `onRightClick(event, player)` | ПКМ |
-| `onEquip(player)` | Экипировка |
-| `onUnequip(player)` | Снятие |
-| `onDamageDealt(event, player)` | Нанесение урона |
-| `onDamageTaken(event, player)` | Получение урона |
-| `onKill(killer, victim)` | Убийство |
-| `onBlockBreak(player, event)` | Ломание блока |
-
-### Утилиты ItemAPI
-
-```java
-ItemAPI.heal(player, 10);
-ItemAPI.effect(player, PotionEffectType.SPEED, 30, 2);
-ItemAPI.particles(player, Particle.FLAME, 50);
-ItemAPI.sound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
-ItemAPI.teleport(player, x, y, z);
-ItemAPI.title(player, "Заголовок", "Подзаголовок");
-```
-
----
-
-## 📝 Java Команды
-
-### Базовый Класс
-
-Наследуй `CustomCommand`:
+Наследуйте `CustomCommand`:
 
 ```java
 import me.dcplugin.dcustomitems.api.commands.CustomCommand;
+import org.bukkit.command.CommandSender;
 
-public class HealCommand extends CustomCommand {
-    
-    public HealCommand() {
-        super("heal", "Исцелить", "/heal [игрок]", "dci.heal");
+public class PingCommand extends CustomCommand {
+    public PingCommand() {
+        super("ping", "Проверка пинга", "/ping", "example.ping", "p");
     }
-    
+
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        Player target = getTarget(sender, args, 0);
-        if (target == null) return false;
-        
-        target.setHealth(20);
-        msg(sender, "&aВы исцелили " + target.getName());
+        msg(sender, "&aPong!");
         return true;
     }
 }
 ```
 
-### Доступные Методы
+После `/ci reload` в консоли должна появиться строка:
 
-| Метод | Описание |
-|-------|----------|
-| `msg(sender, text)` | Отправить цветное сообщение |
-| `title(player, title, sub)` | Отправить заголовок |
-| `getTarget(sender, args, index)` | Получить игрока из аргументов |
-| `getInt(args, index, def)` | Получить число из аргументов |
-| `colorize(text)` | Преобразовать & в § |
+```text
+[API] Command: /ping
+[API] Registered command: /ping
+```
+
+Не используйте имя команды, уже занятой Paper или другим плагином. Не регистрируйте одну и ту же команду в нескольких Java-файлах.
 
 ---
 
-## 🏷️ Java Плейсхолдеры
+## 12. Плейсхолдеры
 
-### Базовый Класс
-
-Наследуй `CustomPlaceholder`:
+Минимальный плейсхолдер:
 
 ```java
 import me.dcplugin.dcustomitems.api.placeholders.CustomPlaceholder;
+import org.bukkit.entity.Player;
 
-public class MoneyPlaceholder extends CustomPlaceholder {
-    
-    public MoneyPlaceholder() {
-        super("money"); // %money%
+public class ServerNamePlaceholder extends CustomPlaceholder {
+    public ServerNamePlaceholder() {
+        super("server_name");
     }
-    
+
     @Override
     public String getValue(Player player) {
-        return "1000"; // Твоя логика
+        return "My Server";
     }
 }
 ```
 
-### Использование
-
-```
-Баланс: %money%
-```
+Значение запрашивается как `%server_name%` в системах, которые вызывают PlaceholderManager. Сам DC-CustomItems не является полноценным PlaceholderAPI-адаптером для всех сторонних плагинов, поэтому совместимость конкретного места использования нужно проверять.
 
 ---
 
-## 🔧 Конфигурация Сообщений
+## 13. DeluxeMenuX: меню без Java
 
-Редактируй `EXAMPLE-messages.java` в `items/` для изменения сообщений:
+Модуль находится в:
+
+```text
+plugins/DC-CustomItems/items/deluxemenux/
+├── config.yml
+├── deluxemenux.java
+├── menu-command.java
+├── kits-command.java
+├── shop-command.java
+└── menus/
+    ├── main.yml
+    ├── kits.yml
+    └── shop.yml
+```
+
+Команды:
+
+```text
+/menu
+/menu <id>
+/menu list
+/menu reload
+/deluxemenu
+/kits
+/kit
+/shop
+```
+
+Меню создаются автоматически только при отсутствии файлов. Ваши существующие YAML не перезаписываются.
+
+Пример кнопки:
+
+```yaml
+items:
+  13:
+    material: DIAMOND
+    name: '&bАлмаз'
+    lore:
+      - '&7Нажмите для выдачи'
+    permission: 'shop.diamond'
+    command: 'give %player% diamond 1'
+    message: '&aАлмаз выдан!'
+    sound: 'ENTITY_PLAYER_LEVELUP'
+    close: false
+```
+
+Обратите внимание:
+
+- `command` выполняется от имени **консоли**;
+- `%player%` заменяется именем игрока;
+- `permission` проверяется на нажатии кнопки;
+- число в `items.13` — слот от `0` до `size - 1`;
+- `size` должен быть `9`, `18`, `27`, `36`, `45` или `54`;
+- надпись `Цена: 100 монет` сама по себе ничего не списывает — экономику нужно подключить отдельным плагином или Java-механикой;
+- `close-sound` сейчас читается конфигурацией, но закрывающий звук не является гарантированным действием текущего обработчика.
+
+Подробно: [MODULES_GUI_RU.md](MODULES_GUI_RU.md).
+
+---
+
+## 14. Свой модуль внутри плагина
+
+Каждая подпапка `items/` может быть модулем:
+
+```text
+items/my-feature/
+├── config.yml
+├── items.yml
+├── my-feature.java
+├── feature-command.java
+└── menus/
+    └── main.yml
+```
+
+`config.yml`:
+
+```yaml
+name: 'My Feature'
+version: '1.0'
+enabled: true
+commands:
+  - myfeature
+permissions:
+  - myfeature.use
+```
+
+Java-модуль наследует `Module` и реализует `onEnable()`/`onDisable()`. В `onEnable()` регистрируйте слушатели и запускайте механику; в `onDisable()` отменяйте задачи и очищайте ресурсы.
+
+После изменения Java или YAML:
+
+```text
+/ci reload
+```
+
+Если меняется только ресурс-пак, нужен `F3+T` у игрока или повторная загрузка resource pack.
+
+---
+
+## 15. База данных SQLite, MySQL и YAML
+
+Полное руководство с настройкой MySQL, промокодами и асинхронными запросами: [DATABASE_RU.md](DATABASE_RU.md).
+
+По умолчанию работает локальный SQLite. Для MySQL в `config.yml` укажите `database.type: mysql`, заполните `database.mysql.*` и перезапустите сервер. Для небольших ручных списков используйте `YamlStorage`; для большого онлайна и промокодов — `DatabaseManager` с async-методами.
+
+Плагин подключает базу:
+
+```text
+plugins/DC-CustomItems/data.db
+```
+
+Java API предоставляет `DatabaseManager`:
 
 ```java
-MessagesConfig.PREFIX = "&8[&6МойПлагин&8] &r";
-MessagesConfig.ITEM_GIVEN = PREFIX + "&aВыдали &e{item}&a!";
+DatabaseManager db = Main.getInstance().getDatabaseManager();
+db.createTable("player_stats", "uuid TEXT PRIMARY KEY, kills INTEGER DEFAULT 0");
+db.execute("INSERT INTO player_stats(uuid, kills) VALUES(?, ?)", uuid, 1);
+int kills = db.queryInt("SELECT kills FROM player_stats WHERE uuid = ?", uuid);
 ```
 
----
+Доступны операции `connect`, `disconnect`, `reconnect`, `createTable`, `execute`, `insert`, `update`, `delete`, `queryInt`, `queryString`, `queryDouble`, `queryBoolean`, `queryOne`, `queryAll`, `increment` и `add`.
 
-## 📋 Команды
-
-| Команда | Описание |
-|---------|----------|
-| `/ci give <id> [игрок]` | Выдать предмет |
-| `/ci list` | Список предметов |
-| `/ci reload` | Перезагрузить плагин |
-| `/api-item give <id> [игрок]` | Выдать API предмет |
-| `/api-item list` | Список API предметов |
+Не выполняйте тяжёлые SQL-запросы каждый тик и не удаляйте `data.db` без резервной копии.
 
 ---
 
-## 📁 Структура Файлов
+## 16. Сообщения
 
-```
-plugins/DC-CustomItems/
-├── items/
-│   ├── my-sword.java         <- Предмет
-│   ├── heal-command.java     <- Команда
-│   ├── money-placeholder.java <- Плейсхолдер
-│   └── messages.java         <- Конфиг сообщений
-├── compiled/                 <- Авто-генерация
-└── data.db                  <- База данных
+Стандартные строки находятся в `MessagesConfig.java` внутри JAR. При первом запуске плагин создаёт `items/messages.java` как справочный файл-шаблон со списком настроек.
+
+**Важно для версии 1.320.278:** текущий runtime-компилятор не вызывает метод `load()` автоматически. Поэтому простое редактирование `items/messages.java` не изменяет сообщения плагина после `/ci reload`; этот файл классифицируется как обычный Java-файл и не загружается как конфигурация сообщений. Не удаляйте его, если используете его как шпаргалку.
+
+Чтобы изменить стандартные сообщения в текущей версии, отредактируйте `src/main/java/me/dcplugin/dcustomitems/api/config/MessagesConfig.java` в исходном проекте и пересоберите JAR. Для серверной папки `plugins/DC-CustomItems/items/` это пока не является поддерживаемым способом настройки.
+
+Пример изменения в исходном проекте:
+
+```java
+MessagesConfig.PREFIX = "&8[&bМой сервер&8] &r";
+MessagesConfig.CI_GIVE_SELF = MessagesConfig.PREFIX + "&aПолучено: &e{item}";
+MessagesConfig.NO_PERMISSION = MessagesConfig.PREFIX + "&cНедостаточно прав.";
 ```
 
----
-
-## 📞 Поддержка
-
-- **GitHub:** https://github.com/animesao/dcustomitems
-- **Issues:** https://github.com/animesao/dcustomitems/issues
+Используйте только поля, которые существуют в текущем `MessagesConfig`. После изменения исходников выполните Maven-сборку и установите новый JAR; `/ci reload` применяется к YAML, Java API-файлам и модулям, но не превращает `messages.java` в отдельный загрузчик сообщений.
 
 ---
 
-**Версия:** 1.320.277
+## 17. Производительность
+
+Чтобы сервер не нагружался:
+
+- не используйте `on_move` для тяжёлых операций;
+- не запускайте SQL каждый тик;
+- ограничивайте радиус AoE;
+- используйте `click-cooldown`;
+- не создавайте сотни частиц на каждого игрока;
+- не делайте бесконечные циклы в `onPeriodic`;
+- отменяйте Bukkit-задачи в `onDisable`;
+- не перезагружайте плагин каждую секунду;
+- сначала тестируйте механику на локальном сервере;
+- следите за `/spark profiler` и TPS.
+
+`/ci reload` предназначен для разработки и настройки. На большом сервере не запускайте его во время массового онлайна без необходимости.
+
+---
+
+## 18. Резервные копии и обновление
+
+Перед обновлением:
+
+```bash
+cp -a plugins/DC-CustomItems plugins/DC-CustomItems.backup
+cp server.properties server.properties.backup
+```
+
+Обновление JAR:
+
+```bash
+dck stop test2
+cd ~/test/plugins
+curl -fL -o dcustomitems.jar "https://github.com/animesao/dcustomitems/releases/download/v1.320.278/DC-CustomItems-1.320.278.jar"
+# очищайте cache/compiled только если менялась система Java-компиляции
+rm -rf DC-CustomItems/cache DC-CustomItems/compiled
+dck start test2
+dck attach test2
+```
+
+Не удаляйте `DC-CustomItems/` целиком, если хотите сохранить свои предметы, меню и базу.
+
+---
+
+## 19. Диагностика
+
+При проблеме сохраните:
+
+- версию Paper;
+- версию Java;
+- версию DC-CustomItems;
+- имя изменённого файла;
+- полную первую ошибку из консоли;
+- результат `/ci list`, `/api-item list` и `/plugins`.
+
+Частые ошибки:
+
+| Ошибка | Причина |
+|---|---|
+| `Unknown particle` | Частица удалена/переименована в вашей версии |
+| `Unknown sound` | Неверное имя звука |
+| `Class ... is public, should be declared in ...` | Имя публичного Java-класса не совпадает с ожидаемым именем файла |
+| `cannot find symbol` | Нет импорта, неверный API Paper или опечатка |
+| `Unknown or incomplete command` | Команда не зарегистрирована из-за ошибки компиляции/конфликта |
+| `duplicate class definition` | Используется старый JAR/кэш или Java-класс загружается повторно; обновите JAR и очистите cache/compiled |
+| `items folder is empty` | В папке нет пользовательских YAML; встроенные предметы находятся в `config.yml` |
+| `UnknownHostException` контейнера | Paper не может определить hostname контейнера; обычно не связано с плагином |
+
+Полный список решений: [TROUBLESHOOTING_RU.md](TROUBLESHOOTING_RU.md).
+
+---
+
+## 20. Короткий чек-лист новичка
+
+```text
+[ ] Установлен Paper и подходящая Java
+[ ] JAR лежит в plugins/
+[ ] Сервер был перезапущен
+[ ] Создан файл items/my-item.yml
+[ ] Отступы YAML сделаны пробелами
+[ ] Выполнен /ci reload
+[ ] В консоли нет красных ошибок
+[ ] Предмет виден через /ci list
+[ ] Предмет выдан через /ci give <id>
+[ ] Механика протестирована в безопасном мире
+[ ] Перед публикацией сделана резервная копия
+```
+
+Если вы не знаете Java — оставайтесь на YAML. Если YAML уже стал понятен — переходите к Java API. Не нужно изучать весь Bukkit API сразу: добавляйте одну механику, перезагружайте, тестируйте и только потом расширяйте проект.
+
+---
+
+## Ссылки
+
+- [Репозиторий GitHub](https://github.com/animesao/dcustomitems)
+- [Релизы](https://github.com/animesao/dcustomitems/releases)
+- [Issues](https://github.com/animesao/dcustomitems/issues)
+- [English documentation](README_EN.md)

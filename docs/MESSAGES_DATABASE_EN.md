@@ -1,0 +1,142 @@
+# Messages and Database — English Guide
+
+## 1. Messages in version 1.320.278
+
+Built-in messages are stored in:
+
+```text
+src/main/java/me/dcplugin/dcustomitems/api/config/MessagesConfig.java
+```
+
+On first start, the plugin creates:
+
+```text
+plugins/DC-CustomItems/items/messages.java
+```
+
+That file is an editable reference template containing message field names. In version `1.320.278`, the runtime compiler does not automatically call a `load()` method, so editing `items/messages.java` alone does not change messages after `/ci reload`.
+
+### How to change a message
+
+1. Stop the server, or work in a copy of the source project.
+2. Open `MessagesConfig.java`.
+3. Change the required field.
+4. Build a new JAR.
+5. Back up the plugin data folder.
+6. Install the new JAR and restart the server.
+
+Example:
+
+```java
+public static String PREFIX = "&8[&bMy server&8] &r";
+public static String CI_GIVE_SELF = PREFIX + "&aReceived: &e{item}";
+```
+
+Keep `{item}`, `{player}`, `{count}`, `{error}`, and other placeholders when the code supplies those values.
+
+### Colors
+
+Use Bukkit legacy color codes:
+
+```text
+&a green   &c red   &e yellow   &b aqua
+&l bold    &o italic   &r reset
+```
+
+## 2. Troubleshooting messages
+
+If your change has no effect:
+
+- confirm that you edited `MessagesConfig.java` in the source project;
+- confirm that the rebuilt JAR was copied to the server;
+- check `/version DC-CustomItems`;
+- read the first Maven or Java compiler error;
+- remember that `/ci reload` does not turn `items/messages.java` into a message loader.
+
+## 3. SQLite and MySQL storage
+
+For the complete SQLite/MySQL/YAML, MySQL setup, and promo-code guide, see [DATABASE_EN.md](DATABASE_EN.md).
+
+By default, the plugin uses:
+
+```text
+plugins/DC-CustomItems/data.db
+```
+
+Do not edit it with a normal text editor. Stop the server before experimenting and make a copy:
+
+```bash
+cp plugins/DC-CustomItems/data.db plugins/DC-CustomItems/data.db.backup
+```
+
+Do not delete `data.db` if player progress must be preserved.
+
+## 4. DatabaseManager in Java modules
+
+A Java mechanic can access the manager through the plugin instance:
+
+```java
+import me.dcplugin.dcustomitems.Main;
+import me.dcplugin.dcustomitems.api.database.DatabaseManager;
+
+DatabaseManager db = Main.getInstance().getDatabaseManager();
+```
+
+The main operations are:
+
+- `connect()` and `disconnect()`;
+- `reconnect()`;
+- `createTable(table, columns)`;
+- `execute(sql, params...)`;
+- `insert(table, data)`;
+- `update(table, data, where, params...)`;
+- `delete(table, where, params...)`;
+- `queryInt`, `queryString`, `queryDouble`, `queryBoolean`;
+- `queryOne` and `queryAll`;
+- `increment` and `add`.
+
+Example statistics table:
+
+```java
+db.createTable("player_stats", "uuid TEXT PRIMARY KEY, kills INTEGER DEFAULT 0");
+db.execute(
+    "INSERT INTO player_stats(uuid, kills) VALUES(?, 0)",
+    player.getUniqueId().toString()
+);
+db.increment(
+    "player_stats",
+    "kills",
+    "uuid = ?",
+    player.getUniqueId().toString()
+);
+int kills = db.queryInt(
+    "SELECT kills FROM player_stats WHERE uuid = ?",
+    player.getUniqueId().toString()
+);
+```
+
+Use `?` parameters instead of concatenating user input into SQL. If the row may already exist, handle that case explicitly or use `upsertSql()` with syntax appropriate for the selected database.
+
+## 5. Database performance
+
+Do not query SQLite every tick or write on every player movement. Prefer to:
+
+- keep frequently used values in memory;
+- save at meaningful events;
+- use one table for related data;
+- avoid large queries while many players join;
+- close resources when a module is disabled;
+- test against a copy of `data.db`.
+
+## 6. Backup before an update
+
+```bash
+cp -a plugins/DC-CustomItems plugins/DC-CustomItems.backup
+```
+
+Keep separate backups of:
+
+- `items/`;
+- `config.yml`;
+- `data.db`;
+- module and menu folders.

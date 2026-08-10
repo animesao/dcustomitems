@@ -9,6 +9,7 @@ import me.dcplugin.dcustomitems.api.commands.CustomCommandExecutor;
 import me.dcplugin.dcustomitems.api.modules.ModuleManager;
 import me.dcplugin.dcustomitems.api.config.MessagesConfig;
 import me.dcplugin.dcustomitems.api.database.DatabaseManager;
+import me.dcplugin.dcustomitems.api.database.YamlStorage;
 import me.dcplugin.dcustomitems.api.placeholders.PlaceholderManager;
 import me.dcplugin.dcustomitems.commands.CustomItemsCommand;
 import me.dcplugin.dcustomitems.handlers.CustomItemHandler;
@@ -137,6 +138,7 @@ public class Main extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("CustomItems disabling...");
+        if (databaseManager != null) databaseManager.shutdownAsync();
         if (databaseManager != null) databaseManager.disconnect();
         if (effectManager != null) {
             getServer().getOnlinePlayers().forEach(effectManager::stopPeriodicEffects);
@@ -362,6 +364,11 @@ public class Main extends JavaPlugin {
     public UpdateChecker getUpdateChecker() { return updateChecker; }
     public ItemRegistry getApiItemRegistry() { return apiItemRegistry; }
     public DatabaseManager getDatabaseManager() { return databaseManager; }
+
+    /** Create a small YAML storage file under plugins/DC-CustomItems/storage/. */
+    public YamlStorage createYamlStorage(String fileName) {
+        return new YamlStorage(this, fileName);
+    }
     public PlaceholderManager getPlaceholderManager() { return placeholderManager; }
     public ModuleManager getModuleManager() { return moduleManager; }
 

@@ -6,6 +6,23 @@
 # ------------------
 debug-mode: true  # Включить подробное логирование (только для отладки)
 #
+# БАЗА ДАННЫХ
+# По умолчанию используется локальный SQLite-файл data.db.
+# Для MySQL измените type на mysql и заполните credentials.
+# После изменения database.type перезапустите сервер.
+database:
+  type: sqlite # sqlite или mysql
+  mysql:
+    host: 127.0.0.1
+    port: 3306
+    database: dcustomitems
+    username: dcustomitems
+    password: 'change-me'
+    use-ssl: false
+    pool-size: 5
+    connection-timeout-ms: 5000
+    leak-detection-ms: 0
+#
 # АТРИБУТЫ ПРЕДМЕТОВ (добавлено в v1.6.0):
 # ------------------
 # Простое значение (ADD_NUMBER):
