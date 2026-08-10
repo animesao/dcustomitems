@@ -80,16 +80,17 @@ public class ModuleManager {
         
         plugin.getLogger().info("[Modules] Loading module: " + moduleName + " (" + moduleId + ")");
 
-        // Ищем Java файлы в папке
-        File[] javaFiles = folder.listFiles((dir, name) -> name.endsWith(".java"));
-        
-        if (javaFiles != null && javaFiles.length > 0) {
-            // Загружаем Java модуль
-            loadJavaModule(folder, moduleId, javaFiles);
-        } else {
-            // Создаём простой YAML модуль
-            loadSimpleModule(folder, moduleId, config);
+        // Java-модули уже скомпилированы ItemRegistry вместе с командами.
+        Module javaModule = plugin.getApiItemRegistry() == null
+            ? null : plugin.getApiItemRegistry().getModule(moduleId);
+        if (javaModule != null) {
+            modules.put(moduleId.toLowerCase(), javaModule);
+            if (config.getBoolean("enabled", true)) javaModule.enable();
+            return;
         }
+
+        // Если Java-модуля нет, поддерживаем простой YAML-модуль.
+        loadSimpleModule(folder, moduleId, config);
     }
 
     /**
@@ -171,7 +172,7 @@ public class ModuleManager {
      * Получить модуль по ID
      */
     public Module getModule(String id) {
-        return modules.get(id);
+        return modules.get(id.toLowerCase());
     }
 
     /**

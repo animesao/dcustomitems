@@ -24,7 +24,8 @@ public class menu_commandItem extends CustomCommand {
             "menu",
             "Открыть меню",
             "/menu [id]",
-            "deluxemenux.use"
+            "deluxemenux.use",
+            "deluxemenu"
         );
     }
 

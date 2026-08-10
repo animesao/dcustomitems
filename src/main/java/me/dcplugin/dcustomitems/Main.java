@@ -32,6 +32,8 @@ import java.util.List;
 
 public class Main extends JavaPlugin {
 
+    private static Main instance;
+
     private ConfigManager configManager;
     private MessageManager messageManager;
     private EffectManager effectManager;
@@ -48,12 +50,13 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        instance = this;
         try {
             getLogger().info("CustomItems starting...");
 
-            // Save default configs
+            // Save default config. Built-in items stay inside config.yml;
+            // do not extract bundled item examples into the user's items/ folder.
             saveDefaultConfig();
-            saveResourceItems();
             
             // Auto-create messages.java if not exists
             createDefaultMessagesFile();
@@ -70,9 +73,9 @@ public class Main extends JavaPlugin {
 
             ItemAPI.init(this);
             apiItemRegistry = new ItemRegistry(this);
+            moduleManager = new ModuleManager(this);
             apiItemRegistry.loadAll();
             
-            moduleManager = new ModuleManager(this);
             moduleManager.loadAll();
 
             Bukkit.getScheduler().runTaskLater(this, () -> {
@@ -340,24 +343,7 @@ public class Main extends JavaPlugin {
                "}\n";
     }
 
-    private void saveResourceItems() {
-        File itemsFolder = new File(getDataFolder(), "items");
-        if (!itemsFolder.exists()) itemsFolder.mkdirs();
-        
-        try {
-            java.util.jar.JarFile jar = new java.util.jar.JarFile(getFile());
-            java.util.Enumeration<java.util.jar.JarEntry> entries = jar.entries();
-            while (entries.hasMoreElements()) {
-                java.util.jar.JarEntry entry = entries.nextElement();
-                String name = entry.getName();
-                if (name.startsWith("items/") && name.endsWith(".yml")) {
-                    File destFile = new File(getDataFolder(), name);
-                    if (!destFile.exists()) saveResource(name, false);
-                }
-            }
-            jar.close();
-        } catch (Exception e) {}
-    }
+    public static Main getInstance() { return instance; }
 
     public ConfigManager getConfigManager() { return configManager; }
     public MessageManager getMessageManager() { return messageManager; }
@@ -393,6 +379,7 @@ public class Main extends JavaPlugin {
                 if (pluginCmd != null) {
                     pluginCmd.setExecutor(executor);
                     pluginCmd.setTabCompleter(executor);
+                    if (!cmd.getAliases().isEmpty()) pluginCmd.setAliases(cmd.getAliases());
                     getLogger().info("[API] Registered command: /" + cmd.getName());
                 } else {
                     // Use reflection to register command
@@ -446,9 +433,14 @@ public class Main extends JavaPlugin {
                 }
             };
             
-            command.setPermission("dci.command." + name);
+            CustomCommand registeredCommand = apiItemRegistry.getCommand(name);
+            command.setPermission(registeredCommand != null && registeredCommand.getPermission() != null
+                ? registeredCommand.getPermission() : "dci.command." + name);
             command.setDescription("Custom command: " + name);
             command.setUsage("/" + name);
+            if (registeredCommand != null && !registeredCommand.getAliases().isEmpty()) {
+                command.setAliases(registeredCommand.getAliases());
+            }
             
             // Log all methods of commandMap class
             getLogger().info("[API] CommandMap class: " + commandMap.getClass().getName());

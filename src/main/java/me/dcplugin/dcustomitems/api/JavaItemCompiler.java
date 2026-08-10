@@ -32,6 +32,8 @@ public class JavaItemCompiler {
     private final Path cacheDir;
     private final Map<String, byte[]> compiledClasses = new ConcurrentHashMap<>();
     private final Map<String, String> fileHashes = new ConcurrentHashMap<>(); // file -> hash
+    private final Map<String, String> sourceClassAliases = new ConcurrentHashMap<>();
+    private final Map<String, File> moduleSourceFolders = new ConcurrentHashMap<>();
     private CustomClassLoader classLoader;
     private final AtomicBoolean compiling = new AtomicBoolean(false);
     
@@ -87,19 +89,30 @@ public class JavaItemCompiler {
         // Загружаем кэш хэшей файлов
         loadFileHashesCache();
 
-        // Ищем все .java файлы
-        File[] javaFiles = itemsDir.toFile().listFiles((dir, name) ->
-            name.endsWith(".java") &&
-            !name.startsWith("Abstract") &&
-            !name.startsWith("Custom") &&
-            !name.startsWith("EXAMPLE-")
-        );
-
-        if (javaFiles == null || javaFiles.length == 0) {
+        // Ищем .java файлы рекурсивно, включая подпапки-модули.
+        List<File> javaFiles = findJavaFiles(itemsDir.toFile());
+        if (javaFiles.isEmpty()) {
             return result;
         }
 
-        plugin.getLogger().info("[JavaCompiler] Found " + javaFiles.length + " .java files");
+        // Сначала строим таблицу имён. Это позволяет файлам одного модуля
+        // ссылаться друг на друга после переименования классов компилятором.
+        sourceClassAliases.clear();
+        for (File javaFile : javaFiles) {
+            String source = readFileContent(javaFile);
+            java.util.regex.Matcher matcher = java.util.regex.Pattern
+                .compile("public\\s+(?:final\\s+)?class\\s+(\\w+)")
+                .matcher(source);
+            if (matcher.find()) {
+                String generatedName = getGeneratedClassName(javaFile);
+                sourceClassAliases.put(matcher.group(1), generatedName);
+                if (detectClassType(source) == ClassType.MODULE) {
+                    moduleSourceFolders.put(PACKAGE + "." + generatedName, javaFile.getParentFile());
+                }
+            }
+        }
+
+        plugin.getLogger().info("[JavaCompiler] Found " + javaFiles.size() + " .java files");
 
         int skipped = 0;
         int compiled = 0;
@@ -107,12 +120,12 @@ public class JavaItemCompiler {
         for (File javaFile : javaFiles) {
             // Проверяем, изменился ли файл
             String currentHash = getFileHash(javaFile);
-            String cachedHash = fileHashes.get(javaFile.getName());
+            String cacheKey = getCacheKey(javaFile);
+            String cachedHash = fileHashes.get(cacheKey);
             
             if (currentHash.equals(cachedHash)) {
                 // Файл не изменился - пропускаем компиляцию
-                String generatedClassName = javaFile.getName().replace(".java", "").replace("-", "_").replace(" ", "_") + "Item";
-                String fullClassName = PACKAGE + "." + generatedClassName;
+                String fullClassName = PACKAGE + "." + getGeneratedClassName(javaFile);
                 
                 // Пытаемся загрузить из кэша
                 byte[] cachedBytes = loadFromCache(fullClassName);
@@ -128,7 +141,7 @@ public class JavaItemCompiler {
             // Компилируем файл
             if (compileFile(javaFile, result)) {
                 compiled++;
-                fileHashes.put(javaFile.getName(), currentHash);
+                fileHashes.put(cacheKey, currentHash);
             }
         }
 
@@ -168,8 +181,8 @@ public class JavaItemCompiler {
             }
 
             ClassType classType = detectClassType(sourceCode);
-            String generatedClassName = fileName.replace("-", "_").replace(" ", "_") + "Item";
-            sourceCode = replaceClassName(sourceCode, generatedClassName);
+            String generatedClassName = getGeneratedClassName(javaFile);
+            sourceCode = replaceClassNames(sourceCode);
 
             final String finalSourceCode = "package " + PACKAGE + ";\n" + sourceCode;
             final String fullClassName = PACKAGE + "." + generatedClassName;
@@ -236,6 +249,9 @@ public class JavaItemCompiler {
                 // Сохраняем в кэш
                 for (Map.Entry<String, byte[]> entry : classBytesHolder.entrySet()) {
                     saveToCache(entry.getKey(), entry.getValue());
+                    // Оставляем class-файлы на диске, чтобы следующий исходник
+                    // из той же папки мог использовать уже скомпилированный класс.
+                    saveToCompiledDir(entry.getKey(), entry.getValue());
                 }
 
                 addToResult(result, fullClassName, classType);
@@ -267,6 +283,9 @@ public class JavaItemCompiler {
             case PLACEHOLDER:
                 result.placeholders.add(fullClassName);
                 break;
+            case MODULE:
+                result.modules.add(fullClassName);
+                break;
         }
     }
 
@@ -280,14 +299,58 @@ public class JavaItemCompiler {
     }
 
     private ClassType detectClassType(String sourceCode) {
+        if (sourceCode.contains("extends Module")) return ClassType.MODULE;
         if (sourceCode.contains("extends AbstractCustomItem")) return ClassType.ITEM;
         if (sourceCode.contains("extends CustomCommand")) return ClassType.COMMAND;
         if (sourceCode.contains("extends CustomPlaceholder")) return ClassType.PLACEHOLDER;
         return ClassType.ITEM;
     }
 
-    private String replaceClassName(String sourceCode, String newClassName) {
-        return sourceCode.replaceAll("public\\s+class\\s+\\w+", "public class " + newClassName);
+    private String replaceClassNames(String sourceCode) {
+        String result = sourceCode;
+        List<Map.Entry<String, String>> aliases = new ArrayList<>(sourceClassAliases.entrySet());
+        aliases.sort((a, b) -> Integer.compare(b.getKey().length(), a.getKey().length()));
+        for (Map.Entry<String, String> alias : aliases) {
+            result = result.replaceAll("\\b" + java.util.regex.Pattern.quote(alias.getKey()) + "\\b", alias.getValue());
+        }
+        return result;
+    }
+
+    private List<File> findJavaFiles(File directory) {
+        List<File> files = new ArrayList<>();
+        File[] children = directory.listFiles();
+        if (children == null) return files;
+        Arrays.sort(children, Comparator.comparing(File::getPath));
+        for (File child : children) {
+            if (child.isDirectory()) {
+                files.addAll(findJavaFiles(child));
+            } else if (child.getName().endsWith(".java")
+                    && !child.getName().startsWith("Abstract")
+                    && !child.getName().startsWith("Custom")
+                    && !child.getName().startsWith("EXAMPLE-")) {
+                files.add(child);
+            }
+        }
+        return files;
+    }
+
+    public String getGeneratedClassName(File javaFile) {
+        String relative;
+        try {
+            relative = itemsDir.relativize(javaFile.toPath()).toString();
+        } catch (Exception e) {
+            relative = javaFile.getName();
+        }
+        return relative.replace('\\', '_').replace('/', '_')
+            .replace(".java", "").replace("-", "_").replace(" ", "_") + "Item";
+    }
+
+    private String getCacheKey(File javaFile) {
+        try {
+            return itemsDir.relativize(javaFile.toPath()).toString().replace('\\', '/');
+        } catch (Exception e) {
+            return javaFile.getName();
+        }
     }
 
     // ===== КЭШИРОВАНИЕ =====
@@ -344,6 +407,14 @@ public class JavaItemCompiler {
             Path cacheFile = cacheDir.resolve(className.replace('.', '/') + ".class");
             Files.createDirectories(cacheFile.getParent());
             Files.write(cacheFile, bytes);
+        } catch (Exception ignored) {}
+    }
+
+    private void saveToCompiledDir(String className, byte[] bytes) {
+        try {
+            Path classFile = compiledDir.resolve(className.replace('.', '/') + ".class");
+            Files.createDirectories(classFile.getParent());
+            Files.write(classFile, bytes);
         } catch (Exception ignored) {}
     }
 
@@ -430,6 +501,32 @@ public class JavaItemCompiler {
         return null;
     }
 
+    public me.dcplugin.dcustomitems.api.modules.Module createModuleInstance(String fullClassName) {
+        try {
+            Class<?> clazz = loadClass(fullClassName);
+            if (clazz != null && me.dcplugin.dcustomitems.api.modules.Module.class.isAssignableFrom(clazz)) {
+                File moduleFolder = moduleSourceFolders.get(fullClassName);
+                if (moduleFolder == null) {
+                    moduleFolder = new File(plugin.getDataFolder(), "items/" + moduleIdFromClassName(fullClassName));
+                }
+                String moduleId = moduleFolder.getName();
+                return (me.dcplugin.dcustomitems.api.modules.Module) clazz
+                    .getDeclaredConstructor(Main.class, String.class, File.class)
+                    .newInstance(plugin, moduleId, moduleFolder);
+            }
+        } catch (Exception e) {
+            plugin.getLogger().severe("[JavaCompiler] Error creating module: " + fullClassName + " - " + e.getMessage());
+        }
+        return null;
+    }
+
+    private String moduleIdFromClassName(String fullClassName) {
+        String simpleName = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
+        if (simpleName.endsWith("_Item")) simpleName = simpleName.substring(0, simpleName.length() - 5);
+        int separator = simpleName.indexOf('_');
+        return separator > 0 ? simpleName.substring(0, separator) : simpleName;
+    }
+
     public CustomPlaceholder createPlaceholderInstance(String fullClassName) {
         try {
             Class<?> clazz = loadClass(fullClassName);
@@ -447,6 +544,8 @@ public class JavaItemCompiler {
     public void clear() {
         compiledClasses.clear();
         fileHashes.clear();
+        sourceClassAliases.clear();
+        moduleSourceFolders.clear();
         classLoader = null;
     }
 
@@ -456,13 +555,14 @@ public class JavaItemCompiler {
 
     // ===== КЛАССЫ =====
 
-    public enum ClassType { ITEM, COMMAND, PLACEHOLDER }
+    public enum ClassType { ITEM, COMMAND, PLACEHOLDER, MODULE }
 
     public static class CompileResult {
         public int compiled = 0;
         public List<String> items = new ArrayList<>();
         public List<String> commands = new ArrayList<>();
         public List<String> placeholders = new ArrayList<>();
+        public List<String> modules = new ArrayList<>();
         public List<String> errors = new ArrayList<>();
     }
 
