@@ -1,0 +1,25 @@
+# ============================================
+# DeluxeMenuX - Advanced Menu System
+# ============================================
+name: "DeluxeMenuX"
+version: "1.0"
+author: "DC-CustomItems"
+
+# Основные настройки
+settings:
+  # Язык сообщений
+  language: "ru"
+  # Включить звуки
+  sounds: true
+  # Включить анимации
+  animations: true
+
+# Команды модуля
+commands:
+  - menu
+  - deluxemenu
+
+# Права
+permissions:
+  - deluxemenux.use
+  - deluxemenux.admin
