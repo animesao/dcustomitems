@@ -3,60 +3,93 @@ package me.dcplugin.dcustomitems.api;
 import me.dcplugin.dcustomitems.Main;
 import me.dcplugin.dcustomitems.api.commands.CustomCommand;
 import me.dcplugin.dcustomitems.api.placeholders.CustomPlaceholder;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.tools.*;
 import java.io.*;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Runtime компилятор для .java файлов
+ * Оптимизированный Runtime компилятор для .java файлов
  * 
- * Поддерживает:
- * - AbstractCustomItem (предметы)
- * - CustomCommand (команды)
- * - CustomPlaceholder (плейсхолдеры)
+ * Оптимизации:
+ * - Кэширование скомпилированных классов
+ * - Пропуск неизмененных файлов
+ * - Асинхронная компиляция
+ * - Минимальная нагрузка на сервер
  */
 public class JavaItemCompiler {
 
     private final Main plugin;
     private final Path itemsDir;
     private final Path compiledDir;
+    private final Path cacheDir;
     private final Map<String, byte[]> compiledClasses = new ConcurrentHashMap<>();
+    private final Map<String, String> fileHashes = new ConcurrentHashMap<>(); // file -> hash
     private CustomClassLoader classLoader;
+    private final AtomicBoolean compiling = new AtomicBoolean(false);
     
-    // Package для компиляции
     private static final String PACKAGE = "items";
 
     public JavaItemCompiler(Main plugin) {
         this.plugin = plugin;
         this.itemsDir = plugin.getDataFolder().toPath().resolve("items");
         this.compiledDir = plugin.getDataFolder().toPath().resolve("compiled");
+        this.cacheDir = plugin.getDataFolder().toPath().resolve("cache");
     }
 
     /**
-     * Компилирует все .java файлы из папки items/
+     * Асинхронная компиляция всех .java файлов
+     * Возвращает CompletableFuture с результатом
+     */
+    public CompletableFuture<CompileResult> compileAllAsync() {
+        if (compiling.get()) {
+            plugin.getLogger().info("[JavaCompiler] Already compiling, skipping...");
+            return CompletableFuture.completedFuture(new CompileResult());
+        }
+        
+        return CompletableFuture.supplyAsync(() -> {
+            compiling.set(true);
+            try {
+                return compileAllInternal();
+            } finally {
+                compiling.set(false);
+            }
+        });
+    }
+
+    /**
+     * Синхронная компиляция (для использования при старте)
      */
     public CompileResult compileAll() {
+        return compileAllInternal();
+    }
+
+    private CompileResult compileAllInternal() {
+        long startTime = System.currentTimeMillis();
         compiledClasses.clear();
         CompileResult result = new CompileResult();
 
         try {
             Files.createDirectories(compiledDir);
+            Files.createDirectories(cacheDir);
         } catch (IOException e) {
-            plugin.getLogger().severe("[JavaCompiler] Cannot create compiled/: " + e.getMessage());
+            plugin.getLogger().severe("[JavaCompiler] Cannot create directories: " + e.getMessage());
             return result;
         }
 
-        // Ищем все .java файлы (кроме базовых классов и EXAMPLE)
+        // Загружаем кэш хэшей файлов
+        loadFileHashesCache();
+
+        // Ищем все .java файлы
         File[] javaFiles = itemsDir.toFile().listFiles((dir, name) ->
-            name.endsWith(".java") && 
+            name.endsWith(".java") &&
             !name.startsWith("Abstract") &&
             !name.startsWith("Custom") &&
             !name.startsWith("EXAMPLE-")
@@ -68,31 +101,61 @@ public class JavaItemCompiler {
 
         plugin.getLogger().info("[JavaCompiler] Found " + javaFiles.length + " .java files");
 
+        int skipped = 0;
+        int compiled = 0;
+
         for (File javaFile : javaFiles) {
+            // Проверяем, изменился ли файл
+            String currentHash = getFileHash(javaFile);
+            String cachedHash = fileHashes.get(javaFile.getName());
+            
+            if (currentHash.equals(cachedHash)) {
+                // Файл не изменился - пропускаем компиляцию
+                String generatedClassName = javaFile.getName().replace(".java", "").replace("-", "_").replace(" ", "_") + "Item";
+                String fullClassName = PACKAGE + "." + generatedClassName;
+                
+                // Пытаемся загрузить из кэша
+                byte[] cachedBytes = loadFromCache(fullClassName);
+                if (cachedBytes != null) {
+                    compiledClasses.put(fullClassName, cachedBytes);
+                    ClassType classType = detectClassType(readFileContent(javaFile));
+                    addToResult(result, fullClassName, classType);
+                    skipped++;
+                    continue;
+                }
+            }
+
+            // Компилируем файл
             if (compileFile(javaFile, result)) {
-                result.compiled++;
+                compiled++;
+                fileHashes.put(javaFile.getName(), currentHash);
             }
         }
 
-        // Загружаем классы с правильным classloader
-        if (result.compiled > 0) {
+        // Сохраняем кэш хэшей
+        saveFileHashesCache();
+
+        // Загружаем классы
+        if (compiledClasses.size() > 0) {
             try {
                 classLoader = new CustomClassLoader(getClass().getClassLoader());
                 for (Map.Entry<String, byte[]> entry : compiledClasses.entrySet()) {
                     classLoader.addClass(entry.getKey(), entry.getValue());
                 }
-                plugin.getLogger().info("[JavaCompiler] Loaded " + compiledClasses.size() + " classes into classloader");
             } catch (Exception e) {
                 plugin.getLogger().severe("[JavaCompiler] Error loading classes: " + e.getMessage());
             }
         }
+
+        long elapsed = System.currentTimeMillis() - startTime;
+        plugin.getLogger().info("[JavaCompiler] Compiled: " + compiled + ", Skipped: " + skipped + " (" + elapsed + "ms)");
 
         return result;
     }
 
     private boolean compileFile(File javaFile, CompileResult result) {
         try {
-            String sourceCode = new String(Files.readAllBytes(javaFile.toPath()), StandardCharsets.UTF_8);
+            String sourceCode = readFileContent(javaFile);
             String fileName = javaFile.getName().replace(".java", "");
 
             // Добавляем импорты если нет
@@ -104,32 +167,13 @@ public class JavaItemCompiler {
                              sourceCode;
             }
 
-            // Извлекаем имя класса
-            String className = extractClassName(sourceCode);
-            if (className == null) {
-                plugin.getLogger().warning("[JavaCompiler] Cannot find class name in " + javaFile.getName());
-                result.errors.add(javaFile.getName() + ": no class found");
-                return false;
-            }
-
-            // Проверяем тип класса
             ClassType classType = detectClassType(sourceCode);
-
-            // Генерируем имя класса на основе имени файла
             String generatedClassName = fileName.replace("-", "_").replace(" ", "_") + "Item";
-            
-            // Переименовываем класс в исходнике
             sourceCode = replaceClassName(sourceCode, generatedClassName);
-            
-            // Добавляем package
+
             final String finalSourceCode = "package " + PACKAGE + ";\n" + sourceCode;
-            
-            // Полное имя класса с package
             final String fullClassName = PACKAGE + "." + generatedClassName;
 
-            plugin.getLogger().info("[JavaCompiler] Compiling " + javaFile.getName() + " -> " + fullClassName);
-
-            // Компилируем
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
             if (compiler == null) {
                 plugin.getLogger().severe("[JavaCompiler] JavaCompiler not found! JDK required.");
@@ -166,7 +210,6 @@ public class JavaItemCompiler {
                                 public void close() throws IOException {
                                     super.close();
                                     classBytesHolder.put(className, toByteArray());
-                                    plugin.getLogger().info("[JavaCompiler] Compiled class: " + className);
                                 }
                             };
                         }
@@ -188,25 +231,14 @@ public class JavaItemCompiler {
             fileManager.close();
 
             if (success) {
-                plugin.getLogger().info("[JavaCompiler] Compiled classes: " + classBytesHolder.keySet());
                 compiledClasses.putAll(classBytesHolder);
-
-                // Определяем тип и добавляем в результат (с полным именем package.class)
-                switch (classType) {
-                    case ITEM:
-                        result.items.add(fullClassName);
-                        plugin.getLogger().info("[JavaCompiler] ✅ Item: " + javaFile.getName() + " -> " + fullClassName);
-                        break;
-                    case COMMAND:
-                        result.commands.add(fullClassName);
-                        plugin.getLogger().info("[JavaCompiler] ✅ Command: " + javaFile.getName() + " -> " + fullClassName);
-                        break;
-                    case PLACEHOLDER:
-                        result.placeholders.add(fullClassName);
-                        plugin.getLogger().info("[JavaCompiler] ✅ Placeholder: " + javaFile.getName() + " -> " + fullClassName);
-                        break;
+                
+                // Сохраняем в кэш
+                for (Map.Entry<String, byte[]> entry : classBytesHolder.entrySet()) {
+                    saveToCache(entry.getKey(), entry.getValue());
                 }
 
+                addToResult(result, fullClassName, classType);
                 return true;
             } else {
                 for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
@@ -224,6 +256,29 @@ public class JavaItemCompiler {
         }
     }
 
+    private void addToResult(CompileResult result, String fullClassName, ClassType classType) {
+        switch (classType) {
+            case ITEM:
+                result.items.add(fullClassName);
+                break;
+            case COMMAND:
+                result.commands.add(fullClassName);
+                break;
+            case PLACEHOLDER:
+                result.placeholders.add(fullClassName);
+                break;
+        }
+    }
+
+    private String readFileContent(File file) {
+        try {
+            return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            plugin.getLogger().severe("[JavaCompiler] Error reading file: " + file.getName());
+            return "";
+        }
+    }
+
     private ClassType detectClassType(String sourceCode) {
         if (sourceCode.contains("extends AbstractCustomItem")) return ClassType.ITEM;
         if (sourceCode.contains("extends CustomCommand")) return ClassType.COMMAND;
@@ -231,33 +286,72 @@ public class JavaItemCompiler {
         return ClassType.ITEM;
     }
 
-    private String extractClassName(String sourceCode) {
-        String[] lines = sourceCode.split("\n");
-        for (String line : lines) {
-            line = line.trim();
-            if (line.startsWith("public class ")) {
-                String afterClass = line.substring("public class ".length()).trim();
-                int spaceIdx = afterClass.indexOf(' ');
-                int braceIdx = afterClass.indexOf('{');
-                int endIdx = Math.min(
-                    spaceIdx > 0 ? spaceIdx : afterClass.length(),
-                    braceIdx > 0 ? braceIdx : afterClass.length()
-                );
-                return afterClass.substring(0, endIdx).trim();
+    private String replaceClassName(String sourceCode, String newClassName) {
+        return sourceCode.replaceAll("public\\s+class\\s+\\w+", "public class " + newClassName);
+    }
+
+    // ===== КЭШИРОВАНИЕ =====
+
+    private String getFileHash(File file) {
+        try {
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] hash = digest.digest(bytes);
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
             }
+            return sb.toString();
+        } catch (Exception e) {
+            return String.valueOf(file.lastModified());
         }
+    }
+
+    private void loadFileHashesCache() {
+        try {
+            Path cacheFile = cacheDir.resolve("file_hashes.properties");
+            if (Files.exists(cacheFile)) {
+                Properties props = new Properties();
+                props.load(Files.newInputStream(cacheFile));
+                for (String key : props.stringPropertyNames()) {
+                    fileHashes.put(key, props.getProperty(key));
+                }
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private void saveFileHashesCache() {
+        try {
+            Path cacheFile = cacheDir.resolve("file_hashes.properties");
+            Properties props = new Properties();
+            props.putAll(fileHashes);
+            props.store(Files.newOutputStream(cacheFile), "DC-CustomItems File Hashes Cache");
+        } catch (Exception ignored) {}
+    }
+
+    private byte[] loadFromCache(String className) {
+        try {
+            Path cacheFile = cacheDir.resolve(className.replace('.', '/') + ".class");
+            if (Files.exists(cacheFile)) {
+                return Files.readAllBytes(cacheFile);
+            }
+        } catch (Exception ignored) {}
         return null;
     }
 
-    private String replaceClassName(String sourceCode, String newClassName) {
-        // Заменяем public class OldName на public class NewName
-        return sourceCode.replaceAll("public\\s+class\\s+\\w+", "public class " + newClassName);
+    private void saveToCache(String className, byte[] bytes) {
+        try {
+            Path cacheFile = cacheDir.resolve(className.replace('.', '/') + ".class");
+            Files.createDirectories(cacheFile.getParent());
+            Files.write(cacheFile, bytes);
+        } catch (Exception ignored) {}
     }
+
+    // ===== КЛАССПАС =====
 
     private String getClasspath() {
         StringBuilder classpath = new StringBuilder();
 
-        // Добавляем jar плагина
         try {
             File pluginFile = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
             classpath.append(pluginFile.getAbsolutePath());
@@ -265,7 +359,6 @@ public class JavaItemCompiler {
             classpath.append("plugins/DC-CustomItems.jar");
         }
 
-        // Добавляем server jar
         String[] serverJarPaths = {"server.jar", "paper.jar", "../server.jar", "../paper.jar"};
         for (String path : serverJarPaths) {
             File serverJar = new File(path);
@@ -275,7 +368,6 @@ public class JavaItemCompiler {
             }
         }
 
-        // Добавляем библиотеки
         String[] libPaths = {"libraries", "../libraries"};
         for (String libPath : libPaths) {
             File libsDir = new File(libPath);
@@ -284,9 +376,7 @@ public class JavaItemCompiler {
             }
         }
 
-        // Добавляем текущую директорию для скомпилированных классов
         classpath.append(File.pathSeparator).append(compiledDir.toString());
-
         return classpath.toString();
     }
 
@@ -303,21 +393,13 @@ public class JavaItemCompiler {
         }
     }
 
-    // ===== МЕТОДЫ ЗАГРУЗКИ =====
+    // ===== ЗАГРУЗКА КЛАССОВ =====
 
     public Class<?> loadClass(String fullClassName) {
-        if (classLoader == null) {
-            plugin.getLogger().severe("[JavaCompiler] ClassLoader is null!");
-            return null;
-        }
-        
-        plugin.getLogger().info("[JavaCompiler] Loading class: " + fullClassName);
-        plugin.getLogger().info("[JavaCompiler] Available classes: " + compiledClasses.keySet());
-        
+        if (classLoader == null) return null;
         try {
             return classLoader.findClass(fullClassName);
         } catch (ClassNotFoundException e) {
-            plugin.getLogger().severe("[JavaCompiler] Class not found: " + fullClassName);
             return null;
         }
     }
@@ -325,22 +407,13 @@ public class JavaItemCompiler {
     public AbstractCustomItem createItemInstance(String fullClassName) {
         try {
             Class<?> clazz = loadClass(fullClassName);
-            if (clazz == null) {
-                return null;
-            }
-            if (AbstractCustomItem.class.isAssignableFrom(clazz)) {
-                AbstractCustomItem item = (AbstractCustomItem) clazz.getDeclaredConstructor().newInstance();
-                plugin.getLogger().info("[JavaCompiler] Created item instance: " + item.getId());
-                return item;
-            } else {
-                plugin.getLogger().warning("[JavaCompiler] " + fullClassName + " does not extend AbstractCustomItem");
-                return null;
+            if (clazz != null && AbstractCustomItem.class.isAssignableFrom(clazz)) {
+                return (AbstractCustomItem) clazz.getDeclaredConstructor().newInstance();
             }
         } catch (Exception e) {
-            plugin.getLogger().severe("[JavaCompiler] Error creating item: " + fullClassName + " - " + e.getMessage());
-            e.printStackTrace();
-            return null;
+            plugin.getLogger().severe("[JavaCompiler] Error creating item: " + fullClassName);
         }
+        return null;
     }
 
     public CustomCommand createCommandInstance(String fullClassName) {
@@ -373,7 +446,12 @@ public class JavaItemCompiler {
 
     public void clear() {
         compiledClasses.clear();
+        fileHashes.clear();
         classLoader = null;
+    }
+
+    public boolean isCompiling() {
+        return compiling.get();
     }
 
     // ===== КЛАССЫ =====
@@ -393,8 +471,8 @@ public class JavaItemCompiler {
 
         CustomClassLoader(ClassLoader parent) { super(parent); }
 
-        void addClass(String name, byte[] bytes) { 
-            classBytes.put(name, bytes); 
+        void addClass(String name, byte[] bytes) {
+            classBytes.put(name, bytes);
         }
 
         @Override
