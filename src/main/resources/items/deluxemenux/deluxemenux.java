@@ -391,10 +391,16 @@ public class deluxemenuxModule extends Module implements Listener {
             return;
         }
 
-        // Выполняем команду
+        // Внутренние переходы DeluxeMenuX должны выполняться от имени игрока.
+        // Раньше `menu shop` отправлялся через console sender, поэтому команда
+        // menu-command.java отвечала "Только для игроков!" вместо открытия меню.
         if (!menuItem.command.isEmpty()) {
             String cmd = menuItem.command.replace("%player%", player.getName());
-            plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
+            if (!executeInternalMenuCommand(player, cmd)) {
+                // Обычные команды (give, help и т.п.) по-прежнему выполняются
+                // от консоли, чтобы им не требовались права игрока.
+                plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
+            }
         }
 
         // Отправляем сообщение
@@ -412,6 +418,36 @@ public class deluxemenuxModule extends Module implements Listener {
         if (menuItem.close) {
             player.closeInventory();
         }
+    }
+
+    /**
+     * Выполнить навигационную команду меню без повторного прохождения через
+     * Bukkit CommandMap. Это сохраняет контекст Player для /menu, /shop и /kits.
+     */
+    private boolean executeInternalMenuCommand(Player player, String command) {
+        String normalized = command == null ? "" : command.trim();
+        while (normalized.startsWith("/")) {
+            normalized = normalized.substring(1).trim();
+        }
+        if (normalized.isEmpty()) return false;
+
+        String[] parts = normalized.split("\\s+");
+        String root = parts[0].toLowerCase(Locale.ROOT);
+        String menuId;
+
+        if (root.equals("menu") || root.equals("deluxemenu") || root.equals("deluxemenux")) {
+            menuId = parts.length > 1 ? parts[1].toLowerCase(Locale.ROOT) : "main";
+        } else if (root.equals("shop") || root.equals("kits") || root.equals("kit")) {
+            menuId = root.equals("kit") ? "kits" : root;
+        } else {
+            return false;
+        }
+
+        Module menuModule = plugin.getModuleManager().getModule("deluxemenux");
+        if (menuModule == null || !menuModule.openMenu(player, menuId)) {
+            player.sendMessage(colorize("&cМеню не найдено: " + menuId));
+        }
+        return true;
     }
 
     @EventHandler
