@@ -165,116 +165,177 @@ public class Main extends JavaPlugin {
         return "import me.dcplugin.dcustomitems.api.config.MessagesConfig;\n" +
                "\n" +
                "/**\n" +
-               " * Plugin Messages Configuration\n" +
-               " * Edit this file to customize all plugin messages!\n" +
-               " * Run /ci reload after changes.\n" +
+               " * ============================================\n" +
+               " * DC-CustomItems - Настройка сообщений\n" +
+               " * ============================================\n" +
+               " *\n" +
+               " * Редактируй этот файл чтобы изменить ЛЮБОЕ сообщение плагина!\n" +
+               " * После изменений выполни /ci reload\n" +
+               " *\n" +
+               " * Формат:\n" +
+               " * - &0-9, &a-f - цвета\n" +
+               " * - &l - жирный\n" +
+               " * - &n - подчёркнутый\n" +
+               " * - &o - курсив\n" +
+               " * - &k - обфусцированный\n" +
+               " * - &r - сброс\n" +
+               " * - {player}, {item}, {error}, {count}, {version} - плейсхолдеры\n" +
                " */\n" +
                "public class messages {\n" +
                "\n" +
                "    public static void load() {\n" +
-               "        // Prefix\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ПРЕФИКС\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
                "        MessagesConfig.PREFIX = \"&8[&6DCI&8] &r\";\n" +
                "\n" +
-               "        // General\n" +
-               "        MessagesConfig.NO_PERMISSION = MessagesConfig.PREFIX + \"&cNo permission!\";\n" +
-               "        MessagesConfig.PLAYER_NOT_FOUND = MessagesConfig.PREFIX + \"&cPlayer not found!\";\n" +
-               "        MessagesConfig.ITEM_NOT_FOUND = MessagesConfig.PREFIX + \"&cItem not found: {item}\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ОБЩИЕ СООБЩЕНИЯ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.NO_PERMISSION = MessagesConfig.PREFIX + \"&cУ вас нет прав!\";\n" +
+               "        MessagesConfig.PLAYER_NOT_FOUND = MessagesConfig.PREFIX + \"&cИгрок не найден!\";\n" +
+               "        MessagesConfig.ITEM_NOT_FOUND = MessagesConfig.PREFIX + \"&cПредмет '{item}' не найден!\";\n" +
+               "        MessagesConfig.UNKNOWN_COMMAND = MessagesConfig.PREFIX + \"&cНеизвестная команда!\";\n" +
+               "        MessagesConfig.ONLY_FOR_PLAYERS = MessagesConfig.PREFIX + \"&cТолько для игроков!\";\n" +
                "\n" +
-               "        // /ci commands\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // КОМАНДЫ /ci\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
                "        MessagesConfig.CI_HEADER = \"&6=== DC-CustomItems ===\";\n" +
-               "        MessagesConfig.CI_HELP_GIVE = \"&e/ci give <id> [player] &7- Give item\";\n" +
-               "        MessagesConfig.CI_HELP_LIST = \"&e/ci list &7- List items\";\n" +
-               "        MessagesConfig.CI_HELP_RELOAD = \"&e/ci reload &7- Reload plugin\";\n" +
-               "        MessagesConfig.CI_GIVE_SELF = MessagesConfig.PREFIX + \"&aGiven: &e{item}\";\n" +
-               "        MessagesConfig.CI_GIVE_OTHER = MessagesConfig.PREFIX + \"&aGiven &e{item} &ato &e{player}\";\n" +
-               "        MessagesConfig.CI_GIVE_RECEIVED = MessagesConfig.PREFIX + \"&aYou received: &e{item}\";\n" +
+               "        MessagesConfig.CI_HELP_GIVE = \"&e/ci give <предмет> [игрок] &7- Выдать предмет\";\n" +
+               "        MessagesConfig.CI_HELP_LIST = \"&e/ci list &7- Список предметов\";\n" +
+               "        MessagesConfig.CI_HELP_RELOAD = \"&e/ci reload &7- Перезагрузить\";\n" +
+               "        MessagesConfig.CI_HELP_UPDATE = \"&e/ci update &7- Обновления\";\n" +
+               "        MessagesConfig.CI_GIVE_SELF = MessagesConfig.PREFIX + \"&aВыдан: &e{item}\";\n" +
+               "        MessagesConfig.CI_GIVE_OTHER = MessagesConfig.PREFIX + \"&aВыдан &e{item} &aигроку &e{player}\";\n" +
+               "        MessagesConfig.CI_GIVE_RECEIVED = MessagesConfig.PREFIX + \"&aВы получили: &e{item}\";\n" +
+               "        MessagesConfig.CI_GIVE_NO_PERM = MessagesConfig.PREFIX + \"&cНет прав на этот предмет!\";\n" +
                "\n" +
-               "        // List\n" +
-               "        MessagesConfig.LIST_HEADER = MessagesConfig.PREFIX + \"&6=== Items ===\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // СПИСОК\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.LIST_HEADER = MessagesConfig.PREFIX + \"&6=== Список предметов ===\";\n" +
                "        MessagesConfig.LIST_ITEM = MessagesConfig.PREFIX + \"&e{item} &7- &f{type}\";\n" +
-               "        MessagesConfig.LIST_EMPTY = MessagesConfig.PREFIX + \"&cNo items loaded\";\n" +
+               "        MessagesConfig.LIST_EMPTY = MessagesConfig.PREFIX + \"&cНет предметов\";\n" +
                "\n" +
-               "        // Reload\n" +
-               "        MessagesConfig.RELOAD_SUCCESS = MessagesConfig.PREFIX + \"&a&lReloaded!\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ПЕРЕЗАГРУЗКА\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.RELOAD_SUCCESS = MessagesConfig.PREFIX + \"&a&lПлагин перезагружен!\";\n" +
                "        MessagesConfig.RELOAD_YAML = MessagesConfig.PREFIX + \"&7YAML: &e{count}\";\n" +
-               "        MessagesConfig.RELOAD_JAVA_ITEMS = MessagesConfig.PREFIX + \"&7Java Items: &e{count}\";\n" +
-               "        MessagesConfig.RELOAD_JAVA_COMMANDS = MessagesConfig.PREFIX + \"&7Java Commands: &e{count}\";\n" +
-               "        MessagesConfig.RELOAD_JAVA_PLACEHOLDERS = MessagesConfig.PREFIX + \"&7Java Placeholders: &e{count}\";\n" +
+               "        MessagesConfig.RELOAD_JAVA_ITEMS = MessagesConfig.PREFIX + \"&7Java предметов: &e{count}\";\n" +
+               "        MessagesConfig.RELOAD_JAVA_COMMANDS = MessagesConfig.PREFIX + \"&7Java команд: &e{count}\";\n" +
+               "        MessagesConfig.RELOAD_JAVA_PLACEHOLDERS = MessagesConfig.PREFIX + \"&7Java плейсхолдеров: &e{count}\";\n" +
+               "        MessagesConfig.RELOAD_ERROR = MessagesConfig.PREFIX + \"&cОшибка: {error}\";\n" +
                "\n" +
-               "        // Updates\n" +
-               "        MessagesConfig.UPDATE_LATEST = MessagesConfig.PREFIX + \"&aLatest version! ({version})\";\n" +
-               "        MessagesConfig.UPDATE_AVAILABLE = MessagesConfig.PREFIX + \"&cNew version: {version}\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ОБНОВЛЕНИЯ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.UPDATE_CHECKING = MessagesConfig.PREFIX + \"&eПроверка обновлений...\";\n" +
+               "        MessagesConfig.UPDATE_LATEST = MessagesConfig.PREFIX + \"&aПоследняя версия! ({version})\";\n" +
+               "        MessagesConfig.UPDATE_AVAILABLE = MessagesConfig.PREFIX + \"&cНовая версия: {version}\";\n" +
+               "        MessagesConfig.UPDATE_DOWNLOAD = MessagesConfig.PREFIX + \"&bСкачать: https://github.com/animesao/dcustomitems/releases\";\n" +
                "\n" +
-               "        // /api-item\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // JAVA API\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
                "        MessagesConfig.API_HEADER = MessagesConfig.PREFIX + \"&6=== Java API ===\";\n" +
-               "        MessagesConfig.API_GIVE_SELF = MessagesConfig.PREFIX + \"&aGiven: &e{item}\";\n" +
-               "        MessagesConfig.API_LIST_EMPTY = MessagesConfig.PREFIX + \"&cNo Java API items\";\n" +
+               "        MessagesConfig.API_GIVE_SELF = MessagesConfig.PREFIX + \"&aВыдан: &e{item}\";\n" +
+               "        MessagesConfig.API_LIST_EMPTY = MessagesConfig.PREFIX + \"&cНет Java предметов\";\n" +
                "\n" +
-               "        // Cooldowns\n" +
-               "        MessagesConfig.COOLDOWN = MessagesConfig.PREFIX + \"&cWait {seconds}s!\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // КУЛДАУНЫ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.COOLDOWN = MessagesConfig.PREFIX + \"&cПодождите {seconds} сек!\";\n" +
+               "        MessagesConfig.USES_DEPLETED = MessagesConfig.PREFIX + \"&cПредмет использован!\";\n" +
                "\n" +
-               "        // Actions\n" +
-               "        MessagesConfig.ACTION_HEAL = \"&a+{amount} HP\";\n" +
-               "        MessagesConfig.ACTION_TELEPORT = \"&dTeleported!\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ДЕЙСТВИЯ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.ACTION_HEAL = \"&a❤ +{amount} HP\";\n" +
+               "        MessagesConfig.ACTION_TELEPORT = \"&d✨ Телепорт!\";\n" +
                "        MessagesConfig.ACTION_GIVE = \"&a+{amount} {material}\";\n" +
                "        MessagesConfig.ACTION_REMOVE = \"&c-{amount} {material}\";\n" +
                "\n" +
-               "        // Heal\n" +
-               "        MessagesConfig.HEAL_SELF = MessagesConfig.PREFIX + \"&aHealed!\";\n" +
-               "        MessagesConfig.HEAL_OTHER = MessagesConfig.PREFIX + \"&aHealed {player}\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ИСЦЕЛЕНИЕ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.HEAL_SELF = MessagesConfig.PREFIX + \"&a❤ Вы исцелены!\";\n" +
+               "        MessagesConfig.HEAL_OTHER = MessagesConfig.PREFIX + \"&aВы исцелили &e{player}\";\n" +
+               "        MessagesConfig.HEAL_AMOUNT = MessagesConfig.PREFIX + \"&a❤ +{amount} HP\";\n" +
                "\n" +
-               "        // Teleport\n" +
-               "        MessagesConfig.TELEPORT_SELF = MessagesConfig.PREFIX + \"&bTeleported to {player}\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ТЕЛЕПОРТАЦИЯ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.TELEPORT_SELF = MessagesConfig.PREFIX + \"&bТелепорт к &e{player}\";\n" +
+               "        MessagesConfig.TELEPORT_TARGET = MessagesConfig.PREFIX + \"&b{player} телепортировался к вам!\";\n" +
                "\n" +
-               "        // Fly\n" +
-               "        MessagesConfig.FLY_ON = MessagesConfig.PREFIX + \"&aFly enabled!\";\n" +
-               "        MessagesConfig.FLY_OFF = MessagesConfig.PREFIX + \"&cFly disabled!\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ПОЛЁТ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.FLY_ON = MessagesConfig.PREFIX + \"&a✈ Полёт включён!\";\n" +
+               "        MessagesConfig.FLY_OFF = MessagesConfig.PREFIX + \"&c✈ Полёт выключен!\";\n" +
                "\n" +
-               "        // Gamemode\n" +
-               "        MessagesConfig.GAMEMODE_SURVIVAL = MessagesConfig.PREFIX + \"&aSurvival mode\";\n" +
-               "        MessagesConfig.GAMEMODE_CREATIVE = MessagesConfig.PREFIX + \"&aCreative mode\";\n" +
-               "        MessagesConfig.GAMEMODE_ADVENTURE = MessagesConfig.PREFIX + \"&aAdventure mode\";\n" +
-               "        MessagesConfig.GAMEMODE_SPECTATOR = MessagesConfig.PREFIX + \"&aSpectator mode\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ГЕЙМОД\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.GAMEMODE_SURVIVAL = MessagesConfig.PREFIX + \"&aВыживание\";\n" +
+               "        MessagesConfig.GAMEMODE_CREATIVE = MessagesConfig.PREFIX + \"&aКреатив\";\n" +
+               "        MessagesConfig.GAMEMODE_ADVENTURE = MessagesConfig.PREFIX + \"&aПриключение\";\n" +
+               "        MessagesConfig.GAMEMODE_SPECTATOR = MessagesConfig.PREFIX + \"&aНаблюдатель\";\n" +
                "\n" +
-               "        // Berserk\n" +
-               "        MessagesConfig.BERSERK_ENABLED = MessagesConfig.PREFIX + \"&4BERSERK!\";\n" +
-               "        MessagesConfig.BERSERK_DISABLED = MessagesConfig.PREFIX + \"&7Berserk off.\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // БЕССМЕРТИЕ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.GOD_ON = MessagesConfig.PREFIX + \"&6Бессмертие на {seconds} сек!\";\n" +
+               "        MessagesConfig.GOD_OFF = MessagesConfig.PREFIX + \"&7Бессмертие выкл.\";\n" +
                "\n" +
-               "        // God mode\n" +
-               "        MessagesConfig.GOD_ON = MessagesConfig.PREFIX + \"&6God mode for {seconds}s!\";\n" +
-               "        MessagesConfig.GOD_OFF = MessagesConfig.PREFIX + \"&7God mode off.\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // НЕВИДИМОСТЬ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.INVISIBLE_ON = MessagesConfig.PREFIX + \"&7Невидимость!\";\n" +
+               "        MessagesConfig.INVISIBLE_OFF = MessagesConfig.PREFIX + \"&7Видимость.\";\n" +
                "\n" +
-               "        // Invisible\n" +
-               "        MessagesConfig.INVISIBLE_ON = MessagesConfig.PREFIX + \"&7Invisible!\";\n" +
-               "        MessagesConfig.INVISIBLE_OFF = MessagesConfig.PREFIX + \"&7Visible.\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // СКОРОСТЬ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.SPEED_ON = MessagesConfig.PREFIX + \"&bСкорость включена!\";\n" +
+               "        MessagesConfig.SPEED_OFF = MessagesConfig.PREFIX + \"&7Скорость выкл.\";\n" +
                "\n" +
-               "        // Speed\n" +
-               "        MessagesConfig.SPEED_ON = MessagesConfig.PREFIX + \"&bSpeed up!\";\n" +
-               "        MessagesConfig.SPEED_OFF = MessagesConfig.PREFIX + \"&7Normal speed.\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ГОЛОД\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.FEED_SELF = MessagesConfig.PREFIX + \"&aВы накормлены!\";\n" +
+               "        MessagesConfig.FEED_OTHER = MessagesConfig.PREFIX + \"&aНакормлен &e{player}\";\n" +
                "\n" +
-               "        // Feed\n" +
-               "        MessagesConfig.FEED_SELF = MessagesConfig.PREFIX + \"&aFed!\";\n" +
-               "        MessagesConfig.FEED_OTHER = MessagesConfig.PREFIX + \"&aFed {player}\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ОПЫТ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.XP_GIVEN = MessagesConfig.PREFIX + \"&a+{amount} уровней!\";\n" +
                "\n" +
-               "        // XP\n" +
-               "        MessagesConfig.XP_GIVEN = MessagesConfig.PREFIX + \"+{amount} levels\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ЧАТ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.CHAT_CLEARED = MessagesConfig.PREFIX + \"&aЧат очищен!\";\n" +
                "\n" +
-               "        // Chat\n" +
-               "        MessagesConfig.CHAT_CLEARED = MessagesConfig.PREFIX + \"&aChat cleared!\";\n" +
-               "\n" +
-               "        // Stats\n" +
-               "        MessagesConfig.STATS_HEADER = \"&6=== Stats ===\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // СТАТИСТИКА\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.STATS_HEADER = \"&6=== Статистика ===\";\n" +
                "        MessagesConfig.STATS_HEALTH = \"&7HP: &c{health}/{max}\";\n" +
-               "        MessagesConfig.STATS_FOOD = \"&7Food: &e{food}\";\n" +
-               "        MessagesConfig.STATS_LEVEL = \"&7Level: &a{level}\";\n" +
-               "        MessagesConfig.STATS_WORLD = \"&7World: &b{world}\";\n" +
-               "        MessagesConfig.STATS_POSITION = \"&7Pos: &f{x} {y} {z}\";\n" +
-               "        MessagesConfig.STATS_GAMEMODE = \"&7Mode: &d{gamemode}\";\n" +
-               "        MessagesConfig.STATS_FOOTER = \"&6=========\";\n" +
+               "        MessagesConfig.STATS_FOOD = \"&7Еда: &e{food}\";\n" +
+               "        MessagesConfig.STATS_LEVEL = \"&7Уровень: &a{level}\";\n" +
+               "        MessagesConfig.STATS_WORLD = \"&7Мир: &b{world}\";\n" +
+               "        MessagesConfig.STATS_POSITION = \"&7Позиция: &f{x} {y} {z}\";\n" +
+               "        MessagesConfig.STATS_GAMEMODE = \"&7Режим: &d{gamemode}\";\n" +
+               "        MessagesConfig.STATS_FOOTER = \"&6========================\";\n" +
                "\n" +
-               "        // Errors\n" +
-               "        MessagesConfig.ERROR_COMMAND = MessagesConfig.PREFIX + \"&cError: {error}\";\n" +
-               "        MessagesConfig.ERROR_ITEM = MessagesConfig.PREFIX + \"&cItem error: {error}\";\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        // ОШИБКИ\n" +
+               "        // ══════════════════════════════════════════════════════════════\n" +
+               "        MessagesConfig.ERROR_COMMAND = MessagesConfig.PREFIX + \"&cОшибка: {error}\";\n" +
+               "        MessagesConfig.ERROR_ITEM = MessagesConfig.PREFIX + \"&cОшибка предмета: {error}\";\n" +
+               "        MessagesConfig.ERROR_LOAD = MessagesConfig.PREFIX + \"&cОшибка загрузки: {error}\";\n" +
                "    }\n" +
                "}\n";
     }
