@@ -23,12 +23,17 @@ import java.util.*;
  * 
  * При убийстве: +2 сердца на 10 сек
  * При смерти: Взрыв ярости (урон всем рядом)
+ * ЛКМ: Крик Ярости (AoE урон + отбрасывание, кулдаун 5 сек)
  */
 public class BerserkerAxe extends AbstractCustomItem {
 
-    // Хранилище множителей для игроков
+    // Хранилище данных для игроков
     private final Map<UUID, Double> damageMultipliers = new HashMap<>();
     private final Map<UUID, Integer> rageLevels = new HashMap<>();
+    private final Map<UUID, Long> leftClickCooldowns = new HashMap<>(); // Кулдаун ЛКМ
+    private final Map<UUID, Integer> lastAppliedLevel = new HashMap<>(); // Последний применённый уровень
+    
+    private static final long LEFT_CLICK_COOLDOWN_MS = 5000; // 5 секунд кулдаун на ЛКМ
 
     @Override
     public String getId() { return "berserker_axe"; }
@@ -53,6 +58,7 @@ public class BerserkerAxe extends AbstractCustomItem {
             "",
             " &c🔥 &fПри убийстве: +2 сердца",
             " &4💀 &fПри смерти: ВЗРЫВ ЯРОСТИ!",
+            " &c⚡ &fЛКМ: Крик Ярости (5 сек кулдаун)",
             ""
         );
     }
@@ -67,10 +73,13 @@ public class BerserkerAxe extends AbstractCustomItem {
     public boolean isGlowing() { return true; }
 
     @Override
-    public long getPeriodicInterval() { return 20; } // Каждую секунду
+    public long getPeriodicInterval() { return 40; } // Каждые 2 секунды (меньше нагрузки)
+
+    @Override
+    public long getClickCooldown() { return 1000; } // 1 секунда кулдаун между ударами
 
     /**
-     * Вызывается каждую секунду - обновляем уровень ярости
+     * Вызывается каждые 2 секунды - обновляем уровень ярости
      */
     @Override
     public void onPeriodic(Player player) {
@@ -89,19 +98,15 @@ public class BerserkerAxe extends AbstractCustomItem {
         double newMultiplier;
 
         if (healthPercent > 75) {
-            // 100-75% HP
             newLevel = 1;
             newMultiplier = 1.5;
         } else if (healthPercent > 50) {
-            // 75-50% HP
             newLevel = 2;
             newMultiplier = 2.0;
         } else if (healthPercent > 25) {
-            // 50-25% HP
             newLevel = 3;
             newMultiplier = 3.0;
         } else {
-            // 25-0% HP - МАКСИМАЛЬНАЯ ЯРОСТЬ!
             newLevel = 4;
             newMultiplier = 5.0;
         }
@@ -109,15 +114,17 @@ public class BerserkerAxe extends AbstractCustomItem {
         UUID uuid = player.getUniqueId();
         Integer oldLevel = rageLevels.getOrDefault(uuid, 0);
 
-        // Если уровень изменился - показываем уведомление
-        if (oldLevel != newLevel) {
-            rageLevels.put(uuid, newLevel);
-            damageMultipliers.put(uuid, newMultiplier);
-            showRageChange(player, newLevel, newMultiplier);
-        }
+        // Сохраняем уровень и множитель
+        rageLevels.put(uuid, newLevel);
+        damageMultipliers.put(uuid, newMultiplier);
 
-        // Применяем эффекты по уровню ярости
-        applyRageEffects(player, newLevel);
+        // Показываем уведомление ТОЛЬКО при изменении уровня
+        if (oldLevel != newLevel) {
+            showRageChange(player, newLevel, newMultiplier);
+            // Применяем эффекты ТОЛЬКО при изменении уровня
+            applyRageEffects(player, newLevel);
+            lastAppliedLevel.put(uuid, newLevel);
+        }
     }
 
     /**
@@ -126,27 +133,38 @@ public class BerserkerAxe extends AbstractCustomItem {
     private void showRageChange(Player player, int level, double multiplier) {
         switch (level) {
             case 1:
-                player.sendTitle("", "", 0, 0, 0); // Сброс
+                player.sendTitle("", "", 0, 0, 0);
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 0.5f, 2f);
                 break;
             case 2:
-                player.sendTitle("", "", 5, 20, 5);
+                player.sendTitle(
+                    ChatColor.DARK_RED + "⚡ ЯРОСТЬ I",
+                    ChatColor.GRAY + "x1.5 урона + Скорость",
+                    5, 30, 10
+                );
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 0.7f, 1.5f);
                 player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 2, 0), 20);
                 break;
             case 3:
-                player.sendTitle("", "", 5, 30, 10);
+                player.sendTitle(
+                    ChatColor.RED + "🔥 ЯРОСТЬ II",
+                    ChatColor.GRAY + "x3 урона + Регенерация!",
+                    5, 40, 10
+                );
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1f, 1f);
                 player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 2, 0), 50);
                 player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 2, 0), 30);
                 break;
-            case 4: // МАКСИМУМ!
-                player.sendTitle("", "", 5, 40, 15);
+            case 4:
+                player.sendTitle(
+                    ChatColor.DARK_RED + "" + ChatColor.BOLD + "💀 ЯРОСТЬ III",
+                    ChatColor.RED + "x5 урона + НЕВИДИМОСТЬ!",
+                    5, 60, 15
+                );
                 player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 1.5f);
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.5f);
                 player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 2, 0), 100);
                 player.getWorld().spawnParticle(Particle.LAVA, player.getLocation().add(0, 2, 0), 50);
-                // Исправлено: SMOKE_LARGE -> SMOKE
                 player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 1, 0), 30);
                 break;
         }
@@ -162,27 +180,15 @@ public class BerserkerAxe extends AbstractCustomItem {
 
         switch (level) {
             case 2:
-                // Скорость II
-                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40, 1, false, false));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100, 1, false, false));
                 break;
             case 3:
-                // Скорость III + Регенерация I
-                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40, 2, false, false));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 40, 0, false, false));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100, 2, false, false));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 0, false, false));
                 break;
             case 4:
-                // Скорость IV + Регенерация II
-                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40, 3, false, false));
-                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 40, 1, false, false));
-
-                // Красные частицы вокруг (эффект горения)
-                // Исправлено: DUST -> COLOR_RED или используем DustOptions
-                player.getWorld().spawnParticle(Particle.DUST, 
-                    player.getLocation().add(0, 1, 0), 
-                    10, 
-                    0.5, 0.5, 0.5,
-                    new Particle.DustOptions(Color.RED, 1f)
-                );
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100, 3, false, false));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 1, false, false));
                 break;
         }
     }
@@ -195,12 +201,11 @@ public class BerserkerAxe extends AbstractCustomItem {
         UUID uuid = player.getUniqueId();
         double multiplier = damageMultipliers.getOrDefault(uuid, 1.0);
 
-        // Дополнительный урон (процент от базового)
+        // Дополнительный урон
         double baseDamage = event.getDamage();
-        double bonusDamage = baseDamage * (multiplier - 1.0); // x1.5 = +50%, x2 = +100%
+        double bonusDamage = baseDamage * (multiplier - 1.0);
         event.setDamage(baseDamage + bonusDamage);
 
-        // Эффекты при ударе
         LivingEntity target = null;
         if (event.getEntity() instanceof LivingEntity) {
             target = (LivingEntity) event.getEntity();
@@ -209,31 +214,26 @@ public class BerserkerAxe extends AbstractCustomItem {
         if (target != null) {
             int level = rageLevels.getOrDefault(uuid, 1);
 
-            // Частицы при ударе (зависят от уровня)
+            // Частицы при ударе
             switch (level) {
                 case 2:
-                    target.getWorld().spawnParticle(Particle.SMOKE, target.getLocation().add(0, 1, 0), 20);
-                    target.getWorld().playSound(target.getLocation(), Sound.ENTITY_IRON_GOLEM_ATTACK, 1f, 1.5f);
+                    target.getWorld().spawnParticle(Particle.SMOKE, target.getLocation().add(0, 1, 0), 15);
+                    target.getWorld().playSound(target.getLocation(), Sound.ENTITY_IRON_GOLEM_ATTACK, 0.8f, 1.5f);
                     break;
                 case 3:
-                    target.getWorld().spawnParticle(Particle.FLAME, target.getLocation().add(0, 1, 0), 30);
-                    target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, 1, 0), 20);
+                    target.getWorld().spawnParticle(Particle.FLAME, target.getLocation().add(0, 1, 0), 25);
+                    target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, 1, 0), 15);
                     target.getWorld().playSound(target.getLocation(), Sound.ENTITY_IRON_GOLEM_ATTACK, 1f, 1f);
-                    target.getWorld().playSound(target.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 0.5f, 1f);
                     break;
-                case 4: // МАКСИМУМ!
-                    target.getWorld().spawnParticle(Particle.FLAME, target.getLocation().add(0, 1, 0), 50);
-                    target.getWorld().spawnParticle(Particle.LAVA, target.getLocation().add(0, 1, 0), 20);
-                    // Исправлено: EXPLOSION_LARGE -> EXPLOSION
+                case 4:
+                    target.getWorld().spawnParticle(Particle.FLAME, target.getLocation().add(0, 1, 0), 40);
+                    target.getWorld().spawnParticle(Particle.LAVA, target.getLocation().add(0, 1, 0), 15);
                     target.getWorld().spawnParticle(Particle.EXPLOSION, target.getLocation().add(0, 1, 0), 1);
-                    target.getWorld().playSound(target.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1f, 1.5f);
-                    target.getWorld().playSound(target.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 1f, 0.5f);
-
-                    // Невидимость на 3 сек при ударе (максимальная ярость)
+                    target.getWorld().playSound(target.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 0.8f, 1.5f);
+                    
+                    // Невидимость при ударе (максимальная ярость)
                     player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 0, false, false));
-                    // Исправлено: SMOKE_LARGE -> SMOKE
-                    player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 1, 0), 50);
-                    player.sendTitle("", "", 0, 0, 0);
+                    player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 1, 0), 30);
                     break;
             }
         }
@@ -244,46 +244,39 @@ public class BerserkerAxe extends AbstractCustomItem {
      */
     @Override
     public void onKill(Player killer, Player victim) {
-        // +2 сердца на 10 сек
         double maxHealth = killer.getAttribute(Attribute.MAX_HEALTH).getValue();
         double newHealth = Math.min(killer.getHealth() + 4, maxHealth);
         killer.setHealth(newHealth);
 
-        // Эффекты
-        killer.getWorld().spawnParticle(Particle.HEART, killer.getLocation().add(0, 2, 0), 20);
-        killer.getWorld().spawnParticle(Particle.FLAME, killer.getLocation().add(0, 1, 0), 30);
+        killer.getWorld().spawnParticle(Particle.HEART, killer.getLocation().add(0, 2, 0), 15);
+        killer.getWorld().spawnParticle(Particle.FLAME, killer.getLocation().add(0, 1, 0), 20);
         killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
-        killer.sendTitle("", "", 5, 30, 10);
+        killer.sendTitle(
+            ChatColor.GREEN + "+2 ❤",
+            ChatColor.GRAY + "Кража здоровья!",
+            5, 30, 10
+        );
     }
 
     /**
-     * При смерти - ВЗРЫВ ЯРОСТИ! (урон всем рядом)
+     * При смерти - ВЗРЫВ ЯРОСТИ!
      */
     @Override
     public void onDeath(Player player, PlayerDeathEvent event) {
-        // Взрыв ярости - урон всем в радиусе 10 блоков
         double explosionRadius = 10.0;
-        double explosionDamage = 20.0; // 10 сердец урона
+        double explosionDamage = 20.0;
 
-        // Исправлено: правильный синтаксис createExplosion
-        // createExplosion(double x, double y, double z, float power, boolean setFire, boolean breakBlocks)
         Location loc = player.getLocation();
         player.getWorld().createExplosion(
-            loc.getX(), 
-            loc.getY(), 
-            loc.getZ(), 
-            0f, // Без разрушения блоков
-            false, // Без огня
-            false // Не взрывать блоки
+            loc.getX(), loc.getY(), loc.getZ(),
+            0f, false, false
         );
 
         // Визуальные эффекты
-        // Исправлено: EXPLOSION_HUGE -> EXPLOSION_EMITTER
         player.getWorld().spawnParticle(Particle.EXPLOSION_EMITTER, loc, 1);
-        player.getWorld().spawnParticle(Particle.FLAME, loc, 200);
-        player.getWorld().spawnParticle(Particle.LAVA, loc, 100);
-        // Исправлено: SMOKE_LARGE -> SMOKE
-        player.getWorld().spawnParticle(Particle.SMOKE, loc, 50);
+        player.getWorld().spawnParticle(Particle.FLAME, loc, 150);
+        player.getWorld().spawnParticle(Particle.LAVA, loc, 80);
+        player.getWorld().spawnParticle(Particle.SMOKE, loc, 40);
         player.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.5f);
         player.getWorld().playSound(loc, Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 0.5f);
 
@@ -292,12 +285,12 @@ public class BerserkerAxe extends AbstractCustomItem {
             if (entity instanceof LivingEntity && entity != player) {
                 LivingEntity living = (LivingEntity) entity;
                 living.damage(explosionDamage, player);
-                living.setFireTicks(100); // Поджигаем
-                living.getWorld().spawnParticle(Particle.FLAME, living.getLocation().add(0, 1, 0), 20);
+                living.setFireTicks(80);
+                living.getWorld().spawnParticle(Particle.FLAME, living.getLocation().add(0, 1, 0), 15);
             }
         }
 
-        // Сообщение всем nearby
+        // Сообщение
         for (Entity entity : player.getNearbyEntities(20, 20, 20)) {
             if (entity instanceof Player && entity != player) {
                 ((Player) entity).sendMessage(ChatColor.RED + "💀 " + ChatColor.DARK_RED + player.getName() + " взорвался в ярости!");
@@ -306,21 +299,43 @@ public class BerserkerAxe extends AbstractCustomItem {
     }
 
     /**
-     * При ЛКМ - Крик Ярости (AoE урон + ускорение)
+     * При ЛКМ - Крик Ярости (AoE урон + отбрасывание)
+     * Кулдаун: 5 секунд
      */
     @Override
     public void onLeftClick(PlayerInteractEvent event, Player player) {
+        UUID uuid = player.getUniqueId();
+        long currentTime = System.currentTimeMillis();
+        
+        // Проверяем кулдаун
+        Long lastClick = leftClickCooldowns.get(uuid);
+        if (lastClick != null && (currentTime - lastClick) < LEFT_CLICK_COOLDOWN_MS) {
+            long remaining = LEFT_CLICK_COOLDOWN_MS - (currentTime - lastClick);
+            double secondsLeft = remaining / 1000.0;
+            player.sendTitle(
+                "",
+                ChatColor.RED + "Кулдаун: " + String.format("%.1f", secondsLeft) + " сек",
+                0, 20, 0
+            );
+            return;
+        }
+        
+        // Устанавливаем кулдаун
+        leftClickCooldowns.put(uuid, currentTime);
+        
         // AoE урон всем в радиусе 5 блоков
         double radius = 5.0;
         double damage = 8.0;
+        int hitCount = 0;
 
         for (Entity entity : player.getNearbyEntities(radius, radius, radius)) {
             if (entity instanceof LivingEntity && entity != player) {
                 LivingEntity living = (LivingEntity) entity;
                 living.damage(damage, player);
-                living.setFireTicks(60);
+                living.setFireTicks(40);
+                hitCount++;
 
-                // Отбрасывание - используем правильный Vector
+                // Отбрасывание
                 org.bukkit.util.Vector knockback = living.getLocation().toVector()
                     .subtract(player.getLocation().toVector())
                     .normalize()
@@ -331,11 +346,15 @@ public class BerserkerAxe extends AbstractCustomItem {
         }
 
         // Эффекты
-        player.getWorld().spawnParticle(Particle.FLAME, player.getLocation(), 100);
-        // Исправлено: SMOKE_LARGE -> SMOKE
-        player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 1, 0), 50);
+        player.getWorld().spawnParticle(Particle.FLAME, player.getLocation(), 80);
+        player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 1, 0), 40);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_RAVAGER_ROAR, 1f, 1f);
-        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 1f, 0.5f);
-        player.sendTitle("", "", 5, 20, 10);
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 0.8f, 0.5f);
+        
+        player.sendTitle(
+            ChatColor.RED + "💀 КРИК ЯРОСТИ",
+            ChatColor.GRAY + "Урон по области! Попало: " + hitCount,
+            5, 30, 10
+        );
     }
 }
