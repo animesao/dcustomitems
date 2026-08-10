@@ -1,7 +1,6 @@
 import me.dcplugin.dcustomitems.api.AbstractCustomItem;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.*;
@@ -131,35 +130,24 @@ public class BerserkerAxe extends AbstractCustomItem {
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 0.5f, 2f);
                 break;
             case 2:
-                player.sendTitle(
-                    "",
-                    "",
-                    5, 20, 5
-                );
+                player.sendTitle("", "", 5, 20, 5);
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 0.7f, 1.5f);
                 player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 2, 0), 20);
                 break;
             case 3:
-                player.sendTitle(
-                    "",
-                    "",
-                    5, 30, 10
-                );
+                player.sendTitle("", "", 5, 30, 10);
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1f, 1f);
                 player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 2, 0), 50);
                 player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 2, 0), 30);
                 break;
             case 4: // МАКСИМУМ!
-                player.sendTitle(
-                    "",
-                    "",
-                    5, 40, 15
-                );
+                player.sendTitle("", "", 5, 40, 15);
                 player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 1.5f);
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.5f);
                 player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 2, 0), 100);
                 player.getWorld().spawnParticle(Particle.LAVA, player.getLocation().add(0, 2, 0), 50);
-                player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().add(0, 1, 0), 30);
+                // Исправлено: SMOKE_LARGE -> SMOKE
+                player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 1, 0), 30);
                 break;
         }
     }
@@ -188,6 +176,7 @@ public class BerserkerAxe extends AbstractCustomItem {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 40, 1, false, false));
 
                 // Красные частицы вокруг (эффект горения)
+                // Исправлено: DUST -> COLOR_RED или используем DustOptions
                 player.getWorld().spawnParticle(Particle.DUST, 
                     player.getLocation().add(0, 1, 0), 
                     10, 
@@ -235,13 +224,15 @@ public class BerserkerAxe extends AbstractCustomItem {
                 case 4: // МАКСИМУМ!
                     target.getWorld().spawnParticle(Particle.FLAME, target.getLocation().add(0, 1, 0), 50);
                     target.getWorld().spawnParticle(Particle.LAVA, target.getLocation().add(0, 1, 0), 20);
-                    target.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, target.getLocation().add(0, 1, 0), 1);
+                    // Исправлено: EXPLOSION_LARGE -> EXPLOSION
+                    target.getWorld().spawnParticle(Particle.EXPLOSION, target.getLocation().add(0, 1, 0), 1);
                     target.getWorld().playSound(target.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1f, 1.5f);
                     target.getWorld().playSound(target.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 1f, 0.5f);
 
                     // Невидимость на 3 сек при ударе (максимальная ярость)
                     player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 0, false, false));
-                    player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().add(0, 1, 0), 50);
+                    // Исправлено: SMOKE_LARGE -> SMOKE
+                    player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 1, 0), 50);
                     player.sendTitle("", "", 0, 0, 0);
                     break;
             }
@@ -262,11 +253,7 @@ public class BerserkerAxe extends AbstractCustomItem {
         killer.getWorld().spawnParticle(Particle.HEART, killer.getLocation().add(0, 2, 0), 20);
         killer.getWorld().spawnParticle(Particle.FLAME, killer.getLocation().add(0, 1, 0), 30);
         killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
-        killer.sendTitle(
-            "",
-            "",
-            5, 30, 10
-        );
+        killer.sendTitle("", "", 5, 30, 10);
     }
 
     /**
@@ -278,21 +265,27 @@ public class BerserkerAxe extends AbstractCustomItem {
         double explosionRadius = 10.0;
         double explosionDamage = 20.0; // 10 сердец урона
 
-        // Эффекты взрыва
+        // Исправлено: правильный синтаксис createExplosion
+        // createExplosion(double x, double y, double z, float power, boolean setFire, boolean breakBlocks)
+        Location loc = player.getLocation();
         player.getWorld().createExplosion(
-            player.getLocation(), 
+            loc.getX(), 
+            loc.getY(), 
+            loc.getZ(), 
             0f, // Без разрушения блоков
             false, // Без огня
-            null // Не взрывать
+            false // Не взрывать блоки
         );
 
         // Визуальные эффекты
-        player.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, player.getLocation(), 1);
-        player.getWorld().spawnParticle(Particle.FLAME, player.getLocation(), 200);
-        player.getWorld().spawnParticle(Particle.LAVA, player.getLocation(), 100);
-        player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation(), 50);
-        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.5f);
-        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 0.5f);
+        // Исправлено: EXPLOSION_HUGE -> EXPLOSION_EMITTER
+        player.getWorld().spawnParticle(Particle.EXPLOSION_EMITTER, loc, 1);
+        player.getWorld().spawnParticle(Particle.FLAME, loc, 200);
+        player.getWorld().spawnParticle(Particle.LAVA, loc, 100);
+        // Исправлено: SMOKE_LARGE -> SMOKE
+        player.getWorld().spawnParticle(Particle.SMOKE, loc, 50);
+        player.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.5f);
+        player.getWorld().playSound(loc, Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 0.5f);
 
         // Урон всем в радиусе
         for (Entity entity : player.getNearbyEntities(explosionRadius, explosionRadius, explosionRadius)) {
@@ -327,8 +320,8 @@ public class BerserkerAxe extends AbstractCustomItem {
                 living.damage(damage, player);
                 living.setFireTicks(60);
 
-                // Отбрасывание
-                Vector knockback = living.getLocation().toVector()
+                // Отбрасывание - используем правильный Vector
+                org.bukkit.util.Vector knockback = living.getLocation().toVector()
                     .subtract(player.getLocation().toVector())
                     .normalize()
                     .multiply(1.5)
@@ -339,16 +332,10 @@ public class BerserkerAxe extends AbstractCustomItem {
 
         // Эффекты
         player.getWorld().spawnParticle(Particle.FLAME, player.getLocation(), 100);
-        player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().add(0, 1, 0), 50);
+        // Исправлено: SMOKE_LARGE -> SMOKE
+        player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 1, 0), 50);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_RAVAGER_ROAR, 1f, 1f);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 1f, 0.5f);
-        player.sendTitle(
-            "",
-            "",
-            5, 20, 10
-        );
-
-        // Кулдаун 5 секунд
-        // (в реальном плагине используйте cooldown менеджер)
+        player.sendTitle("", "", 5, 20, 10);
     }
 }

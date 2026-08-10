@@ -54,7 +54,7 @@ healer-amulet:
       - 'particles:HEART:50'
       - 'particles:VILLAGER_HAPPY:30'
       - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
-      - 'title:&a💚 &7ИСЦЕЛЕНИЕ!::&aПолное восстановление!:10:40:10'
+      - 'title:&a💚 &7ИСЦЕЛЕНИЕ!|&aПолное восстановление!:10:40:10'
 
     on_click_left:
       - 'heal_nearby:10:5'

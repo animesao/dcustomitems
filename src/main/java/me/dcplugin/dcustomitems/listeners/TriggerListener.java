@@ -373,16 +373,28 @@ public class TriggerListener implements Listener {
     }
 
     private void executeTitle(Player player, String actionStr) {
-        // Формат: "title:Заголовок:Подзаголовок:fadeIn:stay:fadeOut"
+        // Формат: "title:Заголовок|Подзаголовок|fadeIn|stay|fadeOut"
+        // Или: "title:Текст" (только заголовок)
         String titlePart = actionStr.replace("title:", "").trim();
-        String[] parts = titlePart.split(":");
+        
+        // Используем | как разделитель для title/subtitle
+        String[] parts = titlePart.split("\\|");
+        
         if (parts.length >= 1) {
             String title = ColorUtils.colorize(parts[0].replace("%player%", player.getName()));
             String subtitle = parts.length > 1 ? ColorUtils.colorize(parts[1].replace("%player%", player.getName())) : "";
-            int fadeIn = parts.length > 2 ? Integer.parseInt(parts[2]) : 10;
-            int stay = parts.length > 3 ? Integer.parseInt(parts[3]) : 40;
-            int fadeOut = parts.length > 4 ? Integer.parseInt(parts[4]) : 10;
+            int fadeIn = parts.length > 2 ? parseIntegerOrDefault(parts[2], 10) : 10;
+            int stay = parts.length > 3 ? parseIntegerOrDefault(parts[3], 40) : 40;
+            int fadeOut = parts.length > 4 ? parseIntegerOrDefault(parts[4], 10) : 10;
             player.sendTitle(title, subtitle, fadeIn, stay, fadeOut);
+        }
+    }
+    
+    private int parseIntegerOrDefault(String str, int defaultValue) {
+        try {
+            return Integer.parseInt(str.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
         }
     }
 

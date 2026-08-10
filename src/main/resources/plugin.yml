@@ -1,5 +1,5 @@
 name: DC-CustomItems
-version: 1.320.250
+version: 1.320.251
 main: me.dcplugin.dcustomitems.Main
 api-version: '1.21'
 description: Custom items plugin with Java API

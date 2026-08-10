@@ -56,7 +56,7 @@ shadow-helmet:
       - 'effect:NIGHT_VISION:30:1'
       - 'particles:PORTAL:40'
       - 'sound:ENTITY_ENDERMAN_TELEPORT:1:1.5'
-      - 'title:&8👁 &7ТЕНИ СКРЫТИЯ!::&8Невидимость на 15 сек!:10:30:10'
+      - 'title:&8👁 &7ТЕНИ СКРЫТИЯ!|&8Невидимость на 15 сек!:10:30:10'
 
     on_damage_taken:
       - 'effect:RESISTANCE:5:2'

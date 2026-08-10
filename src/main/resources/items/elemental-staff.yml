@@ -59,7 +59,7 @@ elemental-staff:
       - 'particles:FLAME:50'
       - 'particles:EXPLOSION_LARGE:10'
       - 'sound:ENTITY_GENERIC_EXPLODE:1:1'
-      - 'title:&c🔥 &7ОГНЕННЫЙ ШАР!::&cВсе враги горят!:10:30:10'
+      - 'title:&c🔥 &7ОГНЕННЫЙ ШАР!|&cВсе враги горят!:10:30:10'
 
     on_click_left:
       - 'damage_nearby:12:6'
@@ -68,7 +68,7 @@ elemental-staff:
       - 'particles:BLOCK_CRACK:30'
       - 'sound:ENTITY_GENERIC_FREEZE:1:1'
       - 'knockback:4'
-      - 'title:&b❄ &7ЛЕДЯНАЯ БУРЯ!::&bВсе враги заморожены!:10:30:10'
+      - 'title:&b❄ &7ЛЕДЯНАЯ БУРЯ!|&bВсе враги заморожены!:10:30:10'
 
     on_kill:
       - 'heal:20'

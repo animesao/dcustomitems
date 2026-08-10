@@ -53,7 +53,7 @@ artifact-chaos-orb:
       - 'particles:PORTAL:60'
       - 'particles:EXPLOSION_HUGE:8'
       - 'sound:ENTITY_ENDER_DRAGON_GROWL:1:1'
-      - 'title:&5🌀 &7ХАОС ВЫПУЩЕН!::&5Все враги в панике!:10:40:10'
+      - 'title:&5🌀 &7ХАОС ВЫПУЩЕН!|&5Все враги в панике!:10:40:10'
 
     on_click_left:
       - 'damage_nearby:15:6'

@@ -70,7 +70,7 @@ vampire-blade:
       - 'particles:DRAGON_BREATH:30'
       - 'particles:DUST:20'
       - 'sound:ENTITY_VAMPIRE_BITE:1:1'
-      - 'title:&4🦇 &7КРОВАВЫЙ РЕЖИМ!::&cКража здоровья активна!:10:40:10'
+      - 'title:&4🦇 &7КРОВАВЫЙ РЕЖИМ!|&cКража здоровья активна!:10:40:10'
 
     on_click_left:
       - 'damage_nearby:20:4'
@@ -81,7 +81,7 @@ vampire-blade:
       - 'particles:WITCH:30'
       - 'sound:ENTITY_ENDER_DRAGON_GROWL:1:1'
       - 'knockback:4'
-      - 'title:&4💀 &7AoE УДАР ВАМПИРА!::&4Все враги поражены!:10:40:10'
+      - 'title:&4💀 &7AoE УДАР ВАМПИРА!|&4Все враги поражены!:10:40:10'
 
     on_kill:
       - 'heal:40'

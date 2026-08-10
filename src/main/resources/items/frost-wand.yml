@@ -50,7 +50,7 @@ frost-wand:
       - 'particles:SNOWFLAKE:50'
       - 'particles:BLOCK_CRACK:30'
       - 'sound:ENTITY_GENERIC_FREEZE:1:1'
-      - 'title:&b❄ &7ЛЕДЯНОЙ ЩИТ!::&bСопротивление II на 10 сек!:10:30:10'
+      - 'title:&b❄ &7ЛЕДЯНОЙ ЩИТ!|&bСопротивление II на 10 сек!:10:30:10'
 
     on_click_left:
       - 'damage_nearby:15:5'
@@ -59,7 +59,7 @@ frost-wand:
       - 'particles:BLOCK_CRACK:40'
       - 'sound:ENTITY_GENERIC_FREEZE:1:0.8'
       - 'knockback:3'
-      - 'title:&b❄ &7ЛЕДЯНАЯ БУРЯ!::&bВсе враги заморожены!:10:30:10'
+      - 'title:&b❄ &7ЛЕДЯНАЯ БУРЯ!|&bВсе враги заморожены!:10:30:10'
 
     on_kill:
       - 'heal:15'

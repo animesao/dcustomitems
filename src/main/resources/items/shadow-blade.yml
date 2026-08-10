@@ -61,7 +61,7 @@ shadow-blade:
       - 'particles:SMOKE:30'
       - 'particles:ENCHANTMENT_TABLE:20'
       - 'sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
-      - 'title:&8⚔ &7Активация теней!::&8Тени окружают вас!:10:40:10'
+      - 'title:&8⚔ &7Активация теней!|&8Тени окружают вас!:10:40:10'
 
     on_click_left:
       - 'lightning:2'

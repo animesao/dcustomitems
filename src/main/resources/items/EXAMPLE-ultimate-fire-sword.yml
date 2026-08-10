@@ -63,7 +63,7 @@ ultimate-fire-sword:
       # Последовательность звуков
       - 'sound_sequence:ENTITY_BLAZE_AMBIENT:1:1;ENTITY_PLAYER_LEVELUP:0.5:2'
       # Заголовок
-      - 'title:&c🔥 &lОГНЕННЫЙ КЛИНОК ИЗВЛЕЧЁН!::&7Стихия огня повинуется вам!:10:40:10'
+      - 'title:&c🔥 &lОГНЕННЫЙ КЛИНОК ИЗВЛЕЧЁН!|&7Стихия огня повинуется вам!:10:40:10'
 
     on_unequip:
       - 'particles_custom:SMOKE:30:0:1:0:1:1:1'

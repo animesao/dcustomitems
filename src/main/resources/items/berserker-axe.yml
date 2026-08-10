@@ -58,7 +58,7 @@ berserker-axe:
       - 'damage:10'
       - 'particles:DRAGON_BREATH:60'
       - 'sound:ENTITY_ENDER_DRAGON_GROWL:1:1'
-      - 'title:&4💀 &7ЯРОСТЬ БЕРСЕРКА!::&4Сила IV на 10 сек!:10:40:10'
+      - 'title:&4💀 &7ЯРОСТЬ БЕРСЕРКА!|&4Сила IV на 10 сек!:10:40:10'
 
     on_click_left:
       - 'damage_nearby:25:4'

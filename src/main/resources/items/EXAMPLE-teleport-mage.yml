@@ -50,7 +50,7 @@ teleport-mage-staff:
       - 'sound_sequence:ENTITY_ENDERMAN_TELEPORT:1:1;ENTITY_PLAYER_LEVELUP:0.5:1.5'
       
       # Заголовок
-      - 'title:&d🌀 &lТЕЛЕПОРТ МАГА!::&7Пространство повинуется вам!:10:40:10'
+      - 'title:&d🌀 &lТЕЛЕПОРТ МАГА!|&7Пространство повинуется вам!:10:40:10'
 
     on_unequip:
       - 'particles_custom:SMOKE:20:0:1:0:0.5:0.5:0.5'
@@ -68,7 +68,7 @@ teleport-mage-staff:
       - 'sound:ENTITY_ENDERMAN_TELEPORT:1:1'
       
       # Заголовок
-      - 'title:&d🌀 &lТЕЛЕПОРТ!::&7Вы переместились!:10:30:10'
+      - 'title:&d🌀 &lТЕЛЕПОРТ!|&7Вы переместились!:10:30:10'
 
     on_click_left:
       # Серия телепортов (анимация)

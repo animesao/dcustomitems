@@ -59,7 +59,7 @@ nature-totem:
       - 'particles:VILLAGER_HAPPY:40'
       - 'particles:HEART:30'
       - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
-      - 'title:&2🌿 &7СИЛА ПРИРОДЫ!::&aВосстановление + Абсорбция!:10:40:10'
+      - 'title:&2🌿 &7СИЛА ПРИРОДЫ!|&aВосстановление + Абсорбция!:10:40:10'
 
     on_click_left:
       - 'damage_nearby:10:4'

@@ -62,7 +62,7 @@ thunder-axe:
       - 'particles:FIREWORKS_SPARK:30'
       - 'particles:EXPLOSION_HUGE:5'
       - 'sound:ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
-      - 'title:&e⚡ &7УДАР МОЛНИИ!::&eНебеса повинуются!:10:40:10'
+      - 'title:&e⚡ &7УДАР МОЛНИИ!|&eНебеса повинуются!:10:40:10'
 
     on_click_left:
       - 'lightning_forward:100'
