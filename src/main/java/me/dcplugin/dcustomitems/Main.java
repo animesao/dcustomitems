@@ -342,8 +342,11 @@ public class Main extends JavaPlugin {
      */
     private void registerCommandViaReflection(String name, CommandExecutor executor) {
         try {
+            // Get CraftServer class
+            Class<?> craftServerClass = getServer().getClass();
+            
             // Get command map via reflection
-            java.lang.reflect.Method getCommandMap = getServer().getClass().getMethod("getCommandMap");
+            java.lang.reflect.Method getCommandMap = craftServerClass.getMethod("getCommandMap");
             Object commandMap = getCommandMap.invoke(getServer());
             
             // Create command
@@ -365,9 +368,22 @@ public class Main extends JavaPlugin {
             command.setPermission("dci.command." + name);
             command.setDescription("Custom command: " + name);
             
-            // Register to command map
-            java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", String.class, org.bukkit.command.Command.class);
-            registerMethod.invoke(commandMap, "dcustomitems", command);
+            // Register to command map - try different method signatures
+            try {
+                // Paper 1.21+ method
+                java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", String.class, org.bukkit.command.Command.class);
+                registerMethod.invoke(commandMap, "dcustomitems", command);
+            } catch (NoSuchMethodException e) {
+                // Try alternative method signature
+                try {
+                    java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", String.class, String.class, org.bukkit.command.Command.class);
+                    registerMethod.invoke(commandMap, "dcustomitems", name, command);
+                } catch (NoSuchMethodException e2) {
+                    // Last resort - try with just name
+                    java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", org.bukkit.command.Command.class);
+                    registerMethod.invoke(commandMap, command);
+                }
+            }
             
             getLogger().info("[API] ✅ Registered command via reflection: /" + name);
         } catch (Exception e) {
