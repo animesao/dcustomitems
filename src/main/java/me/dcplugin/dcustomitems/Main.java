@@ -342,14 +342,11 @@ public class Main extends JavaPlugin {
      */
     private void registerCommandViaReflection(String name, CommandExecutor executor) {
         try {
-            // Get CraftServer
-            Object craftServer = getServer().getClass().cast(getServer());
-            
-            // Get command map
+            // Get command map via reflection
             java.lang.reflect.Method getCommandMap = getServer().getClass().getMethod("getCommandMap");
             Object commandMap = getCommandMap.invoke(getServer());
             
-            // Create SimpleCommandMap entry
+            // Create command
             org.bukkit.command.Command command = new org.bukkit.command.Command(name) {
                 @Override
                 public boolean execute(CommandSender sender, String label, String[] args) {
@@ -357,23 +354,25 @@ public class Main extends JavaPlugin {
                 }
                 
                 @Override
-                public List<String> tabComplete(CommandSender sender, String alias, String[] args) {
+                public java.util.List<String> tabComplete(CommandSender sender, String alias, String[] args) {
                     if (executor instanceof TabCompleter) {
                         return ((TabCompleter) executor).onTabComplete(sender, this, alias, args);
                     }
-                    return Collections.emptyList();
+                    return java.util.Collections.emptyList();
                 }
             };
             
             command.setPermission("dci.command." + name);
+            command.setDescription("Custom command: " + name);
             
             // Register to command map
-            java.lang.reflect.Method registerCommand = commandMap.getClass().getMethod("register", String.class, org.bukkit.command.Command.class);
-            registerCommand.invoke(commandMap, "dcustomitems", command);
+            java.lang.reflect.Method registerMethod = commandMap.getClass().getMethod("register", String.class, org.bukkit.command.Command.class);
+            registerMethod.invoke(commandMap, "dcustomitems", command);
             
-            getLogger().info("[API] Registered command via reflection: /" + name);
+            getLogger().info("[API] ✅ Registered command via reflection: /" + name);
         } catch (Exception e) {
-            getLogger().warning("[API] Reflection registration failed for /" + name + ": " + e.getMessage());
+            getLogger().warning("[API] ❌ Reflection registration failed for /" + name + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
