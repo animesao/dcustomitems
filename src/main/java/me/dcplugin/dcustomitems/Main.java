@@ -4,6 +4,8 @@ import me.dcplugin.dcustomitems.api.ApiCommand;
 import me.dcplugin.dcustomitems.api.ApiEventListener;
 import me.dcplugin.dcustomitems.api.ItemAPI;
 import me.dcplugin.dcustomitems.api.ItemRegistry;
+import me.dcplugin.dcustomitems.api.commands.CustomCommand;
+import me.dcplugin.dcustomitems.api.commands.CustomCommandExecutor;
 import me.dcplugin.dcustomitems.api.config.MessagesConfig;
 import me.dcplugin.dcustomitems.api.database.DatabaseManager;
 import me.dcplugin.dcustomitems.api.placeholders.PlaceholderManager;
@@ -18,9 +20,14 @@ import me.dcplugin.dcustomitems.managers.AttributeManager;
 import me.dcplugin.dcustomitems.managers.ArmorSetManager;
 import me.dcplugin.dcustomitems.utils.UpdateChecker;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
+import java.util.Collections;
+import java.util.List;
 
 public class Main extends JavaPlugin {
 
@@ -85,8 +92,12 @@ public class Main extends JavaPlugin {
 
             placeholderManager = new PlaceholderManager(this);
 
+            // Register custom commands with server
+            registerCustomCommands();
+
             getLogger().info("[API] Database connected");
             getLogger().info("[API] PlaceholderManager initialized");
+            getLogger().info("[API] Custom commands registered: " + apiItemRegistry.getCommandCount());
 
             updateChecker = new UpdateChecker(this);
             updateChecker.checkForUpdates(message -> {
@@ -294,4 +305,75 @@ public class Main extends JavaPlugin {
     public ItemRegistry getApiItemRegistry() { return apiItemRegistry; }
     public DatabaseManager getDatabaseManager() { return databaseManager; }
     public PlaceholderManager getPlaceholderManager() { return placeholderManager; }
+
+    /**
+     * Register all custom commands with the Bukkit server
+     */
+    private void registerCustomCommands() {
+        if (apiItemRegistry == null) return;
+        
+        CustomCommandExecutor executor = new CustomCommandExecutor(apiItemRegistry);
+        
+        for (CustomCommand cmd : apiItemRegistry.getAllCommands().values()) {
+            try {
+                // Register command with server
+                org.bukkit.command.PluginCommand pluginCmd = getCommand(cmd.getName());
+                if (pluginCmd == null) {
+                    // Create command dynamically
+                    pluginCmd = Bukkit.getPluginCommand(cmd.getName());
+                }
+                
+                if (pluginCmd != null) {
+                    pluginCmd.setExecutor(executor);
+                    pluginCmd.setTabCompleter(executor);
+                    getLogger().info("[API] Registered command: /" + cmd.getName());
+                } else {
+                    // Use reflection to register command
+                    registerCommandViaReflection(cmd.getName(), executor);
+                }
+            } catch (Exception e) {
+                getLogger().warning("[API] Failed to register command: /" + cmd.getName() + " - " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Register command via reflection (for dynamic commands)
+     */
+    private void registerCommandViaReflection(String name, CommandExecutor executor) {
+        try {
+            // Get CraftServer
+            Object craftServer = getServer().getClass().cast(getServer());
+            
+            // Get command map
+            java.lang.reflect.Method getCommandMap = getServer().getClass().getMethod("getCommandMap");
+            Object commandMap = getCommandMap.invoke(getServer());
+            
+            // Create SimpleCommandMap entry
+            org.bukkit.command.Command command = new org.bukkit.command.Command(name) {
+                @Override
+                public boolean execute(CommandSender sender, String label, String[] args) {
+                    return executor.onCommand(sender, this, label, args);
+                }
+                
+                @Override
+                public List<String> tabComplete(CommandSender sender, String alias, String[] args) {
+                    if (executor instanceof TabCompleter) {
+                        return ((TabCompleter) executor).onTabComplete(sender, this, alias, args);
+                    }
+                    return Collections.emptyList();
+                }
+            };
+            
+            command.setPermission("dci.command." + name);
+            
+            // Register to command map
+            java.lang.reflect.Method registerCommand = commandMap.getClass().getMethod("register", String.class, org.bukkit.command.Command.class);
+            registerCommand.invoke(commandMap, "dcustomitems", command);
+            
+            getLogger().info("[API] Registered command via reflection: /" + name);
+        } catch (Exception e) {
+            getLogger().warning("[API] Reflection registration failed for /" + name + ": " + e.getMessage());
+        }
+    }
 }
