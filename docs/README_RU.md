@@ -1,6 +1,6 @@
 # DC-CustomItems — полная документация
 
-**Версия документации:** 1.320.281
+**Версия документации:** 1.320.282
 **Minecraft:** Paper/Spigot 1.21.x
 **Java для сервера:** Java 21 рекомендуется для Paper 1.21.11; Java 17+ требуется для сборки проекта.
 
@@ -75,7 +75,7 @@ DC-CustomItems позволяет создавать кастомные пред
 
 ```bash
 cd ~/test/plugins
-curl -fL -o dcustomitems.jar "https://github.com/animesao/dcustomitems/releases/download/v1.320.281/DC-CustomItems-1.320.281.jar"
+curl -fL -o dcustomitems.jar "https://github.com/animesao/dcustomitems/releases/download/v1.320.282/DC-CustomItems-1.320.282.jar"
 ```
 
 Для обычного сервера замените `~/test/plugins` на путь к своей папке `plugins/`.
@@ -698,7 +698,7 @@ int kills = db.queryInt("SELECT kills FROM player_stats WHERE uuid = ?", uuid);
 
 Стандартные строки находятся в `MessagesConfig.java` внутри JAR. При первом запуске плагин создаёт `items/messages.java` как справочный файл-шаблон со списком настроек.
 
-**Важно для версии 1.320.281:** текущий runtime-компилятор не вызывает метод `load()` автоматически. Поэтому простое редактирование `items/messages.java` не изменяет сообщения плагина после `/ci reload`; этот файл классифицируется как обычный Java-файл и не загружается как конфигурация сообщений. Не удаляйте его, если используете его как шпаргалку.
+**Важно для версии 1.320.282:** текущий runtime-компилятор не вызывает метод `load()` автоматически. Поэтому простое редактирование `items/messages.java` не изменяет сообщения плагина после `/ci reload`; этот файл классифицируется как обычный Java-файл и не загружается как конфигурация сообщений. Не удаляйте его, если используете его как шпаргалку.
 
 Чтобы изменить стандартные сообщения в текущей версии, отредактируйте `src/main/java/me/dcplugin/dcustomitems/api/config/MessagesConfig.java` в исходном проекте и пересоберите JAR. Для серверной папки `plugins/DC-CustomItems/items/` это пока не является поддерживаемым способом настройки.
 
@@ -747,7 +747,7 @@ cp server.properties server.properties.backup
 ```bash
 dck stop test2
 cd ~/test/plugins
-curl -fL -o dcustomitems.jar "https://github.com/animesao/dcustomitems/releases/download/v1.320.281/DC-CustomItems-1.320.281.jar"
+curl -fL -o dcustomitems.jar "https://github.com/animesao/dcustomitems/releases/download/v1.320.282/DC-CustomItems-1.320.282.jar"
 # очищайте cache/compiled только если менялась система Java-компиляции
 rm -rf DC-CustomItems/cache DC-CustomItems/compiled
 dck start test2

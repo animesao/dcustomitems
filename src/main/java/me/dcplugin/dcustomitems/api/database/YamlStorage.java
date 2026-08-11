@@ -61,7 +61,8 @@ public class YamlStorage {
             data.save(file);
             return true;
         } catch (IOException e) {
-            plugin.getLogger().warning("Could not save YAML storage " + file.getName() + ": " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.WARNING,
+                "Could not save YAML storage " + file.getName() + ": " + e.getMessage(), e);
             return false;
         }
     }

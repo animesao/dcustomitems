@@ -53,7 +53,7 @@ public class DatabaseManager {
             plugin.getLogger().severe("SQLite driver is not available in the plugin JAR.");
             return false;
         } catch (SQLException e) {
-            plugin.getLogger().severe("SQLite connection error: " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.SEVERE, "SQLite connection error: " + e.getMessage(), e);
             return false;
         }
     }
@@ -93,7 +93,7 @@ public class DatabaseManager {
             plugin.getLogger().info("Database connected: MySQL (" + host + ":" + port + "/" + database + ")");
             return true;
         } catch (Exception e) {
-            plugin.getLogger().severe("MySQL connection error: " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.SEVERE, "MySQL connection error: " + e.getMessage(), e);
             if (mysqlDataSource != null) {
                 mysqlDataSource.close();
                 mysqlDataSource = null;
@@ -114,7 +114,7 @@ public class DatabaseManager {
                 if (!sqliteConnection.isClosed()) sqliteConnection.close();
                 plugin.getLogger().info("Database disconnected: SQLite");
             } catch (SQLException e) {
-                plugin.getLogger().warning("Database disconnect error: " + e.getMessage());
+                plugin.getLogger().log(java.util.logging.Level.WARNING, "Database disconnect error: " + e.getMessage(), e);
             } finally {
                 sqliteConnection = null;
             }
@@ -152,7 +152,7 @@ public class DatabaseManager {
         try {
             return acquireConnection();
         } catch (SQLException e) {
-            plugin.getLogger().warning("Could not acquire database connection: " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.WARNING, "Could not acquire database connection: " + e.getMessage(), e);
             return null;
         }
     }
@@ -224,7 +224,7 @@ public class DatabaseManager {
                 return statement.executeUpdate();
             }
         } catch (SQLException e) {
-            plugin.getLogger().severe("SQL error: " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.SEVERE, "SQL error: " + e.getMessage(), e);
             return -1;
         } finally {
             releaseConnection(connection);
@@ -334,7 +334,7 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().severe("Query error: " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.SEVERE, "Query error: " + e.getMessage(), e);
         } finally {
             releaseConnection(connection);
         }

@@ -1,6 +1,6 @@
 # Messages and Database — English Guide
 
-## 1. Messages in version 1.320.281
+## 1. Messages in version 1.320.282
 
 Built-in messages are stored in:
 
@@ -14,7 +14,7 @@ On first start, the plugin creates:
 plugins/DC-CustomItems/items/messages.java
 ```
 
-That file is an editable reference template containing message field names. In version `1.320.281`, the runtime compiler does not automatically call a `load()` method, so editing `items/messages.java` alone does not change messages after `/ci reload`.
+That file is an editable reference template containing message field names. In version `1.320.282`, the runtime compiler does not automatically call a `load()` method, so editing `items/messages.java` alone does not change messages after `/ci reload`.
 
 ### How to change a message
 

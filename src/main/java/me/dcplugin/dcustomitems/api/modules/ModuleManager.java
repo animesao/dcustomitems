@@ -55,7 +55,8 @@ public class ModuleManager {
             try {
                 loadModule(folder);
             } catch (Exception e) {
-                plugin.getLogger().warning("[Modules] Error loading module: " + folder.getName() + " - " + e.getMessage());
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "[Modules] Error loading module: " + folder.getName() + " - " + e.getMessage(), e);
             }
         }
 
@@ -142,7 +143,8 @@ public class ModuleManager {
             
             config.save(configFile);
         } catch (Exception e) {
-            plugin.getLogger().warning("[Modules] Error creating config: " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.WARNING,
+                "[Modules] Error creating config: " + e.getMessage(), e);
         }
     }
 

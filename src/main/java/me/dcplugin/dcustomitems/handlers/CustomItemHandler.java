@@ -53,8 +53,8 @@ public class CustomItemHandler {
                     customItems.put(itemId, customItem);
                 }
             } catch (Exception e) {
-                plugin.getLogger().severe("Ошибка при загрузке предмета " + itemId + ": " + e.getMessage());
-                e.printStackTrace();
+                plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                    "Ошибка при загрузке предмета " + itemId + ": " + e.getMessage(), e);
             }
         }
 
@@ -94,12 +94,13 @@ public class CustomItemHandler {
                             plugin.getLogger().fine("[items] Загружен предмет '" + itemId + "' из " + file.getName());
                         }
                     } catch (Exception e) {
-                        plugin.getLogger().severe("Ошибка при загрузке предмета " + itemId + " из " + file.getName() + ": " + e.getMessage());
-                        e.printStackTrace();
+                        plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                            "Ошибка при загрузке предмета " + itemId + " из " + file.getName() + ": " + e.getMessage(), e);
                     }
                 }
             } catch (Exception e) {
-                plugin.getLogger().severe("Ошибка при чтении файла " + file.getName() + ": " + e.getMessage());
+                plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                    "Ошибка при чтении файла " + file.getName() + ": " + e.getMessage(), e);
             }
         }
     }
@@ -376,8 +377,8 @@ public class CustomItemHandler {
             return customItem;
 
         } catch (Exception e) {
-            plugin.getLogger().severe("Ошибка при создании предмета " + itemId + ": " + e.getMessage());
-            e.printStackTrace();
+            plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                "Ошибка при создании предмета " + itemId + ": " + e.getMessage(), e);
             return null;
         }
     }

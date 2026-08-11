@@ -308,7 +308,8 @@ public class TriggerListener implements Listener {
                 executeEffectNearbyPlayers(player, actionStr);
             }
         } catch (Exception e) {
-            plugin.getLogger().warning("Error executing action: " + actionStr + " - " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.WARNING,
+                "Error executing action: " + actionStr + " - " + e.getMessage(), e);
         }
     }
 
@@ -885,7 +886,8 @@ public class TriggerListener implements Listener {
             meta.setPower(1);
             fw.setFireworkMeta(meta);
         } catch (Exception e) {
-            plugin.getLogger().warning("Error spawning firework: " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.WARNING,
+                "Error spawning firework: " + e.getMessage(), e);
         }
     }
 }

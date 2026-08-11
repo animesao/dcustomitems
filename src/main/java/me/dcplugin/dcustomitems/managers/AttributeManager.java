@@ -148,7 +148,8 @@ public class AttributeManager {
                     }
                 }
             } catch (Exception e) {
-                plugin.getLogger().warning("Ошибка при применении атрибута " + attribute.name() + ": " + e.getMessage());
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "Ошибка при применении атрибута " + attribute.name() + ": " + e.getMessage(), e);
             }
         }
     }

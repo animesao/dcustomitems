@@ -82,7 +82,8 @@ public class JavaItemCompiler {
             Files.createDirectories(compiledDir);
             Files.createDirectories(cacheDir);
         } catch (IOException e) {
-            plugin.getLogger().severe("[JavaCompiler] Cannot create directories: " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                "[JavaCompiler] Cannot create directories: " + e.getMessage(), e);
             return result;
         }
 
@@ -162,7 +163,8 @@ public class JavaItemCompiler {
                     classLoader.addClass(entry.getKey(), entry.getValue());
                 }
             } catch (Exception e) {
-                plugin.getLogger().severe("[JavaCompiler] Error loading classes: " + e.getMessage());
+                plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                "[JavaCompiler] Error loading classes: " + e.getMessage(), e);
             }
         }
 
@@ -272,7 +274,8 @@ public class JavaItemCompiler {
             }
 
         } catch (Exception e) {
-            plugin.getLogger().severe("[JavaCompiler] Error: " + javaFile.getName() + ": " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                "[JavaCompiler] Error: " + javaFile.getName() + ": " + e.getMessage(), e);
             result.errors.add(javaFile.getName() + ": " + e.getMessage());
             return false;
         }
@@ -562,7 +565,8 @@ public class JavaItemCompiler {
                     .newInstance(plugin, moduleId, moduleFolder);
             }
         } catch (Exception e) {
-            plugin.getLogger().severe("[JavaCompiler] Error creating module: " + fullClassName + " - " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                "[JavaCompiler] Error creating module: " + fullClassName + " - " + e.getMessage(), e);
         }
         return null;
     }

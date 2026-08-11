@@ -818,7 +818,8 @@ public class PlayerListener implements Listener {
             previousActiveItems.put(playerId, currentActiveItemIds);
             
         } catch (Exception e) {
-            plugin.getLogger().warning("Ошибка при обновлении экипировки для игрока " + player.getName() + ": " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.WARNING,
+                "Ошибка при обновлении экипировки для игрока " + player.getName() + ": " + e.getMessage(), e);
         } finally {
             processingEquipment.put(playerId, false);
         }

@@ -66,7 +66,8 @@ public class PlaceholderManager {
                     text = text.replace("%" + entry.getKey() + "%", value);
                 }
             } catch (Exception e) {
-                plugin.getLogger().warning("Error in placeholder " + entry.getKey() + ": " + e.getMessage());
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "Error in placeholder " + entry.getKey() + ": " + e.getMessage(), e);
             }
         }
 

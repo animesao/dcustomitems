@@ -161,7 +161,7 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
             }
         } catch (Exception e) {
             sender.sendMessage(MessagesConfig.format(MessagesConfig.RELOAD_ERROR, "{error}", e.getMessage()));
-            plugin.getLogger().severe("Reload error: " + e.getMessage());
+            plugin.getLogger().log(java.util.logging.Level.SEVERE, "Reload error: " + e.getMessage(), e);
         }
 
         return true;

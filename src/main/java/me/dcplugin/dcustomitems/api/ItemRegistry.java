@@ -128,10 +128,20 @@ public class ItemRegistry {
         // Otherwise a reload can retain command objects backed by stale Java classes.
         plugin.unregisterCustomCommands();
         for (CustomCommand cmd : registeredCommands.values()) {
-            try { cmd.onUnregister(); } catch (Exception ignored) {}
+            try {
+                cmd.onUnregister();
+            } catch (Exception exception) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "[API] Error unregistering command " + cmd.getName(), exception);
+            }
         }
         for (CustomPlaceholder ph : registeredPlaceholders.values()) {
-            try { ph.onUnregister(); } catch (Exception ignored) {}
+            try {
+                ph.onUnregister();
+            } catch (Exception exception) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "[API] Error unregistering placeholder " + ph.getIdentifier(), exception);
+            }
         }
 
         registeredItems.clear();
@@ -146,7 +156,12 @@ public class ItemRegistry {
         loadJavaFiles(itemsDir);
 
         for (CustomCommand cmd : registeredCommands.values()) {
-            try { cmd.onRegister(); } catch (Exception ignored) {}
+            try {
+                cmd.onRegister();
+            } catch (Exception exception) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "[API] Error registering command " + cmd.getName(), exception);
+            }
         }
         for (CustomPlaceholder ph : registeredPlaceholders.values()) {
             try {
@@ -154,7 +169,10 @@ public class ItemRegistry {
                     plugin.getPlaceholderManager().register(ph.getIdentifier(), ph::getValue);
                 }
                 ph.onRegister();
-            } catch (Exception ignored) {}
+            } catch (Exception exception) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "[API] Error registering placeholder " + ph.getIdentifier(), exception);
+            }
         }
 
         plugin.registerCustomCommands();
@@ -231,9 +249,15 @@ public class ItemRegistry {
                         AbstractCustomItem item = (AbstractCustomItem) clazz.getDeclaredConstructor().newInstance();
                         registeredItems.put(item.getId(), item);
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception exception) {
+                    plugin.getLogger().log(java.util.logging.Level.WARNING,
+                        "[API] Failed to load class " + cn + " from " + jarFile.getName(), exception);
+                }
             }
-        } catch (IOException ignored) {}
+        } catch (IOException exception) {
+            plugin.getLogger().log(java.util.logging.Level.WARNING,
+                "[API] Failed to read Java item jar " + jarFile.getName(), exception);
+        }
     }
 
     private void logStats() {

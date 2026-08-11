@@ -1,5 +1,6 @@
 package me.dcplugin.dcustomitems.utils;
 
+import me.dcplugin.dcustomitems.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -223,7 +224,11 @@ public class ActionParser {
                     return false;
             }
         } catch (Exception e) {
-            Bukkit.getLogger().warning("[DC-CustomItems] Error executing action: " + action + " - " + e.getMessage());
+            Main plugin = Main.getInstance();
+            if (plugin != null) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "Error executing action: " + action + " - " + e.getMessage(), e);
+            }
             return false;
         }
     }
@@ -458,7 +463,11 @@ public class ActionParser {
             meta.setPower(1);
             fw.setFireworkMeta(meta);
         } catch (Exception e) {
-            Bukkit.getLogger().warning("Error spawning firework: " + e.getMessage());
+            Main plugin = Main.getInstance();
+            if (plugin != null) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "Error spawning firework: " + e.getMessage(), e);
+            }
         }
     }
 
@@ -746,7 +755,13 @@ public class ActionParser {
                 try {
                     Particle particle = Particle.valueOf(particleType.toUpperCase());
                     target.getWorld().spawnParticle(particle, target.getLocation().add(0, 2, 0), 20);
-                } catch (Exception ignored) {}
+                } catch (Exception exception) {
+                    Main plugin = Main.getInstance();
+                    if (plugin != null) {
+                        plugin.getLogger().log(java.util.logging.Level.WARNING,
+                            "Error spawning custom healing particle " + particleType, exception);
+                    }
+                }
             }
         }
     }

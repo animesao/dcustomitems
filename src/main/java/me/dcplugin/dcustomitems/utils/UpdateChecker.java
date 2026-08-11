@@ -82,7 +82,7 @@ public class UpdateChecker {
             } catch (Exception e) {
                 consumer.accept("§cОшибка при проверке обновлений: " + e.getMessage());
                 consumer.accept("§7Проверьте обновления вручную: §b" + githubReleasesUrl);
-                plugin.getLogger().severe("Update check error: " + e.getMessage());
+                plugin.getLogger().log(java.util.logging.Level.SEVERE, "Update check error: " + e.getMessage(), e);
             }
         });
     }

@@ -20,6 +20,7 @@ import me.dcplugin.dcustomitems.managers.MessageManager;
 import me.dcplugin.dcustomitems.managers.EffectManager;
 import me.dcplugin.dcustomitems.managers.AttributeManager;
 import me.dcplugin.dcustomitems.managers.ArmorSetManager;
+import me.dcplugin.dcustomitems.managers.PluginLogManager;
 import me.dcplugin.dcustomitems.utils.UpdateChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -34,6 +35,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
 public class Main extends JavaPlugin {
 
@@ -52,12 +54,15 @@ public class Main extends JavaPlugin {
     private DatabaseManager databaseManager;
     private PlaceholderManager placeholderManager;
     private ModuleManager moduleManager;
+    private PluginLogManager pluginLogManager;
     private final Set<Command> dynamicCommands = Collections.newSetFromMap(new IdentityHashMap<>());
 
     @Override
     public void onEnable() {
         instance = this;
         try {
+            pluginLogManager = new PluginLogManager(this);
+            pluginLogManager.start();
             getLogger().info("CustomItems starting...");
 
             // Save default config. Built-in items stay inside config.yml;
@@ -129,23 +134,30 @@ public class Main extends JavaPlugin {
                 apiItemRegistry.getPlaceholderCount() + " placeholders");
 
         } catch (Exception e) {
-            getLogger().severe("Error enabling plugin: " + e.getMessage());
-            e.printStackTrace();
+            getLogger().log(Level.SEVERE, "Error enabling plugin: " + e.getMessage(), e);
             getServer().getPluginManager().disablePlugin(this);
         }
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("CustomItems disabling...");
-        if (databaseManager != null) databaseManager.shutdownAsync();
-        if (databaseManager != null) databaseManager.disconnect();
-        if (effectManager != null) {
-            getServer().getOnlinePlayers().forEach(effectManager::stopPeriodicEffects);
+        try {
+            getLogger().info("CustomItems disabling...");
+            if (databaseManager != null) databaseManager.shutdownAsync();
+            if (databaseManager != null) databaseManager.disconnect();
+            if (effectManager != null) {
+                getServer().getOnlinePlayers().forEach(effectManager::stopPeriodicEffects);
+            }
+            if (attributeManager != null) attributeManager.cleanup();
+            unregisterCustomCommands();
+            getLogger().info("CustomItems disabled!");
+        } catch (Exception exception) {
+            getLogger().log(Level.SEVERE, "Error disabling plugin: " + exception.getMessage(), exception);
+        } finally {
+            if (pluginLogManager != null) {
+                pluginLogManager.stop();
+            }
         }
-        if (attributeManager != null) attributeManager.cleanup();
-        unregisterCustomCommands();
-        getLogger().info("CustomItems disabled!");
     }
 
     /**
@@ -164,7 +176,7 @@ public class Main extends JavaPlugin {
                 writer.close();
                 getLogger().info("[Config] Created default messages.java");
             } catch (Exception e) {
-                getLogger().warning("Failed to create messages.java: " + e.getMessage());
+                getLogger().log(Level.WARNING, "Failed to create messages.java: " + e.getMessage(), e);
             }
         }
     }
@@ -399,7 +411,8 @@ public class Main extends JavaPlugin {
                     registerCommandViaReflection(cmd.getName(), executor);
                 }
             } catch (Exception e) {
-                getLogger().warning("[API] Failed to register command: /" + cmd.getName() + " - " + e.getMessage());
+                getLogger().log(Level.WARNING,
+                    "[API] Failed to register command: /" + cmd.getName() + " - " + e.getMessage(), e);
             }
         }
     }
@@ -428,7 +441,7 @@ public class Main extends JavaPlugin {
                     try {
                         return executor.onCommand(sender, this, label, args);
                     } catch (Exception e) {
-                        getLogger().warning("Error executing command: " + e.getMessage());
+                        getLogger().log(Level.WARNING, "Error executing command: " + e.getMessage(), e);
                         return false;
                     }
                 }
@@ -475,13 +488,11 @@ public class Main extends JavaPlugin {
                 }
 
             } catch (Exception e) {
-                getLogger().warning("[API] ❌ Failed to register /" + name + ": " + e.getMessage());
-                e.printStackTrace();
+                getLogger().log(Level.WARNING, "[API] ❌ Failed to register /" + name + ": " + e.getMessage(), e);
             }
             
         } catch (Exception e) {
-            getLogger().warning("[API] ❌ Reflection registration failed for /" + name + ": " + e.getMessage());
-            e.printStackTrace();
+            getLogger().log(Level.WARNING, "[API] ❌ Reflection registration failed for /" + name + ": " + e.getMessage(), e);
         }
     }
 
@@ -514,7 +525,7 @@ public class Main extends JavaPlugin {
                 }
             }
         } catch (Exception e) {
-            getLogger().warning("[API] Could not inspect dynamic commands: " + e.getMessage());
+            getLogger().log(Level.WARNING, "[API] Could not inspect dynamic commands: " + e.getMessage(), e);
         }
 
         Set<Command> failed = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -529,7 +540,7 @@ public class Main extends JavaPlugin {
                 }
             } catch (Exception e) {
                 removed = false;
-                getLogger().warning("[API] Failed to unregister dynamic command: " + e.getMessage());
+                getLogger().log(Level.WARNING, "[API] Failed to unregister dynamic command: " + e.getMessage(), e);
             }
             if (!removed) failed.add(command);
         }

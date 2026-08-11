@@ -1,10 +1,12 @@
 package me.dcplugin.dcustomitems.api.commands;
 
+import me.dcplugin.dcustomitems.Main;
 import me.dcplugin.dcustomitems.api.ItemRegistry;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Обработчик всех кастомных команд
@@ -45,6 +47,11 @@ public class CustomCommandExecutor implements CommandExecutor, TabCompleter {
             return cmd.execute(sender, args);
         } catch (Exception e) {
             sender.sendMessage("§cОшибка выполнения команды: " + e.getMessage());
+            Main plugin = Main.getInstance();
+            if (plugin != null) {
+                plugin.getLogger().log(Level.WARNING,
+                    "Error executing command " + label + ": " + e.getMessage(), e);
+            }
             return true;
         }
     }
