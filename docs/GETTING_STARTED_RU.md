@@ -65,7 +65,7 @@ hello_sword:
 
 Напишите эту команду:
 ```
-/ci give hello_sword
+/give hello_sword
 ```
 
 ### Попробуйте!
@@ -112,7 +112,7 @@ hello_sword:
 
 ```
 /ci reload
-/ci give hello_sword
+/give hello_sword
 ```
 
 Теперь при ПКМ вы получите скорость и силу!

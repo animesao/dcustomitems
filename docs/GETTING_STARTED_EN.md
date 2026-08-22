@@ -65,7 +65,7 @@ You should see:
 
 Type this command:
 ```
-/ci give hello_sword
+/give hello_sword
 ```
 
 ### Test It!
@@ -112,7 +112,7 @@ hello_sword:
 
 ```
 /ci reload
-/ci give hello_sword
+/give hello_sword
 ```
 
 Now right-click and you'll get speed and strength!

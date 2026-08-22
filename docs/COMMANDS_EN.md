@@ -25,13 +25,25 @@ The main command for the plugin.
 
 ## 📝 Item Commands
 
-### /ci give
+### /give
 
-Give a custom item to a player.
+Give an item (custom or vanilla).
 
 **Syntax:**
 ```
-/ci give <item_id> [player]
+/give <id|material> [player] [amount]
+```
+
+**Examples:**
+```bash
+/give vampire-blade                    # Custom item to yourself
+/give diamond                          # Diamond to yourself
+/give minecraft:netherite_sword Steve  # Netherite sword to player
+/give cooked_beef 64                   # 64 cooked beef
+/give diamond all 16                   # 16 diamonds to all online
+/give list                             # List custom items
+/give materials                        # All vanilla materials
+/give materials diamond                # Search materials
 ```
 
 **Parameters:**
@@ -57,19 +69,19 @@ Give a custom item to a player.
 
 ---
 
-### /ci list
+### /give list
 
 List all available custom items.
 
 **Syntax:**
 ```
-/ci list
+/give list
 ```
 
 **Examples:**
 ```bash
 # List all items
-/ci list
+/give list
 ```
 
 **Output:**
@@ -218,7 +230,7 @@ Show help message.
 ```
 [DC-CustomItems] Available commands:
 [DC-CustomItems] /ci give <item> [player] - Give custom item
-[DC-CustomItems] /ci list - List all items
+[DC-CustomItems] /give list - List all items
 [DC-CustomItems] /ci reload - Reload plugin
 [DC-CustomItems] /api-item give <id> [player] - Give API item
 [DC-CustomItems] /api-item list - List API items
@@ -255,7 +267,7 @@ Show help message.
 ```bash
 # Reload and check items
 /ci reload
-/ci list
+/give list
 ```
 
 ---
@@ -290,7 +302,7 @@ Players need this permission to use the item.
 
 All commands support tab completion:
 - Type `/ci give ` and press Tab
-- Type `/ci list` and press Enter
+- Type `/give list` and press Enter
 
 ### Tip 2: Check Console Output
 

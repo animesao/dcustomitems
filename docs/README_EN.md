@@ -1,6 +1,6 @@
 # DC-CustomItems — Complete Documentation
 
-**Documentation version:** 1.320.282
+**Documentation version:** 1.321.1
 **Minecraft:** Paper/Spigot 1.21.x
 **Server Java:** Java 21 is recommended for Paper 1.21.11; Java 17+ is required to build the project.
 
