@@ -33,7 +33,14 @@ public final class EnumCache {
      */
     public static Material getMaterial(String name) {
         if (name == null || name.isEmpty()) return null;
-        String key = name.toUpperCase();
+        // Убираем namespace prefix: minecraft:diamond_sword -> DIAMOND_SWORD
+        String clean = name;
+        if (clean.contains(":")) {
+            clean = clean.substring(clean.indexOf(':') + 1);
+        }
+        // Заменяем дефисы на подчёркивания: diamond-sword -> DIAMOND_SWORD
+        clean = clean.replace("-", "_");
+        String key = clean.toUpperCase();
         return MATERIAL_CACHE.computeIfAbsent(key, k -> {
             try {
                 return Material.valueOf(k);
