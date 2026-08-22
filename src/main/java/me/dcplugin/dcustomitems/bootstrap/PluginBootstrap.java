@@ -120,7 +120,7 @@ public class PluginBootstrap {
         if (attributeManager != null) attributeManager.cleanup();
 
         if (equippedItemsChecker != null) equippedItemsChecker.cancel();
-        commandRegistrar.unregisterAll();
+        try { commandRegistrar.unregisterAll(); } catch (Exception ignored) {}
 
         plugin.getLogger().info("CustomItems disabled!");
     }
@@ -138,9 +138,15 @@ public class PluginBootstrap {
 
     private void registerBukkitCommand() {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            var cmd = plugin.getCommand("customitems");
+            if (cmd == null) {
+                plugin.getLogger().severe("[FATAL] Command 'customitems' not found in plugin.yml!");
+                return;
+            }
             CustomItemsCommand command = new CustomItemsCommand(plugin);
-            plugin.getCommand("customitems").setExecutor(command);
-            plugin.getCommand("customitems").setTabCompleter(command);
+            cmd.setExecutor(command);
+            cmd.setTabCompleter(command);
+            plugin.getLogger().info("[Command] /ci reload registered successfully");
         }, 1L);
     }
 
