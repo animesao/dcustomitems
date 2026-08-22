@@ -58,9 +58,8 @@ public class CommandRegistrar {
             CommandMap commandMap = getCommandMap();
             if (commandMap == null) return;
 
-            Field knownCommandsField = commandMap.getClass().getDeclaredField("knownCommands");
-            knownCommandsField.setAccessible(true);
-            Map<String, Command> knownCommands = (Map<String, Command>) knownCommandsField.get(commandMap);
+            // Access knownCommands via reflection (Paper remaps field names)
+            Map<String, Command> knownCommands = getKnownCommands(commandMap);
 
             for (Command cmd : dynamicCommands) {
                 knownCommands.remove(cmd.getName().toLowerCase());
@@ -96,13 +95,49 @@ public class CommandRegistrar {
     }
 
     private CommandMap getCommandMap() {
+        // Try Bukkit.getCommandMap() via reflection (Paper 1.21+)
         try {
-            Field commandMapField = Bukkit.class.getDeclaredField("commandMap");
-            commandMapField.setAccessible(true);
-            return (CommandMap) commandMapField.get(null);
+            java.lang.reflect.Method getCommandMapMethod = Bukkit.class.getMethod("getCommandMap");
+            return (CommandMap) getCommandMapMethod.invoke(null);
         } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to access CommandMap: " + e.getMessage(), e);
-            return null;
+            // Fallback: field-based reflection (Spigot / older Paper)
+            try {
+                Field commandMapField = Bukkit.class.getDeclaredField("commandMap");
+                commandMapField.setAccessible(true);
+                return (CommandMap) commandMapField.get(null);
+            } catch (Exception ex) {
+                plugin.getLogger().log(Level.WARNING, "Failed to access CommandMap: " + ex.getMessage(), ex);
+                return null;
+            }
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Command> getKnownCommands(CommandMap commandMap) {
+        // Try all possible field names (Paper remaps some)
+        for (String fieldName : new String[]{"knownCommands", "knownCommands"}) {
+            try {
+                Field field = commandMap.getClass().getDeclaredField(fieldName);
+                field.setAccessible(true);
+                return (Map<String, Command>) field.get(commandMap);
+            } catch (Exception ignored) {}
+        }
+        // Fallback: iterate all declared fields looking for a Map<String, Command>
+        for (Field field : commandMap.getClass().getDeclaredFields()) {
+            if (Map.class.isAssignableFrom(field.getType())) {
+                try {
+                    field.setAccessible(true);
+                    Object value = field.get(commandMap);
+                    if (value instanceof Map) {
+                        Map<?, ?> map = (Map<?, ?>) value;
+                        if (!map.isEmpty() && map.keySet().iterator().next() instanceof String) {
+                            return (Map<String, Command>) value;
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+        plugin.getLogger().warning("Could not access knownCommands map");
+        return new java.util.HashMap<>();
     }
 }

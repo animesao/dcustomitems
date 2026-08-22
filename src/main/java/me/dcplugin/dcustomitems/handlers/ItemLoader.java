@@ -56,11 +56,18 @@ public class ItemLoader {
 
     // ===== Loading from config.yml =====
 
+    // Known non-item keys in config.yml
+    private static final Set<String> CONFIG_SKIP_KEYS = Set.of(
+            "debug-mode", "database", "set-bonuses",
+            "update-available", "latest-version",
+            "disable-worlds", "whitelist-blocks"
+    );
+
     private void loadFromConfig(Map<String, CustomItem> items) {
         ConfigurationSection config = plugin.getConfig();
         for (String itemId : config.getKeys(false)) {
             try {
-                if ("set-bonuses".equals(itemId)) continue;
+                if (CONFIG_SKIP_KEYS.contains(itemId)) continue;
                 CustomItem item = parseCustomItem(itemId, config.getConfigurationSection(itemId));
                 if (item != null) {
                     items.put(itemId, item);
