@@ -4,6 +4,8 @@ on:
   push:
     branches: [ main ]
     tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
 
 permissions:
   contents: write
@@ -13,8 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -22,53 +22,83 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Get version from tag
-      id: version
-      run: |
-        if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-          VERSION="${GITHUB_REF#refs/tags/v}"
-        else
-          VERSION="dev"
-        fi
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "Version: $VERSION"
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
 
-    - name: Update project version in pom.xml
-      run: |
-        # Only replace the first <version> tag (project version)
-        sed -i "0,/<version>.*<\/version>/s//<version>${{ steps.version.outputs.version }}<\/version>/" pom.xml
-        echo "Updated pom.xml:"
-        head -15 pom.xml
-
-    - name: Build
+    - name: Build with Maven
       run: mvn clean package -q
 
-    - name: Generate release notes
-      if: startsWith(github.ref, 'refs/tags/v')
+    - name: Get version
+      id: version
       run: |
-        echo "## What's Changed" > notes.md
+        VERSION=$(grep -m1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/' | tr -d ' ')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "📦 Version: $VERSION"
+
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: DC-CustomItems-${{ steps.version.outputs.version }}
+        path: target/DC-CustomItems-${{ steps.version.outputs.version }}.jar
+        retention-days: 7
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Download JAR
+      uses: actions/download-artifact@v4
+      with:
+        name: DC-CustomItems-${{ steps.version.outputs.version }}
+
+    - name: Generate release notes
+      run: |
+        # Get previous tag
+        PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+        echo "## 🚀 DC-CustomItems ${{ github.ref_name }}" > notes.md
         echo "" >> notes.md
-        git log --oneline -10 --pretty=format:"- %s" >> notes.md
+
+        if [ -n "$PREV_TAG" ]; then
+          echo "### 📝 What's Changed since $PREV_TAG" >> notes.md
+          echo "" >> notes.md
+          git log --oneline ${PREV_TAG}..HEAD --pretty=format:"- %s" >> notes.md
+        else
+          echo "### 📝 Initial Release" >> notes.md
+          echo "" >> notes.md
+          git log --oneline -20 --pretty=format:"- %s" >> notes.md
+        fi
+
         echo "" >> notes.md
         echo "" >> notes.md
         echo "---" >> notes.md
-        echo "## Installation" >> notes.md
-        echo "1. Download the JAR file below" >> notes.md
-        echo "2. Place it in your server's \`plugins/\` folder" >> notes.md
+        echo "" >> notes.md
+        echo "### 📦 Installation" >> notes.md
+        echo "1. Download \`DC-CustomItems-${{ steps.version.outputs.version }}.jar\` from Assets" >> notes.md
+        echo "2. Place in your server's \`plugins/\` folder" >> notes.md
         echo "3. Restart the server" >> notes.md
+        echo "" >> notes.md
+        echo "### 📚 Documentation" >> notes.md
+        echo "- [README](https://github.com/animesao/dcustomitems#readme)" >> notes.md
+        echo "- [Full Documentation](https://github.com/animesao/dcustomitems/tree/main/docs)" >> notes.md
 
-    - name: Upload JAR
-      uses: actions/upload-artifact@v4
-      with:
-        name: dcustomitems-${{ steps.version.outputs.version }}
-        path: target/DC-CustomItems-${{ steps.version.outputs.version }}.jar
-
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/v')
+    - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        name: "DC-CustomItems v${{ steps.version.outputs.version }}"
+        name: "DC-CustomItems ${{ github.ref_name }}"
         body_path: notes.md
-        files: target/DC-CustomItems-${{ steps.version.outputs.version }}.jar
+        files: DC-CustomItems-${{ steps.version.outputs.version }}.jar
+        draft: false
+        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
