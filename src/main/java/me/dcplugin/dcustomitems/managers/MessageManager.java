@@ -29,6 +29,16 @@ public class MessageManager {
         return ColorUtils.colorize(defaultMessage);
     }
 
+    /**
+     * Получить сообщение с обработкой PlaceholderAPI.
+     * @param path Путь в конфиге
+     * @param defaultMessage Сообщение по умолчанию
+     * @param player Игрок для PAPI плейсхолдеров (может быть null)
+     */
+    public String getMessage(String path, String defaultMessage, org.bukkit.entity.Player player) {
+        return ColorUtils.processMessage(player, defaultMessage);
+    }
+
     public String getMessage(String path) {
         return getMessage(path, "");
     }

@@ -1,10 +1,13 @@
 package me.dcplugin.dcustomitems.listeners;
 
 import me.dcplugin.dcustomitems.Main;
+import me.dcplugin.dcustomitems.handlers.EquippedItemsChecker;
 import me.dcplugin.dcustomitems.models.CustomItem;
 import me.dcplugin.dcustomitems.utils.ColorUtils;
+import me.dcplugin.dcustomitems.utils.EnumCache;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -39,19 +42,24 @@ public class PlayerListener implements Listener {
     private final Main plugin;
     private final Map<UUID, Long> lastProcessedClick = new HashMap<>();
     private final Map<UUID, Long> playerCooldowns = new HashMap<>();
-    private final Map<UUID, String> lastEquipmentState = new HashMap<>();
-    private final Map<UUID, Boolean> processingEquipment = new HashMap<>();
-    private final Map<UUID, Set<String>> previousActiveItems = new HashMap<>();
     private static final long MIN_CLICK_DELAY = 200L;
 
     public PlayerListener(Main plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Получить глобальный checker (ленивая инициализация)
+     */
+    private EquippedItemsChecker getChecker() {
+        return plugin.getEquippedItemsChecker();
+    }
+
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        checkEquippedItems(player);
+        // Глобальный таск обработает на следующем тике
+        getChecker().markForRecalculation(player);
 
         if ((player.isOp() || player.hasPermission("customitems.admin") || player.hasPermission("*")) && plugin.getConfig().getBoolean("update-available", false)) {
             String latest = plugin.getConfig().getString("latest-version", "unknown");
@@ -70,8 +78,7 @@ public class PlayerListener implements Listener {
         
         lastProcessedClick.remove(playerId);
         playerCooldowns.remove(playerId);
-        lastEquipmentState.remove(playerId);
-        processingEquipment.remove(playerId);
+        getChecker().onPlayerQuit(playerId);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -123,17 +130,14 @@ public class PlayerListener implements Listener {
         if (cooldown > 0) {
             Long lastClickTime = playerCooldowns.get(playerId);
             if (lastClickTime != null && (currentTime - lastClickTime) < cooldown) {
-                // Показываем оставшееся время кулдауна в lore
                 long remaining = cooldown - (currentTime - lastClickTime);
                 double secondsLeft = remaining / 1000.0;
-                // Показываем кулдаун ТОЛЬКО если задан custom cooldown-message
                 if (customItem.hasCooldownMessage()) {
-                    String cdMsg = ColorUtils.colorize(customItem.getCooldownMessage().replace("{seconds}", String.format("%.1f", secondsLeft)));
+                    String cdMsg = ColorUtils.processMessage(player, customItem.getCooldownMessage().replace("{seconds}", String.format("%.1f", secondsLeft)));
                     if (!cdMsg.trim().isEmpty()) {
                         player.sendMessage(cdMsg);
                     }
                 }
-                // Обновляем lore с кулдауном
                 ItemStack updated = plugin.getItemHandler().updateItemWithCooldown(actualItem, lastClickTime, cooldown);
                 if (hand == EquipmentSlot.HAND) {
                     player.getInventory().setItemInMainHand(updated);
@@ -155,7 +159,7 @@ public class PlayerListener implements Listener {
             if (currentUses <= 0) {
                 event.setCancelled(true);
                 String msg = customItem.hasUsesDepletedMessage() 
-                    ? ColorUtils.colorize(customItem.getUsesDepletedMessage()) 
+                    ? ColorUtils.processMessage(player, customItem.getUsesDepletedMessage()) 
                     : plugin.getMessageManager().getMessage("items.uses-depleted", "&cПредмет использован до конца и пропал!");
                 player.sendMessage(msg);
                 return;
@@ -178,7 +182,7 @@ public class PlayerListener implements Listener {
                 }
                 
                 String msg = customItem.hasUsesDepletedMessage() 
-                    ? ColorUtils.colorize(customItem.getUsesDepletedMessage()) 
+                    ? ColorUtils.processMessage(player, customItem.getUsesDepletedMessage()) 
                     : plugin.getMessageManager().getMessage("items.uses-depleted", "&cПредмет использован до конца и пропал!");
                 player.sendMessage(msg);
                 return;
@@ -200,7 +204,6 @@ public class PlayerListener implements Listener {
             event.setCancelled(true);
         }
 
-        // Вызываем триггеры кликов
         if (isRightClick) {
             plugin.getTriggerListener().executeRightClickTriggers(player, customItem);
         } else if (isLeftClick) {
@@ -211,7 +214,6 @@ public class PlayerListener implements Listener {
             plugin.getEffectManager().applyEffects(player, customItem);
         }
 
-        // Обновляем lore с кулдауном после использования
         if (cooldown > 0) {
             ItemStack updated = plugin.getItemHandler().updateItemWithCooldown(actualItem, currentTime, cooldown);
             if (hand == EquipmentSlot.HAND) {
@@ -275,7 +277,7 @@ public class PlayerListener implements Listener {
             double newHealth = Math.min(player.getHealth() + amount, maxHealth);
             player.setHealth(newHealth);
         }
-        player.sendMessage(me.dcplugin.dcustomitems.utils.ColorUtils.colorize("&a❤ Вы исцелены!"));
+        player.sendMessage(ColorUtils.processMessage(player, "&a❤ Вы исцелены!"));
     }
 
     private void executeTeleport(Player player, String actionStr) {
@@ -288,7 +290,7 @@ public class PlayerListener implements Listener {
                 double y = parts[1].startsWith("~") ? loc.getY() + Double.parseDouble(parts[1]) : Double.parseDouble(parts[1]);
                 double z = parts[2].startsWith("~") ? loc.getZ() + Double.parseDouble(parts[2]) : Double.parseDouble(parts[2]);
                 player.teleport(new org.bukkit.Location(loc.getWorld(), x, y, z));
-                player.sendMessage(me.dcplugin.dcustomitems.utils.ColorUtils.colorize("&d✨ Телепортация!"));
+                player.sendMessage(ColorUtils.processMessage(player, "&d✨ Телепортация!"));
             } catch (Exception e) {
                 plugin.getLogger().warning("Invalid teleport params: " + tpPart);
             }
@@ -296,267 +298,166 @@ public class PlayerListener implements Listener {
     }
 
     private void executeDamage(Player player, String actionStr) {
-        // AoE: damage:УРОН:РАДИУС
-        String dmgPart = actionStr.replace("damage:", "").trim();
-        String[] parts = dmgPart.split(":");
-        double amount = 4.0;
-        double range = 3.0;
+        String part = actionStr.replace("damage:", "").trim();
         try {
-            amount = Double.parseDouble(parts[0]);
-            if (parts.length > 1) {
-                range = Double.parseDouble(parts[1]);
+            double amount = Double.parseDouble(part);
+            player.damage(amount);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Invalid damage params: " + part);
+        }
+    }
+
+    private void executeKnockback(Player player, String actionStr) {
+        String part = actionStr.replace("knockback:", "").trim();
+        try {
+            String[] parts = part.split(":");
+            double strength = parts.length > 0 ? Double.parseDouble(parts[0]) : 1.0;
+            double height = parts.length > 1 ? Double.parseDouble(parts[1]) : 0.5;
+            org.bukkit.util.Vector velocity = player.getLocation().getDirection().multiply(-strength).setY(height);
+            player.setVelocity(velocity);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Invalid knockback params: " + part);
+        }
+    }
+
+    private void executeLaunch(Player player, String actionStr) {
+        String part = actionStr.replace("launch:", "").trim();
+        try {
+            double height = Double.parseDouble(part);
+            player.setVelocity(new org.bukkit.util.Vector(0, height, 0));
+        } catch (Exception e) {
+            plugin.getLogger().warning("Invalid launch params: " + part);
+        }
+    }
+
+    private void executeStun(Player player, String actionStr) {
+        String part = actionStr.replace("stun:", "").trim();
+        try {
+            long duration = Long.parseLong(part);
+            player.setWalkSpeed(0.0f);
+            player.setFlySpeed(0.0f);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                player.setWalkSpeed(0.2f);
+                player.setFlySpeed(0.1f);
+            }, duration * 20L);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Invalid stun params: " + part);
+        }
+    }
+
+    private void executeTitle(Player player, String actionStr) {
+        String part = actionStr.replace("title:", "").trim();
+        String[] parts = part.split("\\|");
+        String title = parts.length > 0 ? ColorUtils.processMessage(player, parts[0]) : "";
+        String subtitle = parts.length > 1 ? ColorUtils.processMessage(player, parts[1]) : "";
+        player.sendTitle(title, subtitle, 10, 40, 10);
+    }
+
+    private void executeAnnounce(Player player, String actionStr) {
+        String msg = ColorUtils.processMessage(player, actionStr.replace("announce:", "").trim());
+        Bukkit.broadcastMessage(msg);
+    }
+
+    private void executeEffectNearby(Player player, String actionStr) {
+        String part = actionStr.replace("effect-nearby:", "").trim();
+        try {
+            String[] parts = part.split(":");
+            PotionEffectType effectType = EnumCache.getPotionEffect(parts[0]);
+            int radius = parts.length > 1 ? Integer.parseInt(parts[1]) : 5;
+            int amplifier = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
+            if (effectType != null) {
+                for (org.bukkit.entity.Entity entity : player.getNearbyEntities(radius, radius, radius)) {
+                    if (entity instanceof Player) {
+                        ((Player) entity).addPotionEffect(new PotionEffect(effectType, 200, amplifier, false, false));
+                    }
+                }
             }
-        } catch (Exception ignored) {}
-        // Бьём ВСЕХ nearby врагов, НЕ игрока
-        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
-            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
-                ((org.bukkit.entity.LivingEntity) entity).damage(amount, player);
-            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Invalid effect-nearby params: " + part);
         }
     }
 
     private void executeLightning(Player player, Block block, String actionStr) {
-        int strikes = 1;
-        if (actionStr.contains(":")) {
-            try {
-                strikes = Integer.parseInt(actionStr.split(":")[1]);
-            } catch (Exception ignored) {}
-        }
-
-        // Определяем локацию для молнии
-        org.bukkit.Location targetLocation;
         if (block != null) {
-            // Если есть блок - бьем туда
-            targetLocation = block.getLocation();
+            block.getWorld().strikeLightningEffect(block.getLocation());
         } else {
-            // Вычисляем точку далеко впереди игрока (куда он смотрит)
-            org.bukkit.Location eyeLoc = player.getEyeLocation();
-            org.bukkit.util.Vector direction = eyeLoc.getDirection();
-            targetLocation = eyeLoc.clone().add(direction.multiply(100));
-        }
-
-        for (int i = 0; i < strikes; i++) {
-            player.getWorld().strikeLightning(targetLocation);
+            player.getWorld().strikeLightningEffect(player.getLocation());
         }
     }
 
     private void executeCommand(Player player, String actionStr) {
-        String command = actionStr.replace("command:", "").trim();
-        command = command.replace("%player%", player.getName());
-        Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+        String cmd = actionStr.replace("command:", "").trim();
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%player%", player.getName()));
     }
 
     private void executeMessage(Player player, String actionStr) {
-        String message = actionStr.replace("message:", "").trim();
-        message = message.replace("%player%", player.getName());
-        message = me.dcplugin.dcustomitems.utils.ColorUtils.colorize(message);
-        player.sendMessage(message);
+        String msg = ColorUtils.processMessage(player, actionStr.replace("message:", "").trim());
+        player.sendMessage(msg);
     }
 
     private void executeEffect(Player player, String actionStr) {
         String effectPart = actionStr.replace("effect:", "").trim();
-        String[] parts = effectPart.split(":");
-
-        if (parts.length < 2) return;
-
-        String effectName = parts[0].toUpperCase();
-        int duration = Integer.parseInt(parts[1]);
-        int amplifier = parts.length > 2 ? Integer.parseInt(parts[2]) - 1 : 0;
-
-        // Маппинг кастомных названий
-        PotionEffectType effectType = null;
-        switch (effectName) {
-            case "INCREASE_DAMAGE":
-            case "STRENGTH":
-                effectType = PotionEffectType.STRENGTH;
-                break;
-            case "DAMAGE_RESISTANCE":
-            case "RESISTANCE":
-                effectType = PotionEffectType.RESISTANCE;
-                break;
-            case "HASTE":
-                effectType = PotionEffectType.HASTE;
-                break;
-            default:
-                effectType = PotionEffectType.getByName(effectName);
-                break;
-        }
-
-        if (effectType != null) {
-            PotionEffect effect = new PotionEffect(effectType, duration * 20, amplifier, false, false);
-            player.addPotionEffect(effect);
-        } else {
-            plugin.getLogger().warning("Unknown effect: " + effectName);
+        try {
+            String[] parts = effectPart.split(":");
+            PotionEffectType effectType = EnumCache.getPotionEffect(parts[0]);
+            int duration = parts.length > 1 ? Integer.parseInt(parts[1]) : 60;
+            int amplifier = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
+            if (effectType != null) {
+                player.addPotionEffect(new PotionEffect(effectType, duration * 20, amplifier, false, false));
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Invalid effect params: " + effectPart);
         }
     }
 
     private void breakBlock(Block block, String actionStr) {
-        boolean dropItems = !actionStr.contains("nodrop");
-        if (!dropItems) {
-            block.setType(org.bukkit.Material.AIR);
-        } else {
+        if (block.getType() != Material.AIR) {
             block.breakNaturally();
         }
     }
 
     private void executeParticle(Player player, String actionStr) {
         String particlePart = actionStr.replace("particle:", "").trim();
-        String[] parts = particlePart.split(":");
-
-        if (parts.length < 1) return;
-
-        String particleName = parts[0];
-        int count = parts.length > 1 ? Integer.parseInt(parts[1]) : 10;
-
         try {
-            org.bukkit.Particle particle = org.bukkit.Particle.valueOf(particleName.toUpperCase());
-            player.getWorld().spawnParticle(particle, player.getLocation(), count);
-        } catch (Exception ignored) {}
+            String[] parts = particlePart.split(":");
+            Particle particle = EnumCache.getParticle(parts[0]);
+            int count = parts.length > 1 ? Integer.parseInt(parts[1]) : 10;
+            player.getWorld().spawnParticle(particle, player.getLocation().add(0, 1, 0), count);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Invalid particle params: " + particlePart);
+        }
     }
 
     private void executeSound(Player player, String actionStr) {
         String soundPart = actionStr.replace("sound:", "").trim();
-        String[] parts = soundPart.split(":");
-
-        if (parts.length < 1) return;
-
-        String soundName = parts[0];
-        float volume = parts.length > 1 ? Float.parseFloat(parts[1]) : 1.0f;
-        float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
-
         try {
-            org.bukkit.Sound sound = org.bukkit.Sound.valueOf(soundName.toUpperCase());
+            String[] parts = soundPart.split(":");
+            Sound sound = EnumCache.getSound(parts[0]);
+            float volume = parts.length > 1 ? Float.parseFloat(parts[1]) : 1.0f;
+            float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
             player.playSound(player.getLocation(), sound, volume, pitch);
-        } catch (Exception ignored) {}
-    }
-
-    private void executeKnockback(Player player, String actionStr) {
-        // AoE knockback: knockback:РАДИУС
-        String kbPart = actionStr.replace("knockback:", "").trim();
-        double range = 3.0;
-        try {
-            range = Double.parseDouble(kbPart);
-        } catch (Exception ignored) {}
-        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
-            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
-                org.bukkit.Location loc = entity.getLocation();
-                org.bukkit.Location playerLoc = player.getLocation();
-                double dx = loc.getX() - playerLoc.getX();
-                double dz = loc.getZ() - playerLoc.getZ();
-                double dist = Math.sqrt(dx * dx + dz * dz);
-                if (dist > 0) {
-                    double strength = 1.5 / dist;
-                    entity.setVelocity(entity.getVelocity().add(new org.bukkit.util.Vector(dx * strength, 0.5, dz * strength)));
-                }
-            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Invalid sound params: " + soundPart);
         }
     }
 
-    private void executeLaunch(Player player, String actionStr) {
-        // AoE launch: launch:СИЛА
-        String launchPart = actionStr.replace("launch:", "").trim();
-        double power = 1.5;
-        try {
-            power = Double.parseDouble(launchPart);
-        } catch (Exception ignored) {}
-        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(4, 4, 4)) {
-            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
-                entity.setVelocity(entity.getVelocity().add(new org.bukkit.util.Vector(0, power, 0)));
-            }
-        }
-    }
-
-    private void executeStun(Player player, String actionStr) {
-        // AoE stun: stun:СЕКУНДЫ:РАДИУС
-        String stunPart = actionStr.replace("stun:", "").trim();
-        String[] parts = stunPart.split(":");
-        int duration = 3;
-        double range = 4.0;
-        try {
-            duration = Integer.parseInt(parts[0]);
-            if (parts.length > 1) {
-                range = Double.parseDouble(parts[1]);
-            }
-        } catch (Exception ignored) {}
-        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
-            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
-                ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
-                    PotionEffectType.SLOWNESS, duration * 20, 127, false, false));
-                ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
-                    PotionEffectType.MINING_FATIGUE, duration * 20, 127, false, false));
-            }
-        }
-    }
-
-    private void executeTitle(Player player, String actionStr) {
-        // Формат: "title:Заголовок|Подзаголовок|fadeIn|stay|fadeOut"
-        // Или: "title:Текст" (только заголовок)
-        String titlePart = actionStr.replace("title:", "").trim();
-        
-        // Используем | как разделитель для title/subtitle
-        String[] parts = titlePart.split("\\|");
-        
-        if (parts.length >= 1) {
-            String title = me.dcplugin.dcustomitems.utils.ColorUtils.colorize(parts[0].replace("%player%", player.getName()));
-            String subtitle = parts.length > 1 ? me.dcplugin.dcustomitems.utils.ColorUtils.colorize(parts[1].replace("%player%", player.getName())) : "";
-            int fadeIn = parts.length > 2 ? parseIntegerOrDefault(parts[2], 10) : 10;
-            int stay = parts.length > 3 ? parseIntegerOrDefault(parts[3], 40) : 40;
-            int fadeOut = parts.length > 4 ? parseIntegerOrDefault(parts[4], 10) : 10;
-            player.sendTitle(title, subtitle, fadeIn, stay, fadeOut);
-        }
-    }
-    
-    private int parseIntegerOrDefault(String str, int defaultValue) {
-        try {
-            return Integer.parseInt(str.trim());
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
-
-    private void executeAnnounce(Player player, String actionStr) {
-        // announce:Текст
-        String text = actionStr.replace("announce:", "").trim();
-        text = text.replace("%player%", player.getName());
-        Bukkit.broadcastMessage(me.dcplugin.dcustomitems.utils.ColorUtils.colorize(text));
-    }
-
-    private void executeEffectNearby(Player player, String actionStr) {
-        // effect-nearby:EFFECT:СЕКУНДЫ:УРОВЕНЬ:РАДИУС
-        String effectPart = actionStr.replace("effect-nearby:", "").trim();
-        String[] parts = effectPart.split(":");
-        if (parts.length < 3) return;
-        String effectName = parts[0].toUpperCase();
-        int duration = Integer.parseInt(parts[1]);
-        int amplifier = parts.length > 2 ? Integer.parseInt(parts[2]) - 1 : 0;
-        double range = parts.length > 3 ? Double.parseDouble(parts[3]) : 4.0;
-        PotionEffectType effectType = PotionEffectType.getByName(effectName);
-        if (effectType == null) return;
-        for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
-            if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
-                ((org.bukkit.entity.LivingEntity) entity).addPotionEffect(new PotionEffect(
-                    effectType, duration * 20, amplifier, false, false));
-            }
-        }
-    }
+    // ===== Equipment change events → delegate to global checker =====
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) return;
-        Player player = (Player) event.getWhoClicked();
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> checkEquippedItems(player), 1L);
+        if (event.getWhoClicked() instanceof Player) {
+            getChecker().markForRecalculation((Player) event.getWhoClicked());
+        }
     }
 
     @EventHandler
     public void onPlayerItemHeld(PlayerItemHeldEvent event) {
-        Player player = event.getPlayer();
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> checkEquippedItems(player), 1L);
+        getChecker().markForRecalculation(event.getPlayer());
     }
 
     @EventHandler
     public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
-        Player player = event.getPlayer();
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> checkEquippedItems(player), 1L);
+        getChecker().markForRecalculation(event.getPlayer());
     }
 
     @EventHandler
@@ -571,7 +472,7 @@ public class PlayerListener implements Listener {
                 spawnEquipEffects(player, customItem, false);
             }
         }
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> checkEquippedItems(player), 1L);
+        getChecker().markForRecalculation(player);
     }
 
     @EventHandler
@@ -587,241 +488,39 @@ public class PlayerListener implements Listener {
                 spawnEquipEffects(player, customItem, true);
             }
         }
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> checkEquippedItems(player), 1L);
+        getChecker().markForRecalculation(player);
     }
 
     /**
-     * Спавнит частицы и звуки для предмета
+     * Спавнит частицы и звуки для предмета (локально, без пересчёта)
      */
     private void spawnEquipEffects(Player player, CustomItem customItem, boolean isEquip) {
         List<String> particles = isEquip ? customItem.getEquipParticles() : customItem.getUnequipParticles();
         List<String> sounds = isEquip ? customItem.getEquipSounds() : customItem.getUnequipSounds();
 
-        // Спавним частицы
         for (String particleStr : particles) {
             try {
                 String[] parts = particleStr.split(":");
-                String particleName = parts[0].toUpperCase();
+                Particle particle = EnumCache.getParticle(parts[0]);
+                if (particle == null) continue;
                 int count = parts.length > 1 ? Integer.parseInt(parts[1]) : 10;
-                Particle particle = Particle.valueOf(particleName);
                 player.getWorld().spawnParticle(particle, player.getLocation().add(0, 1, 0), count);
             } catch (Exception e) {
                 plugin.getLogger().warning("Ошибка при спавне частиц: " + particleStr);
             }
         }
 
-        // Воспроизводим звуки
         for (String soundStr : sounds) {
             try {
                 String[] parts = soundStr.split(":");
-                String soundName = parts[0].toUpperCase();
+                Sound sound = EnumCache.getSound(parts[0]);
+                if (sound == null) continue;
                 float volume = parts.length > 1 ? Float.parseFloat(parts[1]) : 1.0f;
                 float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
-                Sound sound = Sound.valueOf(soundName);
                 player.playSound(player.getLocation(), sound, volume, pitch);
             } catch (Exception e) {
                 plugin.getLogger().warning("Ошибка при воспроизведении звука: " + soundStr);
             }
-        }
-    }
-
-    /**
-     * Создает хеш текущего состояния экипировки игрока
-     */
-    private String createEquipmentHash(Player player) {
-        StringBuilder hash = new StringBuilder();
-        
-        ItemStack mainHand = player.getInventory().getItemInMainHand();
-        ItemStack offHand = player.getInventory().getItemInOffHand();
-        ItemStack[] armor = player.getInventory().getArmorContents();
-        
-        // Добавляем ID кастомных предметов в хеш
-        hash.append("MAIN:").append(getItemId(mainHand)).append(";");
-        hash.append("OFF:").append(getItemId(offHand)).append(";");
-        
-        String[] armorSlots = {"FEET", "LEGS", "CHEST", "HEAD"};
-        for (int i = 0; i < armor.length; i++) {
-            hash.append(armorSlots[i]).append(":").append(getItemId(armor[i])).append(";");
-        }
-        
-        return hash.toString();
-    }
-    
-    /**
-     * Получает ID кастомного предмета или "null" если это не кастомный предмет
-     */
-    private String getItemId(ItemStack item) {
-        if (item == null || item.getType() == org.bukkit.Material.AIR) {
-            return "null";
-        }
-        String customId = plugin.getItemHandler().getCustomItemId(item);
-        return customId != null ? customId : "vanilla";
-    }
-
-    private void checkEquippedItems(Player player) {
-        UUID playerId = player.getUniqueId();
-        
-        // Защита от одновременного выполнения
-        if (processingEquipment.getOrDefault(playerId, false)) {
-            return;
-        }
-        
-        try {
-            processingEquipment.put(playerId, true);
-            
-            // Создаем хеш текущего состояния экипировки
-            String currentEquipmentHash = createEquipmentHash(player);
-            String lastHash = lastEquipmentState.get(playerId);
-            
-            // Если экипировка не изменилась, не пересчитываем
-            if (Objects.equals(currentEquipmentHash, lastHash)) {
-                return;
-            }
-            
-            // Сохраняем новое состояние
-            lastEquipmentState.put(playerId, currentEquipmentHash);
-            
-            // Удаляем старые эффекты и атрибуты
-            plugin.getEffectManager().removeAllEffectsFromPlayer(player);
-            plugin.getAttributeManager().removeAllAttributes(player);
-
-            Map<PotionEffectType, Integer> totalEffects = new HashMap<>();
-            Map<org.bukkit.attribute.Attribute, Double> totalAttributes = new HashMap<>();
-            Set<String> activeSets = new HashSet<>();
-            Set<String> currentActiveItemIds = new HashSet<>();
-
-            ItemStack mainHand = player.getInventory().getItemInMainHand();
-            ItemStack offHand = player.getInventory().getItemInOffHand();
-            ItemStack[] armor = player.getInventory().getArmorContents();
-
-            // Проверяем предмет в основной руке
-            if (mainHand != null && mainHand.getType() != org.bukkit.Material.AIR) {
-                String itemId = plugin.getItemHandler().getCustomItemId(mainHand);
-                if (itemId != null) {
-                    CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
-                    if (customItem != null) {
-                        if (plugin.getConfig().getBoolean("debug-mode", false)) {
-                            plugin.getLogger().info("Предмет в основной руке: " + itemId + ", activation-slot: " + customItem.getActivationSlot());
-                        }
-                        if ("HAND".equals(customItem.getActivationSlot())) {
-                            plugin.getEffectManager().addEffectsToMap(totalEffects, customItem);
-                            plugin.getAttributeManager().addAttributesToMap(totalAttributes, customItem);
-                            currentActiveItemIds.add(itemId);
-                            if (plugin.getConfig().getBoolean("debug-mode", false)) {
-                                plugin.getLogger().info("✅ Активирован предмет в основной руке: " + itemId);
-                            }
-                        } else {
-                            if (plugin.getConfig().getBoolean("debug-mode", false)) {
-                                plugin.getLogger().info("❌ Предмет " + itemId + " НЕ активирован в основной руке (требуется " + customItem.getActivationSlot() + ")");
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Проверяем предмет во второй руке
-            if (offHand != null && offHand.getType() != org.bukkit.Material.AIR) {
-                String itemId = plugin.getItemHandler().getCustomItemId(offHand);
-                if (itemId != null) {
-                    CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
-                    if (customItem != null) {
-                        if (plugin.getConfig().getBoolean("debug-mode", false)) {
-                            plugin.getLogger().info("Предмет во второй руке: " + itemId + ", activation-slot: " + customItem.getActivationSlot());
-                        }
-                        if ("OFFHAND".equals(customItem.getActivationSlot())) {
-                            plugin.getEffectManager().addEffectsToMap(totalEffects, customItem);
-                            plugin.getAttributeManager().addAttributesToMap(totalAttributes, customItem);
-                            currentActiveItemIds.add(itemId);
-                            if (plugin.getConfig().getBoolean("debug-mode", false)) {
-                                plugin.getLogger().info("✅ Активирован предмет во второй руке: " + itemId);
-                            }
-                        } else {
-                            if (plugin.getConfig().getBoolean("debug-mode", false)) {
-                                plugin.getLogger().info("❌ Предмет " + itemId + " НЕ активирован во второй руке (требуется " + customItem.getActivationSlot() + ")");
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Проверяем броню
-            String[] armorSlots = {"FEET", "LEGS", "CHEST", "HEAD"};
-            for (int i = 0; i < armor.length; i++) {
-                ItemStack armorPiece = armor[i];
-                if (armorPiece != null && armorPiece.getType() != org.bukkit.Material.AIR) {
-                    String itemId = plugin.getItemHandler().getCustomItemId(armorPiece);
-                    if (itemId != null) {
-                        CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
-                        if (customItem != null && armorSlots[i].equals(customItem.getActivationSlot())) {
-                            plugin.getEffectManager().addEffectsToMap(totalEffects, customItem);
-                            plugin.getAttributeManager().addAttributesToMap(totalAttributes, customItem);
-                            currentActiveItemIds.add(itemId);
-                            if (customItem.getArmorSetId() != null) {
-                                activeSets.add(customItem.getArmorSetId());
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Проверяем сет-бонусы
-            for (String setId : activeSets) {
-                if (plugin.getArmorSetManager().hasFullSet(player, setId)) {
-                    plugin.getEffectManager().addSetBonusEffectsToMap(totalEffects, setId);
-                }
-            }
-
-            // Применяем все эффекты и атрибуты
-            plugin.getEffectManager().applyEffectsFromMap(player, totalEffects);
-            plugin.getAttributeManager().applyAttributesFromMap(player, totalAttributes);
-
-            // Определяем экипированные и снятые предметы для эффектов
-            Set<String> previousIds = previousActiveItems.getOrDefault(playerId, new HashSet<>());
-            Set<String> newlyEquipped = new HashSet<>(currentActiveItemIds);
-            newlyEquipped.removeAll(previousIds);
-            Set<String> newlyUnequipped = new HashSet<>(previousIds);
-            newlyUnequipped.removeAll(currentActiveItemIds);                    // Спавним эффекты и вызываем триггеры для экипированных предметов
-            for (String itemId : newlyEquipped) {
-                CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
-                if (customItem != null) {
-                    spawnEquipEffects(player, customItem, true);
-                    // Показываем сообщение ТОЛЬКО если задан custom equip-message
-                    if (customItem.hasEquipMessage()) {
-                        String msg = ColorUtils.colorize(customItem.getEquipMessage());
-                        if (!msg.trim().isEmpty()) {
-                            player.sendMessage(msg);
-                        }
-                    }
-                    // Вызываем триггер on_equip
-                    plugin.getTriggerListener().executeEquipTriggers(player, customItem);
-                }
-            }
-
-            // Спавним эффекты и вызываем триггеры для снятых предметов
-            for (String itemId : newlyUnequipped) {
-                CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
-                if (customItem != null) {
-                    spawnEquipEffects(player, customItem, false);
-                    // Показываем сообщение ТОЛЬКО если задан custom unequip-message
-                    if (customItem.hasUnequipMessage()) {
-                        String msg = ColorUtils.colorize(customItem.getUnequipMessage());
-                        if (!msg.trim().isEmpty()) {
-                            player.sendMessage(msg);
-                        }
-                    }
-                    // Вызываем триггер on_unequip
-                    plugin.getTriggerListener().executeUnequipTriggers(player, customItem);
-                }
-            }
-
-            // Сохраняем текущее состояние
-            previousActiveItems.put(playerId, currentActiveItemIds);
-            
-        } catch (Exception e) {
-            plugin.getLogger().log(java.util.logging.Level.WARNING,
-                "Ошибка при обновлении экипировки для игрока " + player.getName() + ": " + e.getMessage(), e);
-        } finally {
-            processingEquipment.put(playerId, false);
         }
     }
 }

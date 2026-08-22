@@ -1,33 +1,22 @@
 name: DC-CustomItems
-version: 1.320.282
+version: 1.321.0
 main: me.dcplugin.dcustomitems.Main
 api-version: '1.21'
-description: Custom items plugin with Java API
+description: Modular custom items plugin with Java API
 author: animesao
+
+softdepend:
+  - PlaceholderAPI
+  - Vault
 
 commands:
   customitems:
-    description: Custom item commands
-    usage: /customitems <give|list|reload> [args]
+    description: Reload plugin
+    usage: /customitems reload
     aliases: [ci]
-  
-  api-item:
-    description: Java API item commands
-    usage: /api-item <give|list|info> [args]
+    permission: dcustomitems.reload
 
 permissions:
-  customitems.give:
-    description: Give custom items
-    default: op
-  
-  customitems.reload:
-    description: Reload items
-    default: op
-  
-  customitems.list:
-    description: List custom items
-    default: true
-  
-  customitems.admin:
-    description: Admin permissions
+  dcustomitems.reload:
+    description: Reload plugin
     default: op

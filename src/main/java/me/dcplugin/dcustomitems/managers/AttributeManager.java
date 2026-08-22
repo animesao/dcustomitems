@@ -78,31 +78,10 @@ public class AttributeManager {
                 if (attributeInstance != null) {
                     try {
                         attributeInstance.removeModifier(entry.getValue());
-                    } catch (Exception e) {
-                        // Модификатор уже удален или не существует, игнорируем
+                    } catch (Exception ignored) {
+                        // Модификатор уже удален или не существует
                     }
                 }
-            }
-        }
-        
-        // Дополнительная очистка - удаляем все модификаторы с нашими именами
-        for (Attribute attribute : Attribute.values()) {
-            try {
-                AttributeInstance attributeInstance = player.getAttribute(attribute);
-                if (attributeInstance != null) {
-                    // Удаляем все модификаторы, начинающиеся с "custom_"
-                    attributeInstance.getModifiers().stream()
-                        .filter(modifier -> modifier.getKey().toString().startsWith("custom_"))
-                        .forEach(modifier -> {
-                            try {
-                                attributeInstance.removeModifier(modifier);
-                            } catch (Exception ignored) {
-                                // Модификатор уже удален
-                            }
-                        });
-                }
-            } catch (Exception ignored) {
-                // Атрибут не поддерживается для этой сущности
             }
         }
     }
@@ -127,8 +106,8 @@ public class AttributeManager {
             double value = entry.getValue();
 
             try {
-                // Создаем уникальный модификатор для суммарного значения
-                String modifierName = "custom_total_" + attribute.name().toLowerCase() + "_" + System.currentTimeMillis();
+                // Создаем стабильный модификатор (без timestamp для корректного удаления)
+                String modifierName = "custom_total_" + attribute.name().toLowerCase();
                 AttributeModifier modifier = new AttributeModifier(
                     org.bukkit.NamespacedKey.fromString(modifierName),
                     value,
@@ -138,14 +117,13 @@ public class AttributeManager {
 
                 AttributeInstance attributeInstance = player.getAttribute(attribute);
                 if (attributeInstance != null) {
-                    // Проверяем, что модификатор еще не применен
-                    boolean alreadyApplied = attributeInstance.getModifiers().stream()
-                        .anyMatch(mod -> mod.getKey().toString().startsWith("custom_total_" + attribute.name().toLowerCase()));
-                    
-                    if (!alreadyApplied) {
-                        attributeInstance.addModifier(modifier);
-                        appliedModifiers.put(attribute, modifier);
+                    // Удаляем старый модификатор если есть
+                    AttributeModifier oldModifier = appliedModifiers.get(attribute);
+                    if (oldModifier != null) {
+                        attributeInstance.removeModifier(oldModifier);
                     }
+                    attributeInstance.addModifier(modifier);
+                    appliedModifiers.put(attribute, modifier);
                 }
             } catch (Exception e) {
                 plugin.getLogger().log(java.util.logging.Level.WARNING,

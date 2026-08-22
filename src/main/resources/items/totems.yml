@@ -1,0 +1,274 @@
+# ==========================================
+# ТОТЕМЫ БЕССМЕРТИЯ С ЭФФЕКТАМИ И АТРИБУТАМИ
+# ==========================================
+
+totem-fire:
+  item:
+    type: TOTEM_OF_UNDYING
+    title: '&c[🔥] &fТотем &cОгня'
+    glowing: true
+    unbreakable: true
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 4.0
+      GENERIC_MOVEMENT_SPEED: 0.15
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fСила &cIII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСкорость &cII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ' &6└ &e⇄ &fПоглощение урона &cI &7(&6∞&7)'
+    - ''
+    - '&c🔥 &fМогущественный тотем огненной стихии'
+    - '&c🔥 &fЗащищает от смерти и дает силу пламени'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:3'
+    - 'SPEED:2'
+    - 'FIRE_RESISTANCE:1'
+    - 'ABSORPTION:1'
+
+totem-water:
+  item:
+    type: TOTEM_OF_UNDYING
+    title: '&b[🌊] &fТотем &bВоды'
+    glowing: true
+    unbreakable: true
+    attributes:
+      GENERIC_MAX_HEALTH: 6.0
+      GENERIC_WATER_MOVEMENT_EFFICIENCY: 1.0
+      GENERIC_OXYGEN_BONUS: 1.0
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fРегенерация &bII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fВодное дыхание &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСкорость плавания &bII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fПрилив здоровья &bII &7(&6∞&7)'
+    - ''
+    - '&b🌊 &fДревний тотем водной стихии'
+    - '&b🌊 &fДарует силу океанских глубин'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'REGENERATION:2'
+    - 'WATER_BREATHING:1'
+    - 'DOLPHINS_GRACE:2'
+    - 'HEALTH_BOOST:2'
+
+totem-earth:
+  item:
+    type: TOTEM_OF_UNDYING
+    title: '&a[🌍] &fТотем &aЗемли'
+    glowing: true
+    unbreakable: true
+    attributes:
+      GENERIC_ARMOR: 4.0
+      GENERIC_ARMOR_TOUGHNESS: 2.0
+      GENERIC_KNOCKBACK_RESISTANCE: 0.5
+      PLAYER_MINING_EFFICIENCY: 0.3
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fСопротивление &aII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСила &aII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСпешка &aII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fПоглощение урона &aII &7(&6∞&7)'
+    - ''
+    - '&a🌍 &fМощный тотем земной стихии'
+    - '&a🌍 &fДает силу и защиту матери-земли'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'DAMAGE_RESISTANCE:2'
+    - 'INCREASE_DAMAGE:2'
+    - 'HASTE:2'
+    - 'ABSORPTION:2'
+
+totem-air:
+  item:
+    type: TOTEM_OF_UNDYING
+    title: '&f[💨] &fТотем &fВоздуха'
+    glowing: true
+    unbreakable: true
+    attributes:
+      GENERIC_MOVEMENT_SPEED: 0.4
+      GENERIC_FLYING_SPEED: 0.3
+      GENERIC_SAFE_FALL_DISTANCE: 10.0
+      GENERIC_JUMP_STRENGTH: 0.5
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fСкорость &fIII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fПрыгучесть &fII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fМедленное падение &7(&6∞&7)'
+    - ' &6└ &e⇄ &fЛевитация &fI &7(&6∞&7)'
+    - ''
+    - '&f💨 &fЛегендарный тотем воздушной стихии'
+    - '&f💨 &fДарует свободу полета и скорость ветра'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'SPEED:3'
+    - 'JUMP:2'
+    - 'SLOW_FALLING:1'
+    - 'LEVITATION:1'
+
+totem-darkness:
+  item:
+    type: TOTEM_OF_UNDYING
+    title: '&8[🌑] &fТотем &8Тьмы'
+    glowing: true
+    unbreakable: true
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 6.0
+      GENERIC_ATTACK_SPEED: 0.3
+      GENERIC_MOVEMENT_SPEED: 0.2
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fСила &8IV &7(&6∞&7)'
+    - ' &6├ &e⇄ &fНочное зрение &7(&6∞&7)'
+    - ' &6├ &e⇄ &fНевидимость &8I &7(&6∞&7)'
+    - ' &6└ &e⇄ &fСкорость &8II &7(&6∞&7)'
+    - ''
+    - '&8🌑 &fЗловещий тотем темных сил'
+    - '&8🌑 &fСкрывает в тенях и дает силу тьмы'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:4'
+    - 'NIGHT_VISION:1'
+    - 'INVISIBILITY:1'
+    - 'SPEED:2'
+
+totem-light:
+  item:
+    type: TOTEM_OF_UNDYING
+    title: '&e[☀] &fТотем &eСвета'
+    glowing: true
+    unbreakable: true
+    attributes:
+      GENERIC_MAX_HEALTH: 8.0
+      GENERIC_ARMOR: 2.0
+      GENERIC_LUCK: 2.0
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fРегенерация &eIII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fПрилив здоровья &eII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСияние &eI &7(&6∞&7)'
+    - ' &6└ &e⇄ &fУдача &eII &7(&6∞&7)'
+    - ''
+    - '&e☀ &fСвященный тотем божественного света'
+    - '&e☀ &fИсцеляет и благословляет своего носителя'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'REGENERATION:3'
+    - 'HEALTH_BOOST:2'
+    - 'GLOWING:1'
+    - 'LUCK:2'
+
+totem-ice:
+  item:
+    type: TOTEM_OF_UNDYING
+    title: '&b[❄] &fТотем &bЛьда'
+    glowing: true
+    unbreakable: true
+    attributes:
+      GENERIC_ARMOR_TOUGHNESS: 4.0
+      GENERIC_KNOCKBACK_RESISTANCE: 0.3
+      GENERIC_MOVEMENT_SPEED: -0.05
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fСопротивление &bIII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ' &6├ &e⇄ &fПоглощение урона &bIII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fМедлительность &bI &7(&6∞&7)'
+    - ''
+    - '&b❄ &fЛедяной тотем вечной мерзлоты'
+    - '&b❄ &fЗамедляет, но дает непробиваемую защиту'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'DAMAGE_RESISTANCE:3'
+    - 'FIRE_RESISTANCE:1'
+    - 'ABSORPTION:3'
+    - 'SLOW:1'
+
+totem-thunder:
+  item:
+    type: TOTEM_OF_UNDYING
+    title: '&d[⚡] &fТотем &dГрозы'
+    glowing: true
+    unbreakable: true
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 5.0
+      GENERIC_ATTACK_SPEED: 0.4
+      GENERIC_MOVEMENT_SPEED: 0.25
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fСила &dIII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСкорость &dIII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСпешка &dII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fСияние &dI &7(&6∞&7)'
+    - ''
+    - '&d⚡ &fГрозовой тотем небесной ярости'
+    - '&d⚡ &fНаделяет силой молний и скоростью грома'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:3'
+    - 'SPEED:3'
+    - 'HASTE:2'
+    - 'GLOWING:1'
+
+totem-nature:
+  item:
+    type: TOTEM_OF_UNDYING
+    title: '&2[🌿] &fТотем &2Природы'
+    glowing: true
+    unbreakable: true
+    attributes:
+      GENERIC_MAX_HEALTH: 10.0
+      GENERIC_MOVEMENT_SPEED: 0.1
+      PLAYER_MINING_EFFICIENCY: 0.5
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fРегенерация &2II &7(&6∞&7)'
+    - ' &6├ &e⇄ &fПрилив здоровья &2III &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСпешка &2III &7(&6∞&7)'
+    - ' &6└ &e⇄ &fНасыщение &2I &7(&6∞&7)'
+    - ''
+    - '&2🌿 &fПриродный тотем живой силы'
+    - '&2🌿 &fДарует жизненную энергию и силу роста'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'REGENERATION:2'
+    - 'HEALTH_BOOST:3'
+    - 'HASTE:3'
+    - 'SATURATION:1'

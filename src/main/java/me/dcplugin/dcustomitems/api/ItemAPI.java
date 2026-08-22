@@ -281,40 +281,39 @@ public class ItemAPI {
     // ===== СООБЩЕНИЯ =====
 
     /**
-     * Отправляет сообщение игроку (с цветовыми кодами).
+     * Отправляет сообщение игроку (с цветовыми кодами + PlaceholderAPI).
      */
     public static void message(Player player, String msg) {
         if (msg != null && !msg.trim().isEmpty()) {
-            player.sendMessage(ColorUtils.colorize(msg));
+            player.sendMessage(ColorUtils.processMessage(player, msg));
         }
     }
 
     /**
-     * Отправляет заголовок (большой текст по центру).
+     * Отправляет заголовок (большой текст по центру) с PlaceholderAPI.
      */
     public static void title(Player player, String title, String subtitle) {
-        player.sendTitle(
-            ColorUtils.colorize(title),
-            ColorUtils.colorize(subtitle),
-            10, 40, 10
-        );
+        String[] processed = ColorUtils.processTitle(player, title, subtitle);
+        player.sendTitle(processed[0], processed[1], 10, 40, 10);
     }
 
     /**
-     * Отправляет action bar (над хотбаром).
+     * Отправляет action bar (над хотбаром) с PlaceholderAPI.
      */
     public static void actionbar(Player player, String text) {
         player.spigot().sendMessage(
             net.md_5.bungee.api.ChatMessageType.ACTION_BAR,
-            net.md_5.bungee.api.chat.TextComponent.fromLegacyText(ColorUtils.colorize(text))
+            net.md_5.bungee.api.chat.TextComponent.fromLegacyText(ColorUtils.processMessage(player, text))
         );
     }
 
     /**
-     * Объявление всем игрокам.
+     * Объявление всем игрокам (с PlaceholderAPI для каждого игрока).
      */
     public static void broadcast(String msg) {
-        Bukkit.broadcastMessage(ColorUtils.colorize(msg));
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.sendMessage(ColorUtils.processMessage(player, msg));
+        }
     }
 
     // ===== ТЕЛЕПОРТАЦИЯ =====

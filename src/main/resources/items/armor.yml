@@ -1,0 +1,140 @@
+# ==========================================
+# БРОНЯ - Незеритовый сет "Темный Владыка"
+# ==========================================
+
+netherite-helmet:
+  item:
+    type: NETHERITE_HELMET
+    title: '&5[✪] &dШлем &5Темного Владыки'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7Когда на голове:'
+    - ' &6┌ &e⇄ &fСопротивление &5I &7(&6∞&7)'
+    - ' &6├ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ' &6└ &e⇄ &fНочное зрение &7(&6∞&7)'
+    - ''
+    - '&5❂ &fЛегендарная часть сета'
+    - '&5❂ &fДревнего Темного Владыки'
+    - ''
+  type: ARMOR
+  activation-slot: HEAD
+  placeable: false
+  armor-set: dark-lord
+  has-set-bonus: true
+  enchantments:
+    PROTECTION_ENVIRONMENTAL: 5
+    DURABILITY: 3
+    THORNS: 2
+  attributes:
+    GENERIC_ARMOR: 3.0
+    GENERIC_ARMOR_TOUGHNESS: 2.0
+    GENERIC_KNOCKBACK_RESISTANCE: 0.1
+  effects:
+    - 'DAMAGE_RESISTANCE:1'
+    - 'FIRE_RESISTANCE:1'
+    - 'NIGHT_VISION:1'
+
+netherite-chestplate:
+  item:
+    type: NETHERITE_CHESTPLATE
+    title: '&5[✪] &dНагрудник &5Темного Владыки'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7Когда на груди:'
+    - ' &6┌ &e⇄ &fСопротивление &5II &7(&6∞&7)'
+    - ' &6├ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ' &6└ &e⇄ &fПрилив здоровья &5I &7(&6∞&7)'
+    - ''
+    - '&5❂ &fЛегендарная часть сета'
+    - '&5❂ &fДревнего Темного Владыки'
+    - ''
+  type: ARMOR
+  activation-slot: CHEST
+  placeable: false
+  armor-set: dark-lord
+  has-set-bonus: true
+  enchantments:
+    PROTECTION_ENVIRONMENTAL: 5
+    DURABILITY: 3
+    THORNS: 3
+  attributes:
+    GENERIC_ARMOR: 8.0
+    GENERIC_ARMOR_TOUGHNESS: 3.0
+    GENERIC_KNOCKBACK_RESISTANCE: 0.1
+  effects:
+    - 'DAMAGE_RESISTANCE:2'
+    - 'FIRE_RESISTANCE:1'
+    - 'HEALTH_BOOST:1'
+
+netherite-leggings:
+  item:
+    type: NETHERITE_LEGGINGS
+    title: '&5[✪] &dПоножи &5Темного Владыки'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7Когда на ногах:'
+    - ' &6┌ &e⇄ &fСопротивление &5I &7(&6∞&7)'
+    - ' &6├ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ' &6└ &e⇄ &fСкорость &5I &7(&6∞&7)'
+    - ''
+    - '&5❂ &fЛегендарная часть сета'
+    - '&5❂ &fДревнего Темного Владыки'
+    - ''
+  type: ARMOR
+  activation-slot: LEGS
+  placeable: false
+  armor-set: dark-lord
+  has-set-bonus: true
+  enchantments:
+    PROTECTION_ENVIRONMENTAL: 5
+    DURABILITY: 3
+    THORNS: 2
+  attributes:
+    GENERIC_ARMOR: 6.0
+    GENERIC_ARMOR_TOUGHNESS: 3.0
+    GENERIC_KNOCKBACK_RESISTANCE: 0.1
+  effects:
+    - 'DAMAGE_RESISTANCE:1'
+    - 'FIRE_RESISTANCE:1'
+    - 'SPEED:1'
+
+netherite-boots:
+  item:
+    type: NETHERITE_BOOTS
+    title: '&5[✪] &dБотинки &5Темного Владыки'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7Когда на ногах:'
+    - ' &6┌ &e⇄ &fСопротивление &5I &7(&6∞&7)'
+    - ' &6├ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСкорость &5I &7(&6∞&7)'
+    - ''
+    - '&5❂ &fЛегендарная часть сета'
+    - '&5❂ &fДревнего Темного Владыки'
+    - ''
+  type: ARMOR
+  activation-slot: FEET
+  placeable: false
+  armor-set: dark-lord
+  has-set-bonus: true
+  enchantments:
+    PROTECTION_ENVIRONMENTAL: 5
+    PROTECTION_FALL: 4
+    DURABILITY: 3
+    THORNS: 2
+  attributes:
+    GENERIC_ARMOR: 3.0
+    GENERIC_ARMOR_TOUGHNESS: 3.0
+    GENERIC_KNOCKBACK_RESISTANCE: 0.1
+  effects:
+    - 'DAMAGE_RESISTANCE:1'
+    - 'FIRE_RESISTANCE:1'
+    - 'SPEED:1'

@@ -1,0 +1,141 @@
+# ==========================================
+# ПРОДВИНУТЫЕ ПРЕДМЕТЫ (атрибуты, частицы, звуки, триггеры)
+# ==========================================
+
+legendary-sword:
+  item:
+    type: DIAMOND_SWORD
+    title: '&6[⚔] &fЛегендарный Меч'
+    glowing: true
+    unbreakable: true
+    custom-model-data: 1001
+    enchantments:
+      SHARPNESS: 5
+      DURABILITY: 3
+      FIRE_ASPECT: 2
+  lore:
+    - ''
+    - ' &7Легендарный меч древних воинов'
+    - ' &7Когда в основной руке:'
+    - ' &6┌ &e⇄ &fСила &6III &7(&6∞&7)'
+    - ' &6└ &e⇄ &fСкорость &6II &7(&6∞&7)'
+    - ''
+    - '&6✦ &fНаносит &c4x &fурона'
+    - '&6✦ &fПри убийстве восстанавливает здоровье'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: legendary.sword
+  equip-particles:
+    - 'FLAME:20'
+    - 'ENCHANTMENT_TABLE:15'
+  equip-sounds:
+    - 'ITEM_TRIDENT_RETURN:1:1.2'
+  unequip-particles:
+    - 'SMOKE_NORMAL:10'
+  unequip-sounds:
+    - 'ITEM_TRIDENT_HIT:0.8:0.8'
+  effects:
+    - 'INCREASE_DAMAGE:3'
+    - 'SPEED:2'
+  trigger-actions:
+    - 'on_kill:effect:REGENERATION:10:2'
+    - 'on_kill:message:&6⚔ &fВраг повержен! Регенерация на 10 сек!'
+    - 'on_kill:particle:VILLAGER_HAPPY:15'
+
+guardian-shield:
+  item:
+    type: SHIELD
+    title: '&b[🛡] &fЩит Стража'
+    glowing: true
+    unbreakable: true
+    custom-model-data: 2001
+  lore:
+    - ''
+    - ' &7Волшебный щит, защищающий владельца'
+    - ' &7При получении урона дает щит!'
+    - ''
+    - '&b✦ &fПри уроне: Сопротивление на 5 сек'
+    - '&b✦ &fПри прыжке: Ускорение на 3 сек'
+    - ''
+  type: TOOL
+  activation-slot: OFFHAND
+  placeable: false
+  permission: guardian.shield
+  equip-particles:
+    - 'SPELL_WITCH:10'
+  equip-sounds:
+    - 'ITEM_ARMOR_EQUIP_DIAMOND:1:1'
+  unequip-sounds:
+    - 'ITEM_ARMOR_EQUIP_LEATHER:0.8:0.8'
+  effects:
+    - 'DAMAGE_RESISTANCE:2'
+    - 'HEALTH_BOOST:1'
+  trigger-actions:
+    - 'on_damage_taken:effect:DAMAGE_RESISTANCE:5:1'
+    - 'on_damage_taken:particle:EXPLOSION_NORMAL:5'
+    - 'on_damage_taken:sound:ENTITY_IRON_GOLEM_ATTACK:1:1'
+    - 'on_jump:effect:SPEED:3:1'
+    - 'on_jump:particle:CLOUD:8'
+
+farmer-scissors:
+  item:
+    type: SHEARS
+    title: '&a[✂] &fНожницы Фермера'
+    glowing: true
+    unbreakable: true
+    custom-model-data: 3001
+  lore:
+    - ''
+    - ' &7Волшебные ножницы для сбора урожая'
+    - ' &7Прыгай и собирай урожай быстрее!'
+    - ''
+    - '&a✦ &fПрыжок: Спешка III на 5 сек'
+    - '&a✦ &fУбийство: Насыщение на 10 сек'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: farmer.scissors
+  equip-particles:
+    - 'VILLAGER_HAPPY:15'
+  equip-sounds:
+    - 'BLOCK_GRASS_PLACE:1:1'
+  effects:
+    - 'HASTE:2'
+  trigger-actions:
+    - 'on_jump:effect:HASTE:5:2'
+    - 'on_jump:message:&a🌿 Спешка включена!'
+    - 'on_kill:effect:SATURATION:10:1'
+    - 'on_kill:message:&a🍎 Насыщение активировано!'
+
+example-custom-messages:
+  item:
+    type: DIAMOND_SWORD
+    title: '&c[⚔] &fМеч с Сообщениями'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7Когда в основной руке:'
+    - ' &6┌ &e⇄ &fСила &cIII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fСкорость &cII &7(&6∞&7)'
+    - ''
+    - '&7Использования: &b%uses%'
+    - '&7Кулдаун: &b%cooldown% сек.'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  click-cooldown: 3000
+  max-uses: 50
+  effects:
+    - 'INCREASE_DAMAGE:3'
+    - 'SPEED:2'
+  equip-message: '&a⚔ Меч извлечен! Сила активирована!'
+  unequip-message: '&c⚔ Меч убран в ножны.'
+  cooldown-message: '&c⏳ Подождите {seconds} сек. перед следующим ударом!'
+  activation-message: '&a✨ Эффекты меча активированы!'
+  deactivation-message: '&c💤 Эффекты меча деактивированы.'
+  uses-depleted-message: '&c⚔ Меч сломался! Использования исчерпаны!'

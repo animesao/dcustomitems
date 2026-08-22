@@ -1,0 +1,294 @@
+# ==========================================
+# РУНЫ - Магические обереги и шары
+# ==========================================
+
+rune-1:
+  item:
+    type: PLAYER_HEAD
+    texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmFlMTE5YTIzODJlZGE4NjRiMjQ0ZmE4YzUzYWMzZTU0NDE2MzEwM2VlNjY3OTVmMGNkNmM2NGY3YWJiOGNmMSJ9fX0=
+    title: '§6[🔥] §fРуна §bПрироды'
+    glowing: true
+    unbreakable: true
+    attributes:
+      GENERIC_ATTACK_SPEED: 0.5
+      GENERIC_MOVEMENT_SPEED: 0.2
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fСила &bII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fСкорость &bII &7(&6∞&7)'
+    - ''
+    - '&6┌ &fУникальный &dоберег &fнаделяющий вас'
+    - '&6└ &cМощью, &fпользуйтесь им в &cсражении!'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:2'
+    - 'SPEED:2'
+
+rune-2:
+  item:
+    type: PLAYER_HEAD
+    texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGZjNzk4NTM5NjA1MmZlYzVhMjIzZTY0N2UxNzlmZDQ4N2ZkNjhlMjQ0MTVlMTk2MjM1OWE0YTk2ZmJjZTFiNyJ9fX0=
+    title: '&6[🔥] &fРуна &cЗверя'
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fСила &cII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСкорость &cII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ''
+    - '&6┌ &fУникальный &dоберег &fнаделяющий вас'
+    - '&6└ &cМощью, &fпользуйтесь им в &cсражении!'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:2'
+    - 'SPEED:2'
+    - 'FIRE_RESISTANCE:1'
+
+rune-3:
+  item:
+    type: PLAYER_HEAD
+    texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTQ5NzY1MDQ1N2M2OWNmZmNiY2Y2ODBlZWI2YTIzMWE2YWJlYjAwY2NhNWVhZGQ3YzFjNjg5MDBkNzgyZTNiOSJ9fX0=
+    title: '&6[🔥] &fРуна &eДуховности'
+  lore:
+    - ''
+    - ' &7Когда в основной руке:'
+    - ' &6┌ &e⇄ &fСила &eII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСкорость &eI &7(&6∞&7)'
+    - ' &6├ &e⇄ &fРегенерация &eI &7(&6∞&7)'
+    - ' &6└ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ''
+    - '&6┌ &fУникальный &dоберег &fнаделяющий вас'
+    - '&6└ &cМощью, &fпользуйтесь им в &cсражении!'
+    - ''
+  type: RUNE
+  activation-slot: HAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:2'
+    - 'SPEED:1'
+    - 'REGENERATION:1'
+    - 'FIRE_RESISTANCE:1'
+
+rune-4:
+  item:
+    type: PLAYER_HEAD
+    texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDFlMTM5YzVkYjU0OGY5YTNhNGZlZmE1YWRhM2ZiN2M0ZTY2ODA1Y2ZmNGI2Zjg2ZGNiNDgwNjJkZGI5MWM4ZSJ9fX0=
+    title: '&6[🔥] &fРуна &6Бога'
+    attributes:
+      GENERIC_ATTACK_DAMAGE:
+        value: 3.0
+        operation: ADD_NUMBER
+      GENERIC_ARMOR:
+        value: 1.0
+        operation: ADD_NUMBER
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fСила &6II &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСкорость &6II &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСопротивление &6I &7(&6∞&7)'
+    - ' &6└ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ''
+    - '&6┌ &fУникальный &dоберег &fнаделяющий вас'
+    - '&6└ &cМощью, &fпользуйтесь им в &cсражении!'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:2'
+    - 'SPEED:2'
+    - 'DAMAGE_RESISTANCE:1'
+    - 'FIRE_RESISTANCE:1'
+
+rune-5:
+  item:
+    type: PLAYER_HEAD
+    texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGZjNzk4NTM5NjA1MmZlYzVhMjIzZTY0N2UxNzlmZDQ4N2ZkNjhlMjQ0MTVlMTk2MjM1OWE0YTk2ZmJjZTFiNyJ9fX0=
+    title: '&6[🔥] &fРуна &4Покрошителя'
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 5.0
+      GENERIC_MAX_HEALTH: 4.0
+      GENERIC_MOVEMENT_SPEED: 0.3
+  lore:
+    - ''
+    - ' &7Когда во второй руке:'
+    - ' &6┌ &e⇄ &fСила &4III &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСкорость &4I &7(&6∞&7)'
+    - ' &6├ &e⇄ &fСопротивление &4I &7(&6∞&7)'
+    - ' &6├ &e⇄ &fРегенерация &4I &7(&6∞&7)'
+    - ' &6└ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ''
+    - '&6┌ &fУникальный &dоберег &fнаделяющий вас'
+    - '&6└ &cМощью, &fпользуйтесь им в &cсражении!'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:3'
+    - 'SPEED:1'
+    - 'DAMAGE_RESISTANCE:1'
+    - 'REGENERATION:1'
+    - 'FIRE_RESISTANCE:1'
+
+rune-fortune:
+  item:
+    type: PLAYER_HEAD
+    texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmFlMTE5YTIzODJlZGE4NjRiMjQ0ZmE4YzUzYWMzZTU0NDE2MzEwM2VlNjY3OTVmMGNkNmM2NGY3YWJiOGNmMSJ9fX0=
+    title: '&6[⚡] &fШар &aФортуны'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7При применении во второй руке:'
+    - ' &6┌ &e⇄ &fДает эффект &aСкорость &fII'
+    - ' &6└ &e⇄ &fДает эффект &aОгнестойкость &fI'
+    - ''
+    - '&a✦ &fМагический шар удачи'
+    - '&a✦ &fПриносящий везение'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'SPEED:2'
+    - 'FIRE_RESISTANCE:1'
+
+rune-sorcerer:
+  item:
+    type: PLAYER_HEAD
+    texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTQ5NzY1MDQ1N2M2OWNmZmNiY2Y2ODBlZWI2YTIzMWE2YWJlYjAwY2NhNWVhZGQ3YzFjNjg5MDBkNzgyZTNiOSJ9fX0=
+    title: '&6[⚡] &fШар &5Чародея'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7При применении во второй руке:'
+    - ' &6┌ &e⇄ &fДает эффект &5Сила &fII'
+    - ' &6├ &e⇄ &fДает эффект &5Скорость &fI'
+    - ' &6├ &e⇄ &fДает эффект &5Огнестойкость &fI'
+    - ' &6└ &e⇄ &fДает эффект &5Прилив здоровья &fI'
+    - ''
+    - '&5✦ &fМагический шар чародея'
+    - '&5✦ &fНаделяющий великой силой'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:2'
+    - 'SPEED:1'
+    - 'FIRE_RESISTANCE:1'
+    - 'HEALTH_BOOST:1'
+
+rune-midas:
+  item:
+    type: PLAYER_HEAD
+    texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDFlMTM5YzVkYjU0OGY5YTNhNGZlZmE1YWRhM2ZiN2M0ZTY2ODA1Y2ZmNGI2Zjg2ZGNiNDgwNjJkZGI5MWM4ZSJ9fX0=
+    title: '&6[⚡] &fШар &6Мидаса'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7При применении во второй руке:'
+    - ' &6┌ &e⇄ &fДает эффект &6Сила &fII'
+    - ' &6├ &e⇄ &fДает эффект &6Скорость &fII'
+    - ' &6└ &e⇄ &fДает эффект &6Огнестойкость &fI'
+    - ''
+    - '&6✦ &fЛегендарный шар царя Мидаса'
+    - '&6✦ &fПревращающий всё в золото'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:2'
+    - 'SPEED:2'
+    - 'FIRE_RESISTANCE:1'
+
+rune-peace:
+  item:
+    type: PLAYER_HEAD
+    texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjIxOTk5NDM3YjFkZTJjNDcyMGFhZDQzMmIyZWE1MzgyZTE1NDgyNzc1MjNmMjViMGY1NWMzOWEwMWMyYTljMCJ9fX0=
+    title: '&6[⚡] &fШар &bПокоя'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7При применении во второй руке:'
+    - ' &6┌ &e⇄ &fДает эффект &bСила &fII'
+    - ' &6├ &e⇄ &fДает эффект &bСкорость &fII'
+    - ' &6├ &e⇄ &fДает эффект &bОгнестойкость &fI'
+    - ' &6└ &e⇄ &fДает эффект &bПрилив здоровья &fII'
+    - ''
+    - '&b✦ &fМистический шар покоя'
+    - '&b✦ &fДарующий гармонию и силу'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:2'
+    - 'SPEED:2'
+    - 'FIRE_RESISTANCE:1'
+    - 'HEALTH_BOOST:2'
+
+rune-obstacle:
+  item:
+    type: PLAYER_HEAD
+    texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmFlMTE5YTIzODJlZGE4NjRiMjQ0ZmE4YzUzYWMzZTU0NDE2MzEwM2VlNjY3OTVmMGNkNmM2NGY3YWJiOGNmMSJ9fX0=
+    title: '&6[⚡] &fШар &cПрепятствия'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7При применении во второй руке:'
+    - ' &6┌ &e⇄ &fДает эффект &cСила &fIII'
+    - ' &6├ &e⇄ &fДает эффект &cСкорость &fII'
+    - ' &6└ &e⇄ &fДает эффект &cОгнестойкость &fI'
+    - ''
+    - '&c✦ &fМогущественный шар препятствия'
+    - '&c✦ &fПреодолевающий любые преграды'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:3'
+    - 'SPEED:2'
+    - 'FIRE_RESISTANCE:1'
+
+rune-archangel:
+  item:
+    type: PLAYER_HEAD
+    texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTQ5NzY1MDQ1N2M2OWNmZmNiY2Y2ODBlZWI2YTIzMWE2YWJlYjAwY2NhNWVhZGQ3YzFjNjg5MDBkNzgyZTNiOSJ9fX0=
+    title: '&6[⚡] &fШар &9Архангела'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7При применении во второй руке:'
+    - ' &6┌ &e⇄ &fДает эффект &9Сила &fI'
+    - ' &6├ &e⇄ &fДает эффект &9Скорость &fII'
+    - ' &6├ &e⇄ &fДает эффект &9Огнестойкость &fI'
+    - ' &6└ &e⇄ &fДает эффект &9Регенерация &fI'
+    - ''
+    - '&9✦ &fБожественный шар архангела'
+    - '&9✦ &fДарующий небесное благословение'
+    - ''
+  type: RUNE
+  activation-slot: OFFHAND
+  placeable: false
+  effects:
+    - 'INCREASE_DAMAGE:1'
+    - 'SPEED:2'
+    - 'FIRE_RESISTANCE:1'
+    - 'REGENERATION:1'

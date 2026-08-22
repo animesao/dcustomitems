@@ -2,30 +2,42 @@ package me.dcplugin.dcustomitems.managers;
 
 import me.dcplugin.dcustomitems.Main;
 import me.dcplugin.dcustomitems.models.CustomItem;
+import me.dcplugin.dcustomitems.utils.EnumCache;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Менеджер эффектов от кастомных предметов.
+ *
+ * Использует map-based подход: эффекты применяются через applyEffectsFromMap(),
+ * который вызывается из глобального EquippedItemsChecker (1 таск на сервер).
+ *
+ * Мёртвый код (per-player BukkitRunnable) удалён — startPeriodicEffects()
+ * никогда не вызывался извне.
+ */
 public class EffectManager {
 
     private final Main plugin;
-    private final Map<UUID, BukkitRunnable> activeEffects;
-    private final Map<UUID, CustomItem> playerActiveItems;
-    // Отслеживаем какие эффекты применены к каждому игроку от брони/предметов
+
+    // Отслеживаем какие эффекты применены к каждому игроку (для удаления)
     private final Map<UUID, Map<PotionEffectType, Integer>> playerAppliedEffects;
+
+    // Длительность эффектов: 60 секунд (в тиках)
+    // EquippedItemsChecker обновляет каждые 150ms, поэтому 60s достаточно
+    private static final int EFFECT_DURATION_TICKS = 60 * 20;
 
     public EffectManager(Main plugin) {
         this.plugin = plugin;
-        this.activeEffects = new HashMap<>();
-        this.playerActiveItems = new HashMap<>();
         this.playerAppliedEffects = new HashMap<>();
     }
+
+    // ===== Parsing =====
 
     public Map<PotionEffectType, Integer> parseEffects(List<String> effectStrings) {
         Map<PotionEffectType, Integer> parsedEffects = new HashMap<>();
@@ -36,15 +48,7 @@ public class EffectManager {
                 if (parts.length >= 2) {
                     String effectName = parts[0].toUpperCase();
 
-                    // Обрабатываем кастомные эффекты
-                    PotionEffectType effectType = null;
-                    if ("INCREASE_DAMAGE".equals(effectName)) {
-                        effectType = PotionEffectType.STRENGTH;
-                    } else if ("DAMAGE_RESISTANCE".equals(effectName)) {
-                        effectType = PotionEffectType.RESISTANCE;
-                    } else {
-                        effectType = PotionEffectType.getByName(effectName);
-                    }
+                    PotionEffectType effectType = EnumCache.getPotionEffect(effectName);
 
                     if (effectType != null) {
                         int amplifier = Integer.parseInt(parts[1]);
@@ -61,84 +65,90 @@ public class EffectManager {
         return parsedEffects;
     }
 
-    // Длительность эффектов: 60 секунд (в тиках)
-    // Периодический таск обновляет эффекты каждую секунду, поэтому этого достаточно
-    private static final int EFFECT_DURATION_TICKS = 60 * 20; // 60 секунд
+    // ===== Apply / Remove (one-shot) =====
 
+    /**
+     * Применить эффекты от предмета (разово, например CONSUMABLE)
+     */
     public void applyEffects(Player player, CustomItem item) {
-        if (item.getParsedEffects() == null || item.getParsedEffects().isEmpty()) {
-            return;
-        }
+        if (item.getParsedEffects() == null || item.getParsedEffects().isEmpty()) return;
 
         for (Map.Entry<PotionEffectType, Integer> entry : item.getParsedEffects().entrySet()) {
-            PotionEffectType effectType = entry.getKey();
-            int level = entry.getValue();
-
-            // Применяем эффект с указанным уровнем
-            player.addPotionEffect(new PotionEffect(effectType, EFFECT_DURATION_TICKS, level - 1, false, false), true);
-        }
-    }
-
-    public void addEffectsToMap(Map<PotionEffectType, Integer> effectsMap, CustomItem item) {
-        if (item.getParsedEffects() != null) {
-            for (Map.Entry<PotionEffectType, Integer> entry : item.getParsedEffects().entrySet()) {
-                // СКЛАДЫВАЕМ эффекты от разных частей брони
-                effectsMap.merge(entry.getKey(), entry.getValue(), Integer::sum);
-            }
-        }
-    }
-
-    public void addSetBonusEffectsToMap(Map<PotionEffectType, Integer> effectsMap, String setId) {
-        List<String> effectStrings = plugin.getConfig().getStringList("set-bonuses." + setId + ".effects");
-        
-        if (effectStrings == null || effectStrings.isEmpty()) {
-            plugin.getLogger().warning("Сет-бонусы для '" + setId + "' не найдены в конфиге!");
-            return;
-        }
-
-        Map<PotionEffectType, Integer> setBonusEffects = parseEffects(effectStrings);
-        
-        for (Map.Entry<PotionEffectType, Integer> entry : setBonusEffects.entrySet()) {
-            // СКЛАДЫВАЕМ эффекты от сета с уже существующими эффектами от частей брони
-            effectsMap.merge(entry.getKey(), entry.getValue(), Integer::sum);
-        }
-    }
-
-    public void applyEffectsFromMap(Player player, Map<PotionEffectType, Integer> effectsMap) {
-        UUID playerId = player.getUniqueId();
-        
-        // Сохраняем информацию о применённых эффектах
-        playerAppliedEffects.put(playerId, new HashMap<>(effectsMap));
-        
-        // Применяем эффекты
-        for (Map.Entry<PotionEffectType, Integer> entry : effectsMap.entrySet()) {
             player.addPotionEffect(new PotionEffect(
-                entry.getKey(),
-                EFFECT_DURATION_TICKS,
-                entry.getValue() - 1,
-                false,
-                false
+                    entry.getKey(), EFFECT_DURATION_TICKS, entry.getValue() - 1, false, false
             ), true);
         }
     }
 
+    /**
+     * Удалить эффекты от конкретного предмета
+     */
     public void removeEffects(Player player, CustomItem item) {
-        if (item.getParsedEffects() == null || item.getParsedEffects().isEmpty()) {
-            return;
-        }
+        if (item.getParsedEffects() == null || item.getParsedEffects().isEmpty()) return;
 
         for (PotionEffectType effectType : item.getParsedEffects().keySet()) {
             player.removePotionEffect(effectType);
         }
     }
 
+    // ===== Map-based (для EquippedItemsChecker) =====
+
+    /**
+     * Добавить эффекты предмета в карту для суммирования
+     */
+    public void addEffectsToMap(Map<PotionEffectType, Integer> effectsMap, CustomItem item) {
+        if (item.getParsedEffects() != null) {
+            for (Map.Entry<PotionEffectType, Integer> entry : item.getParsedEffects().entrySet()) {
+                effectsMap.merge(entry.getKey(), entry.getValue(), Integer::sum);
+            }
+        }
+    }
+
+    /**
+     * Добавить эффекты сет-бонуса в карту
+     */
+    public void addSetBonusEffectsToMap(Map<PotionEffectType, Integer> effectsMap, String setId) {
+        List<String> effectStrings = plugin.getConfig().getStringList("set-bonuses." + setId + ".effects");
+
+        if (effectStrings == null || effectStrings.isEmpty()) {
+            plugin.getLogger().warning("Сет-бонусы для '" + setId + "' не найдены в конфиге!");
+            return;
+        }
+
+        Map<PotionEffectType, Integer> setBonusEffects = parseEffects(effectStrings);
+
+        for (Map.Entry<PotionEffectType, Integer> entry : setBonusEffects.entrySet()) {
+            effectsMap.merge(entry.getKey(), entry.getValue(), Integer::sum);
+        }
+    }
+
+    /**
+     * Применить суммарные эффекты из карты к игроку
+     */
+    public void applyEffectsFromMap(Player player, Map<PotionEffectType, Integer> effectsMap) {
+        UUID playerId = player.getUniqueId();
+
+        // Сохраняем для удаления
+        playerAppliedEffects.put(playerId, new HashMap<>(effectsMap));
+
+        // Применяем
+        for (Map.Entry<PotionEffectType, Integer> entry : effectsMap.entrySet()) {
+            player.addPotionEffect(new PotionEffect(
+                    entry.getKey(),
+                    EFFECT_DURATION_TICKS,
+                    entry.getValue() - 1,
+                    false,
+                    false
+            ), true);
+        }
+    }
+
+    /**
+     * Удалить все ранее применённые эффекты от кастомных предметов
+     */
     public void removeAllEffectsFromPlayer(Player player) {
         UUID playerId = player.getUniqueId();
 
-        // Останавливаем периодические эффекты
-        stopPeriodicEffects(player);
-
-        // Удаляем все ранее применённые эффекты от кастомных предметов
         Map<PotionEffectType, Integer> appliedEffects = playerAppliedEffects.remove(playerId);
         if (appliedEffects != null) {
             for (PotionEffectType effectType : appliedEffects.keySet()) {
@@ -147,55 +157,30 @@ public class EffectManager {
         }
     }
 
-    public void startPeriodicEffects(Player player, CustomItem item) {
-        UUID playerId = player.getUniqueId();
+    // ===== Compatibility (вызывается из PlayerListener.onPlayerQuit и PluginBootstrap.disable) =====
 
-        // Останавливаем предыдущие эффекты
-        stopPeriodicEffects(player);
-
-        // Сохраняем текущий активный предмет
-        playerActiveItems.put(playerId, item);
-
-        BukkitRunnable task = new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (!player.isOnline()) {
-                    cancel();
-                    activeEffects.remove(playerId);
-                    playerActiveItems.remove(playerId);
-                    return;
-                }
-
-                applyEffects(player, item);
-            }
-        };
-
-        task.runTaskTimer(plugin, 0L, 20L); // Каждую секунду
-        activeEffects.put(playerId, task);
-    }
-
+    /**
+     * Остановить периодические эффекты для игрока (совместимость).
+     * В новой архитектуре периодические таски не используются — эффекты
+     * обновляются через глобальный EquippedItemsChecker.
+     */
     public void stopPeriodicEffects(Player player) {
-        UUID playerId = player.getUniqueId();
-        BukkitRunnable task = activeEffects.remove(playerId);
-        if (task != null) {
-            task.cancel();
-        }
-
-        // Удаляем эффекты от предыдущего предмета
-        CustomItem previousItem = playerActiveItems.remove(playerId);
-        if (previousItem != null) {
-            removeEffects(player, previousItem);
-        }
+        // В новой архитектуре ничего не нужно — эффекты управляются через
+        // applyEffectsFromMap / removeAllEffectsFromPlayer.
+        // Метод оставлен для обратной совместимости.
     }
 
+    /**
+     * Остановить все эффекты (при отключении плагина)
+     */
     public void stopAllEffects() {
-        for (BukkitRunnable task : activeEffects.values()) {
-            if (task != null) {
-                task.cancel();
-            }
-        }
-        activeEffects.clear();
-        playerActiveItems.clear();
         playerAppliedEffects.clear();
+    }
+
+    /**
+     * Получить карту применённых эффектов от кастомных предметов для игрока
+     */
+    public Map<PotionEffectType, Integer> getAppliedEffects(Player player) {
+        return playerAppliedEffects.getOrDefault(player.getUniqueId(), new HashMap<>());
     }
 }

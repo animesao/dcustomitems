@@ -1,0 +1,109 @@
+# ==========================================
+# 📦 Module Template
+# ==========================================
+#
+# Это шаблон для создания нового модуля DC-CustomItems.
+#
+# Как использовать:
+#   1. Скопируйте папку _template/ в items/my-module/
+#   2. Переименуйте template.java → my-module.java
+#   3. Внутри файла замените все "template" на "my-module"
+#   4. Измените config.yml под свои нужды
+#   5. Выполните /ci reload
+#
+# Структура модуля:
+#   items/my-module/
+#   ├── config.yml        — Настройки (этот файл)
+#   ├── my-module.java    — Основной класс модуля
+#   ├── items.yml         — Предметы модуля (опционально)
+#   └── README.md         — Документация (опционально)
+#
+# ==========================================
+
+# Название модуля (отображается в логах)
+name: "My Module"
+
+# Версия модуля
+version: "1.0"
+
+# Включить/выключить модуль (false = модуль не загружается)
+enabled: true
+
+# Описание модуля
+description: "Описание что делает этот модуль"
+
+# Автор модуля
+author: "YourName"
+
+# ==========================================
+# КОМАНДЫ
+# ==========================================
+# Список команд, которые регистрирует модуль.
+# Команды автоматически регистрируются при загрузке модуля.
+#
+# Формат:
+#   commands:
+#     - command1
+#     - command2
+#
+# После регистрации доступно:
+#   /command1 <args>
+#   /command2 <args>
+#
+commands: []
+
+# ==========================================
+# ПРАВА
+# ==========================================
+# Список прав, используемых модулем.
+# Формат: <permission>.<action>
+#
+# Пример:
+#   permissions:
+#     - mymodule.use
+#     - mymodule.admin
+#
+permissions: []
+
+# ==========================================
+# НАСТРОЙКИ (пример)
+# ==========================================
+# Здесь можно добавить любые настройки модуля.
+# Доступны через config.getString(), config.getInt(), и т.д.
+#
+# Пример:
+# settings:
+#   enabled: true
+#   max-items: 10
+#   price-multiplier: 1.5
+#   message-prefix: "&a[MyModule] &r"
+#
+# Использование в коде:
+#   String prefix = config.getString("settings.message-prefix", "&a[Module] &r");
+#   int maxItems = config.getInt("settings.max-items", 10);
+#
+settings:
+  enabled: true
+  message-prefix: "&a[MyModule] &r"
+
+# ==========================================
+# КОНФИГУРАЦИЯ МЕНЮ (опционально)
+# ==========================================
+# Если модуль предоставляет GUI-меню.
+#
+# menu:
+#   title: "&6My Menu"
+#   size: 27
+#   fill:
+#     material: GRAY_STAINED_GLASS_PANE
+#     name: " "
+#   items:
+#     13:
+#       material: DIAMOND
+#       name: "&bDiamond"
+#       lore:
+#         - "&7Click to buy"
+#       command: "give %player% diamond 1"
+#       message: "&aYou got a diamond!"
+#       sound: ENTITY_PLAYER_LEVELUP
+#

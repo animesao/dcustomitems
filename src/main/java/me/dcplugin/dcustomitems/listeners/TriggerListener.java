@@ -3,6 +3,7 @@ package me.dcplugin.dcustomitems.listeners;
 import me.dcplugin.dcustomitems.Main;
 import me.dcplugin.dcustomitems.models.CustomItem;
 import me.dcplugin.dcustomitems.utils.ColorUtils;
+import me.dcplugin.dcustomitems.utils.EnumCache;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -82,7 +83,16 @@ public class TriggerListener implements Listener {
         Player player = event.getPlayer();
         UUID playerId = player.getUniqueId();
 
-        if (event.getFrom().getY() < event.getTo().getY()) {
+        // Игнорируем микро-движения (поворот камеры, покачивание)
+        // Минимальное расстояние: 0.5 блока по горизонтали или 0.25 вверх
+        double dx = event.getTo().getX() - event.getFrom().getX();
+        double dz = event.getTo().getZ() - event.getFrom().getZ();
+        double dy = event.getTo().getY() - event.getFrom().getY();
+        double horizontalDistSq = dx * dx + dz * dz;
+
+        // Прыжок: движение вверх более чем на 0.25 блока
+        // с горизонтальным перемещением более 0.5 блока
+        if (dy > 0.25 && horizontalDistSq > 0.25) {
             Long lastJump = jumpCooldowns.get(playerId);
             long now = System.currentTimeMillis();
             if (lastJump != null && (now - lastJump) < JUMP_COOLDOWN_MS) {
@@ -91,6 +101,15 @@ public class TriggerListener implements Listener {
             jumpCooldowns.put(playerId, now);
             checkTriggersForPlayer(player, "on_jump");
         }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+        UUID playerId = event.getPlayer().getUniqueId();
+        jumpCooldowns.remove(playerId);
+        actionCooldowns.remove(playerId);
+        // Чистим triggerCooldowns для этого игрока
+        triggerCooldowns.keySet().removeIf(key -> key.startsWith(playerId.toString()));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -382,8 +401,8 @@ public class TriggerListener implements Listener {
         String[] parts = titlePart.split("\\|");
         
         if (parts.length >= 1) {
-            String title = ColorUtils.colorize(parts[0].replace("%player%", player.getName()));
-            String subtitle = parts.length > 1 ? ColorUtils.colorize(parts[1].replace("%player%", player.getName())) : "";
+            String title = ColorUtils.processMessage(player, parts[0].replace("%player%", player.getName()));
+            String subtitle = parts.length > 1 ? ColorUtils.processMessage(player, parts[1].replace("%player%", player.getName())) : "";
             int fadeIn = parts.length > 2 ? parseIntegerOrDefault(parts[2], 10) : 10;
             int stay = parts.length > 3 ? parseIntegerOrDefault(parts[3], 40) : 40;
             int fadeOut = parts.length > 4 ? parseIntegerOrDefault(parts[4], 10) : 10;
@@ -406,10 +425,10 @@ public class TriggerListener implements Listener {
         try {
             player.spigot().sendMessage(
                 net.md_5.bungee.api.ChatMessageType.ACTION_BAR,
-                net.md_5.bungee.api.chat.TextComponent.fromLegacyText(ColorUtils.colorize(text))
+                net.md_5.bungee.api.chat.TextComponent.fromLegacyText(ColorUtils.processMessage(player, text))
             );
         } catch (Exception e) {
-            player.sendMessage(ColorUtils.colorize(text));
+            player.sendMessage(ColorUtils.processMessage(player, text));
         }
     }
 
@@ -433,11 +452,11 @@ public class TriggerListener implements Listener {
         String[] parts = givePart.split(":");
         if (parts.length >= 1) {
             try {
-                Material material = Material.valueOf(parts[0].toUpperCase());
+                Material material = EnumCache.getMaterial(parts[0]);
                 int amount = parts.length > 1 ? Integer.parseInt(parts[1]) : 1;
                 ItemStack item = new ItemStack(material, amount);
                 player.getInventory().addItem(item);
-                player.sendMessage(ColorUtils.colorize("&a+" + amount + " " + material.name()));
+                player.sendMessage(ColorUtils.processMessage(player, "&a+" + amount + " " + material.name()));
             } catch (Exception e) {
                 plugin.getLogger().warning("Invalid give action: " + actionStr);
             }
@@ -450,7 +469,7 @@ public class TriggerListener implements Listener {
         String[] parts = removePart.split(":");
         if (parts.length >= 1) {
             try {
-                Material material = Material.valueOf(parts[0].toUpperCase());
+                Material material = EnumCache.getMaterial(parts[0]);
                 int amount = parts.length > 1 ? Integer.parseInt(parts[1]) : 1;
                 int remaining = amount;
                 for (ItemStack item : player.getInventory().getContents()) {
@@ -460,7 +479,7 @@ public class TriggerListener implements Listener {
                         remaining -= toRemove;
                     }
                 }
-                player.sendMessage(ColorUtils.colorize("&c-" + (amount - remaining) + " " + material.name()));
+                player.sendMessage(ColorUtils.processMessage(player, "&c-" + (amount - remaining) + " " + material.name()));
             } catch (Exception e) {
                 plugin.getLogger().warning("Invalid remove action: " + actionStr);
             }
@@ -471,7 +490,9 @@ public class TriggerListener implements Listener {
         // Формат: "announce:Текст"
         String text = actionStr.replace("announce:", "").trim();
         text = text.replace("%player%", player.getName());
-        Bukkit.broadcastMessage(ColorUtils.colorize(text));
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            online.sendMessage(ColorUtils.processMessage(online, text));
+        }
     }
 
     private void executeSetHealth(Player player, String actionStr) {
@@ -544,7 +565,7 @@ public class TriggerListener implements Listener {
         message = message.replace("%player%", player.getName());
         // Отправляем сообщение ТОЛЬКО если оно не пустое
         if (!message.isEmpty()) {
-            player.sendMessage(ColorUtils.colorize(message));
+            player.sendMessage(ColorUtils.processMessage(player, message));
         }
     }
 
@@ -579,7 +600,7 @@ public class TriggerListener implements Listener {
                 }
                 break;
             default:
-                effectType = PotionEffectType.getByName(effectName);
+                effectType = EnumCache.getPotionEffect(effectName);
                 break;
         }
 
@@ -601,7 +622,7 @@ public class TriggerListener implements Listener {
         int count = parts.length > 1 ? Integer.parseInt(parts[1]) : 10;
 
         try {
-            Particle particle = Particle.valueOf(particleName);
+            Particle particle = EnumCache.getParticle(particleName);
             player.getWorld().spawnParticle(particle, player.getLocation().add(0, 1, 0), count);
         } catch (Exception e) {
             plugin.getLogger().warning("Unknown particle: " + particleName);
@@ -619,7 +640,7 @@ public class TriggerListener implements Listener {
         float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
 
         try {
-            Sound sound = Sound.valueOf(soundName);
+            Sound sound = EnumCache.getSound(soundName);
             player.playSound(player.getLocation(), sound, volume, pitch);
         } catch (Exception e) {
             plugin.getLogger().warning("Unknown sound: " + soundName);
@@ -639,7 +660,7 @@ public class TriggerListener implements Listener {
             double newHealth = Math.min(player.getHealth() + amount, maxHealth);
             player.setHealth(newHealth);
         }
-        player.sendMessage(ColorUtils.colorize("&a❤ Вы исцелены на " + (amount / 2) + " сердец!"));
+        player.sendMessage(ColorUtils.processMessage(player, "&a❤ Вы исцелены на " + (amount / 2) + " сердец!"));
     }
 
     private void executeTeleport(Player player, String actionStr) {
@@ -656,7 +677,7 @@ public class TriggerListener implements Listener {
                 float yaw = parts.length > 3 ? Float.parseFloat(parts[3]) : loc.getYaw();
                 loc = new Location(loc.getWorld(), x, y, z, yaw, loc.getPitch());
                 player.teleport(loc);
-                player.sendMessage(ColorUtils.colorize("&d✨ Вы телепортированы!"));
+                player.sendMessage(ColorUtils.processMessage(player, "&d✨ Вы телепортированы!"));
             } catch (Exception e) {
                 plugin.getLogger().warning("Invalid teleport params: " + tpPart);
             }
@@ -693,7 +714,7 @@ public class TriggerListener implements Listener {
         int duration = Integer.parseInt(parts[1]);
         int amplifier = Integer.parseInt(parts[2]) - 1;
         double range = parts.length > 3 ? Double.parseDouble(parts[3]) : 4.0;
-        PotionEffectType effectType = PotionEffectType.getByName(effectName);
+        PotionEffectType effectType = EnumCache.getPotionEffect(effectName);
         if (effectType == null) return;
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
             if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
@@ -777,7 +798,7 @@ public class TriggerListener implements Listener {
         int duration = Integer.parseInt(parts[1]);
         int amplifier = Integer.parseInt(parts[2]) - 1;
         double range = parts.length > 3 ? Double.parseDouble(parts[3]) : 4.0;
-        PotionEffectType effectType = PotionEffectType.getByName(effectName);
+        PotionEffectType effectType = EnumCache.getPotionEffect(effectName);
         if (effectType == null) return;
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
             if (entity instanceof org.bukkit.entity.LivingEntity && !(entity instanceof Player)) {
@@ -861,7 +882,7 @@ public class TriggerListener implements Listener {
         int duration = Integer.parseInt(parts[1]);
         int amplifier = Integer.parseInt(parts[2]) - 1;
         double range = parts.length > 3 ? Double.parseDouble(parts[3]) : 4.0;
-        PotionEffectType effectType = PotionEffectType.getByName(effectName);
+        PotionEffectType effectType = EnumCache.getPotionEffect(effectName);
         if (effectType == null) return;
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(range, range, range)) {
             if (entity instanceof Player && entity != player) {

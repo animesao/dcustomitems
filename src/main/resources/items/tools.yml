@@ -1,0 +1,204 @@
+# ==========================================
+# ОРУЖИЕ И ИНСТРУМЕНТЫ
+# ==========================================
+
+lightning-staff:
+  item:
+    type: STICK
+    title: '&6⚡ &fПосох Молнии'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7Кликни ПКМ по блоку чтобы:'
+    - ' &6┌ &eУдарить молнию'
+    - ' &6└ &e(Перезарядка: 2 сек)'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  click-cooldown: 2000
+  trigger-actions:
+    - 'on_click_right:lightning:1'
+    - 'on_click_right:particle:FIREWORKS_SPARK:10'
+    - 'on_click_right:sound:ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
+    - 'on_click_right:message:&6⚡ &7Молния призвана!'
+    - 'on_equip:particle:PORTAL:10'
+    - 'on_equip:message:&6⚡ &7Посох извлечен!'
+    - 'on_unequip:message:&6⚡ &7Посох убран.'
+
+lightning-axe:
+  item:
+    type: DIAMOND_AXE
+    title: '&c⚡ &fТопор Грозы'
+    glowing: true
+    unbreakable: true
+    enchantments:
+      SHARPNESS: 5
+      DURABILITY: 3
+  lore:
+    - ''
+    - ' &7ПКМ - 2 молнии'
+    - ' &7ЛКМ - 3 молнии'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  click-cooldown: 1000
+  trigger-actions:
+    - 'on_click_right:lightning:2'
+    - 'on_click_right:particle:FIREWORKS_SPARK:15'
+    - 'on_click_right:message:&c⚡ &72 молнии!'
+    - 'on_click_left:lightning:3'
+    - 'on_click_left:particle:EXPLOSION_HUGE:5'
+    - 'on_click_left:message:&c💥 &7Взрыв молний!'
+    - 'on_equip:particle:FIREWORKS_SPARK:10'
+    - 'on_equip:message:&c⚡ &7Топор извлечен!'
+    - 'on_unequip:message:&c⚡ &7Топор убран.'
+
+magic-wand:
+  item:
+    type: BLAZE_ROD
+    title: '&5✨ &dВолшебная Палочка'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7ПКМ - Сила'
+    - ' &7ЛКМ - Спешка'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  click-cooldown: 500
+  trigger-actions:
+    - 'on_click_right:effect:INCREASE_DAMAGE:10:2'
+    - 'on_click_right:particle:ENCHANTMENT_TABLE:15'
+    - 'on_click_right:message:&d✨ Сила активирована!'
+    - 'on_click_left:effect:SPEED:8:2'
+    - 'on_click_left:particle:CRIT:10'
+    - 'on_click_left:message:&b⚡ Спешка активирована!'
+    - 'on_equip:particle:PORTAL:10'
+    - 'on_equip:message:&5✨ &7Палочка извлечена!'
+    - 'on_unequip:message:&5✨ &7Палочка убрана.'
+
+command-staff:
+  item:
+    type: STICK
+    title: '&9📜 &bПосох Команд'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7ПКМ - алмаз'
+    - ' &7Использования: &b%uses%'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  max-uses: 10
+  effects:
+    - 'NIGHT_VISION:1'
+  trigger-actions:
+    - 'on_click_right:command:give %player% diamond 1'
+    - 'on_click_right:particle:VILLAGER_HAPPY:10'
+    - 'on_click_right:message:&e+1 алмаз!'
+    - 'on_equip:message:&9📜 &7Посох извлечен!'
+    - 'on_unequip:message:&9📜 &7Посох убран.'
+
+healing-staff:
+  item:
+    type: STICK
+    title: '&c❤ &fПосох Исцеления'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7ПКМ - исцеление'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  click-cooldown: 3000
+  trigger-actions:
+    - 'on_click_right:effect:REGENERATION:15:2'
+    - 'on_click_right:effect:ABSORPTION:15:2'
+    - 'on_click_right:particle:HEART:20'
+    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:1:1'
+    - 'on_click_right:message:&c❤ Исцеление началось!'
+    - 'on_equip:message:&c❤ &7Посох извлечен!'
+    - 'on_unequip:message:&c❤ &7Посох убран.'
+
+energy-blast:
+  item:
+    type: DIAMOND_SWORD
+    title: '&e⚡ &fЭнергетический Взрыв'
+    glowing: true
+    unbreakable: true
+    enchantments:
+      SHARPNESS: 5
+  lore:
+    - ''
+    - ' &7ПКМ - взрыв'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  click-cooldown: 1000
+  trigger-actions:
+    - 'on_click_right:lightning:2'
+    - 'on_click_right:particle:FIREWORKS_SPARK:15'
+    - 'on_click_right:sound:ENTITY_LIGHTNING_BOLT_IMPACT:1:0.8'
+    - 'on_click_right:message:&e⚡ &7Энергетический взрыв!'
+    - 'on_equip:message:&e⚡ &7Меч извлечен!'
+    - 'on_unequip:message:&e⚡ &7Меч убран.'
+
+magic-orb:
+  item:
+    type: AMETHYST_SHARD
+    title: '&d🔮 &dМагический Кристалл'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7ПКМ - невидимость'
+    - ' &7ЛКМ - сияние'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  click-cooldown: 600
+  trigger-actions:
+    - 'on_click_right:effect:INVISIBILITY:10:0'
+    - 'on_click_right:particle:SPELL_WITCH:10'
+    - 'on_click_right:message:&d✨ Вы невидимы!'
+    - 'on_click_left:effect:GLOWING:5:0'
+    - 'on_click_left:particle:PORTAL:20'
+    - 'on_click_left:sound:BLOCK_BEACON_ACTIVATE:1:1'
+    - 'on_click_left:message:&d⭐ Активирована магия!'
+    - 'on_equip:message:&d🔮 &7Кристалл извлечен!'
+    - 'on_unequip:message:&d🔮 &7Кристалл убран.'
+
+sound-staff:
+  item:
+    type: STICK
+    title: '&9🔊 &bПосох Звука'
+    glowing: true
+    unbreakable: true
+  lore:
+    - ''
+    - ' &7ПКМ - звук'
+    - ' &7ЛКМ - другой звук'
+    - ''
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  click-cooldown: 300
+  trigger-actions:
+    - 'on_click_right:sound:UI_BUTTON_CLICK:1:1'
+    - 'on_click_right:message:&9Ding!'
+    - 'on_click_left:sound:BLOCK_END_PORTAL_SPAWN:0.5:0.7'
+    - 'on_click_left:particle:PORTAL:30'
+    - 'on_click_left:message:&9🌀 &7Портал!'
+    - 'on_equip:message:&9🔊 &7Посох извлечен!'
+    - 'on_unequip:message:&9🔊 &7Посох убран.'

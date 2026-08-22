@@ -1,0 +1,392 @@
+package me.dcplugin.dcustomitems.handlers;
+
+import me.dcplugin.dcustomitems.Main;
+import me.dcplugin.dcustomitems.models.CustomItem;
+import me.dcplugin.dcustomitems.utils.ColorUtils;
+import me.dcplugin.dcustomitems.utils.EnumCache;
+import me.dcplugin.dcustomitems.utils.ItemBuilder;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.components.CustomModelDataComponent;
+import org.bukkit.persistence.PersistentDataType;
+
+import java.io.File;
+import java.util.*;
+
+/**
+ * Загрузка кастомных предметов из config.yml и items/ папки.
+ * Вынесен из CustomItemHandler для разделения ответственности.
+ */
+public class ItemLoader {
+
+    private final Main plugin;
+    private final NamespacedKey customItemKey;
+    private final NamespacedKey itemModelKey;
+
+    // Валидные значения
+    private static final List<String> VALID_TYPES = List.of("RUNE", "TOOL", "ARMOR", "CONSUMABLE");
+    private static final List<String> VALID_SLOTS = List.of("HAND", "OFFHAND", "HEAD", "CHEST", "LEGS", "FEET");
+
+    public ItemLoader(Main plugin, NamespacedKey customItemKey, NamespacedKey itemModelKey) {
+        this.plugin = plugin;
+        this.customItemKey = customItemKey;
+        this.itemModelKey = itemModelKey;
+    }
+
+    /**
+     * Загрузить все предметы из config.yml и items/ папки
+     */
+    public Map<String, CustomItem> loadAll() {
+        Map<String, CustomItem> items = new HashMap<>();
+
+        // 1. config.yml
+        loadFromConfig(items);
+
+        // 2. items/ folder
+        loadFromFolder(items);
+
+        return items;
+    }
+
+    // ===== Loading from config.yml =====
+
+    private void loadFromConfig(Map<String, CustomItem> items) {
+        ConfigurationSection config = plugin.getConfig();
+        for (String itemId : config.getKeys(false)) {
+            try {
+                if ("set-bonuses".equals(itemId)) continue;
+                CustomItem item = parseCustomItem(itemId, config.getConfigurationSection(itemId));
+                if (item != null) {
+                    items.put(itemId, item);
+                }
+            } catch (Exception e) {
+                plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                        "Ошибка при загрузке предмета " + itemId + ": " + e.getMessage(), e);
+            }
+        }
+    }
+
+    // ===== Loading from items/ folder =====
+
+    private void loadFromFolder(Map<String, CustomItem> items) {
+        File itemsFolder = new File(plugin.getDataFolder(), "items");
+        if (!itemsFolder.exists()) {
+            itemsFolder.mkdirs();
+            plugin.getLogger().info("Создана папка items/ для кастомных предметов");
+            return;
+        }
+
+        File[] files = itemsFolder.listFiles((dir, name) -> name.endsWith(".yml") || name.endsWith(".yaml"));
+        if (files == null || files.length == 0) {
+            plugin.getLogger().info("Папка items/ пуста. Добавьте .yml файлы с предметами.");
+            return;
+        }
+
+        for (File file : files) {
+            try {
+                YamlConfiguration fileConfig = YamlConfiguration.loadConfiguration(file);
+                for (String itemId : fileConfig.getKeys(false)) {
+                    try {
+                        if ("set-bonuses".equals(itemId)) continue;
+                        CustomItem item = parseCustomItem(itemId, fileConfig.getConfigurationSection(itemId));
+                        if (item != null) {
+                            items.put(itemId, item);
+                            plugin.getLogger().fine("[items] Загружен предмет '" + itemId + "' из " + file.getName());
+                        }
+                    } catch (Exception e) {
+                        plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                                "Ошибка при загрузке предмета " + itemId + " из " + file.getName() + ": " + e.getMessage(), e);
+                    }
+                }
+            } catch (Exception e) {
+                plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                        "Ошибка при чтении файла " + file.getName() + ": " + e.getMessage(), e);
+            }
+        }
+    }
+
+    // ===== Parsing a single item =====
+
+    /**
+     * Парсинг одной секции YAML в CustomItem объект
+     */
+    public CustomItem parseCustomItem(String itemId, ConfigurationSection section) {
+        if (section == null || "set-bonuses".equals(itemId)) return null;
+
+        try {
+            // === Basic params ===
+            String type = validateType(section.getString("type", "RUNE"), itemId);
+            String activationSlot = validateSlot(section.getString("activation-slot", "HAND"), itemId);
+            boolean placeable = section.getBoolean("placeable", false);
+            List<String> effects = section.getStringList("effects");
+            if (effects == null) effects = new ArrayList<>();
+
+            // === Item section ===
+            ConfigurationSection itemSection = section.getConfigurationSection("item");
+            if (itemSection == null) {
+                plugin.getLogger().warning("Секция 'item' не найдена для предмета: " + itemId);
+                return null;
+            }
+
+            // === Build ItemStack ===
+            ItemStack itemStack = buildItemStack(itemSection, itemId);
+            if (itemStack == null) return null;
+
+            // Mark as custom item
+            ItemMeta meta = itemStack.getItemMeta();
+            if (meta != null) {
+                meta.getPersistentDataContainer().set(customItemKey, PersistentDataType.STRING, itemId);
+                itemStack.setItemMeta(meta);
+            }
+
+            // === Lore processing ===
+            int maxUses = section.getInt("max-uses", -1);
+            List<String> lorePre = section.getStringList("lore");
+            List<String> processedLore = new ArrayList<>();
+            List<String> loreTemplate = new ArrayList<>();
+
+            if (!lorePre.isEmpty()) {
+                for (String line : lorePre) {
+                    String processed = line.replace("%cooldown%", "0.0");
+                    if (maxUses > 0) {
+                        processed = processed.replace("%uses%", String.valueOf(maxUses));
+                    } else {
+                        processed = processed.replace("%uses%", "∞");
+                    }
+                    processedLore.add(ColorUtils.colorize(processed));
+
+                    String templateLine = line;
+                    if (maxUses > 0) {
+                        templateLine = templateLine.replace("%uses%", String.valueOf(maxUses));
+                    } else if (line.contains("%uses%")) {
+                        templateLine = templateLine.replace("%uses%", "∞");
+                    }
+                    loreTemplate.add(templateLine);
+                }
+                meta = itemStack.getItemMeta();
+                if (meta != null) {
+                    meta.setLore(processedLore);
+                    itemStack.setItemMeta(meta);
+                }
+            }
+
+            // === Attributes ===
+            Map<String, Double> attributes = loadAttributes(itemSection);
+
+            // === Armor set ===
+            String armorSetId = itemSection.getString("armor-set", null);
+            boolean hasSetBonus = itemSection.getBoolean("has-set-bonus", false);
+            if (armorSetId != null) {
+                plugin.getLogger().fine("[LOAD] Предмет '" + itemId + "': armor-set=" + armorSetId);
+            }
+
+            // === Actions ===
+            List<String> leftClickActions = section.getStringList("left-click-actions");
+            List<String> rightClickActions = section.getStringList("right-click-actions");
+            long clickCooldown = section.getLong("click-cooldown", 0);
+
+            // === Model data ===
+            int customModelData = itemSection.getInt("custom-model-data", -1);
+            String itemModel = itemSection.getString("item-model", null);
+            applyModelData(itemStack, customModelData, itemModel, itemId);
+
+            // === Trigger actions (old + new format) ===
+            List<String> triggerActions = loadTriggerActions(section);
+
+            // === Messages ===
+            String equipMessage = section.getString("equip-message", null);
+            String unequipMessage = section.getString("unequip-message", null);
+            String cooldownMessage = section.getString("cooldown-message", null);
+            String activationMessage = section.getString("activation-message", null);
+            String deactivationMessage = section.getString("deactivation-message", null);
+            String usesDepletedMessage = section.getString("uses-depleted-message", null);
+
+            // === Permission ===
+            String permission = section.getString("permission", null);
+
+            // === Particles & Sounds ===
+            List<String> equipParticles = section.getStringList("equip-particles");
+            List<String> equipSounds = section.getStringList("equip-sounds");
+            List<String> unequipParticles = section.getStringList("unequip-particles");
+            List<String> unequipSounds = section.getStringList("unequip-sounds");
+
+            // === Build CustomItem ===
+            CustomItem customItem = CustomItem.builder(itemId, itemStack)
+                    .type(type)
+                    .activationSlot(activationSlot)
+                    .placeable(placeable)
+                    .effects(effects)
+                    .attributes(attributes)
+                    .armorSet(armorSetId, hasSetBonus)
+                    .leftClickActions(leftClickActions)
+                    .rightClickActions(rightClickActions)
+                    .clickCooldown(clickCooldown)
+                    .maxUses(maxUses)
+                    .loreTemplate(loreTemplate)
+                    .customModelData(customModelData)
+                    .permission(permission)
+                    .equipParticles(equipParticles)
+                    .equipSounds(equipSounds)
+                    .unequipParticles(unequipParticles)
+                    .unequipSounds(unequipSounds)
+                    .triggerActions(triggerActions)
+                    .equipMessage(equipMessage)
+                    .unequipMessage(unequipMessage)
+                    .cooldownMessage(cooldownMessage)
+                    .activationMessage(activationMessage)
+                    .deactivationMessage(deactivationMessage)
+                    .usesDepletedMessage(usesDepletedMessage)
+                    .buyPrice(section.getDouble("buy-price", -1))
+                    .sellPrice(section.getDouble("sell-price", -1))
+                    .build();
+
+            // Parse effects
+            if (!effects.isEmpty()) {
+                customItem.setParsedEffects(plugin.getEffectManager().parseEffects(effects));
+            }
+
+            return customItem;
+
+        } catch (Exception e) {
+            plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                    "Ошибка при создании предмета " + itemId + ": " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    // ===== Helpers =====
+
+    private ItemStack buildItemStack(ConfigurationSection itemSection, String itemId) {
+        String materialName = itemSection.getString("type", "STONE");
+        Material material = EnumCache.getMaterial(materialName);
+        if (material == null || EnumCache.isAir(material)) {
+            plugin.getLogger().warning((material == null ? "Неизвестный" : "Недопустимый (AIR)") + " материал: " + materialName + " для предмета: " + itemId);
+            return null;
+        }
+
+        ItemBuilder builder = new ItemBuilder(material);
+
+        String title = itemSection.getString("title");
+        if (title != null) builder.setDisplayName(title);
+
+        List<String> lore = itemSection.contains("lore") ? itemSection.getStringList("lore") : new ArrayList<>();
+        if (!lore.isEmpty()) builder.setLore(lore);
+
+        int amount = itemSection.getInt("amount", 1);
+        builder.setAmount(amount);
+
+        if (itemSection.getBoolean("glowing", false)) builder.setGlowing(true);
+        if (itemSection.getBoolean("unbreakable", false)) builder.setUnbreakable(true);
+
+        // Enchantments
+        ConfigurationSection enchSection = itemSection.getConfigurationSection("enchantments");
+        if (enchSection != null) {
+            for (String enchName : enchSection.getKeys(false)) {
+                try {
+                    Enchantment ench = EnumCache.getEnchantment(enchName);
+                    if (ench != null) builder.addEnchantment(ench, enchSection.getInt(enchName));
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Неизвестное зачарование: " + enchName);
+                    // Enchantment not found — already logged by EnumCache
+                }
+            }
+        }
+
+        // Item flags
+        for (String flagName : itemSection.getStringList("item-flags")) {
+            ItemFlag flag = EnumCache.getItemFlag(flagName);
+            if (flag != null) {
+                builder.addItemFlags(flag);
+            } else {
+                plugin.getLogger().warning("Неизвестный флаг предмета: " + flagName);
+            }
+        }
+
+        // Skull texture
+        String texture = itemSection.getString("texture");
+        if (texture != null && material == Material.PLAYER_HEAD) {
+            builder.setSkullTexture(texture);
+        }
+
+        return builder.build();
+    }
+
+    private void applyModelData(ItemStack itemStack, int customModelData, String itemModel, String itemId) {
+        ItemMeta meta = itemStack.getItemMeta();
+        if (meta == null) return;
+
+        if (itemModel != null && !itemModel.isEmpty()) {
+            CustomModelDataComponent cmdComponent = meta.getCustomModelDataComponent();
+            cmdComponent.setStrings(List.of(itemModel));
+            meta.setCustomModelDataComponent(cmdComponent);
+            meta.getPersistentDataContainer().set(itemModelKey, PersistentDataType.STRING, itemModel);
+            plugin.getLogger().fine("[LOAD] Применён custom_model_data strings: [" + itemModel + "] для " + itemId);
+        } else if (customModelData > 0) {
+            meta.setCustomModelData(customModelData);
+            plugin.getLogger().fine("[LOAD] Применён custom_model_data: " + customModelData + " для " + itemId);
+        }
+
+        itemStack.setItemMeta(meta);
+    }
+
+    private Map<String, Double> loadAttributes(ConfigurationSection itemSection) {
+        Map<String, Double> attributes = new HashMap<>();
+        if (!itemSection.contains("attributes")) return attributes;
+
+        ConfigurationSection attrSection = itemSection.getConfigurationSection("attributes");
+        if (attrSection == null) return attributes;
+
+        for (String attrKey : attrSection.getKeys(false)) {
+            Object attrValue = attrSection.get(attrKey);
+            double value;
+            if (attrValue instanceof Number) {
+                value = ((Number) attrValue).doubleValue();
+            } else if (attrValue instanceof ConfigurationSection) {
+                value = ((ConfigurationSection) attrValue).getDouble("value", 0);
+            } else {
+                continue;
+            }
+            attributes.put(attrKey.toUpperCase(), value);
+        }
+        return attributes;
+    }
+
+    private List<String> loadTriggerActions(ConfigurationSection section) {
+        List<String> triggerActions = section.getStringList("trigger-actions");
+        if (!triggerActions.isEmpty()) return triggerActions;
+
+        // New format: triggers: { on_click_left: ['particles:FLAME:10'] }
+        ConfigurationSection triggersSection = section.getConfigurationSection("triggers");
+        if (triggersSection == null) return triggerActions;
+
+        triggerActions = new ArrayList<>();
+        for (String triggerName : triggersSection.getKeys(false)) {
+            for (String action : triggersSection.getStringList(triggerName)) {
+                triggerActions.add(triggerName + ":" + action);
+            }
+        }
+        return triggerActions;
+    }
+
+    private String validateType(String type, String itemId) {
+        if (!VALID_TYPES.contains(type.toUpperCase())) {
+            plugin.getLogger().warning("Недопустимый тип предмета: " + type + " для предмета: " + itemId);
+            return "RUNE";
+        }
+        return type;
+    }
+
+    private String validateSlot(String slot, String itemId) {
+        if (!VALID_SLOTS.contains(slot.toUpperCase())) {
+            plugin.getLogger().warning("Недопустимый слот активации: " + slot + " для предмета: " + itemId);
+            return "HAND";
+        }
+        return slot;
+    }
+}

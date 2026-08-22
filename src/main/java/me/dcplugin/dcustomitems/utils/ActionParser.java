@@ -1,6 +1,7 @@
 package me.dcplugin.dcustomitems.utils;
 
 import me.dcplugin.dcustomitems.Main;
+import me.dcplugin.dcustomitems.utils.EnumCache;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -238,13 +239,13 @@ public class ActionParser {
     private static void executeMessage(Player player, String value) {
         if (value.isEmpty()) return;
         value = value.replace("%player%", player.getName());
-        player.sendMessage(ColorUtils.colorize(value));
+        player.sendMessage(ColorUtils.processMessage(player, value));
     }
 
     private static void executeTitle(Player player, String value) {
         String[] parts = value.split(":");
-        String title = parts.length > 0 ? ColorUtils.colorize(parts[0].replace("%player%", player.getName())) : "";
-        String subtitle = parts.length > 1 ? ColorUtils.colorize(parts[1].replace("%player%", player.getName())) : "";
+        String title = parts.length > 0 ? ColorUtils.processMessage(player, parts[0].replace("%player%", player.getName())) : "";
+        String subtitle = parts.length > 1 ? ColorUtils.processMessage(player, parts[1].replace("%player%", player.getName())) : "";
         int fadeIn = parts.length > 2 ? Integer.parseInt(parts[2]) : 10;
         int stay = parts.length > 3 ? Integer.parseInt(parts[3]) : 40;
         int fadeOut = parts.length > 4 ? Integer.parseInt(parts[4]) : 10;
@@ -257,15 +258,17 @@ public class ActionParser {
         try {
             player.spigot().sendMessage(
                 net.md_5.bungee.api.ChatMessageType.ACTION_BAR,
-                net.md_5.bungee.api.chat.TextComponent.fromLegacyText(ColorUtils.colorize(value))
+                net.md_5.bungee.api.chat.TextComponent.fromLegacyText(ColorUtils.processMessage(player, value))
             );
         } catch (Exception e) {
-            player.sendMessage(ColorUtils.colorize(value));
+            player.sendMessage(ColorUtils.processMessage(player, value));
         }
     }
 
     private static void executeBroadcast(String value) {
-        Bukkit.broadcastMessage(ColorUtils.colorize(value));
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            online.sendMessage(ColorUtils.processMessage(online, value));
+        }
     }
 
     // === ЭФФЕКТЫ ===
@@ -282,7 +285,7 @@ public class ActionParser {
 
         PotionEffectType effectType = EFFECT_MAP.get(effectName);
         if (effectType == null) {
-            effectType = PotionEffectType.getByName(effectName);
+            effectType = EnumCache.getPotionEffect(effectName);
         }
 
         if (effectType != null) {
@@ -381,7 +384,7 @@ public class ActionParser {
     private static void executeGive(Player player, String value) {
         String[] parts = value.split(":");
         if (parts.length >= 1) {
-            Material material = Material.valueOf(parts[0].toUpperCase());
+            Material material = EnumCache.getMaterial(parts[0]);
             int amount = parts.length > 1 ? Integer.parseInt(parts[1]) : 1;
             player.getInventory().addItem(new ItemStack(material, amount));
         }
@@ -390,7 +393,7 @@ public class ActionParser {
     private static void executeRemove(Player player, String value) {
         String[] parts = value.split(":");
         if (parts.length >= 1) {
-            Material material = Material.valueOf(parts[0].toUpperCase());
+            Material material = EnumCache.getMaterial(parts[0]);
             int amount = parts.length > 1 ? Integer.parseInt(parts[1]) : 1;
             int remaining = amount;
             for (ItemStack item : player.getInventory().getContents()) {
@@ -434,7 +437,7 @@ public class ActionParser {
         String[] parts = value.split(":");
         if (parts.length < 1) return;
         
-        Particle particle = Particle.valueOf(parts[0].toUpperCase());
+        Particle particle = EnumCache.getParticle(parts[0]);
         int count = parts.length > 1 ? Integer.parseInt(parts[1]) : 10;
         player.getWorld().spawnParticle(particle, player.getLocation().add(0, 1, 0), count);
     }
@@ -443,7 +446,7 @@ public class ActionParser {
         String[] parts = value.split(":");
         if (parts.length < 1) return;
         
-        Sound sound = Sound.valueOf(parts[0].toUpperCase());
+        Sound sound = EnumCache.getSound(parts[0]);
         float volume = parts.length > 1 ? Float.parseFloat(parts[1]) : 1.0f;
         float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
         player.playSound(player.getLocation(), sound, volume, pitch);
@@ -576,7 +579,7 @@ public class ActionParser {
         String[] parts = value.split(":");
         if (parts.length < 2) return;
         
-        Particle particle = Particle.valueOf(parts[0].toUpperCase());
+        Particle particle = EnumCache.getParticle(parts[0]);
         int count = Integer.parseInt(parts[1]);
         double x = parts.length > 2 ? Double.parseDouble(parts[2]) : 0;
         double y = parts.length > 3 ? Double.parseDouble(parts[3]) : 1;
@@ -599,7 +602,7 @@ public class ActionParser {
             String[] parts = soundStr.split(":");
             if (parts.length < 1) continue;
             
-            Sound sound = Sound.valueOf(parts[0].toUpperCase());
+            Sound sound = EnumCache.getSound(parts[0]);
             float volume = parts.length > 1 ? Float.parseFloat(parts[1]) : 1.0f;
             float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
             
@@ -617,8 +620,8 @@ public class ActionParser {
             String[] parts = titleStr.split(":");
             if (parts.length < 1) continue;
             
-            String title = parts.length > 0 ? ColorUtils.colorize(parts[0]) : "";
-            String subtitle = parts.length > 1 ? ColorUtils.colorize(parts[1]) : "";
+            String title = parts.length > 0 ? ColorUtils.processMessage(player, parts[0]) : "";
+            String subtitle = parts.length > 1 ? ColorUtils.processMessage(player, parts[1]) : "";
             int fadeIn = parts.length > 2 ? Integer.parseInt(parts[2]) : 10;
             int stay = parts.length > 3 ? Integer.parseInt(parts[3]) : 40;
             int fadeOut = parts.length > 4 ? Integer.parseInt(parts[4]) : 10;
@@ -694,7 +697,7 @@ public class ActionParser {
             
             PotionEffectType effectType = EFFECT_MAP.get(effectName);
             if (effectType == null) {
-                effectType = PotionEffectType.getByName(effectName);
+                effectType = EnumCache.getPotionEffect(effectName);
             }
             
             if (effectType != null) {
@@ -753,7 +756,7 @@ public class ActionParser {
                 }
                 // Частицы исцеления
                 try {
-                    Particle particle = Particle.valueOf(particleType.toUpperCase());
+                    Particle particle = EnumCache.getParticle(particleType);
                     target.getWorld().spawnParticle(particle, target.getLocation().add(0, 2, 0), 20);
                 } catch (Exception exception) {
                     Main plugin = Main.getInstance();

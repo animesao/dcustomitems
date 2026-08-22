@@ -107,13 +107,40 @@ public class PlaceholderManager {
         register("max_players", (p) -> String.valueOf(p.getServer().getMaxPlayers()));
     }
 
+    // ===== RESOLVE (для PlaceholderAPI expansion) =====
+
+    /**
+     * Resolve a placeholder value for a player.
+     * Used by DCIPlaceholderExpansion.
+     * @return resolved value or null if not found
+     */
+    public String resolve(String identifier, Player player) {
+        String key = identifier.toLowerCase();
+
+        // Static placeholders
+        String staticVal = staticPlaceholders.get(key);
+        if (staticVal != null) return staticVal;
+
+        // Dynamic placeholders
+        Function<Player, String> resolver = placeholders.get(key);
+        if (resolver != null) {
+            try {
+                return resolver.apply(player);
+            } catch (Exception e) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "Error in placeholder " + key + ": " + e.getMessage(), e);
+            }
+        }
+        return null;
+    }
+
     // ===== ПРОВЕРКА PlaceholderAPI =====
 
     private void checkPlaceholderApi() {
         try {
             Class.forName("me.clip.placeholderapi.PlaceholderAPI");
             placeholderApiEnabled = true;
-            plugin.getLogger().info("PlaceholderAPI integration enabled!");
+            plugin.getLogger().info("PlaceholderAPI found!");
         } catch (ClassNotFoundException e) {
             placeholderApiEnabled = false;
         }
@@ -121,6 +148,22 @@ public class PlaceholderManager {
 
     public boolean isPlaceholderApiEnabled() {
         return placeholderApiEnabled;
+    }
+
+    /**
+     * Register the PlaceholderAPI expansion.
+     * Called from Main after PlaceholderAPI is detected.
+     */
+    public void registerExpansion(me.dcplugin.dcustomitems.Main plugin) {
+        if (!placeholderApiEnabled) return;
+        try {
+            DCIPlaceholderExpansion expansion = new DCIPlaceholderExpansion(plugin);
+            expansion.register();
+            plugin.getLogger().info("[PlaceholderAPI] Exported placeholders registered!");
+        } catch (Exception e) {
+            plugin.getLogger().log(java.util.logging.Level.WARNING,
+                "[PlaceholderAPI] Failed to register expansion: " + e.getMessage(), e);
+        }
     }
 
     // ===== ГЕТТЕРЫ =====
