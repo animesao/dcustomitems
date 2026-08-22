@@ -2,6 +2,7 @@
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
   <img src="https://img.shields.io/badge/Version-1.321.1-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Modules-5-purple?style=for-the-badge" alt="Modules">
   <img src="https://img.shields.io/github/license/animesao/dcustomitems-purple?style=for-the-badge" alt="License">
 </p>
 
@@ -9,37 +10,102 @@
 
 <p align="center">
   <b>Модульный плагин кастомных предметов для Minecraft 1.21.11</b><br>
-  Эффекты, атрибуты, сеты брони, триггеры, кастомные модели, Java API и многое другое!
+  Создавай, настраивай и расширяй кастомные предметы без ограничений!
 </p>
 
 <p align="center">
+  <a href="#что-такое-dc-customitems">О плагине</a> •
   <a href="#установка">Установка</a> •
   <a href="#быстрый-старт">Быстрый старт</a> •
+  <a href="#модульная-архитектура">Модули</a> •
   <a href="#команды">Команды</a> •
+  <a href="#java-api">Java API</a> •
   <a href="#документация">Документация</a>
 </p>
 
 ---
 
-## ✨ Возможности
+## 📖 Что такое DC-CustomItems
 
-| Возможность | Описание |
+**DC-CustomItems** — это модульный плагин для Minecraft 1.21.11, который позволяет создавать кастомные предметы с уникальными механиками.
+
+### Ключевые особенности
+
+| Особенность | Описание |
 |-------------|----------|
-| 🗡️ Кастомные предметы | Руны, инструменты, броня, расходники |
-| ⚡ Эффекты зелий | Автоприменение при экипировке |
-| 📊 Атрибуты | Урон, скорость, броня и др. |
-| 🛡️ Сеты брони | Бонусы за полный комплект |
-| 🎯 Действия при клике | Молния, команды, эффекты, частицы, звуки |
-| 🔄 Триггеры | Автодействия по событиям |
-| 📦 YAML-файлы | Каждый предмет в отдельном файле |
-| 🎨 Кастомные модели | Поддержка Resource Pack через `item-model` |
-| 🔐 Права | Права на каждый предмет |
-| ✨ Частицы и звуки | Эффекты экипировки/снятия |
-| 🔗 PlaceholderAPI | 25+ экспортируемых плейсхолдеров |
-| 🏪 Vault Economy | Покупка/продажа предметов |
-| ☕ Java API | Создание предметов, команд, плейсхолдеров на Java |
-| 📦 Модули | Включение/выключение компонентов через папки |
-| 🎒 /give | Выдача кастомных + ванильных предметов |
+| 🏗️ **Модульная архитектура** | Каждый компонент — отдельный модуль. Включай/выключай что угодно |
+| 📦 **YAML + Java** | Простые предметы через YAML, сложные — через Java API |
+| 🎒 **Универсальный /give** | Выдача и кастомных, и ванильных предметов |
+| 🔗 **PlaceholderAPI** | 25+ плейсхолдеров для интеграции с другими плагинами |
+| 🏪 **Vault Economy** | Покупка/продажа предметов через модуль |
+| ☕ **Java API** | Полная программируемость: предметы, команды, плейсхолдеры, GUI |
+| ⚡ **Оптимизация** | Глобальный таск, кэширование enum, стабильные UUID |
+
+---
+
+## 🏗️ Модульная архитектура
+
+DC-CustomItems построен по принципу **"ядро + модули"**. Ядро плагина минимально — вся функциональность в модулях.
+
+```
+plugins/DC-CustomItems/
+├── items/                      # Все модули и предметы
+│   ├── vault/                  # 💰 Модуль экономики (Vault)
+│   │   ├── config.yml          # Настройки модуля
+│   │   └── vault.java          # Java-класс модуля
+│   ├── deluxemenux/            # 🎨 Модуль GUI-меню
+│   ├── shop/                   # 🛒 Модуль магазина
+│   ├── _template/              # 📋 Шаблон для новых модулей
+│   ├── give-command.java       # 🎒 Команда /give
+│   ├── runes.yml               # Предметы: руны
+│   ├── armor.yml               # Предметы: броня
+│   ├── tools.yml               # Предметы: оружие
+│   ├── totems.yml              # Предметы: тотемы
+│   └── messages.java           # Кастомные сообщения
+├── config.yml                  # Глобальные настройки
+└── data.db                     # База данных (SQLite)
+```
+
+### Как работает модульность
+
+```bash
+# Включить модуль — оставить папку
+items/vault/        # ✅ Экономика включена
+
+# Выключить модуль — удалить папку
+rm -rf items/vault/ # ❌ Экономика выключена
+
+# Или отключить в config.yml модуля
+enabled: false
+```
+
+**Ядро плагина** содержит только:
+- `/ci reload` — единственная встроенная команда
+- Загрузчик модулей
+- База данных
+
+**Всё остальное** — в модулях:
+- Команды (`/give`, `/buy`, `/sell`, `/menu`)
+- Экономика (Vault)
+- GUI (DeluxeMenuX)
+- Магазин (Shop)
+- Кастомные команды (Java API)
+
+### Создай свой модуль
+
+```bash
+# 1. Скопируй шаблон
+cp -r items/_template/ items/my-module/
+
+# 2. Переименуй
+mv items/my-module/template.java items/my-module/my-module.java
+
+# 3. Настрой config.yml
+vim items/my-module/config.yml
+
+# 4. Перезагрузи
+/ci reload
+```
 
 ---
 
@@ -61,6 +127,15 @@ curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/do
 1. Скачай `DC-CustomItems-1.321.1.jar` из [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.321.1)
 2. Помести в папку `plugins/`
 3. Перезапусти сервер
+4. Настрой `plugins/DC-CustomItems/config.yml`
+
+### Зависимости (опционально)
+
+| Плагин | Зачем | Статус |
+|--------|-------|--------|
+| [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) | Плейсхолдеры в scoreboard/tab/chat | Опционально |
+| [Vault](https://www.spigotmc.org/resources/vault.34315/) + economy | Покупка/продажа предметов | Опционально |
+| [DeluxeMenu](https://www.spigotmc.org/resources/deluxemenu.14736/) | GUI-меню | Опционально |
 
 ---
 
@@ -126,14 +201,23 @@ my-sword:
 
 | Команда | Описание |
 |---------|----------|
-| `/ci reload` | Перезагрузка плагина |
+| `/ci reload` | Перезагрузка плагина и всех модулей |
 | `/give <id\|material>` | Выдать предмет себе |
 | `/give <id\|material> <player>` | Выдать игроку |
-| `/give <id\|material> <player> <amount>` | Выдать N штук |
+| `/give <id\|material> <player> <amount>` | Выдать N штук (1-64) |
 | `/give <id\|material> all` | Выдать всем онлайн |
 | `/give list` | Список кастомных предметов |
 | `/give materials` | Список ванильных материалов |
-| `/give materials <filter>` | Поиск материалов |
+| `/give materials <filter>` | Поиск материалов по фильтру |
+
+### Модульные команды
+
+| Модуль | Команды | Описание |
+|--------|---------|----------|
+| `vault/` | `/buy <id> [amount]`, `/sell <id> [amount]` | Покупка/продажа |
+| `deluxemenux/` | `/menu`, `/shop`, `/kits` | GUI-меню |
+| `give-command.java` | `/give` | Выдача предметов |
+| Java API | Любые команды | Создавай свои! |
 
 ### Примеры
 
@@ -155,60 +239,7 @@ my-sword:
 # Поиск
 /give materials
 /give materials diamond
-```
-
-### Модульные команды
-
-Команды регистрируются модулями:
-
-| Модуль | Команды | Описание |
-|--------|---------|----------|
-| `items/vault/` | `/buy`, `/sell` | Покупка/продажа предметов |
-| `items/deluxemenux/` | `/menu`, `/shop`, `/kits` | GUI-меню |
-| `items/give-command.java` | `/give` | Выдача предметов |
-
----
-
-## 🏗️ Архитектура
-
-```
-DC-CustomItems/
-├── src/main/java/me/dcplugin/dcustomitems/
-│   ├── Main.java                    # Точка входа (делегирует в PluginBootstrap)
-│   ├── bootstrap/
-│   │   ├── PluginBootstrap.java     # Инициализация всех компонентов
-│   │   ├── CommandRegistrar.java    # Динамическая регистрация команд
-│   │   └── ConfigMigrator.java      # Миграция конфига
-│   ├── handlers/
-│   │   ├── CustomItemHandler.java   # Менеджер кастомных предметов
-│   │   ├── ItemLoader.java          # Загрузка из YAML
-│   │   ├── LoreManager.java         # Шаблоны lore
-│   │   ├── UsesManager.java         # Счётчик использований
-│   │   └── EquippedItemsChecker.java # Глобальный таск проверки экипировки
-│   ├── managers/
-│   │   ├── EffectManager.java       # Эффекты зелий
-│   │   ├── AttributeManager.java    # Атрибуты предметов
-│   │   ├── ArmorSetManager.java     # Сеты брони
-│   │   └── MessageManager.java      # Сообщения
-│   ├── listeners/
-│   │   ├── PlayerListener.java      # События игрока
-│   │   └── TriggerListener.java     # Триггеры
-│   ├── api/                         # Java API
-│   ├── commands/                    # Встроенные команды
-│   ├── models/                      # Модели данных
-│   └── utils/
-│       ├── EnumCache.java           # Кэширование Bukkit enum
-│       ├── ColorUtils.java          # Цвета + PAPI
-│       └── ItemBuilder.java         # Билдер предметов
-├── src/main/resources/
-│   ├── plugin.yml                   # Конфигурация плагина
-│   ├── config.yml                   # Настройки
-│   └── items/                       # YAML-предметы + модули
-│       ├── *.yml                    # Предметы
-│       ├── *.java                   # Java API модули
-│       ├── vault/                   # Модуль экономики
-│       ├── deluxemenux/             # Модуль GUI
-│       └── _template/              # Шаблон для новых модулей
+/give materials netherite
 ```
 
 ---
@@ -534,6 +565,71 @@ items/my-module/
 ├── my-module.java  # Java-класс модуля
 └── README.md       # Документация
 ```
+
+### Доступные модули
+
+| Модуль | Описание | Команды |
+|--------|----------|---------|
+| `vault/` | Vault Economy | `/buy`, `/sell` |
+| `deluxemenux/` | GUI-меню | `/menu`, `/shop`, `/kits` |
+| `shop/` | Магазин | `/shop` |
+| `_template/` | Шаблон | — |
+
+---
+
+## 🏗️ Архитектура
+
+```
+DC-CustomItems/
+├── src/main/java/me/dcplugin/dcustomitems/
+│   ├── Main.java                    # Точка входа (делегирует в PluginBootstrap)
+│   ├── bootstrap/
+│   │   ├── PluginBootstrap.java     # Инициализация всех компонентов
+│   │   ├── CommandRegistrar.java    # Динамическая регистрация команд
+│   │   └── ConfigMigrator.java      # Миграция конфига
+│   ├── handlers/
+│   │   ├── CustomItemHandler.java   # Менеджер кастомных предметов
+│   │   ├── ItemLoader.java          # Загрузка из YAML
+│   │   ├── LoreManager.java         # Шаблоны lore
+│   │   ├── UsesManager.java         # Счётчик использований
+│   │   └── EquippedItemsChecker.java # Глобальный таск проверки экипировки
+│   ├── managers/
+│   │   ├── EffectManager.java       # Эффекты зелий
+│   │   ├── AttributeManager.java    # Атрибуты предметов
+│   │   ├── ArmorSetManager.java     # Сеты брони
+│   │   └── MessageManager.java      # Сообщения
+│   ├── listeners/
+│   │   ├── PlayerListener.java      # События игрока
+│   │   └── TriggerListener.java     # Триггеры
+│   ├── api/                         # Java API
+│   ├── commands/                    # Встроенные команды
+│   ├── models/                      # Модели данных
+│   └── utils/
+│       ├── EnumCache.java           # Кэширование Bukkit enum
+│       ├── ColorUtils.java          # Цвета + PAPI
+│       └── ItemBuilder.java         # Билдер предметов
+├── src/main/resources/
+│   ├── plugin.yml                   # Конфигурация плагина
+│   ├── config.yml                   # Настройки
+│   └── items/                       # YAML-предметы + модули
+│       ├── *.yml                    # Предметы
+│       ├── *.java                   # Java API модули
+│       ├── vault/                   # Модуль экономики
+│       ├── deluxemenux/             # Модуль GUI
+│       └── _template/              # Шаблон для новых модулей
+```
+
+---
+
+## ⚡ Оптимизации
+
+| Оптимизация | Описание | Эффект |
+|-------------|----------|--------|
+| 🌍 Глобальный таск | Один `BukkitRunnable` вместо per-player | -90% scheduled задач |
+| 🔍 EnumCache | Кэширование Material/Particle/Sound | -80% рефлексии |
+| 🔧 Стабильные UUID | AttributeManager использует фиксированные ключи | Корректное удаление |
+| ⏱️ Кулдаун пересчёта | 150ms между проверками экипировки | -50% пересчётов |
+| 🗑️ Очистка памяти | HashMap чистятся при выходе игрока | Нет утечек |
 
 ---
 
