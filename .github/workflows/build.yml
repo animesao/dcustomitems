@@ -32,15 +32,42 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
 
+    - name: Read version from VERSION file
+      id: version
+      run: |
+        VERSION=$(cat VERSION | tr -d '[:space:]')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "📦 Version from VERSION file: $VERSION"
+
+    - name: Update pom.xml version
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        # Update first <version> tag (project version)
+        sed -i "0,/<version>.*<\/version>/s//<version>${VERSION}<\/version>/" pom.xml
+        echo "✅ pom.xml updated to $VERSION"
+        head -12 pom.xml
+
+    - name: Update plugin.yml version
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        sed -i "s/^version: .*/version: ${VERSION}/" src/main/resources/plugin.yml
+        echo "✅ plugin.yml updated to $VERSION"
+        grep "version:" src/main/resources/plugin.yml
+
     - name: Build with Maven
       run: mvn clean package -q
 
-    - name: Get version
-      id: version
+    - name: Verify JAR exists
       run: |
-        VERSION=$(grep -m1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/' | tr -d ' ')
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "📦 Version: $VERSION"
+        VERSION="${{ steps.version.outputs.version }}"
+        JAR="target/DC-CustomItems-${VERSION}.jar"
+        if [ ! -f "$JAR" ]; then
+          echo "❌ JAR not found: $JAR"
+          ls -la target/
+          exit 1
+        fi
+        echo "✅ JAR built: $JAR"
+        ls -lh "$JAR"
 
     - name: Upload JAR artifact
       uses: actions/upload-artifact@v4
@@ -69,7 +96,7 @@ jobs:
       run: |
         PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
 
-        echo "## 🚀 DC-CustomItems ${{ github.ref_name }}" > notes.md
+        echo "## 🚀 DC-CustomItems v${{ env.VERSION }}" > notes.md
         echo "" >> notes.md
 
         if [ -n "$PREV_TAG" ]; then
@@ -98,7 +125,7 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        name: "DC-CustomItems ${{ github.ref_name }}"
+        name: "DC-CustomItems v${{ env.VERSION }}"
         body_path: notes.md
         files: DC-CustomItems-${{ env.VERSION }}.jar
         draft: false
