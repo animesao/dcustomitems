@@ -6,7 +6,7 @@
 
     <groupId>me.dcplugin</groupId>
     <artifactId>dcustomitems</artifactId>
-    <version>1.321.1</version>
+    <version>1.322.0</version>
     <packaging>jar</packaging>
 
     <name>DC-CustomItems</name>
