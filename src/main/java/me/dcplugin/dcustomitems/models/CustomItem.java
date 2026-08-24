@@ -40,6 +40,15 @@ public class CustomItem {
     private final double buyPrice;
     private final double sellPrice;
 
+    // === Новые поля ===
+    private final long duration;                    // Время жизни предмета (секунды, -1 = бессрочно)
+    private final String maxDurationMessage;         // Сообщение при истечении времени
+    private final List<String> trailParticles;       // Частицы-следы при движении
+    private final int trailParticleInterval;         // Интервал спавна частиц (тики)
+    private final List<String> allowedWorlds;        // Разрешённые миры (пусто = все)
+    private final List<String> disabledWorlds;       // Запрещённые миры
+    private final String itemModelVariant;           // Вариант модели (для анимированных текстур)
+
     private CustomItem(Builder b) {
         this.id = b.id;
         this.itemStack = b.itemStack;
@@ -70,6 +79,13 @@ public class CustomItem {
         this.usesDepletedMessage = b.usesDepletedMessage;
         this.buyPrice = b.buyPrice;
         this.sellPrice = b.sellPrice;
+        this.duration = b.duration;
+        this.maxDurationMessage = b.maxDurationMessage;
+        this.trailParticles = b.trailParticles;
+        this.trailParticleInterval = b.trailParticleInterval;
+        this.allowedWorlds = b.allowedWorlds;
+        this.disabledWorlds = b.disabledWorlds;
+        this.itemModelVariant = b.itemModelVariant;
     }
 
     // ===== БUILDER =====
@@ -112,6 +128,15 @@ public class CustomItem {
         private double buyPrice = -1;  // -1 = нельзя купить
         private double sellPrice = -1; // -1 = нельзя продать
 
+        // Новые поля
+        private long duration = -1;                    // Время жизни (секунды, -1 = бессрочно)
+        private String maxDurationMessage = null;
+        private List<String> trailParticles = new ArrayList<>();
+        private int trailParticleInterval = 5;         // Тики между спавном частиц
+        private List<String> allowedWorlds = new ArrayList<>();
+        private List<String> disabledWorlds = new ArrayList<>();
+        private String itemModelVariant = null;
+
         private Builder(String id, ItemStack itemStack) {
             this.id = id;
             this.itemStack = itemStack;
@@ -143,58 +168,17 @@ public class CustomItem {
         public Builder usesDepletedMessage(String msg) { this.usesDepletedMessage = msg; return this; }
         public Builder buyPrice(double price) { this.buyPrice = price; return this; }
         public Builder sellPrice(double price) { this.sellPrice = price; return this; }
+        public Builder duration(long seconds) { this.duration = seconds; return this; }
+        public Builder maxDurationMessage(String msg) { this.maxDurationMessage = msg; return this; }
+        public Builder trailParticles(List<String> particles) { this.trailParticles = particles != null ? particles : new ArrayList<>(); return this; }
+        public Builder trailParticleInterval(int ticks) { this.trailParticleInterval = ticks; return this; }
+        public Builder allowedWorlds(List<String> worlds) { this.allowedWorlds = worlds != null ? worlds : new ArrayList<>(); return this; }
+        public Builder disabledWorlds(List<String> worlds) { this.disabledWorlds = worlds != null ? worlds : new ArrayList<>(); return this; }
+        public Builder itemModelVariant(String variant) { this.itemModelVariant = variant; return this; }
 
         public CustomItem build() {
             return new CustomItem(this);
         }
-    }
-
-    // ===== Legacy constructors (для обратной совместимости) =====
-
-    /** @deprecated Используйте {@link #builder(String, ItemStack)} */
-    @Deprecated
-    public CustomItem(String id, ItemStack itemStack, String type, String activationSlot, boolean placeable, List<String> effects, Map<String, Double> attributes, String armorSetId, boolean hasSetBonus, List<String> leftClickActions, List<String> rightClickActions, long clickCooldown, int maxUses, List<String> loreTemplate, int customModelData, String permission, List<String> equipParticles, List<String> equipSounds, List<String> unequipParticles, List<String> unequipSounds, List<String> triggerActions, String equipMessage, String unequipMessage, String cooldownMessage, String activationMessage, String deactivationMessage, String usesDepletedMessage, double buyPrice, double sellPrice) {
-        this.id = id;
-        this.itemStack = itemStack;
-        this.type = type;
-        this.activationSlot = activationSlot;
-        this.placeable = placeable;
-        this.effects = effects;
-        this.attributes = attributes != null ? attributes : new java.util.HashMap<>();
-        this.armorSetId = armorSetId;
-        this.hasSetBonus = hasSetBonus;
-        this.leftClickActions = leftClickActions != null ? leftClickActions : new java.util.ArrayList<>();
-        this.rightClickActions = rightClickActions != null ? rightClickActions : new java.util.ArrayList<>();
-        this.clickCooldown = clickCooldown;
-        this.maxUses = maxUses;
-        this.loreTemplate = loreTemplate != null ? loreTemplate : new java.util.ArrayList<>();
-        this.customModelData = customModelData;
-        this.permission = permission;
-        this.equipParticles = equipParticles != null ? equipParticles : new java.util.ArrayList<>();
-        this.equipSounds = equipSounds != null ? equipSounds : new java.util.ArrayList<>();
-        this.unequipParticles = unequipParticles != null ? unequipParticles : new java.util.ArrayList<>();
-        this.unequipSounds = unequipSounds != null ? unequipSounds : new java.util.ArrayList<>();
-        this.triggerActions = triggerActions != null ? triggerActions : new java.util.ArrayList<>();
-        this.equipMessage = equipMessage;
-        this.unequipMessage = unequipMessage;
-        this.cooldownMessage = cooldownMessage;
-        this.activationMessage = activationMessage;
-        this.deactivationMessage = deactivationMessage;
-        this.usesDepletedMessage = usesDepletedMessage;
-        this.buyPrice = buyPrice;
-        this.sellPrice = sellPrice;
-    }
-
-    /** @deprecated Используйте {@link #builder(String, ItemStack)} */
-    @Deprecated
-    public CustomItem(String id, ItemStack itemStack, String type, String activationSlot, boolean placeable, List<String> effects, Map<String, Double> attributes, String armorSetId, boolean hasSetBonus) {
-        this(id, itemStack, type, activationSlot, placeable, effects, attributes, armorSetId, hasSetBonus, new java.util.ArrayList<>(), new java.util.ArrayList<>(), 0, -1, new java.util.ArrayList<>(), -1, null, new java.util.ArrayList<>(), new java.util.ArrayList<>(), new java.util.ArrayList<>(), new java.util.ArrayList<>(), new java.util.ArrayList<>(), null, null, null, null, null, null, -1, -1);
-    }
-
-    /** @deprecated Используйте {@link #builder(String, ItemStack)} */
-    @Deprecated
-    public CustomItem(String id, ItemStack itemStack, String type, String activationSlot, boolean placeable, List<String> effects, Map<String, Double> attributes, String armorSetId, boolean hasSetBonus, List<String> leftClickActions, List<String> rightClickActions, long clickCooldown) {
-        this(id, itemStack, type, activationSlot, placeable, effects, attributes, armorSetId, hasSetBonus, leftClickActions, rightClickActions, clickCooldown, -1, new java.util.ArrayList<>(), -1, null, new java.util.ArrayList<>(), new java.util.ArrayList<>(), new java.util.ArrayList<>(), new java.util.ArrayList<>(), new java.util.ArrayList<>(), null, null, null, null, null, null, -1, -1);
     }
 
     // ===== Геттеры =====
@@ -255,6 +239,30 @@ public class CustomItem {
     public double getSellPrice() { return sellPrice; }
     public boolean isBuyable() { return buyPrice > 0; }
     public boolean isSellable() { return sellPrice > 0; }
+
+    // === Новые геттеры ===
+    public long getDuration() { return duration; }
+    public boolean hasDuration() { return duration > 0; }
+    public String getMaxDurationMessage() { return maxDurationMessage; }
+    public boolean hasMaxDurationMessage() { return maxDurationMessage != null && !maxDurationMessage.trim().isEmpty(); }
+    public List<String> getTrailParticles() { return trailParticles; }
+    public boolean hasTrailParticles() { return trailParticles != null && !trailParticles.isEmpty(); }
+    public int getTrailParticleInterval() { return trailParticleInterval; }
+    public List<String> getAllowedWorlds() { return allowedWorlds; }
+    public boolean hasAllowedWorlds() { return allowedWorlds != null && !allowedWorlds.isEmpty(); }
+    public List<String> getDisabledWorlds() { return disabledWorlds; }
+    public boolean hasDisabledWorlds() { return disabledWorlds != null && !disabledWorlds.isEmpty(); }
+    public String getItemModelVariant() { return itemModelVariant; }
+    public boolean hasItemModelVariant() { return itemModelVariant != null && !itemModelVariant.trim().isEmpty(); }
+
+    /**
+     * Проверяет, разрешён ли предмет в данном мире
+     */
+    public boolean isAllowedInWorld(String worldName) {
+        if (hasAllowedWorlds() && !allowedWorlds.contains(worldName)) return false;
+        if (hasDisabledWorlds() && disabledWorlds.contains(worldName)) return false;
+        return true;
+    }
 
     public enum ItemType { RUNE, TOOL, ARMOR, CONSUMABLE }
     public enum ActivationSlot { HAND, OFFHAND, HEAD, CHEST, LEGS, FEET }

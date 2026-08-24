@@ -1,0 +1,42 @@
+# ==========================================
+# 📔 Модуль: Дневник игрока
+# ==========================================
+#
+# Трекер статистики: kills, deaths, playtime
+#
+# Команды:
+#   /diary           — открыть дневник
+#   /diary stats     — статистика
+#   /diary top       — топ игроков
+#
+# Плейсхолдеры:
+#   %dci_diary_kills%      — количество убийств
+#   %dci_diary_deaths%     — количество смертей
+#   %dci_diary_playtime%   — время игры (часы)
+#   %dci_diary_kd%         — K/D соотношение
+#
+# ==========================================
+
+name: "Player Diary"
+version: "1.0"
+enabled: true
+description: "Дневник игрока — трекер kills/deaths/playtime"
+author: "DC-CustomItems"
+
+commands:
+  - diary
+
+permissions:
+  - diary.use
+  - diary.admin
+
+settings:
+  enabled: true
+  message-prefix: '&6📔 &r'
+  # Интервал сохранения данных (в тиках)
+  save-interval: 600  # 30 секунд
+
+# Формат времени в сообщениях
+time-format:
+  hours: '{h}ч {m}м'
+  minutes: '{m}м {s}с'

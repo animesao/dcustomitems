@@ -36,12 +36,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Objects;
+import java.util.WeakHashMap;
 
 public class PlayerListener implements Listener {
 
     private final Main plugin;
-    private final Map<UUID, Long> lastProcessedClick = new HashMap<>();
-    private final Map<UUID, Long> playerCooldowns = new HashMap<>();
+    private final Map<UUID, Long> lastProcessedClick = new WeakHashMap<>();
+    private final Map<UUID, Long> playerCooldowns = new WeakHashMap<>();
     private static final long MIN_CLICK_DELAY = 200L;
 
     public PlayerListener(Main plugin) {
@@ -485,6 +486,17 @@ public class PlayerListener implements Listener {
         if (itemId != null) {
             CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
             if (customItem != null) {
+                // Устанавливаем время приобретения для duration-товаров
+                plugin.getItemHandler().ensureAcquiredTime(pickedItem);
+
+                // Проверяем ограничения по миру
+                if (!customItem.isAllowedInWorld(player.getWorld().getName())) {
+                    event.setCancelled(true);
+                    player.sendMessage(me.dcplugin.dcustomitems.utils.ColorUtils.processMessage(player,
+                        "&cПредмет " + customItem.getId() + " запрещён в этом мире!"));
+                    return;
+                }
+
                 spawnEquipEffects(player, customItem, true);
             }
         }

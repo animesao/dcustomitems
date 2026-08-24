@@ -25,6 +25,7 @@ item-id:
 | `on_damage_taken` | При получении урона |
 | `on_damage_dealt` | При нанесении урона |
 | `on_jump` | При прыжке |
+| `on_sprint` | При начале бега |
 | `on_pickup` | При подборе предмета |
 | `on_drop` | При выбрасывании предмета |
 
@@ -286,4 +287,215 @@ ultimate-fire-sword:
       - 'particles_custom:HEART:100:0:2:0:2:2:2'
       - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
       - 'fireworks:1'
+```
+
+---
+
+## 🌍 Ограничения по мирам
+
+Предмет может работать только в определённых мирах или быть запрещён в некоторых.
+
+```yaml
+my-item:
+  # Только в этих мирах (пусто = все миры)
+  allowed-worlds:
+    - world
+    - world_nether
+
+  # Запрещён в этих мирах
+  disabled-worlds:
+    - world_the_end
+```
+
+**Приоритет:** `allowed-worlds` проверяется первым. Если оба списка пусты — предмет работает везде.
+
+---
+
+## ⏱️ Таймер предмета (auto-destroy)
+
+Предмет автоматически удаляется через указанное время (в секундах).
+
+```yaml
+my-item:
+  # Время жизни в секундах (-1 = бессрочно)
+  duration: 30
+
+  # Сообщение при истечении времени
+  max-duration-message: '&cПредмет испарился!'
+```
+
+**Примеры:**
+```yaml
+# Граната — исчезает через 10 секунд
+bomb:
+  type: TOOL
+  duration: 10
+  max-duration-message: '&c💣 Граната взорвалась!'
+  right-click-actions:
+    - 'damage_nearby:30:5'
+    - 'particles_custom:EXPLOSION_HUGE:50:0:1:0:3:3:3'
+    - 'sound:ENTITY_GENERIC_EXPLODE:1:1'
+```
+
+---
+
+## ✨ Частицы-следы (trail particles)
+
+Предмет оставляет частицы при движении игрока.
+
+```yaml
+my-item:
+  # Частицы-следы (формат как в equip-particles)
+  trail-particles:
+    - 'FLAME:5'
+    - 'SMOKE:3'
+
+  # Интервал спавна частиц (в тиках, 20 тиков = 1 секунда)
+  trail-particle-interval: 3
+```
+
+**Примеры:**
+```yaml
+# Огненный клинок — огненный след
+fire-sword:
+  type: TOOL
+  trail-particles:
+    - 'FLAME:8'
+    - 'LAVA:3'
+  trail-particle-interval: 2
+
+# Ледяной клинок — ледяной след
+ice-sword:
+  type: TOOL
+  trail-particles:
+    - 'SNOWFLAKE:5'
+    - 'CLOUD:3'
+  trail-particle-interval: 3
+
+# Теневой клинок — теневой след
+shadow-sword:
+  type: TOOL
+  trail-particles:
+    - 'SMOKE:4'
+    - 'PORTAL:6'
+  trail-particle-interval: 2
+```
+
+---
+
+## 🎨 Анимированные модели (item-model-variant)
+
+Для использования анимированных текстур в Resource Pack.
+
+```yaml
+my-item:
+  item:
+    type: NETHERITE_SWORD
+    # Вариант модели (для анимированных текстур)
+    # Должен совпадать с именем в item_model_definition
+    item-model-variant: "animated_sword"
+```
+
+**Пример Resource Pack структуры:**
+```
+assets/minecraft/
+├── textures/
+│   └── item/
+│       └── animated_sword.png          # Спрайтшит анимации
+├── items/
+│   └── netherite_sword.json            # Определение модели
+└── materials/
+    └── animated_sword.png.mcmeta       # Метаданные анимации
+```
+
+**animated_sword.png.mcmeta:**
+```json
+{
+  "animation": {
+    "interpolate": true,
+    "frametime": 2,
+    "frames": [
+      0, 1, 2, 3, 4, 5, 6, 7
+    ]
+  }
+}
+```
+
+**netherite_sword.json:**
+```json
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "minecraft:item/animated_sword"
+  },
+  "overrides": [
+    {"predicate": {"custom_model_data": 100}, "model": "minecraft:item/animated_sword_frame1"}
+  ]
+}
+```
+
+---
+
+## 🔧 Полный пример с новыми фичами
+
+```yaml
+ultimate-flame-sword:
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: flame.sword
+
+  # Таймер: живёт 60 секунд
+  duration: 60
+  max-duration-message: '&c🔥 Клинок расплавился!'
+
+  # Ограничения по миру
+  allowed-worlds:
+    - world
+    - world_nether
+  disabled-worlds:
+    - world_the_end
+
+  # Частицы-следы
+  trail-particles:
+    - 'FLAME:8'
+    - 'LAVA:3'
+  trail-particle-interval: 2
+
+  item:
+    type: NETHERITE_SWORD
+    title: '&c🔥 Пламенный Клинок'
+    glowing: true
+    unbreakable: true
+    item-model: "flame_sword"
+    item-model-variant: "flame_sword_animated"
+    enchantments:
+      SHARPNESS: 5
+      FIRE_ASPECT: 2
+
+  effects:
+    - 'INCREASE_DAMAGE:3'
+    - 'FIRE_RESISTANCE:1'
+
+  click-cooldown: 2000
+
+  triggers:
+    on_equip:
+      - 'particles_custom:FLAME:50:0:1:0:2:2:2'
+      - 'sound:ENTITY_BLAZE_AMBIENT:1:1'
+      - 'title:&c🔥 Пламенный Клинок извлечён!|||10:40:10'
+
+    on_sprint:
+      - 'trail-particles:FLAME:3'
+      - 'effect:SPEED:3:1'
+
+    on_kill:
+      - 'heal:20'
+      - 'effect:REGENERATION:10:2'
+      - 'particles_custom:HEART:30:0:2:0:1:1:1'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
+
+    on_damage_dealt:
+      - 'particles_custom:CRIT:15:0:1:0:1:1:1'
+      - 'sound:ENTITY_BLAZE_SHOOT:0.5:2'
 ```

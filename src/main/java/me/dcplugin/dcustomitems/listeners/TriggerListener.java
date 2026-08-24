@@ -21,6 +21,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.meta.FireworkMeta;
@@ -33,12 +34,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.WeakHashMap;
 
 public class TriggerListener implements Listener {
 
     private final Main plugin;
-    private final Map<UUID, Long> jumpCooldowns = new HashMap<>();
-    private final Map<UUID, Long> actionCooldowns = new HashMap<>();
+    private final Map<UUID, Long> jumpCooldowns = new WeakHashMap<>();
+    private final Map<UUID, Long> actionCooldowns = new WeakHashMap<>();
     // Кулдауны для триггеров: playerId:itemId -> lastTriggerTime
     private final Map<String, Long> triggerCooldowns = new HashMap<>();
     private static final long JUMP_COOLDOWN_MS = 500;
@@ -101,6 +103,14 @@ public class TriggerListener implements Listener {
             jumpCooldowns.put(playerId, now);
             checkTriggersForPlayer(player, "on_jump");
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerToggleSprint(PlayerToggleSprintEvent event) {
+        // Только начало спринта (isSprinting() = true при начале)
+        if (!event.isSprinting()) return;
+        Player player = event.getPlayer();
+        checkTriggersForPlayer(player, "on_sprint");
     }
 
     @EventHandler

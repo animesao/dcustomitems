@@ -27,6 +27,11 @@ public class EquippedItemsChecker extends BukkitRunnable {
     private final Map<UUID, Set<String>> previousActiveItems = new HashMap<>();
     private final Set<UUID> processingPlayers = new HashSet<>();
 
+    // Trail particles: tick counter per player
+    private final Map<UUID, Integer> trailTickCounter = new HashMap<>();
+    // World tracking for per-item world restrictions
+    private final Map<UUID, String> lastWorldName = new HashMap<>();
+
     public EquippedItemsChecker(Main plugin) {
         this.plugin = plugin;
     }
@@ -85,6 +90,30 @@ public class EquippedItemsChecker extends BukkitRunnable {
             } finally {
                 processingPlayers.remove(playerId);
             }
+        }
+
+        // === Trail particles (каждый тик, без кулдауна) ===
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            UUID playerId = player.getUniqueId();
+            int tick = trailTickCounter.getOrDefault(playerId, 0) + 1;
+            trailTickCounter.put(playerId, tick);
+            spawnTrailParticles(player, tick);
+        }
+
+        // === Duration check (каждые 20 тиков = 1 секунда) ===
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            checkItemDurations(player);
+        }
+
+        // === World restriction check (при смене мира) ===
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            UUID playerId = player.getUniqueId();
+            String currentWorld = player.getWorld().getName();
+            String prevWorld = lastWorldName.get(playerId);
+            if (prevWorld != null && !prevWorld.equals(currentWorld)) {
+                checkWorldRestrictions(player);
+            }
+            lastWorldName.put(playerId, currentWorld);
         }
     }
 
@@ -234,6 +263,121 @@ public class EquippedItemsChecker extends BukkitRunnable {
         }
     }
 
+    // === Trail particles ===
+
+    private void spawnTrailParticles(Player player, int tick) {
+        ItemStack mainHand = player.getInventory().getItemInMainHand();
+        ItemStack offHand = player.getInventory().getItemInOffHand();
+
+        spawnTrailForItem(player, mainHand, tick);
+        spawnTrailForItem(player, offHand, tick);
+    }
+
+    private void spawnTrailForItem(Player player, ItemStack item, int tick) {
+        if (item == null || item.getType() == org.bukkit.Material.AIR) return;
+
+        String itemId = plugin.getItemHandler().getCustomItemId(item);
+        if (itemId == null) return;
+
+        CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
+        if (customItem == null || !customItem.hasTrailParticles()) return;
+
+        int interval = customItem.getTrailParticleInterval();
+        if (interval <= 0 || tick % interval != 0) return;
+
+        for (String particleStr : customItem.getTrailParticles()) {
+            try {
+                String[] parts = particleStr.split(":");
+                org.bukkit.Particle particle = EnumCache.getParticle(parts[0]);
+                if (particle == null) continue;
+                int count = parts.length > 1 ? Integer.parseInt(parts[1]) : 5;
+                player.getWorld().spawnParticle(particle, player.getLocation().add(0, 0.5, 0), count, 0.3, 0.3, 0.3);
+            } catch (Exception e) {
+                plugin.getLogger().warning("Ошибка при спавне trail частиц: " + particleStr);
+            }
+        }
+    }
+
+    // === Duration check ===
+
+    private void checkItemDurations(Player player) {
+        ItemStack[] contents = player.getInventory().getContents();
+        boolean changed = false;
+
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack item = contents[i];
+            if (item == null || item.getType() == org.bukkit.Material.AIR) continue;
+
+            String itemId = plugin.getItemHandler().getCustomItemId(item);
+            if (itemId == null) continue;
+
+            CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
+            if (customItem == null || !customItem.hasDuration()) continue;
+
+            // Ensure acquired time is set
+            plugin.getItemHandler().ensureAcquiredTime(item);
+
+            if (plugin.getItemHandler().isExpired(item)) {
+                contents[i] = null;
+                changed = true;
+
+                // Send message
+                if (customItem.hasMaxDurationMessage()) {
+                    String msg = ColorUtils.processMessage(player, customItem.getMaxDurationMessage());
+                    if (!msg.trim().isEmpty()) player.sendMessage(msg);
+                } else {
+                    player.sendMessage(ColorUtils.processMessage(player,
+                        "&cПредмет " + customItem.getId() + " исчерпал время жизни!"));
+                }
+
+                // Play sound and particles
+                player.getWorld().spawnParticle(org.bukkit.Particle.SMOKE,
+                    player.getLocation().add(0, 1, 0), 20);
+                player.playSound(player.getLocation(),
+                    org.bukkit.Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
+            }
+        }
+
+        if (changed) {
+            player.getInventory().setContents(contents);
+            markForRecalculation(player);
+        }
+    }
+
+    // === World restriction check ===
+
+    /**
+     * Проверить, разрешены ли предметы игрока в текущем мире
+     */
+    public void checkWorldRestrictions(Player player) {
+        String worldName = player.getWorld().getName();
+        ItemStack[] contents = player.getInventory().getContents();
+        boolean changed = false;
+
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack item = contents[i];
+            if (item == null || item.getType() == org.bukkit.Material.AIR) continue;
+
+            String itemId = plugin.getItemHandler().getCustomItemId(item);
+            if (itemId == null) continue;
+
+            CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
+            if (customItem == null) continue;
+
+            if (!customItem.isAllowedInWorld(worldName)) {
+                contents[i] = null;
+                changed = true;
+                player.sendMessage(ColorUtils.processMessage(player,
+                    "&cПредмет " + customItem.getId() + " запрещён в этом мире!"));
+            }
+        }
+
+        if (changed) {
+            player.getInventory().setContents(contents);
+            markForRecalculation(player);
+        }
+    }
+
     /**
      * Очистка при выходе игрока
      */
@@ -242,6 +386,8 @@ public class EquippedItemsChecker extends BukkitRunnable {
         lastEquipmentHash.remove(playerId);
         previousActiveItems.remove(playerId);
         processingPlayers.remove(playerId);
+        trailTickCounter.remove(playerId);
+        lastWorldName.remove(playerId);
     }
 
     /**
@@ -254,5 +400,7 @@ public class EquippedItemsChecker extends BukkitRunnable {
         lastEquipmentHash.clear();
         previousActiveItems.clear();
         processingPlayers.clear();
+        trailTickCounter.clear();
+        lastWorldName.clear();
     }
 }

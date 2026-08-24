@@ -1,0 +1,123 @@
+# ============================================
+# 🔥 ПЛАМЕННЫЙ КЛИНОК — Демо новых фич
+# ============================================
+# Демонстрирует:
+#   • duration (таймер — предмет исчезает через 60 сек)
+#   • trail-particles (огненный след при движении)
+#   • allowed-worlds / disabled-worlds (ограничения по миру)
+#   • item-model-variant (анимированная текстура)
+#   • on_sprint триггер (эффект при начале бега)
+# ============================================
+
+flame-blade-demo:
+  type: TOOL
+  activation-slot: HAND
+  placeable: false
+  permission: demo.flame
+
+  # ⏱️ Таймер: предмет живёт 60 секунд, потом исчезает
+  duration: 60
+  max-duration-message: '&c🔥 Клинок расплавился!'
+
+  # 🌍 Ограничения по миру
+  allowed-worlds:
+    - world
+    - world_nether
+  disabled-worlds:
+    - world_the_end
+
+  # ✨ Частицы-следы (огненный шлейф)
+  trail-particles:
+    - 'FLAME:6'
+    - 'LAVA:2'
+  trail-particle-interval: 3  # каждые 3 тика
+
+  item:
+    type: NETHERITE_SWORD
+    title: '&c🔥 Пламенный Клинок &7(демо)'
+    glowing: true
+    unbreakable: true
+    item-model: 'minecraft:item/netherite_sword'
+    item-model-variant: 'flame_sword_animated'  # анимированная модель
+    enchantments:
+      SHARPNESS: 5
+      FIRE_ASPECT: 2
+
+  lore:
+    - ''
+    - ' &4━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ' &7Пламенный клинок из преисподней'
+    - ' &4━━━━━━━━━━━━━━━━━━━━━━━━'
+    - ''
+    - ' &e⏱ &fВремя жизни: &c60 секунд'
+    - ' &e🌍 &fМиры: &aworld, &bnether'
+    - ' &e🔥 &fСлед: &cогонь + лава'
+    - ''
+    - ' &6⚡ &fКогда в основной руке:'
+    - ' &6┌ &eСила &cIII'
+    - ' &6├ &eСкорость &cII'
+    - ' &6└ &cОгнестойкость'
+    - ''
+    - '&e🏃 &fНачни бег — получи бонус!'
+    - ''
+
+  effects:
+    - 'INCREASE_DAMAGE:3'
+    - 'SPEED:2'
+    - 'FIRE_RESISTANCE:1'
+
+  attributes:
+    GENERIC_ATTACK_DAMAGE: 10.0
+    GENERIC_ATTACK_SPEED: 1.6
+
+  click-cooldown: 2000
+
+  triggers:
+    on_equip:
+      - 'particles_custom:FLAME:50:0:1:0:2:2:2'
+      - 'sound:ENTITY_BLAZE_AMBIENT:1:1'
+      - 'title:&c🔥 Пламенный Клинок!|||10:40:10'
+
+    on_unequip:
+      - 'particles:SMOKE:15'
+      - 'sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
+
+    # 🏃 Новый триггер: при начале бега
+    on_sprint:
+      - 'effect:SPEED:3:1'
+      - 'particles:FLAME:8'
+      - 'sound:ENTITY_BLAZE_SHOOT:0.3:1.5'
+
+    on_click_right:
+      - 'effect:STRENGTH:8:3'
+      - 'effect:SPEED:8:2'
+      - 'particles_custom:FLAME:80:0:1:0:3:2:3'
+      - 'sound:ENTITY_BLAZE_SHOOT:1:1'
+      - 'title:&c🔥 ПЛАМЕННЫЙ УДАР!|||10:40:10'
+
+    on_click_left:
+      - 'damage_nearby:25:4'
+      - 'knockback:4'
+      - 'particles_custom:EXPLOSION_HUGE:20:0:1:0:3:3:3'
+      - 'sound:ENTITY_GENERIC_EXPLODE:1:1'
+
+    on_kill:
+      - 'heal:30'
+      - 'effect:REGENERATION:10:2'
+      - 'particles_custom:HEART:40:0:2:0:2:2:2'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
+
+    on_damage_dealt:
+      - 'particles:CRIT:10'
+      - 'sound:ENTITY_BLAZE_SHOOT:0.3:2'
+
+    on_damage_taken:
+      - 'effect:RESISTANCE:5:1'
+      - 'particles:SMOKE:8'
+
+    on_jump:
+      - 'effect:SPEED:3:1'
+      - 'particles:FLAME:5'
+
+  buy-price: 5000
+  sell-price: 2500

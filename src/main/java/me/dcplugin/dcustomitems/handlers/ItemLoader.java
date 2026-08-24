@@ -201,7 +201,8 @@ public class ItemLoader {
             // === Model data ===
             int customModelData = itemSection.getInt("custom-model-data", -1);
             String itemModel = itemSection.getString("item-model", null);
-            applyModelData(itemStack, customModelData, itemModel, itemId);
+            String itemModelVariant = itemSection.getString("item-model-variant", null);
+            applyModelData(itemStack, customModelData, itemModel, itemId, itemModelVariant);
 
             // === Trigger actions (old + new format) ===
             List<String> triggerActions = loadTriggerActions(section);
@@ -222,6 +223,21 @@ public class ItemLoader {
             List<String> equipSounds = section.getStringList("equip-sounds");
             List<String> unequipParticles = section.getStringList("unequip-particles");
             List<String> unequipSounds = section.getStringList("unequip-sounds");
+
+            // === World restrictions ===
+            List<String> allowedWorlds = section.getStringList("allowed-worlds");
+            List<String> disabledWorlds = section.getStringList("disabled-worlds");
+
+            // === Duration ===
+            long duration = section.getLong("duration", -1);
+            String maxDurationMessage = section.getString("max-duration-message", null);
+
+            // === Trail particles ===
+            List<String> trailParticles = section.getStringList("trail-particles");
+            int trailParticleInterval = section.getInt("trail-particle-interval", 5);
+
+            // === Item model variant (animated textures) ===
+            String itemModelVariant = itemSection.getString("item-model-variant", null);
 
             // === Build CustomItem ===
             CustomItem customItem = CustomItem.builder(itemId, itemStack)
@@ -251,6 +267,13 @@ public class ItemLoader {
                     .usesDepletedMessage(usesDepletedMessage)
                     .buyPrice(section.getDouble("buy-price", -1))
                     .sellPrice(section.getDouble("sell-price", -1))
+                    .duration(duration)
+                    .maxDurationMessage(maxDurationMessage)
+                    .trailParticles(trailParticles)
+                    .trailParticleInterval(trailParticleInterval)
+                    .allowedWorlds(allowedWorlds)
+                    .disabledWorlds(disabledWorlds)
+                    .itemModelVariant(itemModelVariant)
                     .build();
 
             // Parse effects
@@ -325,15 +348,25 @@ public class ItemLoader {
     }
 
     private void applyModelData(ItemStack itemStack, int customModelData, String itemModel, String itemId) {
+        applyModelData(itemStack, customModelData, itemModel, itemId, null);
+    }
+
+    private void applyModelData(ItemStack itemStack, int customModelData, String itemModel, String itemId, String itemModelVariant) {
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return;
 
         if (itemModel != null && !itemModel.isEmpty()) {
             CustomModelDataComponent cmdComponent = meta.getCustomModelDataComponent();
-            cmdComponent.setStrings(List.of(itemModel));
+            List<String> strings = new ArrayList<>();
+            strings.add(itemModel);
+            // item-model-variant добавляется как дополнительная строка
+            if (itemModelVariant != null && !itemModelVariant.isEmpty()) {
+                strings.add(itemModelVariant);
+            }
+            cmdComponent.setStrings(strings);
             meta.setCustomModelDataComponent(cmdComponent);
             meta.getPersistentDataContainer().set(itemModelKey, PersistentDataType.STRING, itemModel);
-            plugin.getLogger().fine("[LOAD] Применён custom_model_data strings: [" + itemModel + "] для " + itemId);
+            plugin.getLogger().fine("[LOAD] Применён custom_model_data strings: " + strings + " для " + itemId);
         } else if (customModelData > 0) {
             meta.setCustomModelData(customModelData);
             plugin.getLogger().fine("[LOAD] Применён custom_model_data: " + customModelData + " для " + itemId);

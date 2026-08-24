@@ -23,6 +23,7 @@ public class CustomItemHandler {
     private final NamespacedKey customItemKey;
     private final NamespacedKey itemUsesKey;
     private final NamespacedKey itemModelKey;
+    private final NamespacedKey acquiredTimeKey;
 
     // Delegates
     private final ItemLoader itemLoader;
@@ -39,6 +40,8 @@ public class CustomItemHandler {
         this.itemLoader = new ItemLoader(plugin, customItemKey, itemModelKey);
         this.loreManager = new LoreManager();
         this.usesManager = new UsesManager(itemUsesKey);
+
+        this.acquiredTimeKey = new NamespacedKey(plugin, "acquired_time");
     }
 
     // ===== Loading =====
@@ -147,5 +150,46 @@ public class CustomItemHandler {
         if (uses >= 0) {
             loreManager.applyUsesLore(itemStack, customItem, uses);
         }
+    }
+
+    // ===== Duration =====
+
+    /**
+     * Установить время приобретения предмета (если ещё не установлено)
+     */
+    public void ensureAcquiredTime(ItemStack itemStack) {
+        if (itemStack == null || !itemStack.hasItemMeta()) return;
+        ItemMeta meta = itemStack.getItemMeta();
+        if (meta == null) return;
+        if (!meta.getPersistentDataContainer().has(acquiredTimeKey, PersistentDataType.LONG)) {
+            meta.getPersistentDataContainer().set(acquiredTimeKey, PersistentDataType.LONG, System.currentTimeMillis());
+            itemStack.setItemMeta(meta);
+        }
+    }
+
+    /**
+     * Получить оставшееся время жизни предмета (в секундах). -1 = бессрочно.
+     */
+    public long getRemainingDuration(ItemStack itemStack) {
+        if (itemStack == null || !itemStack.hasItemMeta()) return -1;
+        ItemMeta meta = itemStack.getItemMeta();
+        if (meta == null) return -1;
+        Long acquiredTime = meta.getPersistentDataContainer().get(acquiredTimeKey, PersistentDataType.LONG);
+        if (acquiredTime == null) return -1;
+
+        String itemId = getCustomItemId(itemStack);
+        if (itemId == null) return -1;
+        CustomItem customItem = getCustomItem(itemId);
+        if (customItem == null || !customItem.hasDuration()) return -1;
+
+        long elapsed = (System.currentTimeMillis() - acquiredTime) / 1000;
+        return Math.max(0, customItem.getDuration() - elapsed);
+    }
+
+    /**
+     * Проверить, истёк ли срок жизни предмета
+     */
+    public boolean isExpired(ItemStack itemStack) {
+        return getRemainingDuration(itemStack) == 0;
     }
 }
