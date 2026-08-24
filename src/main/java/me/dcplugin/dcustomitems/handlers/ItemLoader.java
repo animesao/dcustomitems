@@ -236,9 +236,6 @@ public class ItemLoader {
             List<String> trailParticles = section.getStringList("trail-particles");
             int trailParticleInterval = section.getInt("trail-particle-interval", 5);
 
-            // === Item model variant (animated textures) ===
-            String itemModelVariant = itemSection.getString("item-model-variant", null);
-
             // === Build CustomItem ===
             CustomItem customItem = CustomItem.builder(itemId, itemStack)
                     .type(type)
