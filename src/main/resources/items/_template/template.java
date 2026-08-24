@@ -146,7 +146,7 @@ public class templateModule extends Module implements Listener, CommandExecutor,
      */
     private void registerCommand(String name, CommandExecutor executor) {
         // Пробуем найти команду в plugin.yml
-        Command cmd = plugin.getCommand(name);
+        org.bukkit.command.PluginCommand cmd = plugin.getCommand(name);
         if (cmd != null) {
             cmd.setExecutor(executor);
             cmd.setTabCompleter((TabCompleter) executor);
@@ -423,20 +423,5 @@ public class templateModule extends Module implements Listener, CommandExecutor,
 
     private String colorize(String msg) {
         return msg == null ? "" : msg.replace("&", "§");
-    }
-
-    /**
-     * Получить значение из конфига с дефолтом
-     */
-    private String getConfig(String path, String def) {
-        return config.getString(path, def);
-    }
-
-    private int getConfigInt(String path, int def) {
-        return config.getInt(path, def);
-    }
-
-    private boolean getConfigBoolean(String path, boolean def) {
-        return config.getBoolean(path, def);
     }
 }

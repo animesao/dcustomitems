@@ -63,7 +63,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         );
 
         // Регистрируем команду
-        registerCommand("diary", this);
+        registerDynamicCommand("diary", this);
 
         // Регистрируем слушатель
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -92,6 +92,36 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
     }
 
     // ===== Команды =====
+
+    /**
+     * Динамическая регистрация команды через reflection
+     */
+    private void registerDynamicCommand(String name, CommandExecutor executor) {
+        try {
+            org.bukkit.command.CommandMap commandMap = (org.bukkit.command.CommandMap)
+                plugin.getServer().getClass().getMethod("getCommandMap").invoke(plugin.getServer());
+
+            Command command = new Command(name) {
+                @Override
+                public boolean execute(CommandSender sender, String label, String[] args) {
+                    return executor.onCommand(sender, this, label, args);
+                }
+                @Override
+                public java.util.List<String> tabComplete(CommandSender sender, String alias, String[] args) {
+                    if (executor instanceof TabCompleter) {
+                        return ((TabCompleter) executor).onTabComplete(sender, this, alias, args);
+                    }
+                    return java.util.Collections.emptyList();
+                }
+            };
+            command.setPermission("diary.use");
+            command.setDescription("Player Diary module");
+            command.setUsage("/diary");
+            commandMap.register("dcustomitems", command);
+        } catch (Exception e) {
+            plugin.getLogger().warning("[Diary] Failed to register /" + name + ": " + e.getMessage());
+        }
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -143,7 +173,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         player.sendMessage(colorize(prefix + "&e━━━━━━━━━━━━━━━━━━━━━━━━━━"));
         player.sendMessage(colorize(prefix + "&7Убийства: &c" + stats.kills));
         player.sendMessage(colorize(prefix + "&7Смерти: &4" + stats.deaths));
-        player.sendMessage(colorize(prefix + "&7K/D: &e" + String.format("%.2f", stats.kd)));
+        player.sendMessage(colorize(prefix + "&7K/D: &e" + String.format("%.2f", stats.getKd())));
         player.sendMessage(colorize(prefix + "&7Время игры: &a" + formatTime(stats.playtime)));
         player.sendMessage(colorize(prefix + "&e━━━━━━━━━━━━━━━━━━━━━━━━━━"));
     }
@@ -151,7 +181,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
     private void showTop(Player player) {
         String prefix = config.getString("settings.message-prefix", "&6📔 &r");
 
-        List<Map<String, Object>> results = plugin.getDatabaseManager().queryList(
+        List<Map<String, Object>> results = plugin.getDatabaseManager().queryAll(
             "SELECT uuid, kills, deaths FROM diary_stats ORDER BY kills DESC LIMIT 10"
         );
 
@@ -175,7 +205,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
                 String name = target != null ? target.getName() : uuid.toString().substring(0, 8);
 
                 player.sendMessage(colorize(prefix + "&e#" + rank + " &f" + name +
-                    " &7— &c" + kills + " &7kills &e(K/D: " + String.format("%.2f", kd) + ")"));
+                    " &7— &c" + kills + " &7kills &e(K/D: " + String.format("%.2f", kills > 0 && deaths > 0 ? (double) kills / deaths : (double) kills) + ")"));
                 rank++;
             }
         }
@@ -213,7 +243,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
 
         // K/D
         ItemStack kd = createMenuItem(org.bukkit.Material.GOLD_INGOT,
-            "&e📊 K/D", "&7Соотношение: &f" + String.format("%.2f", stats.kd));
+            "&e📊 K/D", "&7Соотношение: &f" + String.format("%.2f", stats.getKd()));
         menu.setItem(15, kd);
 
         // Playtime
@@ -355,7 +385,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
 
         pm.register("diary_kd", (player) -> {
             PlayerStats stats = getStats(player.getUniqueId());
-            return String.format("%.2f", stats.kd);
+            return String.format("%.2f", stats.getKd());
         });
     }
 
