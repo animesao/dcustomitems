@@ -94,19 +94,37 @@ jobs:
 
     - name: Generate release notes
       run: |
-        PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        VERSION="${{ env.VERSION }}"
+        CHANGELOG=CHANGELOG.md
 
-        echo "## 🚀 DC-CustomItems v${{ env.VERSION }}" > notes.md
+        # Пытаемся извлечь секцию "## v<VERSION>" из CHANGELOG.md
+        if [ -f "$CHANGELOG" ]; then
+          awk -v ver="v${VERSION}" '
+            index($0, "## " ver) == 1 { found=1; next }
+            found && /^## / { exit }
+            found { print }
+          ' "$CHANGELOG" > changelog-section.txt
+        else
+          : > changelog-section.txt
+        fi
+
+        echo "## 🚀 DC-CustomItems v${VERSION}" > notes.md
         echo "" >> notes.md
 
-        if [ -n "$PREV_TAG" ]; then
-          echo "### 📝 What's Changed since $PREV_TAG" >> notes.md
-          echo "" >> notes.md
-          git log --oneline ${PREV_TAG}..HEAD --pretty=format:"- %s" >> notes.md
+        if [ -s changelog-section.txt ]; then
+          cat changelog-section.txt >> notes.md
         else
-          echo "### 📝 Initial Release" >> notes.md
-          echo "" >> notes.md
-          git log --oneline -20 --pretty=format:"- %s" >> notes.md
+          # Фолбэк: git log от предыдущего тега
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            echo "### 📝 What's Changed since $PREV_TAG" >> notes.md
+            echo "" >> notes.md
+            git log --oneline ${PREV_TAG}..HEAD --pretty=format:"- %s" >> notes.md
+          else
+            echo "### 📝 Initial Release" >> notes.md
+            echo "" >> notes.md
+            git log --oneline -20 --pretty=format:"- %s" >> notes.md
+          fi
         fi
 
         echo "" >> notes.md
@@ -114,7 +132,7 @@ jobs:
         echo "---" >> notes.md
         echo "" >> notes.md
         echo "### 📦 Installation" >> notes.md
-        echo "1. Download \`DC-CustomItems-${{ env.VERSION }}.jar\` from Assets" >> notes.md
+        echo "1. Download \`DC-CustomItems-${VERSION}.jar\` from Assets" >> notes.md
         echo "2. Place in your server's \`plugins/\` folder" >> notes.md
         echo "3. Restart the server" >> notes.md
         echo "" >> notes.md
