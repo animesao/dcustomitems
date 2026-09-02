@@ -51,6 +51,19 @@ public class RoyalHelmet extends AbstractCustomItem {
     public String getType() { return "ARMOR"; }
 
     @Override
+    public java.util.List<me.dcplugin.dcustomitems.api.RecipeDef> getRecipes() {
+        // Рецепт попадает и в обычный верстак, и в GUI-крафт (/craft).
+        // Ингредиенты: материал (NETHERITE_INGOT) или ID другого кастомного
+        // предмета — YAML или Java (например "vampire-blade").
+        java.util.Map<Character, String> keys = new java.util.HashMap<>();
+        keys.put('N', "NETHERITE_INGOT");
+        return java.util.List.of(
+            me.dcplugin.dcustomitems.api.RecipeDef.shaped(
+                java.util.List.of("NNN", "N N"), keys)
+        );
+    }
+
+    @Override
     public long getPeriodicInterval() { return 60; } // Каждые 3 секунды
 
     @Override
@@ -80,8 +93,8 @@ public class RoyalHelmet extends AbstractCustomItem {
         double reflected = event.getDamage() * 0.3;
         event.setDamage(event.getDamage() * 0.7);
         
-        if (event.getDamager() instanceof Player) {
-            Player attacker = (Player) event.getDamager();
+        if (event.getDamageSource().getCausingEntity() instanceof Player) {
+            Player attacker = (Player) event.getDamageSource().getCausingEntity();
             attacker.damage(reflected);
             ItemAPI.message(attacker, "&6👑 Урон отражён!");
         }

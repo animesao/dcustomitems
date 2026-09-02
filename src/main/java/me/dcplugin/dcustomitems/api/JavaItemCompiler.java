@@ -295,6 +295,9 @@ public class JavaItemCompiler {
             case MODULE:
                 result.modules.add(fullClassName);
                 break;
+            case UTILITY:
+                // Компилируется, но не регистрируется (messages.java и т.п.)
+                break;
         }
     }
 
@@ -308,11 +311,13 @@ public class JavaItemCompiler {
     }
 
     private ClassType detectClassType(String sourceCode) {
+        // Порядок важен: не-утилитные файлы могут упоминать имена других типов
         if (sourceCode.contains("extends Module")) return ClassType.MODULE;
-        if (sourceCode.contains("extends AbstractCustomItem")) return ClassType.ITEM;
         if (sourceCode.contains("extends CustomCommand")) return ClassType.COMMAND;
         if (sourceCode.contains("extends CustomPlaceholder")) return ClassType.PLACEHOLDER;
-        return ClassType.ITEM;
+        if (sourceCode.contains("extends AbstractCustomItem")) return ClassType.ITEM;
+        // Утилиты (например messages.java) компилируются, но не регистрируются
+        return ClassType.UTILITY;
     }
 
     private String replaceClassNames(String sourceCode) {
@@ -480,8 +485,19 @@ public class JavaItemCompiler {
             classpath.append("plugins/DC-CustomItems.jar");
         }
 
-        String[] serverJarPaths = {"server.jar", "paper.jar", "../server.jar", "../paper.jar"};
-        for (String path : serverJarPaths) {
+        // Серверный jar: Paper/Spigot/Folia/Purpur и т.д. Ищем в корне сервера
+        // (plugins/..), в текущей папке и по относительным путям.
+        File serverRoot = plugin.getDataFolder().getParentFile() != null
+                ? plugin.getDataFolder().getParentFile().getParentFile() : null;
+        List<String> candidates = new ArrayList<>();
+        for (String name : new String[]{"server.jar", "paper.jar", "spigot.jar", "purpur.jar", "folia.jar", "paperclip.jar"}) {
+            candidates.add(name);
+            candidates.add("../" + name);
+            if (serverRoot != null) {
+                candidates.add(new File(serverRoot, name).getAbsolutePath());
+            }
+        }
+        for (String path : candidates) {
             File serverJar = new File(path);
             if (serverJar.exists()) {
                 classpath.append(File.pathSeparator).append(serverJar.getAbsolutePath());
@@ -495,6 +511,22 @@ public class JavaItemCompiler {
             if (libsDir.exists() && libsDir.isDirectory()) {
                 addJarsFromClassDir(libsDir, classpath);
             }
+        }
+
+        // Папка plugins/DC-CustomItems/libs/ — любые сторонние библиотеки
+        // (jars), которые нужны вашим Java-модулям. Кладёшь jar туда —
+        // компилятор подхватит его на следующем /ci reload.
+        File dataLibsDir = new File(plugin.getDataFolder(), "libs");
+        if (dataLibsDir.exists() && dataLibsDir.isDirectory()) {
+            addJarsFromClassDir(dataLibsDir, classpath);
+        }
+
+        // Jars установленных плагинов (VaultAPI, PlaceholderAPI, DeluxeMenus и т.д.).
+        // Даёт модулям компилироваться против API других плагинов. Если нужного
+        // плагина нет — скомпилируется только его модуль и ошибка ограничится им.
+        File pluginsDir = plugin.getDataFolder().getParentFile(); // .../plugins
+        if (pluginsDir != null && pluginsDir.exists() && pluginsDir.isDirectory()) {
+            addJarsFromClassDir(pluginsDir, classpath);
         }
 
         classpath.append(File.pathSeparator).append(compiledDir.toString());
@@ -606,7 +638,7 @@ public class JavaItemCompiler {
 
     // ===== КЛАССЫ =====
 
-    public enum ClassType { ITEM, COMMAND, PLACEHOLDER, MODULE }
+    public enum ClassType { ITEM, COMMAND, PLACEHOLDER, MODULE, UTILITY }
 
     public static class CompileResult {
         public int compiled = 0;

@@ -89,7 +89,7 @@ public class ShadowDashblade extends AbstractCustomItem {
             lastRegen.put(uuid, System.currentTimeMillis());
 
             if (charges.get(uuid) < 3) {
-                player.sendActionBar(ChatColor.LIGHT_PURPLE + "⚡ Заряд регенерирован: " + charges.get(uuid) + "/3");
+                sendActionbar(player, ChatColor.LIGHT_PURPLE + "⚡ Заряд регенерирован: " + charges.get(uuid) + "/3");
             }
         }
     }
@@ -115,7 +115,7 @@ public class ShadowDashblade extends AbstractCustomItem {
         performDash(player, player.getLocation().getDirection().multiply(15), true);
 
         // Уведомление
-        player.sendActionBar(ChatColor.LIGHT_PURPLE + "⚡ Заряды: " + charges.get(uuid) + "/3");
+        sendActionbar(player, ChatColor.LIGHT_PURPLE + "⚡ Заряды: " + charges.get(uuid) + "/3");
     }
 
     /**
@@ -133,14 +133,11 @@ public class ShadowDashblade extends AbstractCustomItem {
         }
 
         // Ищем цель в радиусе 20 блоков
-        RayTraceResult rayTrace = player.getWorld().rayTrace(
+        RayTraceResult rayTrace = player.getWorld().rayTraceEntities(
             player.getLocation().add(0, player.getEyeHeight(), 0),
             player.getLocation().getDirection(),
             20,
-            RayTraceResult.ShapeType.ENTITY,
-            false,
-            false,
-            null,
+            1.0,
             entity -> entity instanceof LivingEntity && entity != player
         );
 
@@ -158,23 +155,30 @@ public class ShadowDashblade extends AbstractCustomItem {
                 target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, 1, 0), 30);
             }
 
-            player.sendActionBar(ChatColor.LIGHT_PURPLE + "⚡ Заряды: " + charges.get(uuid) + "/3");
+            sendActionbar(player, ChatColor.LIGHT_PURPLE + "⚡ Заряды: " + charges.get(uuid) + "/3");
         } else {
             // Обычный рывок вперёд если нет цели
             charges.put(uuid, currentCharges - 1);
             performDash(player, player.getLocation().getDirection().multiply(10), true);
-            player.sendActionBar(ChatColor.LIGHT_PURPLE + "⚡ Заряды: " + charges.get(uuid) + "/3");
+            sendActionbar(player, ChatColor.LIGHT_PURPLE + "⚡ Заряды: " + charges.get(uuid) + "/3");
         }
     }
 
     /**
      * Рывок вперёд с уроном
      */
-    private void performDash(Player player, Vector direction, boolean damageEntities) {
+    private void sendActionbar(Player player, String message) {
+        player.spigot().sendMessage(
+            net.md_5.bungee.api.ChatMessageType.ACTION_BAR,
+            net.md_5.bungee.api.chat.TextComponent.fromLegacyText(message)
+        );
+    }
+
+    private void performDash(Player player, org.bukkit.util.Vector direction, boolean damageEntities) {
         Location startLoc = player.getLocation().clone();
 
         // Эффекты перед рывком
-        player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().add(0, 1, 0), 50);
+        player.getWorld().spawnParticle(Particle.LARGE_SMOKE, player.getLocation().add(0, 1, 0), 50);
         player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation().add(0, 1, 0), 30);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.5f);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_BREATH, 1f, 2f);
@@ -185,7 +189,7 @@ public class ShadowDashblade extends AbstractCustomItem {
         player.teleport(targetLoc);
 
         // Эффекты после рывка
-        player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().add(0, 1, 0), 50);
+        player.getWorld().spawnParticle(Particle.LARGE_SMOKE, player.getLocation().add(0, 1, 0), 50);
         player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation().add(0, 1, 0), 30);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
 
@@ -214,7 +218,7 @@ public class ShadowDashblade extends AbstractCustomItem {
         Location startLoc = player.getLocation().clone();
 
         // Эффекты перед рывком
-        player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().add(0, 1, 0), 50);
+        player.getWorld().spawnParticle(Particle.LARGE_SMOKE, player.getLocation().add(0, 1, 0), 50);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.5f);
 
         // Быстрая телепортация (через scheduler для анимации)
@@ -222,7 +226,7 @@ public class ShadowDashblade extends AbstractCustomItem {
             Bukkit.getPluginManager().getPlugin("DC-CustomItems"),
             () -> {
                 player.teleport(target.add(0, 0, 0));
-                player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().add(0, 1, 0), 50);
+                player.getWorld().spawnParticle(Particle.LARGE_SMOKE, player.getLocation().add(0, 1, 0), 50);
                 player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation().add(0, 1, 0), 30);
                 player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
 
@@ -244,22 +248,22 @@ public class ShadowDashblade extends AbstractCustomItem {
         player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 60, 0, false, false));
 
         // Частицы
-        player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().add(0, 1, 0), 30);
+        player.getWorld().spawnParticle(Particle.LARGE_SMOKE, player.getLocation().add(0, 1, 0), 30);
     }
 
     /**
      * Создаёт теневые остатки между начальной и конечной точками
      */
     private void createShadowTrail(Location start, Location end) {
-        Vector direction = end.toVector().subtract(start.toVector());
+        org.bukkit.util.Vector direction = end.toVector().subtract(start.toVector());
         double distance = direction.length();
-        Vector step = direction.normalize().multiply(0.5);
+        org.bukkit.util.Vector step = direction.normalize().multiply(0.5);
 
         Location current = start.clone();
         for (double i = 0; i < distance; i += 0.5) {
             current.add(step);
             start.getWorld().spawnParticle(
-                Particle.SMOKE_LARGE, 
+                Particle.LARGE_SMOKE, 
                 current, 
                 2, 
                 0.1, 0.1, 0.1, 

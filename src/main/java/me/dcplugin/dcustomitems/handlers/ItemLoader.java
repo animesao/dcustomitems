@@ -236,6 +236,13 @@ public class ItemLoader {
             List<String> trailParticles = section.getStringList("trail-particles");
             int trailParticleInterval = section.getInt("trail-particle-interval", 5);
 
+            // === Recipes (shaped / shapeless / furnace) ===
+            Map<String, Object> recipes = null;
+            ConfigurationSection recipesSection = section.getConfigurationSection("recipes");
+            if (recipesSection != null) {
+                recipes = toPlainMap(recipesSection);
+            }
+
             // === Build CustomItem ===
             CustomItem customItem = CustomItem.builder(itemId, itemStack)
                     .type(type)
@@ -271,6 +278,7 @@ public class ItemLoader {
                     .allowedWorlds(allowedWorlds)
                     .disabledWorlds(disabledWorlds)
                     .itemModelVariant(itemModelVariant)
+                    .recipes(recipes)
                     .build();
 
             // Parse effects
@@ -409,6 +417,34 @@ public class ItemLoader {
             }
         }
         return triggerActions;
+    }
+
+    // ===== Plain value conversion (recipes) =====
+
+    /**
+     * Переводит секцию конфига в обычные Map/List, чтобы модель предмета
+     * не зависела от Bukkit ConfigurationSection.
+     */
+    private Map<String, Object> toPlainMap(ConfigurationSection section) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        for (String key : section.getKeys(false)) {
+            map.put(key, toPlainValue(section.get(key)));
+        }
+        return map;
+    }
+
+    private Object toPlainValue(Object value) {
+        if (value instanceof ConfigurationSection) {
+            return toPlainMap((ConfigurationSection) value);
+        }
+        if (value instanceof List) {
+            List<Object> list = new ArrayList<>();
+            for (Object o : (List<?>) value) {
+                list.add(toPlainValue(o));
+            }
+            return list;
+        }
+        return value;
     }
 
     private String validateType(String type, String itemId) {

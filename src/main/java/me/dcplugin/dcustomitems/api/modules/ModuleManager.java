@@ -95,30 +95,6 @@ public class ModuleManager {
     }
 
     /**
-     * Загрузить Java модуль
-     */
-    private void loadJavaModule(File folder, String moduleId, File[] javaFiles) {
-        // Компилируем Java файлы
-        for (File javaFile : javaFiles) {
-            try {
-                // Читаем содержимое
-                String source = new String(java.nio.file.Files.readAllBytes(javaFile.toPath()));
-                
-                // Проверяем тип модуля
-                if (source.contains("extends Module")) {
-                    plugin.getLogger().info("[Modules] Found Java module: " + javaFile.getName());
-                    // TODO: Скомпилировать и загрузить модуль
-                } else if (source.contains("extends CustomGUI")) {
-                    plugin.getLogger().info("[Modules] Found Java GUI: " + javaFile.getName());
-                    // TODO: Скомпилировать и загрузить GUI
-                }
-            } catch (Exception e) {
-                plugin.getLogger().warning("[Modules] Error reading: " + javaFile.getName());
-            }
-        }
-    }
-
-    /**
      * Загрузить простой YAML модуль
      */
     private void loadSimpleModule(File folder, String moduleId, YamlConfiguration config) {

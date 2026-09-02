@@ -6,7 +6,7 @@
 
     <groupId>me.dcplugin</groupId>
     <artifactId>dcustomitems</artifactId>
-    <version>1.323.0</version>
+    <version>1.324.0</version>
     <packaging>jar</packaging>
 
     <name>DC-CustomItems</name>
@@ -71,6 +71,13 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>8.4.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -91,6 +98,12 @@
                     <source>17</source>
                     <target>17</target>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
             </plugin>
 
             <plugin>

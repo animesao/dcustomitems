@@ -29,6 +29,7 @@ public class CustomItemHandler {
     private final ItemLoader itemLoader;
     private final LoreManager loreManager;
     private final UsesManager usesManager;
+    private final RecipeManager recipeManager;
 
     public CustomItemHandler(Main plugin) {
         this.plugin = plugin;
@@ -40,6 +41,7 @@ public class CustomItemHandler {
         this.itemLoader = new ItemLoader(plugin, customItemKey, itemModelKey);
         this.loreManager = new LoreManager();
         this.usesManager = new UsesManager(itemUsesKey);
+        this.recipeManager = new RecipeManager(plugin);
 
         this.acquiredTimeKey = new NamespacedKey(plugin, "acquired_time");
     }
@@ -48,12 +50,29 @@ public class CustomItemHandler {
 
     public void loadCustomItems() {
         customItems.clear();
+        recipeManager.clear();
         customItems.putAll(itemLoader.loadAll());
+
+        // Регистрируем крафт-рецепты после полной загрузки предметов:
+        // ингредиенты могут ссылаться на другие кастомные предметы.
+        for (CustomItem item : customItems.values()) {
+            if (item.hasRecipes()) {
+                recipeManager.register(item);
+            }
+        }
+
         plugin.getLogger().info("Загружено " + customItems.size() + " кастомных предметов");
     }
 
     public void reloadItems() {
         loadCustomItems();
+    }
+
+    /**
+     * Менеджер крафт-рецептов (recipes секция в YAML предмета).
+     */
+    public RecipeManager getRecipeManager() {
+        return recipeManager;
     }
 
     // ===== Item lookup =====
@@ -137,6 +156,36 @@ public class CustomItemHandler {
 
     public void setItemUses(ItemStack itemStack, int uses) {
         usesManager.setUses(itemStack, uses);
+    }
+
+    // ===== Uses без YAML-модели (для Java API-предметов) =====
+
+    /**
+     * Сырой счётчик использований из PDC (-1, если не установлен).
+     * Не зависит от YAML-модели — работает и для AbstractCustomItem.
+     */
+    public int getStoredUses(ItemStack itemStack) {
+        return usesManager.getUses(itemStack);
+    }
+
+    /**
+     * Записать счётчик использований в PDC (для Java API-предметов).
+     */
+    public void setStoredUses(ItemStack itemStack, int uses) {
+        usesManager.setUses(itemStack, uses);
+    }
+
+    /**
+     * Уменьшить счётчик использований на 1 без привязки к YAML-модели.
+     * Возвращает новое значение (или -1, если счётчик не был установлен).
+     */
+    public int decrementStoredUses(ItemStack itemStack) {
+        if (itemStack == null || itemStack.getType() == Material.AIR) return -1;
+        int uses = usesManager.getUses(itemStack);
+        if (uses == -1) return -1;
+        uses = Math.max(0, uses - 1);
+        usesManager.setUses(itemStack, uses);
+        return uses;
     }
 
     public void decrementItemUses(ItemStack itemStack) {

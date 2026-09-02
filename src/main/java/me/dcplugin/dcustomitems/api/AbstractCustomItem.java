@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
+
 /**
  * Абстрактный базовый класс для создания кастомных предметов на Java.
  *
@@ -113,6 +114,7 @@ public abstract class AbstractCustomItem {
 
     /**
      * Разрешение для использования (null = без ограничений).
+     * Проверяется при кликах (ЛКМ/ПКМ) — как у YAML-предметов.
      */
     public String getPermission() {
         return null;
@@ -137,6 +139,73 @@ public abstract class AbstractCustomItem {
      */
     public String getActivationSlot() {
         return "HAND";
+    }
+
+    // ===== МЕХАНИКИ, КАК У YAML-ПРЕДМЕТОВ =====
+
+    /**
+     * Максимум использований предмета. 0 = безлимит.
+     * Счётчик хранится в PDC (как у YAML-предметов) и списывается при кликах.
+     * Когда использования заканчиваются — оставшийся стек удаляется.
+     */
+    public int getMaxUses() {
+        return 0;
+    }
+
+    /**
+     * Время жизни предмета в секундах с момента выдачи. 0 = вечный.
+     * Проверяется глобальным чекером: по истечении предмет исчезает.
+     */
+    public long getDuration() {
+        return 0;
+    }
+
+    /**
+     * Разрешён ли предмет в мире. Глобальный чекер удаляет предметы
+     * в запрещённых мирах (как у YAML-предметов).
+     */
+    public boolean isAllowedInWorld(String worldName) {
+        return true;
+    }
+
+    /**
+     * Сообщение при исчерпании использований (null = стандартное).
+     */
+    public String getUsesDepletedMessage() {
+        return null;
+    }
+
+    /**
+     * Сообщение при истечении срока жизни (null = стандартное).
+     */
+    public String getDurationExpiredMessage() {
+        return null;
+    }
+
+    /**
+     * Сообщение при запрете предмета в мире (null = стандартное).
+     */
+    public String getWorldBlockedMessage() {
+        return null;
+    }
+
+    /**
+     * Крафт-рецепты этого предмета (shaped / shapeless / furnace).
+     *
+     * Рецепты попадают и в обычный верстак, и в GUI-крафт (/craft).
+     * Ингредиенты: имя материала ("DIAMOND") или ID другого кастомного
+     * предмета ("vampire-blade") — YAML или Java, оба распознаются.
+     *
+     * <pre>
+     * {@literal @}Override
+     * public List&lt;RecipeDef&gt; getRecipes() {
+     *     return List.of(RecipeDef.shaped(List.of(" A ", "ABA", " A "),
+     *         Map.of('A', "DIAMOND", 'B', "STICK")));
+     * }
+     * </pre>
+     */
+    public List<RecipeDef> getRecipes() {
+        return List.of();
     }
 
     // ===== ДЕЙСТВИЯ =====

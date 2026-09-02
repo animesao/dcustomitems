@@ -34,12 +34,15 @@ plugins/DC-CustomItems/
 
 ## Команды
 
-| Команда | Описание |
-|---------|----------|
-| `/customitems list` | Список всех предметов |
-| `/customitems give <id> [игрок]` | Выдать предмет |
-| `/customitems reload` | Перезагрузить конфиг |
-| `/customitems update` | Проверить обновления |
+Ядро содержит только `/ci reload`. Всё остальное — модули из папки `items/` (удали файл/папку — команда исчезнет):
+
+| Команда | Модуль | Описание |
+|---------|--------|----------|
+| `/ci reload` | ядро | Перезагрузка плагина и всех модулей |
+| `/give <id\|материал> [игрок] [кол-во]` | `give-command.java` | Выдача кастомных и ванильных предметов |
+| `/buy` / `/sell` | `vault/` | Покупка/продажа (Vault) |
+| `/menu` / `/shop` / `/kits` | `deluxemenux/` | GUI-меню |
+| `/fly`, `/bc` | `fly-command.java`, `bc-command.java` | Примеры модульных команд |
 
 ---
 
@@ -360,3 +363,146 @@ legendary-sword:
     - 'on_kill:message:&aИсцеление!'
     - 'on_jump:effect:SPEED:3:2'
 ```
+
+---
+
+## Крафт-рецепты (в YAML предмета)
+
+Рецепты задаются секцией `recipes` прямо в предмете. Ингредиент — материал (`DIAMOND`) или id другого кастомного предмета. Результат — сам предмет со всеми механиками. После изменения — `/ci reload`.
+
+```yaml
+my-crafted-sword:
+  type: TOOL
+  activation-slot: HAND
+  item:
+    type: DIAMOND_SWORD
+    title: '&bКрафтовый Меч'
+
+  recipes:
+    # Крафт по форме: пробел = пустая ячейка
+    shaped:
+      - pattern:
+          - " A "
+          - "ABA"
+          - " A "
+        keys:
+          A: DIAMOND
+          B: STICK
+        amount: 1
+
+    # Крафт без формы (любое расположение)
+    shapeless:
+      - ingredients:
+          - DIAMOND
+          - DIAMOND
+          - my-crafted-sword   # другой кастомный предмет как ингредиент
+
+    # Переплавка в печи
+    furnace:
+      - ingredient: IRON_INGOT
+        experience: 0.7
+        cooking-time: 200      # тики (200 = 10 сек)
+```
+
+Каждый список (`shaped`, `shapeless`, `furnace`) — список рецептов: можно указать несколько. Образец — `items/EXAMPLE-crafting.yml`.
+
+---
+
+## Bukkit-события для сторонних плагинов
+
+Плагин публикует свои события, чтобы другие плагины могли реагировать на кастомные предметы:
+
+| Событие | Когда | Отменяемо |
+|---------|-------|-----------|
+| `me.dcplugin.dcustomitems.events.CustomItemEquipEvent` | Предмет экипирован/снят (до эффектов/сообщений или хука `onEquip`/`onUnequip`) | Да |
+| `me.dcplugin.dcustomitems.events.CustomItemUseEvent` | ЛКМ/ПКМ с предметом (до действий клика или хука `onRightClick`/`onLeftClick`) | Да |
+| `me.dcplugin.dcustomitems.events.CustomItemCraftEvent` | Крафт — в обычном верстаке и в GUI `/craft` (до списания ингредиентов; можно заменить результат через `setResult`) | Да |
+| `me.dcplugin.dcustomitems.events.CustomItemDamageDealtEvent` | Урон нанесён предметом (до триггеров YAML/хука `onDamageDealt`) | Да |
+| `me.dcplugin.dcustomitems.events.CustomItemDamageTakenEvent` | Урон получен с предметом (до триггеров/хука `onDamageTaken`) | Да |
+| `me.dcplugin.dcustomitems.events.CustomItemKillEvent` | Игрок убил игрока предметом (до `on_kill`/`onKill`) | Да |
+| `me.dcplugin.dcustomitems.events.CustomItemDeathEvent` | Игрок умер с предметом (до `on_death`/`onDeath`) | Да |
+| `me.dcplugin.dcustomitems.events.CustomItemPeriodicEvent` | Периодический эффект Java-предмета (до каждого вызова `onPeriodic`) | Да |
+
+События срабатывают для YAML-предметов и для Java API-предметов (`AbstractCustomItem`):
+
+```java
+import me.dcplugin.dcustomitems.events.CustomItemEquipEvent;
+import me.dcplugin.dcustomitems.events.CustomItemUseEvent;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+
+public class MyListener implements Listener {
+
+    @EventHandler
+    public void onEquip(CustomItemEquipEvent event) {
+        // event.isEquip() / isUnequip(), event.getPlayer()
+        // event.getCustomItem() — YAML-модель (null для Java-предмета)
+        // event.getJavaItem()  — AbstractCustomItem (null для YAML-предмета)
+        // event.getItemId()    — общий ID в обоих случаях
+    }
+
+    @EventHandler
+    public void onUse(CustomItemUseEvent event) {
+        if (event.isRightClick() && "vampire-blade".equals(event.getItemId())) {
+            event.setCancelled(true); // запретить использование
+        }
+    }
+}
+```
+
+Отмена события подавляет только стандартную реакцию предмета (триггеры/хук). Сам Bukkit-эффект, например урон, меняется через `getBukkitEvent()`/`setDamage()` на урон-событиях; отмена `CustomItemUseEvent` полностью игнорирует клик.
+
+---
+
+## GUI-крафт: модуль `customcraft/`
+
+Рецепты из секции `recipes` также можно крафтить через **виртуальный верстак** — модуль `items/customcraft/` (`/craft`). Модуль полностью удаляем: удали папку — команды и GUI не будет (ванильные рецепты `RecipeManager` останутся).
+
+Как это работает:
+
+- `/craft` открывает сундук 27 слотов: слева сетка 3×3, справа слот результата.
+- Пока сетка совпадает с каким-либо рецептом (shaped/shapeless любого кастомного предмета) — в слоте результата появляется предпросмотр.
+- Клик по результату забирает ингредиенты из сетки и выдаёт готовый предмет на курсор. Перед списанием ингредиентов стреляет `CustomItemCraftEvent`: отмена = крафт не выполняется, `setResult(...)` = выдать изменённый предмет.
+- При закрытии окна предметы из сетки возвращаются в инвентарь (настраивается `return-items-on-close`).
+
+### Идентичность предметов — PDC/NBT, а не название
+
+| Что | Как матчится |
+|---|---|
+| Кастомный предмет как ингредиент | по PDC-ключу `dcustomitems:<id>` (не по display name/lore) |
+| Предмет другого плагина как ингредиент | по материалу (его NBT не трогается) |
+| Готовый предмет | проходит инициализацию: uses/duration/lore через `ItemHandler` |
+
+Это позволяет «стабильным» рецептам: предмет может быть ингредиентом самого себя, других кастомных предметов, а ингредиенты из чужих плагинов не ломаются и не теряют данных.
+
+### Java API-предметы в `/craft`
+
+Java-предметы (`AbstractCustomItem`) объявляют рецепты методом `getRecipes()` (класс `RecipeDef`, в `me.dcplugin.dcustomitems.api`) — та же семантика, что и YAML-секция `recipes`. Их рецепты:
+
+- регистрируются в **обычный верстак** автоматически (через `RecipeManager`, при `/ci reload` пересоздаются);
+- попадают в **GUI `/craft`** наравне с YAML-рецептами;
+- результат создаётся через `createItemStack()` (Java) и, как и YAML-результат, матчится/потребляется по PDC-идентичности ингредиентов.
+
+```java
+@Override
+public List<RecipeDef> getRecipes() {
+    Map<Character, String> keys = Map.of('N', "NETHERITE_INGOT", 'B', "vampire-blade");
+    return List.of(RecipeDef.shaped(List.of("NNN", "NBN"), keys));
+}
+```
+
+### Пример предмета, который крафтится и участвует в крафте
+
+```yaml
+my-crafted-sword:
+  type: TOOL
+  item: { type: DIAMOND_SWORD, title: '&bКрафтовый Меч' }
+  recipes:
+    shaped:
+      - pattern: [" A ", "ABA", " A "]
+        keys: { A: DIAMOND, B: STICK }
+    shapeless:
+      - ingredients: [ DIAMOND, DIAMOND, my-crafted-sword ]   # сам себя
+```
+
+Права: `dci.craft` (в `items/customcraft/config.yml`). `furnace`-рецепты в GUI-сетке не отображаются — они работают в обычной печи.

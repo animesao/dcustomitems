@@ -1,6 +1,6 @@
 # DC-CustomItems — полная документация
 
-**Версия документации:** 1.321.1
+**Версия документации:** 1.324.0
 **Minecraft:** Paper/Spigot 1.21.x
 **Java для сервера:** Java 21 рекомендуется для Paper 1.21.11; Java 17+ требуется для сборки проекта.
 
@@ -22,7 +22,7 @@ DC-CustomItems позволяет создавать кастомные пред
 8. [Оптимизация и решение проблем](TROUBLESHOOTING_RU.md)
 9. [Resource pack и модели](RESOURCE_PACK_RU.md)
 
-Если вы хотите сразу посмотреть рабочие примеры, откройте `src/main/resources/items/` в репозитории. Файлы с префиксом `EXAMPLE-` являются образцами и не должны автоматически загружаться.
+Если вы хотите сразу посмотреть рабочие примеры, откройте `src/main/resources/items/` в репозитории. Файлы с префиксом `EXAMPLE-`, папки `EXAMPLES/` и `_template/` являются образцами/справочниками и не загружаются автоматически — их нужно вручную скопировать в `items/`, чтобы включить.
 
 ---
 
@@ -260,6 +260,49 @@ triggers:
 
 Для Java API доступны отдельные методы `onMove`, `onBlockBreak`, `onSwapHand` и другие методы `AbstractCustomItem`; это другой путь обработки, не тот же самый, что YAML `trigger-actions`. `on_move` и `onMove` вызываются часто и могут нагрузить сервер.
 
+### Bukkit-события для сторонних плагинов
+
+Плагин публикует собственные Bukkit-события, чтобы другие плагины могли реагировать на кастомные предметы:
+
+| Событие | Когда | Можно отменить |
+|---|---|---|
+| `CustomItemEquipEvent` | Предмет экипирован или снят (до эффектов/сообщений или хука `onEquip`/`onUnequip`) | Да |
+| `CustomItemUseEvent` | ЛКМ/ПКМ с предметом (до действий клика или хука `onRightClick`/`onLeftClick`) | Да |
+| `CustomItemCraftEvent` | Крафт — и в обычном верстаке, и в GUI `/craft` (до списания ингредиентов; результат можно заменить через `setResult`) | Да |
+| `CustomItemDamageDealtEvent` | Урон нанесён предметом (до триггеров/хука `onDamageDealt`) | Да |
+| `CustomItemDamageTakenEvent` | Урон получен с предметом (до триггеров/хука `onDamageTaken`) | Да |
+| `CustomItemKillEvent` | Игрок убил игрока предметом (до `on_kill`/`onKill`) | Да |
+| `CustomItemDeathEvent` | Игрок умер с предметом (до `on_death`/`onDeath`) | Да |
+| `CustomItemPeriodicEvent` | Периодический эффект Java-предмета (до каждого `onPeriodic`) | Да |
+
+События срабатывают и для YAML-предметов, и для Java API-предметов (`AbstractCustomItem`):
+
+```java
+import me.dcplugin.dcustomitems.events.CustomItemUseEvent;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+
+public class MyListener implements Listener {
+    @EventHandler
+    public void onUse(CustomItemUseEvent event) {
+        if ("vampire-blade".equals(event.getItemId())) {
+            event.setCancelled(true); // запретить использование
+        }
+    }
+
+    @EventHandler
+    public void onEquip(CustomItemEquipEvent event) {
+        if (event.getJavaItem() != null) {        // Java API-предмет
+            String id = event.getJavaItem().getId();
+        } else if (event.getCustomItem() != null) { // YAML-предмет
+            String id = event.getCustomItem().getId();
+        }
+    }
+}
+```
+
+Регистрация стандартная: `getServer().getPluginManager().registerEvents(new MyListener(), plugin)`. Отмена события подавляет только стандартную реакцию предмета (триггеры/хук); сам Bukkit-эффект (урон, смерть) отменяется через `getBukkitEvent()`/`setDamage()` для урон-событий.
+
 ---
 
 ## 7. Действия YAML
@@ -270,9 +313,9 @@ triggers:
 событие:действие:параметр1:параметр2
 ```
 
-Текущий `TriggerListener` выполняет базовые действия: `message`, `effect`, `particle`, `sound`, `heal`, `teleport`, `damage`, `fireworks`, `title`, `actionbar`, `exp`, `give`, `remove`, `announce`, `sethealth`, `setfood`, `vanish`, `glow`, `stun`, `knockback`, `launch`, а также варианты для мобов/игроков. Действие должно быть проверено на тестовом сервере.
+И `PlayerListener`, и `TriggerListener` выполняют ВСЕ действия через единый `ActionParser`. Доступны: `message`, `title`, `actionbar`, `announce`/`broadcast`, `effect`, `heal`, `damage` (+ `damage_nearby`/`damage_mobs`/`damage_players`), `heal_nearby`, `effect_nearby` (+ `_mobs`/`_players`), `teleport`, `teleport_relative`, `give` (материал или ID кастомного предмета), `remove`, `exp`, `lightning`, `lightning_forward`, `particle(s)`, `sound`, `fireworks`, `break`, `sethealth`, `setfood`, `set_xp`, `vanish`, `glow`, `speed`, `flight`, `knockback`/`launch`/`stun` (+ `_mobs`/`_players`), `command` (от консоли), `console_command`, а также расширенные: `particles_custom`, `sound_sequence`, `title_sequence`, `command_sequence`, `teleport_sequence`, `effect_sequence`, `damage_custom`, `heal_custom`.
 
-`ActionParser` содержит дополнительные действия (`console_command`, `particles_custom`, sequence и другие), но текущий путь YAML `trigger-actions` не вызывает `ActionParser.execute()` автоматически. Не переносите расширенные примеры ниже в `trigger-actions` без проверки: они могут не выполниться.
+Дефисы и подчёркивания эквивалентны (`damage-mobs` == `damage_mobs`). Действие нужно проверять на тестовом сервере.
 
 ### Сообщения и интерфейс
 
@@ -360,11 +403,9 @@ triggers:
 - 'on_click_right:command:spawn'
 ```
 
-`console_command`, `sound_sequence`, `effect_sequence`, `command_sequence`, `particles_custom` и другие расширенные действия реализованы в отдельном `ActionParser`, но не вызываются текущим `TriggerListener` автоматически. Используйте их только из собственной Java-механики, которая явно вызывает `ActionParser.execute(player, action)`, либо сначала добавьте и протестируйте соответствующий вызов в исходном коде.
+Все перечисленные выше действия, включая расширенные, работают в YAML (и `trigger-actions`, и `triggers:`), потому что оба слушателя вызывают `ActionParser.execute()`.
 
 Команды из пользовательского YAML могут быть опасными. Не давайте редактировать такие файлы обычным игрокам.
-
-Полный перечень расширенных действий в `README-ACTIONS.md` не означает, что каждое из них доступно в каждом YAML-событии.
 
 Дополнительная таблица действий находится в [README-ACTIONS.md](../src/main/resources/items/README-ACTIONS.md). Это справочный файл для старого и расширенного формата; при конфликте ориентируйтесь на текущую версию обработчика и проверяйте действие на тестовом сервере.
 
@@ -408,6 +449,46 @@ my_item:
 `item-model` используется в современных версиях Minecraft. `custom-model-data` оставлен для совместимости со старыми ресурс-паками. Если указаны оба, приоритет имеет `item-model`.
 
 `max-uses` используется обработчиком ограниченных применений; отображение `%uses%` зависит от конкретного обработчика и должно быть проверено на тестовом предмете.
+
+### Крафт-рецепты (shaped / shapeless / furnace)
+
+Рецепты задаются прямо в YAML предмета. Ингредиентом может быть материал (`DIAMOND`) или другой кастомный предмет по его id. Результат — сам предмет со всеми механиками. После изменения рецептов выполните `/ci reload`.
+
+```yaml
+my-crafted-sword:
+  type: TOOL
+  item:
+    type: DIAMOND_SWORD
+    title: '&bКрафтовый Меч'
+
+  recipes:
+    # Крафт по форме (пробел = пустая ячейка)
+    shaped:
+      - pattern:
+          - " A "
+          - "ABA"
+          - " A "
+        keys:
+          A: DIAMOND
+          B: STICK
+        amount: 1
+
+    # Крафт без формы
+    shapeless:
+      - ingredients: [ DIAMOND, DIAMOND, my-crafted-sword ]
+
+    # Переплавка (200 тиков = 10 сек)
+    furnace:
+      - ingredient: IRON_INGOT
+        experience: 0.7
+        cooking-time: 200
+```
+
+Каждый список (`shaped`, `shapeless`, `furnace`) — это список рецептов, можно добавить несколько. См. также `src/main/resources/items/EXAMPLE-crafting.yml`.
+
+Рецепты можно крафтить и через **GUI-верстак**: модуль `items/customcraft/` добавляет команду `/craft` и окно 3×3 с предпросмотром результата. Ингредиенты матчатся по PDC/NBT: кастомные предметы — по их ID (можно и «сам себя»), предметы других плагинов — по материалу, их данные не повреждаются. Готовый предмет инициализируется (uses/duration). Удали папку `customcraft/` — команда исчезнет.
+
+Java API-предметы объявляют рецепты тем же способом через `getRecipes()` (класс `RecipeDef`) — они попадают и в обычный верстак, и в `/craft`. Пример см. в [JAVA_API_RU.md](JAVA_API_RU.md#-крафт-рецепты-java).
 
 ---
 
@@ -696,13 +777,13 @@ int kills = db.queryInt("SELECT kills FROM player_stats WHERE uuid = ?", uuid);
 
 ## 16. Сообщения
 
-Стандартные строки находятся в `MessagesConfig.java` внутри JAR. При первом запуске плагин создаёт `items/messages.java` как справочный файл-шаблон со списком настроек.
+Стандартные строки находятся в `MessagesConfig.java` внутри JAR. При первом запуске плагин создаёт `items/messages.java` — рабочую копию стандартных сообщений, которую можно править без пересборки.
 
-**Важно для версии 1.320.282:** текущий runtime-компилятор не вызывает метод `load()` автоматически. Поэтому простое редактирование `items/messages.java` не изменяет сообщения плагина после `/ci reload`; этот файл классифицируется как обычный Java-файл и не загружается как конфигурация сообщений. Не удаляйте его, если используете его как шпаргалку.
+**`items/messages.java` — рабочий конфиг сообщений.** Плагин компилирует его вместе с остальными Java-файлами и вызывает статический `load()` при старте и при каждом `/ci reload` — изменения вступают в силу без пересборки JAR.
 
-Чтобы изменить стандартные сообщения в текущей версии, отредактируйте `src/main/java/me/dcplugin/dcustomitems/api/config/MessagesConfig.java` в исходном проекте и пересоберите JAR. Для серверной папки `plugins/DC-CustomItems/items/` это пока не является поддерживаемым способом настройки.
+Файл генерируется автоматически при первом запуске (содержит стандартные значения) и перезаписывает поля `MessagesConfig` (PREFIX, NO_PERMISSION, RELOAD_* и т.д.). Если вы удалили файл — он создастся заново при следующем старте.
 
-Пример изменения в исходном проекте:
+Пример (примерно так выглядит сгенерированный файл):
 
 ```java
 MessagesConfig.PREFIX = "&8[&bМой сервер&8] &r";
@@ -710,7 +791,7 @@ MessagesConfig.CI_GIVE_SELF = MessagesConfig.PREFIX + "&aПолучено: &e{it
 MessagesConfig.NO_PERMISSION = MessagesConfig.PREFIX + "&cНедостаточно прав.";
 ```
 
-Используйте только поля, которые существуют в текущем `MessagesConfig`. После изменения исходников выполните Maven-сборку и установите новый JAR; `/ci reload` применяется к YAML, Java API-файлам и модулям, но не превращает `messages.java` в отдельный загрузчик сообщений.
+Используйте только поля, которые существуют в текущем `MessagesConfig`. Каждый `public static String` из файла можно переопределить внутри `load()`. Если поле удалено в новой версии плагина — компиляция сообщит об этом в консоли (и файл просто не применится, останутся стандартные сообщения).
 
 ---
 

@@ -51,6 +51,8 @@ public class ItemRegistry {
         if (!itemsDir.exists()) itemsDir.mkdirs();
         loadJarFiles(itemsDir);
         loadJavaFiles(itemsDir);
+        registerJavaRecipes();
+        applyRuntimeMessages();
         logStats();
     }
 
@@ -154,6 +156,8 @@ public class ItemRegistry {
         if (!itemsDir.exists()) itemsDir.mkdirs();
         loadJarFiles(itemsDir);
         loadJavaFiles(itemsDir);
+        registerJavaRecipes();
+        applyRuntimeMessages();
 
         for (CustomCommand cmd : registeredCommands.values()) {
             try {
@@ -180,6 +184,40 @@ public class ItemRegistry {
             plugin.getModuleManager().loadAll();
         }
         logStats();
+    }
+
+    /**
+     * Рецепты Java API-предметов (getRecipes() -> RecipeDef) регистрируются
+     * в ванильный крафт. Метод сам чистит старые java-ключи перед добавлением,
+     * поэтому безопасен при повторных reload без перезагрузки YAML.
+     */
+    private void registerJavaRecipes() {
+        try {
+            if (plugin.getItemHandler() != null) {
+                plugin.getItemHandler().getRecipeManager()
+                        .registerJavaItems(registeredItems.values());
+            }
+        } catch (Exception exception) {
+            plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "[API] Error registering recipes for Java items", exception);
+        }
+    }
+
+    /**
+     * items/messages.java теперь РАБОЧИЙ конфиг сообщений: после компиляции
+     * (компилятор переименовывает класс в items.messagesItem) вызываем его
+     * статический load(), который перезаписывает MessagesConfig.*.
+     * Вызывается на старте и при /ci reload.
+     */
+    private void applyRuntimeMessages() {
+        try {
+            Class<?> clazz = compiler.loadClass("items.messagesItem");
+            if (clazz == null) return; // файла нет — встроенные MessagesConfig
+            clazz.getMethod("load").invoke(null);
+            plugin.getLogger().info("[Messages] items/messages.java применён (runtime load())");
+        } catch (java.lang.reflect.InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+            plugin.getLogger().warning("[Messages] items/messages.java не применился: " + e.getMessage());
+        }
     }
 
     private void loadJavaFiles(File itemsDir) {
@@ -218,6 +256,8 @@ public class ItemRegistry {
         Arrays.sort(children, Comparator.comparing(File::getPath));
         for (File child : children) {
             if (child.isDirectory()) {
+                // Справочная папка EXAMPLES/ не компилируется (это образцы)
+                if (child.getName().equalsIgnoreCase("EXAMPLES")) continue;
                 collectJavaFiles(child, files);
             } else if (child.getName().endsWith(".java") && !child.getName().startsWith("EXAMPLE-")) {
                 files.add(child);

@@ -70,9 +70,9 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
         // Регистрируем слушатель
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
-        // Регистрируем команды
-        registerCommand("buy", this);
-        registerCommand("sell", this);
+        // Регистрируем команды (базовый класс сам удалит их при disable)
+        registerDynamicCommand("buy", this);
+        registerDynamicCommand("sell", this);
 
         // Регистрируем плейсхолдеры
         registerPlaceholders();
@@ -122,46 +122,6 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
     }
 
     // ===== COMMANDS =====
-
-    private void registerCommand(String name, CommandExecutor executor) {
-        Command cmd = plugin.getCommand(name);
-        if (cmd != null) {
-            cmd.setExecutor(executor);
-            cmd.setTabCompleter((TabCompleter) executor);
-        } else {
-            // Регистрируем динамически
-            registerDynamicCommand(name, executor);
-        }
-    }
-
-    private void registerDynamicCommand(String name, CommandExecutor executor) {
-        try {
-            org.bukkit.command.CommandMap commandMap = (org.bukkit.command.CommandMap)
-                plugin.getServer().getClass().getMethod("getCommandMap").invoke(plugin.getServer());
-
-            Command command = new Command(name) {
-                @Override
-                public boolean execute(CommandSender sender, String label, String[] args) {
-                    return executor.onCommand(sender, this, label, args);
-                }
-                @Override
-                public java.util.List<String> tabComplete(CommandSender sender, String alias, String[] args) {
-                    if (executor instanceof TabCompleter) {
-                        return ((TabCompleter) executor).onTabComplete(sender, this, alias, args);
-                    }
-                    return java.util.Collections.emptyList();
-                }
-            };
-            command.setPermission("dci." + name);
-            command.setDescription("Vault economy: " + name);
-            command.setUsage("/" + name);
-
-            commandMap.register("dcustomitems", command);
-            plugin.getLogger().info("[Vault] Registered command: /" + name);
-        } catch (Exception e) {
-            plugin.getLogger().warning("[Vault] Failed to register /" + name + ": " + e.getMessage());
-        }
-    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

@@ -37,6 +37,13 @@ public abstract class Module {
     protected final List<String> commands = new ArrayList<>();
     protected final List<String> permissions = new ArrayList<>();
 
+    /**
+     * Динамически зарегистрированные команды модуля (CommandMap).
+     * Удаляются при disable(), чтобы при удалении/перезагрузке модуля
+     * в CommandMap не оставались "мёртвые" команды.
+     */
+    private final List<org.bukkit.command.Command> dynamicCommands = new ArrayList<>();
+
     public Module(Main plugin, String id, File folder) {
         this.plugin = plugin;
         this.id = id;
@@ -84,7 +91,11 @@ public abstract class Module {
     public void disable() {
         if (!enabled) return;
         enabled = false;
-        onDisable();
+        try {
+            onDisable();
+        } finally {
+            unregisterDynamicCommands();
+        }
         plugin.getLogger().info("[Module] Disabled: " + id);
     }
 
@@ -115,6 +126,107 @@ public abstract class Module {
      * Вызывается при выключении модуля
      */
     protected abstract void onDisable();
+
+    // ===== ДИНАМИЧЕСКАЯ РЕГИСТРАЦИЯ КОМАНД =====
+
+    /**
+     * Зарегистрировать команду в CommandMap (право по умолчанию: "dci.<name>").
+     * Команда автоматически удалится при disable() модуля.
+     */
+    protected void registerDynamicCommand(String name, org.bukkit.command.CommandExecutor executor) {
+        registerDynamicCommand(name, executor, "dci." + name.toLowerCase());
+    }
+
+    /**
+     * Зарегистрировать команду с явным правом.
+     */
+    protected void registerDynamicCommand(String name, org.bukkit.command.CommandExecutor executor, String permission) {
+        try {
+            org.bukkit.command.CommandMap commandMap = getCommandMap();
+            if (commandMap == null) return;
+
+            org.bukkit.command.Command command = new org.bukkit.command.Command(name.toLowerCase()) {
+                @Override
+                public boolean execute(org.bukkit.command.CommandSender sender, String label, String[] args) {
+                    return executor.onCommand(sender, this, label, args);
+                }
+
+                @Override
+                public java.util.List<String> tabComplete(org.bukkit.command.CommandSender sender, String alias, String[] args) {
+                    if (executor instanceof org.bukkit.command.TabCompleter) {
+                        return ((org.bukkit.command.TabCompleter) executor).onTabComplete(sender, this, alias, args);
+                    }
+                    return java.util.Collections.emptyList();
+                }
+            };
+            command.setPermission(permission);
+            command.setDescription("Module " + id + ": " + name);
+            command.setUsage("/" + name);
+
+            commandMap.register("dcustomitems", command);
+            dynamicCommands.add(command);
+            plugin.getLogger().info("[Module " + id + "] Registered command: /" + name);
+        } catch (Exception e) {
+            plugin.getLogger().warning("[Module " + id + "] Failed to register /" + name + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Удалить все динамические команды модуля из CommandMap.
+     */
+    @SuppressWarnings("unchecked")
+    private void unregisterDynamicCommands() {
+        if (dynamicCommands.isEmpty()) return;
+        try {
+            org.bukkit.command.CommandMap commandMap = getCommandMap();
+            if (commandMap == null) return;
+
+            Map<String, org.bukkit.command.Command> knownCommands = getKnownCommands(commandMap);
+            for (org.bukkit.command.Command cmd : dynamicCommands) {
+                knownCommands.remove(cmd.getName().toLowerCase());
+                for (String alias : cmd.getAliases()) {
+                    knownCommands.remove(alias.toLowerCase());
+                }
+            }
+            dynamicCommands.clear();
+        } catch (Exception e) {
+            plugin.getLogger().warning("[Module " + id + "] Error unregistering commands: " + e.getMessage());
+        }
+    }
+
+    private org.bukkit.command.CommandMap getCommandMap() {
+        // Paper 1.21+: Bukkit.getCommandMap()
+        try {
+            java.lang.reflect.Method method = org.bukkit.Bukkit.class.getMethod("getCommandMap");
+            return (org.bukkit.command.CommandMap) method.invoke(null);
+        } catch (Exception ignored) {}
+        // Fallback: поле commandMap
+        try {
+            java.lang.reflect.Field field = org.bukkit.Bukkit.class.getDeclaredField("commandMap");
+            field.setAccessible(true);
+            return (org.bukkit.command.CommandMap) field.get(null);
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, org.bukkit.command.Command> getKnownCommands(org.bukkit.command.CommandMap commandMap) {
+        for (java.lang.reflect.Field field : commandMap.getClass().getDeclaredFields()) {
+            if (Map.class.isAssignableFrom(field.getType())) {
+                try {
+                    field.setAccessible(true);
+                    Object value = field.get(commandMap);
+                    if (value instanceof Map) {
+                        Map<?, ?> map = (Map<?, ?>) value;
+                        if (!map.isEmpty() && map.keySet().iterator().next() instanceof String) {
+                            return (Map<String, org.bukkit.command.Command>) value;
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+        return new HashMap<>();
+    }
 
     // ===== УТИЛИТЫ =====
 

@@ -175,6 +175,8 @@ public void onUnequip(Player player) {
 }
 ```
 
+Хуки `onEquip`/`onUnequip` вызываются глобальным чекером экипировки, когда предмет лежит в своём `getActivationSlot()` (HEAD/CHEST/LEGS/FEET/HAND/OFFHAND). Перед хуком плагин публикует Bukkit-событие `CustomItemEquipEvent` — если сторонний плагин его отменит, хук не вызовется (см. раздел «Bukkit-события» в README).
+
 ### Боевые События
 
 ```java
@@ -249,6 +251,32 @@ public void onPeriodic(Player player) {
     // Вызывается периодически
 }
 ```
+
+`onPeriodic` тоже вызывает глобальный чекер экипировки — только когда предмет находится в своём слоте активации и только раз в `getPeriodicInterval()` тиков. Не делайте внутри тяжёлых операций.
+
+### Механики YAML-уровня для Java-предметов
+
+Java-предметы получили те же базовые механики, что и YAML:
+
+```java
+@Override
+public int getMaxUses() { return 5; }        // 0 = безлимит (списывается при кликах)
+
+@Override
+public long getDuration() { return 3600; }   // секунды жизни предмета, 0 = вечный
+
+@Override
+public boolean isAllowedInWorld(String worldName) {
+    return !worldName.equals("pvp_arena"); // запретить в своих мирах
+}
+
+@Override
+public String getPermission() { return "items.frostblade"; } // теперь проверяется при кликах
+```
+
+`getMaxUses()` списывается обработчиком кликов (при исчерпании предмет удаляется), `getDuration()` и `isAllowedInWorld()` проверяются глобальным чекером (при нарушении предмет удаляется). Сообщения переопределяются через `getUsesDepletedMessage()`, `getDurationExpiredMessage()`, `getWorldBlockedMessage()`.
+
+Перед каждым хуком (`onDamageDealt`, `onDamageTaken`, `onKill`, `onDeath`, `onPeriodic`) теперь стреляют одноимённые отменяемые Bukkit-события `CustomItem*Event` — сторонние плагины могут отменить стандартную реакцию предмета.
 
 ---
 
@@ -564,6 +592,36 @@ public class HealingHelmet extends AbstractCustomItem {
     }
 }
 ```
+
+---
+
+## 📦 Крафт-рецепты (Java)
+
+Java-предмет может объявить крафт-рецепты — переопределите `getRecipes()`:
+
+```java
+import me.dcplugin.dcustomitems.api.RecipeDef;
+
+@Override
+public List<RecipeDef> getRecipes() {
+    Map<Character, String> keys = new HashMap<>();
+    keys.put('N', "NETHERITE_INGOT");      // материал
+    keys.put('B', "vampire-blade");        // или ID кастомного предмета (YAML/Java)
+
+    return List.of(
+        // По форме: 1-3 строки одинаковой длины, пробел = пустая ячейка
+        RecipeDef.shaped(List.of("NNN", "NBN"), keys),
+
+        // Без формы: просто список ингредиентов
+        RecipeDef.shapeless("DIAMOND", "DIAMOND", "STICK"),
+
+        // Переплавка: предмет, опыт, время в тиках
+        RecipeDef.furnace("IRON_INGOT", 0.7f, 200)
+    );
+}
+```
+
+Рецепты регистрируются в обычный верстак автоматически и попадают в GUI-крафт модуля `/craft` (`items/customcraft/`). Ингредиентом может быть любой кастомный предмет — YAML или Java — по его ID (включая сам предмет). После `RecipeDef.shapeless(...)` количество результата по умолчанию 1; для другого количества есть версии с параметром `amount`, а для `furnace` — `experience` и `cookingTime`.
 
 ---
 

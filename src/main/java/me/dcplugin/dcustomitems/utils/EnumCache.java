@@ -93,8 +93,13 @@ public final class EnumCache {
 
     private static final Map<String, PotionEffectType> EFFECT_CACHE = new HashMap<>();
 
-    // Предустановленные алиасы
-    static {
+    /**
+     * Ленивая инициализация алиасов: статические ссылки на PotionEffectType
+     * требуют инициализированного Bukkit и ломали бы загрузку класса
+     * в чистом окружении (юнит-тесты без сервера).
+     */
+    private static void ensureEffectAliases() {
+        if (!EFFECT_CACHE.isEmpty()) return;
         EFFECT_CACHE.put("INCREASE_DAMAGE", PotionEffectType.STRENGTH);
         EFFECT_CACHE.put("DAMAGE_RESISTANCE", PotionEffectType.RESISTANCE);
     }
@@ -103,6 +108,7 @@ public final class EnumCache {
         if (name == null || name.isEmpty()) return null;
         String key = name.toUpperCase();
 
+        ensureEffectAliases();
         PotionEffectType cached = EFFECT_CACHE.get(key);
         if (cached != null) return cached;
 

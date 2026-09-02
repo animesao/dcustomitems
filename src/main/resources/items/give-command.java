@@ -1,4 +1,5 @@
 import me.dcplugin.dcustomitems.Main;
+import me.dcplugin.dcustomitems.api.AbstractCustomItem;
 import me.dcplugin.dcustomitems.api.commands.CustomCommand;
 import me.dcplugin.dcustomitems.models.CustomItem;
 import me.dcplugin.dcustomitems.utils.EnumCache;
@@ -58,16 +59,23 @@ public class GiveCommand extends CustomCommand {
 
         String input = args[0];
 
-        // 1. Ищем среди кастомных предметов
+        // 1. Ищем среди YAML-предметов
         CustomItem customItem = plugin.getItemHandler().getCustomItem(input.toLowerCase());
 
-        // 2. Если не найден — ищем как ванильный материал
-        Material vanillaMaterial = null;
+        // 2. Ищем среди Java API-предметов (AbstractCustomItem)
+        AbstractCustomItem javaItem = null;
         if (customItem == null) {
+            javaItem = plugin.getApiItemRegistry().getItem(input);
+            if (javaItem == null) javaItem = plugin.getApiItemRegistry().getItem(input.toLowerCase());
+        }
+
+        // 3. Если не найден — ищем как ванильный материал
+        Material vanillaMaterial = null;
+        if (customItem == null && javaItem == null) {
             vanillaMaterial = EnumCache.getMaterial(input);
         }
 
-        if (customItem == null && vanillaMaterial == null) {
+        if (customItem == null && javaItem == null && vanillaMaterial == null) {
             msg(sender, "&cПредмет '&e" + input + "&c' не найден!");
             msg(sender, "&7Попробуй &e/give list &7или &e/give materials");
             return true;
@@ -80,7 +88,7 @@ public class GiveCommand extends CustomCommand {
         if (args.length >= 2) {
             if (args[1].equalsIgnoreCase("all")) {
                 int amt = args.length >= 3 ? parseAmount(args[2], 1) : 1;
-                return handleGiveAll(sender, customItem, vanillaMaterial, input, amt);
+                return handleGiveAll(sender, customItem, javaItem, vanillaMaterial, input, amt);
             }
             target = Bukkit.getPlayer(args[1]);
             if (target == null) {
@@ -108,6 +116,9 @@ public class GiveCommand extends CustomCommand {
         if (customItem != null) {
             itemStack = customItem.getItemStack().clone();
             displayName = customItem.getId();
+        } else if (javaItem != null) {
+            itemStack = javaItem.createItemStack();
+            displayName = javaItem.getId();
         } else {
             itemStack = new ItemStack(vanillaMaterial, amount);
             displayName = vanillaMaterial.name().toLowerCase().replace("_", " ");
@@ -141,9 +152,16 @@ public class GiveCommand extends CustomCommand {
             if ("list".startsWith(prefix)) completions.add("list");
             if ("materials".startsWith(prefix)) completions.add("materials");
 
-            // Кастомные предметы
+            // YAML-предметы
             for (String id : plugin.getItemHandler().getAllCustomItems().keySet()) {
                 if (id.toLowerCase().startsWith(prefix)) {
+                    completions.add(id);
+                }
+            }
+
+            // Java API-предметы
+            for (String id : plugin.getApiItemRegistry().getAllIds()) {
+                if (id.toLowerCase().startsWith(prefix) && !completions.contains(id)) {
                     completions.add(id);
                 }
             }
@@ -185,14 +203,15 @@ public class GiveCommand extends CustomCommand {
     private boolean handleList(CommandSender sender) {
         Main plugin = Main.getInstance();
         var allItems = plugin.getItemHandler().getAllCustomItems();
+        var allJavaItems = plugin.getApiItemRegistry().getAllItems();
 
-        if (allItems.isEmpty()) {
+        if (allItems.isEmpty() && allJavaItems.isEmpty()) {
             msg(sender, "&7Нет загруженных кастомных предметов.");
             msg(sender, "&7Используй &e/give <material> &7для ванильных предметов");
             return true;
         }
 
-        msg(sender, "&6=== Кастомные предметы (" + allItems.size() + ") ===");
+        msg(sender, "&6=== Кастомные предметы (" + (allItems.size() + allJavaItems.size()) + ") ===");
 
         for (var entry : allItems.entrySet()) {
             CustomItem item = entry.getValue();
@@ -202,6 +221,13 @@ public class GiveCommand extends CustomCommand {
                 price = " &7[&e$" + String.format("%.0f", item.getBuyPrice()) + "&7]";
             }
             msg(sender, " &e" + entry.getKey() + " &7(" + type + ")" + price);
+        }
+
+        // Java API-предметы
+        for (var entry : allJavaItems.entrySet()) {
+            AbstractCustomItem item = entry.getValue();
+            String type = item.getType() != null ? item.getType() : "UNKNOWN";
+            msg(sender, " &e" + entry.getKey() + " &7(Java " + type + ")");
         }
 
         return true;
@@ -244,7 +270,8 @@ public class GiveCommand extends CustomCommand {
         return true;
     }
 
-    private boolean handleGiveAll(CommandSender sender, CustomItem customItem, Material vanillaMat, String name, int amount) {
+    private boolean handleGiveAll(CommandSender sender, CustomItem customItem, AbstractCustomItem javaItem,
+                                  Material vanillaMat, String name, int amount) {
         List<Player> online = new ArrayList<>(Bukkit.getOnlinePlayers());
         int count = 0;
 
@@ -252,20 +279,28 @@ public class GiveCommand extends CustomCommand {
             ItemStack itemStack;
             if (customItem != null) {
                 itemStack = customItem.getItemStack().clone();
+            } else if (javaItem != null) {
+                itemStack = javaItem.createItemStack();
             } else {
                 itemStack = new ItemStack(vanillaMat, amount);
             }
             itemStack.setAmount(amount);
             target.getInventory().addItem(itemStack);
-            String displayName = customItem != null ? customItem.getId() : vanillaMat.name().toLowerCase().replace("_", " ");
+            String displayName = displayNameOf(customItem, javaItem, vanillaMat);
             msg(target, "&aВы получили &e" + displayName + " &ax" + amount);
             count++;
         }
 
-        String displayName = customItem != null ? customItem.getId() : vanillaMat.name().toLowerCase().replace("_", " ");
+        String displayName = displayNameOf(customItem, javaItem, vanillaMat);
         msg(sender, "&aВыдано &e" + displayName + " &ax" + amount + " &7→ &fвсем (" + count + " игроков)");
 
         return true;
+    }
+
+    private String displayNameOf(CustomItem customItem, AbstractCustomItem javaItem, Material vanillaMat) {
+        if (customItem != null) return customItem.getId();
+        if (javaItem != null) return javaItem.getId();
+        return vanillaMat.name().toLowerCase().replace("_", " ");
     }
 
     private int parseAmount(String input, int defaultValue) {
@@ -279,6 +314,7 @@ public class GiveCommand extends CustomCommand {
     private void sendHelp(CommandSender sender) {
         msg(sender, "&6=== /give — Выдача предметов ===");
         msg(sender, "&e/give <id|material> &7— выдать себе");
+        msg(sender, "&7  Java-предметы тоже: &e/give dragonbone_armor");
         msg(sender, "&e/give <id|material> <player> &7— выдать игроку");
         msg(sender, "&e/give <id|material> <player> <amount> &7— выдать N штук");
         msg(sender, "&e/give <id|material> all &7— выдать всем онлайн");

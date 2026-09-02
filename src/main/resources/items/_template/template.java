@@ -100,8 +100,8 @@ public class templateModule extends Module implements Listener, CommandExecutor,
      */
     @Override
     protected void onEnable() {
-        // Регистрируем команды
-        registerCommand("mycommand", this);
+        // Регистрируем команды (базовый класс сам удалит её при disable)
+        registerDynamicCommand("mycommand", this, "template.mycommand");
 
         // Регистрируем слушатель событий
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -141,54 +141,10 @@ public class templateModule extends Module implements Listener, CommandExecutor,
      *     usage: /mycommand <args>
      *     permission: template.mycommand
      *
-     * Способ 2: Динамическая регистрация:
-     *   registerDynamicCommand("mycommand", this);
+     * Способ 2: Динамическая регистрация (базовый класс):
+     *   registerDynamicCommand("mycommand", this, "template.mycommand");
+     * Команда автоматически удаляется при disable модуля.
      */
-    private void registerCommand(String name, CommandExecutor executor) {
-        // Пробуем найти команду в plugin.yml
-        org.bukkit.command.PluginCommand cmd = plugin.getCommand(name);
-        if (cmd != null) {
-            cmd.setExecutor(executor);
-            cmd.setTabCompleter((TabCompleter) executor);
-            plugin.getLogger().info("[Template] Registered command: /" + name);
-        } else {
-            // Динамическая регистрация
-            registerDynamicCommand(name, executor);
-        }
-    }
-
-    /**
-     * Динамическая регистрация команды через reflection.
-     * Используйте только если команда не в plugin.yml.
-     */
-    private void registerDynamicCommand(String name, CommandExecutor executor) {
-        try {
-            org.bukkit.command.CommandMap commandMap = (org.bukkit.command.CommandMap)
-                plugin.getServer().getClass().getMethod("getCommandMap").invoke(plugin.getServer());
-
-            Command command = new Command(name) {
-                @Override
-                public boolean execute(CommandSender sender, String label, String[] args) {
-                    return executor.onCommand(sender, this, label, args);
-                }
-                @Override
-                public java.util.List<String> tabComplete(CommandSender sender, String alias, String[] args) {
-                    if (executor instanceof TabCompleter) {
-                        return ((TabCompleter) executor).onTabComplete(sender, this, alias, args);
-                    }
-                    return java.util.Collections.emptyList();
-                }
-            };
-            command.setPermission("template." + name);
-            command.setDescription("Template module: " + name);
-            command.setUsage("/" + name);
-
-            commandMap.register("dcustomitems", command);
-            plugin.getLogger().info("[Template] Registered dynamic command: /" + name);
-        } catch (Exception e) {
-            plugin.getLogger().warning("[Template] Failed to register /" + name + ": " + e.getMessage());
-        }
-    }
 
     // ===== ОБРАБОТКА КОМАНД =====
 

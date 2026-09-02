@@ -63,7 +63,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         );
 
         // Регистрируем команду
-        registerDynamicCommand("diary", this);
+        registerDynamicCommand("diary", this, "diary.use");
 
         // Регистрируем слушатель
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -94,34 +94,9 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
     // ===== Команды =====
 
     /**
-     * Динамическая регистрация команды через reflection
+     * Регистрация команды через базовый класс Module (право "dci.diary").
+     * Базовый класс сам удалит команду при disable модуля.
      */
-    private void registerDynamicCommand(String name, CommandExecutor executor) {
-        try {
-            org.bukkit.command.CommandMap commandMap = (org.bukkit.command.CommandMap)
-                plugin.getServer().getClass().getMethod("getCommandMap").invoke(plugin.getServer());
-
-            Command command = new Command(name) {
-                @Override
-                public boolean execute(CommandSender sender, String label, String[] args) {
-                    return executor.onCommand(sender, this, label, args);
-                }
-                @Override
-                public java.util.List<String> tabComplete(CommandSender sender, String alias, String[] args) {
-                    if (executor instanceof TabCompleter) {
-                        return ((TabCompleter) executor).onTabComplete(sender, this, alias, args);
-                    }
-                    return java.util.Collections.emptyList();
-                }
-            };
-            command.setPermission("diary.use");
-            command.setDescription("Player Diary module");
-            command.setUsage("/diary");
-            commandMap.register("dcustomitems", command);
-        } catch (Exception e) {
-            plugin.getLogger().warning("[Diary] Failed to register /" + name + ": " + e.getMessage());
-        }
-    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

@@ -63,6 +63,11 @@ public class PluginBootstrap {
 
         plugin.saveDefaultConfig();
 
+        // Штатные модули: копируются из jar в items/ только если отсутствуют.
+        // Так вся функциональность (предметы, команды, модули) остаётся файлами,
+        // которые администратор может удалить или изменить.
+        DefaultContentExtractor.extract(plugin);
+
         // Миграция конфига и создание messages.java
         configMigrator.createDefaultMessagesFile();
         configMigrator.checkConfigMigration();
@@ -158,7 +163,8 @@ public class PluginBootstrap {
         pm.registerEvents(playerListener, plugin);
         pm.registerEvents(new me.dcplugin.dcustomitems.listeners.BlockPlaceListener(plugin), plugin);
         pm.registerEvents(triggerListener, plugin);
-        pm.registerEvents(new ApiEventListener(apiItemRegistry), plugin);
+        pm.registerEvents(new ApiEventListener(plugin, apiItemRegistry), plugin);
+        pm.registerEvents(new me.dcplugin.dcustomitems.listeners.CraftItemListener(plugin), plugin);
     }
 
     private void initDatabase() {

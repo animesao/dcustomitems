@@ -1,5 +1,6 @@
 package me.dcplugin.dcustomitems.api;
 
+import me.dcplugin.dcustomitems.Main;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,11 +25,13 @@ import java.util.UUID;
  */
 public class ApiEventListener implements Listener {
 
+    private final Main plugin;
     private final ItemRegistry registry;
     private final Map<UUID, Long> lastClicks = new HashMap<>();
     private static final long CLICK_DELAY = 200L;
 
-    public ApiEventListener(ItemRegistry registry) {
+    public ApiEventListener(Main plugin, ItemRegistry registry) {
+        this.plugin = plugin;
         this.registry = registry;
     }
 
@@ -44,6 +47,20 @@ public class ApiEventListener implements Listener {
         AbstractCustomItem customItem = registry.getItem(id);
         if (customItem == null) return;
 
+        boolean isRightClick = event.getAction().name().contains("RIGHT");
+        boolean isLeftClick = event.getAction().name().contains("LEFT");
+        if (!isRightClick && !isLeftClick) return; // PHYSICAL и т.п. — не клик по предмету
+
+        // Право на использование (как у YAML-предметов)
+        String permission = customItem.getPermission();
+        if (permission != null && !permission.isEmpty() && !player.hasPermission(permission)) {
+            event.setCancelled(true);
+            player.sendMessage(me.dcplugin.dcustomitems.utils.ColorUtils.processMessage(player,
+                    plugin.getMessageManager().getMessage("items.no-permission",
+                            "&cУ вас нет прав на использование этого предмета.")));
+            return;
+        }
+
         // Кулдаун
         long cooldown = customItem.getClickCooldown();
         if (cooldown > 0) {
@@ -54,10 +71,70 @@ public class ApiEventListener implements Listener {
             lastClicks.put(player.getUniqueId(), System.currentTimeMillis());
         }
 
-        if (event.getAction().name().contains("RIGHT")) {
+        // Лимит использований (getMaxUses()), как у YAML-предметов
+        int maxUses = customItem.getMaxUses();
+        if (maxUses > 0) {
+            int uses = plugin.getItemHandler().getStoredUses(item);
+            if (uses == -1) {
+                uses = maxUses;
+                plugin.getItemHandler().setStoredUses(item, uses);
+                updateHandItem(event, player, item);
+            }
+            if (uses <= 0) {
+                event.setCancelled(true);
+                player.sendMessage(me.dcplugin.dcustomitems.utils.ColorUtils.processMessage(player,
+                        customItem.getUsesDepletedMessage() != null
+                                ? customItem.getUsesDepletedMessage()
+                                : plugin.getMessageManager().getMessage("items.uses-depleted",
+                                        "&cПредмет использован до конца и пропал!")));
+                return;
+            }
+            int remaining = plugin.getItemHandler().decrementStoredUses(item);
+            if (remaining <= 0) {
+                event.setCancelled(true);
+                player.sendMessage(me.dcplugin.dcustomitems.utils.ColorUtils.processMessage(player,
+                        customItem.getUsesDepletedMessage() != null
+                                ? customItem.getUsesDepletedMessage()
+                                : plugin.getMessageManager().getMessage("items.uses-depleted",
+                                        "&cПредмет использован до конца и пропал!")));
+                // Удаляем исчерпанный предмет из руки
+                if (event.getHand() == org.bukkit.inventory.EquipmentSlot.HAND) {
+                    player.getInventory().setItemInMainHand(null);
+                } else if (event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND) {
+                    player.getInventory().setItemInOffHand(null);
+                }
+                return;
+            }
+            updateHandItem(event, player, item);
+        }
+
+        // Событие для сторонних плагинов — отмена игнорирует клик целиком
+        me.dcplugin.dcustomitems.events.CustomItemUseEvent useEvent =
+                new me.dcplugin.dcustomitems.events.CustomItemUseEvent(player, customItem,
+                        isRightClick
+                                ? me.dcplugin.dcustomitems.events.CustomItemUseEvent.UseType.RIGHT_CLICK
+                                : me.dcplugin.dcustomitems.events.CustomItemUseEvent.UseType.LEFT_CLICK);
+        org.bukkit.Bukkit.getPluginManager().callEvent(useEvent);
+        if (useEvent.isCancelled()) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (isRightClick) {
             customItem.onRightClick(event, player);
-        } else if (event.getAction().name().contains("LEFT")) {
+        } else if (isLeftClick) {
             customItem.onLeftClick(event, player);
+        }
+    }
+
+    /**
+     * Обновить предмет в руке после изменения PDC (uses).
+     */
+    private void updateHandItem(PlayerInteractEvent event, Player player, ItemStack item) {
+        if (event.getHand() == org.bukkit.inventory.EquipmentSlot.HAND) {
+            player.getInventory().setItemInMainHand(item);
+        } else if (event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND) {
+            player.getInventory().setItemInOffHand(item);
         }
     }
 
@@ -70,7 +147,7 @@ public class ApiEventListener implements Listener {
         ItemStack damagedItem = findCustomItem(damaged);
         if (damagedItem != null) {
             AbstractCustomItem item = registry.getItem(ItemAPI.getCustomItemId(damagedItem));
-            if (item != null) {
+            if (item != null && fireDamageTakenEvent(event, damaged, item)) {
                 item.onDamageTaken(event, damaged);
             }
         }
@@ -91,7 +168,7 @@ public class ApiEventListener implements Listener {
             String id = ItemAPI.getCustomItemId(damagerItem);
             if (id != null) {
                 AbstractCustomItem item = registry.getItem(id);
-                if (item != null) {
+                if (item != null && fireDamageDealtEvent(event, damager, item)) {
                     item.onDamageDealt(event, damager);
                 }
             }
@@ -106,22 +183,51 @@ public class ApiEventListener implements Listener {
         ItemStack deathItem = findCustomItem(player);
         if (deathItem != null) {
             AbstractCustomItem item = registry.getItem(ItemAPI.getCustomItemId(deathItem));
-            if (item != null) {
+            if (item != null && fireDeathEvent(event, player, item)) {
                 item.onDeath(player, event);
             }
         }
 
         // onKill для убийцы
         if (player.getKiller() != null) {
-            ItemStack killerItem = player.getKiller().getInventory().getItemInMainHand();
+            Player killer = player.getKiller();
+            ItemStack killerItem = killer.getInventory().getItemInMainHand();
             String id = ItemAPI.getCustomItemId(killerItem);
             if (id != null) {
                 AbstractCustomItem item = registry.getItem(id);
-                if (item != null) {
-                    item.onKill(player.getKiller(), player);
+                if (item != null && fireKillEvent(killer, player, item)) {
+                    item.onKill(killer, player);
                 }
             }
         }
+    }
+
+    private boolean fireDamageTakenEvent(EntityDamageEvent event, Player player, AbstractCustomItem item) {
+        me.dcplugin.dcustomitems.events.CustomItemDamageTakenEvent ev =
+                new me.dcplugin.dcustomitems.events.CustomItemDamageTakenEvent(player, item, event);
+        org.bukkit.Bukkit.getPluginManager().callEvent(ev);
+        return !ev.isCancelled();
+    }
+
+    private boolean fireDamageDealtEvent(EntityDamageByEntityEvent event, Player player, AbstractCustomItem item) {
+        me.dcplugin.dcustomitems.events.CustomItemDamageDealtEvent ev =
+                new me.dcplugin.dcustomitems.events.CustomItemDamageDealtEvent(player, item, event);
+        org.bukkit.Bukkit.getPluginManager().callEvent(ev);
+        return !ev.isCancelled();
+    }
+
+    private boolean fireDeathEvent(PlayerDeathEvent event, Player player, AbstractCustomItem item) {
+        me.dcplugin.dcustomitems.events.CustomItemDeathEvent ev =
+                new me.dcplugin.dcustomitems.events.CustomItemDeathEvent(player, item, event);
+        org.bukkit.Bukkit.getPluginManager().callEvent(ev);
+        return !ev.isCancelled();
+    }
+
+    private boolean fireKillEvent(Player killer, Player victim, AbstractCustomItem item) {
+        me.dcplugin.dcustomitems.events.CustomItemKillEvent ev =
+                new me.dcplugin.dcustomitems.events.CustomItemKillEvent(killer, item, victim);
+        org.bukkit.Bukkit.getPluginManager().callEvent(ev);
+        return !ev.isCancelled();
     }
 
     @EventHandler(priority = EventPriority.HIGH)

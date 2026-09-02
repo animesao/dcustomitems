@@ -14,23 +14,23 @@ On first start, the plugin creates:
 plugins/DC-CustomItems/items/messages.java
 ```
 
-That file is an editable reference template containing message field names. In version `1.320.282`, the runtime compiler does not automatically call a `load()` method, so editing `items/messages.java` alone does not change messages after `/ci reload`.
+That file is a working message config: the plugin compiles it together with the other Java files and calls its static `load()` on startup and on every `/ci reload`. Changes take effect without rebuilding the JAR.
 
 ### How to change a message
 
-1. Stop the server, or work in a copy of the source project.
-2. Open `MessagesConfig.java`.
-3. Change the required field.
-4. Build a new JAR.
-5. Back up the plugin data folder.
-6. Install the new JAR and restart the server.
+1. Open `plugins/DC-CustomItems/items/messages.java`.
+2. Change the desired field inside the `load()` method (e.g. `MessagesConfig.PREFIX = "...";`).
+3. Run `/ci reload`.
+4. Verify the result; on a compile error the plugin reports it in the console and keeps the built-in messages.
 
-Example:
+Example (inside `load()`):
 
 ```java
-public static String PREFIX = "&8[&bMy server&8] &r";
-public static String CI_GIVE_SELF = PREFIX + "&aReceived: &e{item}";
+MessagesConfig.PREFIX = "&8[&bMy server&8] &r";
+MessagesConfig.CI_GIVE_SELF = MessagesConfig.PREFIX + "&aReceived: &e{item}";
 ```
+
+If the file was deleted, it is recreated on the next start.
 
 Keep `{item}`, `{player}`, `{count}`, `{error}`, and other placeholders when the code supplies those values.
 
@@ -47,11 +47,10 @@ Use Bukkit legacy color codes:
 
 If your change has no effect:
 
-- confirm that you edited `MessagesConfig.java` in the source project;
-- confirm that the rebuilt JAR was copied to the server;
-- check `/version DC-CustomItems`;
-- read the first Maven or Java compiler error;
-- remember that `/ci reload` does not turn `items/messages.java` into a message loader.
+- confirm the change is inside the `load()` method in `items/messages.java`;
+- run `/ci reload` and read the console: the compiler logs Java source errors;
+- confirm the field still exists in your plugin version (see `MessagesConfig.java` in the source);
+- if the file is missing or not applied, restart the server.
 
 ## 3. SQLite and MySQL storage
 

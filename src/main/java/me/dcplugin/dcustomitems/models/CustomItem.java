@@ -48,6 +48,7 @@ public class CustomItem {
     private final List<String> allowedWorlds;        // Разрешённые миры (пусто = все)
     private final List<String> disabledWorlds;       // Запрещённые миры
     private final String itemModelVariant;           // Вариант модели (для анимированных текстур)
+    private final Map<String, Object> recipes;        // Секция recipes из YAML (shaped/shapeless/furnace)
 
     private CustomItem(Builder b) {
         this.id = b.id;
@@ -86,6 +87,7 @@ public class CustomItem {
         this.allowedWorlds = b.allowedWorlds;
         this.disabledWorlds = b.disabledWorlds;
         this.itemModelVariant = b.itemModelVariant;
+        this.recipes = b.recipes;
     }
 
     // ===== БUILDER =====
@@ -136,6 +138,7 @@ public class CustomItem {
         private List<String> allowedWorlds = new ArrayList<>();
         private List<String> disabledWorlds = new ArrayList<>();
         private String itemModelVariant = null;
+        private Map<String, Object> recipes = null;
 
         private Builder(String id, ItemStack itemStack) {
             this.id = id;
@@ -175,6 +178,7 @@ public class CustomItem {
         public Builder allowedWorlds(List<String> worlds) { this.allowedWorlds = worlds != null ? worlds : new ArrayList<>(); return this; }
         public Builder disabledWorlds(List<String> worlds) { this.disabledWorlds = worlds != null ? worlds : new ArrayList<>(); return this; }
         public Builder itemModelVariant(String variant) { this.itemModelVariant = variant; return this; }
+        public Builder recipes(Map<String, Object> recipes) { this.recipes = recipes != null ? recipes : new HashMap<>(); return this; }
 
         public CustomItem build() {
             return new CustomItem(this);
@@ -254,6 +258,8 @@ public class CustomItem {
     public boolean hasDisabledWorlds() { return disabledWorlds != null && !disabledWorlds.isEmpty(); }
     public String getItemModelVariant() { return itemModelVariant; }
     public boolean hasItemModelVariant() { return itemModelVariant != null && !itemModelVariant.trim().isEmpty(); }
+    public Map<String, Object> getRecipes() { return recipes; }
+    public boolean hasRecipes() { return recipes != null && !recipes.isEmpty(); }
 
     /**
      * Проверяет, разрешён ли предмет в данном мире

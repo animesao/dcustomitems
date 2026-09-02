@@ -175,6 +175,8 @@ public void onUnequip(Player player) {
 }
 ```
 
+`onEquip`/`onUnequip` are invoked by the global equipment checker when the item sits in its `getActivationSlot()` (HEAD/CHEST/LEGS/FEET/HAND/OFFHAND). Before the hook, the plugin fires the Bukkit `CustomItemEquipEvent` — if a third-party plugin cancels it, the hook is skipped (see “Item events” in the README).
+
 ### Combat Events
 
 ```java
@@ -249,6 +251,32 @@ public void onPeriodic(Player player) {
     // Called periodically
 }
 ```
+
+`onPeriodic` is also driven by the global equipment checker: it fires only while the item is in its activation slot, at most once per `getPeriodicInterval()` ticks. Keep the body lightweight.
+
+### YAML-level mechanics for Java items
+
+Java items now support the base mechanics that YAML items have:
+
+```java
+@Override
+public int getMaxUses() { return 5; }        // 0 = unlimited (consumed on clicks)
+
+@Override
+public long getDuration() { return 3600; }   // lifetime in seconds, 0 = forever
+
+@Override
+public boolean isAllowedInWorld(String worldName) {
+    return !worldName.equals("pvp_arena");   // forbid in your own worlds
+}
+
+@Override
+public String getPermission() { return "items.frostblade"; } // now enforced on clicks
+```
+
+`getMaxUses()` is consumed by the click handler (the item is removed when depleted); `getDuration()` and `isAllowedInWorld()` are enforced by the global checker (violations remove the item). Messages are overridden via `getUsesDepletedMessage()`, `getDurationExpiredMessage()`, `getWorldBlockedMessage()`.
+
+Before each hook (`onDamageDealt`, `onDamageTaken`, `onKill`, `onDeath`, `onPeriodic`) the matching cancellable `CustomItem*Event` Bukkit event now fires, so third-party plugins can suppress the item's default reaction.
 
 ---
 
@@ -561,6 +589,36 @@ public class HealingHelmet extends AbstractCustomItem {
     }
 }
 ```
+
+---
+
+## 📦 Crafting recipes (Java)
+
+A Java item can declare crafting recipes by overriding `getRecipes()`:
+
+```java
+import me.dcplugin.dcustomitems.api.RecipeDef;
+
+@Override
+public List<RecipeDef> getRecipes() {
+    Map<Character, String> keys = new HashMap<>();
+    keys.put('N', "NETHERITE_INGOT");      // material
+    keys.put('B', "vampire-blade");        // or a custom item id (YAML/Java)
+
+    return List.of(
+        // Shaped: 1-3 rows of equal width, space = empty cell
+        RecipeDef.shaped(List.of("NNN", "NBN"), keys),
+
+        // Shapeless: a plain ingredient list
+        RecipeDef.shapeless("DIAMOND", "DIAMOND", "STICK"),
+
+        // Furnace: ingredient, experience, cooking time in ticks
+        RecipeDef.furnace("IRON_INGOT", 0.7f, 200)
+    );
+}
+```
+
+These recipes are registered into the vanilla crafting table automatically and also appear in the GUI crafting module `/craft` (`items/customcraft/`). Any custom item — YAML or Java — can be an ingredient by id (including the item itself). `RecipeDef.shapeless(...)` defaults to 1 result item; overloads accept `amount`, and `furnace` accepts `experience` and `cookingTime`.
 
 ---
 

@@ -1,6 +1,6 @@
 # DC-CustomItems — Complete Documentation
 
-**Documentation version:** 1.321.1
+**Documentation version:** 1.324.0
 **Minecraft:** Paper/Spigot 1.21.x
 **Server Java:** Java 21 is recommended for Paper 1.21.11; Java 17+ is required to build the project.
 
@@ -22,7 +22,7 @@ If YAML and Java are new to you, read these guides in order:
 8. [Performance and troubleshooting](TROUBLESHOOTING_EN.md)
 9. [Resource packs and models](RESOURCE_PACK_EN.md)
 
-For working examples, inspect `src/main/resources/items/` in the repository. Files beginning with `EXAMPLE-` are examples and are not automatically loaded.
+For working examples, inspect `src/main/resources/items/` in the repository. Files beginning with `EXAMPLE-` plus the `EXAMPLES/` and `_template/` folders are examples/references and are never auto-loaded — copy a file into `items/` manually to enable it.
 
 ---
 
@@ -260,6 +260,50 @@ Names such as `on_block_break`, `on_block_place`, `on_sneak`, `on_sprint`, and `
 
 The Java API has separate methods such as `onMove`, `onBlockBreak`, and `onSwapHand`; that is a different path from YAML `trigger-actions`. `on_move` and `onMove` are frequent events and can create server load.
 
+### Bukkit events for third-party plugins
+
+The plugin publishes its own Bukkit events so other plugins can react to custom items:
+
+| Event | When | Cancelable |
+|---|---|---|
+| `CustomItemEquipEvent` | Item equipped or removed (before FX/messages or the `onEquip`/`onUnequip` hook) | Yes |
+| `CustomItemUseEvent` | Left/right-click with the item (before click actions or the `onRightClick`/`onLeftClick` hook) | Yes |
+| `CustomItemCraftEvent` | Crafting — in the vanilla table AND the `/craft` GUI (before ingredients are consumed; the result can be replaced via `setResult`) | Yes |
+| `CustomItemDamageDealtEvent` | Damage dealt with the item (before triggers/`onDamageDealt`) | Yes |
+| `CustomItemDamageTakenEvent` | Damage taken while holding/equipped (before triggers/`onDamageTaken`) | Yes |
+| `CustomItemKillEvent` | Player killed another player with the item (before `on_kill`/`onKill`) | Yes |
+| `CustomItemDeathEvent` | Player died with the item (before `on_death`/`onDeath`) | Yes |
+| `CustomItemPeriodicEvent` | Periodic effect of a Java item (before each `onPeriodic`) | Yes |
+
+The events fire for both YAML items and Java API items (`AbstractCustomItem`):
+
+```java
+import me.dcplugin.dcustomitems.events.CustomItemEquipEvent;
+import me.dcplugin.dcustomitems.events.CustomItemUseEvent;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+
+public class MyListener implements Listener {
+    @EventHandler
+    public void onUse(CustomItemUseEvent event) {
+        if ("vampire-blade".equals(event.getItemId())) {
+            event.setCancelled(true); // forbid usage
+        }
+    }
+
+    @EventHandler
+    public void onEquip(CustomItemEquipEvent event) {
+        if (event.getJavaItem() != null) {          // Java API item
+            String id = event.getJavaItem().getId();
+        } else if (event.getCustomItem() != null) { // YAML item
+            String id = event.getCustomItem().getId();
+        }
+    }
+}
+```
+
+Register as usual: `getServer().getPluginManager().registerEvents(new MyListener(), plugin)`. Cancelling an event suppresses only the item's default reaction (triggers/hook); the underlying Bukkit effect (damage, death) is cancelled via `getBukkitEvent()`/`setDamage()` on the damage events.
+
 ---
 
 ## 7. YAML actions
@@ -270,9 +314,9 @@ For ordinary `trigger-actions`, use:
 event:action:parameter1:parameter2
 ```
 
-The current `TriggerListener` handles basic actions such as `message`, `effect`, `particle`, `sound`, `heal`, `teleport`, `damage`, `fireworks`, `title`, `actionbar`, `exp`, `give`, `remove`, `announce`, `sethealth`, `setfood`, `vanish`, `glow`, `stun`, `knockback`, `launch`, and mob/player variants. Test every mechanic on a private server.
+Both `PlayerListener` and `TriggerListener` execute ALL actions through a single `ActionParser`. Available actions: `message`, `title`, `actionbar`, `announce`/`broadcast`, `effect`, `heal`, `damage` (+ `damage_nearby`/`damage_mobs`/`damage_players`), `heal_nearby`, `effect_nearby` (+ `_mobs`/`_players`), `teleport`, `teleport_relative`, `give` (material or custom item id), `remove`, `exp`, `lightning`, `lightning_forward`, `particle(s)`, `sound`, `fireworks`, `break`, `sethealth`, `setfood`, `set_xp`, `vanish`, `glow`, `speed`, `flight`, `knockback`/`launch`/`stun` (+ `_mobs`/`_players`), `command` (from console), `console_command`, plus extended actions: `particles_custom`, `sound_sequence`, `title_sequence`, `command_sequence`, `teleport_sequence`, `effect_sequence`, `damage_custom`, `heal_custom`.
 
-`ActionParser` contains additional actions (`console_command`, `particles_custom`, sequences, and others), but the current YAML `trigger-actions` path does not automatically call `ActionParser.execute()`. Do not assume that the extended examples below work in `trigger-actions`.
+Hyphens and underscores are equivalent (`damage-mobs` == `damage_mobs`). Always test a mechanic on a private server.
 
 ### Messages and UI
 
@@ -360,11 +404,9 @@ The current YAML trigger path confirms the `command` action:
 - 'on_click_right:command:spawn'
 ```
 
-`console_command`, `sound_sequence`, `effect_sequence`, `command_sequence`, `particles_custom`, and other extended actions are implemented in a separate `ActionParser`, but the current `TriggerListener` does not call it automatically. Use them only from custom Java code that explicitly calls `ActionParser.execute(player, action)`, or add and test the corresponding call in the source project first.
+All actions listed above, including the extended ones, work in YAML (both `trigger-actions` and `triggers:`) because both listeners call `ActionParser.execute()`.
 
 Commands in user YAML can be dangerous. Do not let ordinary players edit these files.
-
-The full extended-action list in `README-ACTIONS.md` does not mean that every action is available in every YAML event.
 
 See [README-ACTIONS.md](../src/main/resources/items/README-ACTIONS.md) for an additional action reference. It documents legacy and extended formats; if anything conflicts, follow the current handler and test the action on a private server.
 
@@ -408,6 +450,46 @@ my_item:
 `item-model` is intended for modern Minecraft versions. `custom-model-data` is retained for older resource packs. When both are present, `item-model` has priority.
 
 `max-uses` is used by the limited-use handler; whether `%uses%` is rendered in lore depends on the specific handler and should be verified with a test item.
+
+### Crafting recipes (shaped / shapeless / furnace)
+
+Recipes live directly in the item YAML. An ingredient can be a material (`DIAMOND`) or another custom item by id. The result is the item itself, with all its mechanics. Run `/ci reload` after editing recipes.
+
+```yaml
+my-crafted-sword:
+  type: TOOL
+  item:
+    type: DIAMOND_SWORD
+    title: '&bCrafted Sword'
+
+  recipes:
+    # Shaped (space = empty cell)
+    shaped:
+      - pattern:
+          - " A "
+          - "ABA"
+          - " A "
+        keys:
+          A: DIAMOND
+          B: STICK
+        amount: 1
+
+    # Shapeless
+    shapeless:
+      - ingredients: [ DIAMOND, DIAMOND, my-crafted-sword ]
+
+    # Furnace (200 ticks = 10 seconds)
+    furnace:
+      - ingredient: IRON_INGOT
+        experience: 0.7
+        cooking-time: 200
+```
+
+Each list (`shaped`, `shapeless`, `furnace`) accepts several recipes. See also `src/main/resources/items/EXAMPLE-crafting.yml`.
+
+Recipes can also be crafted in a **GUI workbench**: the `items/customcraft/` module adds `/craft` and a 3×3 window with a result preview. Ingredients match by PDC/NBT: custom items by their id (an item can even be its own ingredient), other plugins' items by material without touching their data. The crafted result is fully initialized (uses/duration). Delete the `customcraft/` folder to remove the command.
+
+Java API items declare recipes the same way via `getRecipes()` (class `RecipeDef`) — they register into the vanilla crafting table and appear in `/craft` as well. See [JAVA_API_EN.md](JAVA_API_EN.md#-crafting-recipes-java).
 
 ---
 
@@ -696,13 +778,13 @@ Do not run heavy SQL every tick and never delete `data.db` without a backup.
 
 ## 16. Messages
 
-Default message fields live in `MessagesConfig.java` inside the JAR. On first start, the plugin creates `items/messages.java` as a reference template containing message settings.
+Default message fields live in `MessagesConfig.java` inside the JAR. On first start, the plugin creates `items/messages.java` as a working copy of the standard messages.
 
-**Important for version 1.320.282:** the current runtime compiler does not call a `load()` method automatically. Editing `items/messages.java` therefore does not change plugin messages after `/ci reload`; the file is classified as an ordinary Java source file and is not loaded as a message configuration. Keep it as a reference unless you are working on the source project.
+**`items/messages.java` is a working message config.** The plugin compiles it together with the other Java files and calls its static `load()` on startup and on every `/ci reload` — changes take effect without rebuilding the JAR.
 
-To change standard messages in the current version, edit `src/main/java/me/dcplugin/dcustomitems/api/config/MessagesConfig.java` in the source project and rebuild the JAR. Editing a file in the server's `plugins/DC-CustomItems/items/` directory is not currently a supported message-configuration mechanism.
+The file is generated automatically on first startup (with the default values) and overrides `MessagesConfig` fields (PREFIX, NO_PERMISSION, RELOAD_* and so on). Delete it and it is recreated on the next start.
 
-Example source change:
+Example (roughly what the generated file looks like):
 
 ```java
 MessagesConfig.PREFIX = "&8[&bMy server&8] &r";
@@ -710,7 +792,7 @@ MessagesConfig.CI_GIVE_SELF = MessagesConfig.PREFIX + "&aReceived: &e{item}";
 MessagesConfig.NO_PERMISSION = MessagesConfig.PREFIX + "&cYou do not have permission.";
 ```
 
-Only use fields that exist in the current `MessagesConfig`. After changing source files, run the Maven build and install the new JAR; `/ci reload` applies to YAML, Java API sources, and modules, but does not turn `messages.java` into a message loader.
+Only use fields that exist in the current `MessagesConfig`. Every `public static String` can be overridden inside `load()`. If a field was removed in a newer plugin version, the compiler reports it in the console and the file is simply not applied (built-in messages stay).
 
 ---
 

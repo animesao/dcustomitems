@@ -1,9 +1,13 @@
 package me.dcplugin.dcustomitems.handlers;
 
 import me.dcplugin.dcustomitems.Main;
+import me.dcplugin.dcustomitems.api.AbstractCustomItem;
+import me.dcplugin.dcustomitems.events.CustomItemEquipEvent;
+import me.dcplugin.dcustomitems.events.CustomItemPeriodicEvent;
 import me.dcplugin.dcustomitems.models.CustomItem;
 import me.dcplugin.dcustomitems.utils.ColorUtils;
 import me.dcplugin.dcustomitems.utils.EnumCache;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
@@ -32,6 +36,15 @@ public class EquippedItemsChecker extends BukkitRunnable {
     // World tracking for per-item world restrictions
     private final Map<UUID, String> lastWorldName = new HashMap<>();
 
+    // Глобальный счётчик тиков: дорогие проверки выполняются не каждый тик
+    private int globalTick = 0;
+    private static final int DURATION_CHECK_INTERVAL = 20;  // раз в секунду
+    private static final int WORLD_CHECK_INTERVAL = 20;     // раз в секунду
+
+    // Java API-предметы с getPeriodicInterval() > 0: id -> предмет
+    // (обновляется раз в секунду; пока пусто — периодический цикл не выполняется)
+    private final Map<String, AbstractCustomItem> periodicJavaItems = new HashMap<>();
+
     public EquippedItemsChecker(Main plugin) {
         this.plugin = plugin;
     }
@@ -54,6 +67,7 @@ public class EquippedItemsChecker extends BukkitRunnable {
     @Override
     public void run() {
         long now = System.currentTimeMillis();
+        globalTick++;
 
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             UUID playerId = player.getUniqueId();
@@ -92,28 +106,38 @@ public class EquippedItemsChecker extends BukkitRunnable {
             }
         }
 
-        // === Trail particles (каждый тик, без кулдауна) ===
+        // === Trail particles + периодические хуки Java API (каждый тик) ===
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             UUID playerId = player.getUniqueId();
             int tick = trailTickCounter.getOrDefault(playerId, 0) + 1;
             trailTickCounter.put(playerId, tick);
             spawnTrailParticles(player, tick);
+            runJavaPeriodic(player, tick);
         }
 
-        // === Duration check (каждые 20 тиков = 1 секунда) ===
-        for (Player player : plugin.getServer().getOnlinePlayers()) {
-            checkItemDurations(player);
+        // Кэш Java-предметов с периодическими эффектами — раз в секунду
+        if (globalTick % DURATION_CHECK_INTERVAL == 0) {
+            refreshPeriodicJavaItems();
         }
 
-        // === World restriction check (при смене мира) ===
-        for (Player player : plugin.getServer().getOnlinePlayers()) {
-            UUID playerId = player.getUniqueId();
-            String currentWorld = player.getWorld().getName();
-            String prevWorld = lastWorldName.get(playerId);
-            if (prevWorld != null && !prevWorld.equals(currentWorld)) {
-                checkWorldRestrictions(player);
+        // === Duration check (раз в секунду, а не каждый тик) ===
+        if (globalTick % DURATION_CHECK_INTERVAL == 0) {
+            for (Player player : plugin.getServer().getOnlinePlayers()) {
+                checkItemDurations(player);
             }
-            lastWorldName.put(playerId, currentWorld);
+        }
+
+        // === World restriction check (раз в секунду и только при смене мира) ===
+        if (globalTick % WORLD_CHECK_INTERVAL == 0) {
+            for (Player player : plugin.getServer().getOnlinePlayers()) {
+                UUID playerId = player.getUniqueId();
+                String currentWorld = player.getWorld().getName();
+                String prevWorld = lastWorldName.get(playerId);
+                if (prevWorld != null && !prevWorld.equals(currentWorld)) {
+                    checkWorldRestrictions(player);
+                }
+                lastWorldName.put(playerId, currentWorld);
+            }
         }
     }
 
@@ -162,29 +186,69 @@ public class EquippedItemsChecker extends BukkitRunnable {
         Set<String> newlyUnequipped = new HashSet<>(previousIds);
         newlyUnequipped.removeAll(currentActiveItemIds);
 
-        // Эффекты для экипированных
+        // Эффекты для экипированных (YAML + Java API)
         for (String itemId : newlyEquipped) {
             CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
             if (customItem != null) {
-                spawnEquipEffects(player, customItem, true);
+                // Событие для сторонних плагинов (можно отменить стандартные эффекты)
+                CustomItemEquipEvent equipEvent = new CustomItemEquipEvent(player, customItem, true);
+                plugin.getServer().getPluginManager().callEvent(equipEvent);
+                if (equipEvent.isCancelled()) continue;
+
+                me.dcplugin.dcustomitems.utils.ItemFX.spawnEquipEffects(plugin, player, customItem, true);
                 if (customItem.hasEquipMessage()) {
                     String msg = ColorUtils.processMessage(player, customItem.getEquipMessage());
                     if (!msg.trim().isEmpty()) player.sendMessage(msg);
                 }
                 plugin.getTriggerListener().executeEquipTriggers(player, customItem);
+                continue;
+            }
+
+            // Java API-предмет: событие (можно отменить) + хук onEquip
+            AbstractCustomItem javaItem = plugin.getApiItemRegistry().getItem(itemId);
+            if (javaItem != null) {
+                CustomItemEquipEvent equipEvent = new CustomItemEquipEvent(player, javaItem, true);
+                plugin.getServer().getPluginManager().callEvent(equipEvent);
+                if (equipEvent.isCancelled()) continue;
+                try {
+                    javaItem.onEquip(player);
+                } catch (Exception e) {
+                    plugin.getLogger().log(java.util.logging.Level.WARNING,
+                            "Ошибка onEquip у '" + itemId + "' для " + player.getName() + ": " + e.getMessage(), e);
+                }
             }
         }
 
-        // Эффекты для снятых
+        // Эффекты для снятых (YAML + Java API)
         for (String itemId : newlyUnequipped) {
             CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
             if (customItem != null) {
-                spawnEquipEffects(player, customItem, false);
+                // Событие для сторонних плагинов
+                CustomItemEquipEvent unequipEvent = new CustomItemEquipEvent(player, customItem, false);
+                plugin.getServer().getPluginManager().callEvent(unequipEvent);
+                if (unequipEvent.isCancelled()) continue;
+
+                me.dcplugin.dcustomitems.utils.ItemFX.spawnEquipEffects(plugin, player, customItem, false);
                 if (customItem.hasUnequipMessage()) {
                     String msg = ColorUtils.processMessage(player, customItem.getUnequipMessage());
                     if (!msg.trim().isEmpty()) player.sendMessage(msg);
                 }
                 plugin.getTriggerListener().executeUnequipTriggers(player, customItem);
+                continue;
+            }
+
+            // Java API-предмет: событие (можно отменить) + хук onUnequip
+            AbstractCustomItem javaItem = plugin.getApiItemRegistry().getItem(itemId);
+            if (javaItem != null) {
+                CustomItemEquipEvent unequipEvent = new CustomItemEquipEvent(player, javaItem, false);
+                plugin.getServer().getPluginManager().callEvent(unequipEvent);
+                if (unequipEvent.isCancelled()) continue;
+                try {
+                    javaItem.onUnequip(player);
+                } catch (Exception e) {
+                    plugin.getLogger().log(java.util.logging.Level.WARNING,
+                            "Ошибка onUnequip у '" + itemId + "' для " + player.getName() + ": " + e.getMessage(), e);
+                }
             }
         }
 
@@ -196,13 +260,20 @@ public class EquippedItemsChecker extends BukkitRunnable {
                            Map<org.bukkit.attribute.Attribute, Double> totalAttributes,
                            Set<String> currentActiveItemIds,
                            Set<String> activeSets) {
-        if (item == null || item.getType() == org.bukkit.Material.AIR) return;
+        if (item == null || item.getType() == Material.AIR) return;
 
         String itemId = plugin.getItemHandler().getCustomItemId(item);
         if (itemId == null) return;
 
         CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
-        if (customItem == null) return;
+        if (customItem == null) {
+            // Java API-предмет (YAML-модели нет): учитываем только в своём слоте
+            AbstractCustomItem javaItem = plugin.getApiItemRegistry().getItem(itemId);
+            if (javaItem != null && slotType.equalsIgnoreCase(javaItem.getActivationSlot())) {
+                currentActiveItemIds.add(itemId);
+            }
+            return;
+        }
 
         if (slotType.equals(customItem.getActivationSlot())) {
             plugin.getEffectManager().addEffectsToMap(totalEffects, customItem);
@@ -231,36 +302,6 @@ public class EquippedItemsChecker extends BukkitRunnable {
         if (item == null || item.getType() == org.bukkit.Material.AIR) return "null";
         String id = plugin.getItemHandler().getCustomItemId(item);
         return id != null ? id : "vanilla";
-    }
-
-    private void spawnEquipEffects(Player player, CustomItem customItem, boolean isEquip) {
-        List<String> particles = isEquip ? customItem.getEquipParticles() : customItem.getUnequipParticles();
-        List<String> sounds = isEquip ? customItem.getEquipSounds() : customItem.getUnequipSounds();
-
-        for (String particleStr : particles) {
-            try {
-                String[] parts = particleStr.split(":");
-                org.bukkit.Particle particle = EnumCache.getParticle(parts[0]);
-                if (particle == null) continue;
-                int count = parts.length > 1 ? Integer.parseInt(parts[1]) : 10;
-                player.getWorld().spawnParticle(particle, player.getLocation().add(0, 1, 0), count);
-            } catch (Exception e) {
-                plugin.getLogger().warning("Ошибка при спавне частиц: " + particleStr);
-            }
-        }
-
-        for (String soundStr : sounds) {
-            try {
-                String[] parts = soundStr.split(":");
-                org.bukkit.Sound sound = EnumCache.getSound(parts[0]);
-                if (sound == null) continue;
-                float volume = parts.length > 1 ? Float.parseFloat(parts[1]) : 1.0f;
-                float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
-                player.playSound(player.getLocation(), sound, volume, pitch);
-            } catch (Exception e) {
-                plugin.getLogger().warning("Ошибка при воспроизведении звука: " + soundStr);
-            }
-        }
     }
 
     // === Trail particles ===
@@ -298,6 +339,63 @@ public class EquippedItemsChecker extends BukkitRunnable {
         }
     }
 
+    // === Периодические хуки Java API (onPeriodic) ===
+
+    /**
+     * Кэш Java-предметов с getPeriodicInterval() > 0 (раз в секунду).
+     */
+    private void refreshPeriodicJavaItems() {
+        periodicJavaItems.clear();
+        for (AbstractCustomItem item : plugin.getApiItemRegistry().getAllItems().values()) {
+            if (item != null && item.getPeriodicInterval() > 0) {
+                periodicJavaItems.put(item.getId(), item);
+            }
+        }
+    }
+
+    /**
+     * Вызов onPeriodic у экипированных Java-предметов по их интервалу.
+     * Пустой кэш = возврат без единого PDC-чтения.
+     */
+    private void runJavaPeriodic(Player player, int tick) {
+        if (periodicJavaItems.isEmpty()) return;
+
+        // Читаем PDC-id каждого слота один раз за тик
+        Map<String, String> slotIds = new HashMap<>(6);
+        ItemStack mainHand = player.getInventory().getItemInMainHand();
+        ItemStack offHand = player.getInventory().getItemInOffHand();
+        slotIds.put("HAND", plugin.getItemHandler().getCustomItemId(mainHand));
+        slotIds.put("OFFHAND", plugin.getItemHandler().getCustomItemId(offHand));
+
+        String[] armorSlots = {"FEET", "LEGS", "CHEST", "HEAD"};
+        ItemStack[] armor = player.getInventory().getArmorContents();
+        for (int i = 0; i < armor.length && i < armorSlots.length; i++) {
+            slotIds.put(armorSlots[i], plugin.getItemHandler().getCustomItemId(armor[i]));
+        }
+
+        for (Map.Entry<String, AbstractCustomItem> entry : periodicJavaItems.entrySet()) {
+            AbstractCustomItem item = entry.getValue();
+            long interval = item.getPeriodicInterval();
+            if (interval <= 0 || tick % interval != 0) continue;
+
+            // Предмет должен лежать в своём активирующем слоте
+            String slotId = slotIds.get(item.getActivationSlot().toUpperCase());
+            if (slotId == null || !slotId.equals(entry.getKey())) continue;
+
+            // Bukkit-событие: отмена пропускает этот вызов onPeriodic
+            CustomItemPeriodicEvent periodicEvent = new CustomItemPeriodicEvent(player, item, interval);
+            plugin.getServer().getPluginManager().callEvent(periodicEvent);
+            if (periodicEvent.isCancelled()) continue;
+
+            try {
+                item.onPeriodic(player);
+            } catch (Exception e) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                        "Ошибка onPeriodic у '" + entry.getKey() + "' для " + player.getName() + ": " + e.getMessage(), e);
+            }
+        }
+    }
+
     // === Duration check ===
 
     private void checkItemDurations(Player player) {
@@ -306,35 +404,59 @@ public class EquippedItemsChecker extends BukkitRunnable {
 
         for (int i = 0; i < contents.length; i++) {
             ItemStack item = contents[i];
-            if (item == null || item.getType() == org.bukkit.Material.AIR) continue;
+            if (item == null || item.getType() == Material.AIR) continue;
 
             String itemId = plugin.getItemHandler().getCustomItemId(item);
             if (itemId == null) continue;
 
             CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
-            if (customItem == null || !customItem.hasDuration()) continue;
+            if (customItem != null) {
+                if (!customItem.hasDuration()) continue;
 
-            // Ensure acquired time is set
+                // Ensure acquired time is set
+                plugin.getItemHandler().ensureAcquiredTime(item);
+
+                if (plugin.getItemHandler().isExpired(item)) {
+                    contents[i] = null;
+                    changed = true;
+
+                    // Send message
+                    if (customItem.hasMaxDurationMessage()) {
+                        String msg = ColorUtils.processMessage(player, customItem.getMaxDurationMessage());
+                        if (!msg.trim().isEmpty()) player.sendMessage(msg);
+                    } else {
+                        player.sendMessage(ColorUtils.processMessage(player,
+                            "&cПредмет " + customItem.getId() + " исчерпал время жизни!"));
+                    }
+
+                    // Play sound and particles
+                    player.getWorld().spawnParticle(org.bukkit.Particle.SMOKE,
+                        player.getLocation().add(0, 1, 0), 20);
+                    player.playSound(player.getLocation(),
+                        org.bukkit.Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
+                }
+                continue;
+            }
+
+            // Java API-предмет: getDuration() в секундах (0 = вечный)
+            AbstractCustomItem javaItem = plugin.getApiItemRegistry().getItem(itemId);
+            if (javaItem == null || javaItem.getDuration() <= 0) continue;
+
             plugin.getItemHandler().ensureAcquiredTime(item);
-
-            if (plugin.getItemHandler().isExpired(item)) {
+            long elapsed = javaItem.getDuration(); // sentinel, если время не читается
+            Long acquired = getAcquiredTime(item);
+            if (acquired != null) {
+                elapsed = (System.currentTimeMillis() - acquired) / 1000L;
+            }
+            if (elapsed >= javaItem.getDuration()) {
                 contents[i] = null;
                 changed = true;
-
-                // Send message
-                if (customItem.hasMaxDurationMessage()) {
-                    String msg = ColorUtils.processMessage(player, customItem.getMaxDurationMessage());
-                    if (!msg.trim().isEmpty()) player.sendMessage(msg);
-                } else {
-                    player.sendMessage(ColorUtils.processMessage(player,
-                        "&cПредмет " + customItem.getId() + " исчерпал время жизни!"));
-                }
-
-                // Play sound and particles
-                player.getWorld().spawnParticle(org.bukkit.Particle.SMOKE,
-                    player.getLocation().add(0, 1, 0), 20);
-                player.playSound(player.getLocation(),
-                    org.bukkit.Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
+                player.sendMessage(ColorUtils.processMessage(player,
+                    javaItem.getDurationExpiredMessage() != null
+                            ? javaItem.getDurationExpiredMessage()
+                            : "&cПредмет " + itemId + " исчерпал время жизни!"));
+                player.getWorld().spawnParticle(org.bukkit.Particle.SMOKE, player.getLocation().add(0, 1, 0), 20);
+                player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
             }
         }
 
@@ -356,19 +478,31 @@ public class EquippedItemsChecker extends BukkitRunnable {
 
         for (int i = 0; i < contents.length; i++) {
             ItemStack item = contents[i];
-            if (item == null || item.getType() == org.bukkit.Material.AIR) continue;
+            if (item == null || item.getType() == Material.AIR) continue;
 
             String itemId = plugin.getItemHandler().getCustomItemId(item);
             if (itemId == null) continue;
 
             CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
-            if (customItem == null) continue;
+            if (customItem != null) {
+                if (!customItem.isAllowedInWorld(worldName)) {
+                    contents[i] = null;
+                    changed = true;
+                    player.sendMessage(ColorUtils.processMessage(player,
+                        "&cПредмет " + customItem.getId() + " запрещён в этом мире!"));
+                }
+                continue;
+            }
 
-            if (!customItem.isAllowedInWorld(worldName)) {
+            // Java API-предмет: isAllowedInWorld(String)
+            AbstractCustomItem javaItem = plugin.getApiItemRegistry().getItem(itemId);
+            if (javaItem != null && !javaItem.isAllowedInWorld(worldName)) {
                 contents[i] = null;
                 changed = true;
                 player.sendMessage(ColorUtils.processMessage(player,
-                    "&cПредмет " + customItem.getId() + " запрещён в этом мире!"));
+                    javaItem.getWorldBlockedMessage() != null
+                            ? javaItem.getWorldBlockedMessage()
+                            : "&cПредмет " + itemId + " запрещён в этом мире!"));
             }
         }
 
@@ -376,6 +510,18 @@ public class EquippedItemsChecker extends BukkitRunnable {
             player.getInventory().setContents(contents);
             markForRecalculation(player);
         }
+    }
+
+    /**
+     * Время приобретения предмета из PDC (null, если не установлено).
+     */
+    private Long getAcquiredTime(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return null;
+        org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+        if (meta == null) return null;
+        return meta.getPersistentDataContainer().get(
+                new org.bukkit.NamespacedKey(plugin, "acquired_time"),
+                org.bukkit.persistence.PersistentDataType.LONG);
     }
 
     /**

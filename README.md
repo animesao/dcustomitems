@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.321.1-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.324.0-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Modules-5-purple?style=for-the-badge" alt="Modules">
   <img src="https://img.shields.io/github/license/animesao/dcustomitems-purple?style=for-the-badge" alt="License">
 </p>
@@ -38,7 +38,11 @@
 | 🎒 **Универсальный /give** | Выдача и кастомных, и ванильных предметов |
 | 🔗 **PlaceholderAPI** | 25+ плейсхолдеров для интеграции с другими плагинами |
 | 🏪 **Vault Economy** | Покупка/продажа предметов через модуль |
-| ☕ **Java API** | Полная программируемость: предметы, команды, плейсхолдеры, GUI |
+| ☕ **Java API** | Предметы, команды, плейсхолдеры, GUI, uses/duration/миры — компиляция против Paper и любых сторонних jar |
+| 🧪 **Крафт-рецепты** | shaped / shapeless / furnace в YAML предмета и через `getRecipes()` в Java API |
+| 🛠 **GUI-крафт** | Модуль `customcraft/`: `/craft` собирает рецепты YAML и Java, идентичность по PDC/NBT |
+| 🔔 **API-события** | `Equip/Use/Craft/DamageDealt/DamageTaken/Kill/Death/Periodic` — YAML и Java-предметы |
+| 🧰 **Чужие библиотеки** | `libs/` в папке плагина + все `plugins/*.jar` — модули компилируются против чего угодно |
 | ⚡ **Оптимизация** | Глобальный таск, кэширование enum, стабильные UUID |
 
 ---
@@ -116,7 +120,7 @@ vim items/my-module/config.yml
 ```bash
 # Скачать последний релиз
 cd ~/server/plugins
-curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.321.1/DC-CustomItems-1.321.1.jar
+curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.324.0/DC-CustomItems-1.324.0.jar
 
 # Перезапустить сервер
 ./restart.sh
@@ -124,10 +128,12 @@ curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/do
 
 ### Ручная установка
 
-1. Скачай `DC-CustomItems-1.321.1.jar` из [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.321.1)
+1. Скачай `DC-CustomItems-1.324.0.jar` из [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.324.0)
 2. Помести в папку `plugins/`
 3. Перезапусти сервер
 4. Настрой `plugins/DC-CustomItems/config.yml`
+
+> 🧩 При первом запуске плагин сам скопирует штатные модули и предметы из jar в `plugins/DC-CustomItems/items/` (только отсутствующие файлы, твои настройки не трогаются). Всё функциональное — файлы: удали `give-command.java` — пропадёт `/give`, удали папку `items/vault/` — отключится экономика. Отключить автокопирование: `extract-default-modules: false` в config.yml.
 
 ### Зависимости (опционально)
 
@@ -368,7 +374,7 @@ my-item:
 
 | Плейсхолдер | Описание | Пример |
 |-------------|----------|--------|
-| `%dci_version%` | Версия плагина | `1.321.1` |
+| `%dci_version%` | Версия плагина | `1.324.0` |
 | `%dci_item_count%` | YAML-предметов | `45` |
 | `%dci_java_item_count%` | Java API предметов | `6` |
 | `%dci_command_count%` | Команд | `3` |
