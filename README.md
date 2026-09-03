@@ -1,7 +1,7 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Minecraft-1.21.11-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
-  <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.324.0-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Minecraft-1.21.8%2B-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
+  <img src="https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk" alt="Java">
+  <img src="https://img.shields.io/badge/Version-1.325.0-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Modules-5-purple?style=for-the-badge" alt="Modules">
   <img src="https://img.shields.io/github/license/animesao/dcustomitems-purple?style=for-the-badge" alt="License">
 </p>
@@ -9,7 +9,7 @@
 <h1 align="center">⚔️ DC-CustomItems</h1>
 
 <p align="center">
-  <b>Модульный плагин кастомных предметов для Minecraft 1.21.11</b><br>
+  <b>Модульный плагин кастомных предметов для Minecraft 1.21.8+ (Paper/Spigot)</b><br>
   Создавай, настраивай и расширяй кастомные предметы без ограничений!
 </p>
 
@@ -27,7 +27,7 @@
 
 ## 📖 Что такое DC-CustomItems
 
-**DC-CustomItems** — это модульный плагин для Minecraft 1.21.11, который позволяет создавать кастомные предметы с уникальными механиками.
+**DC-CustomItems** — это модульный плагин для Minecraft 1.21.8+, который позволяет создавать кастомные предметы с уникальными механиками.
 
 ### Ключевые особенности
 
@@ -120,7 +120,7 @@ vim items/my-module/config.yml
 ```bash
 # Скачать последний релиз
 cd ~/server/plugins
-curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.324.0/DC-CustomItems-1.324.0.jar
+curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.325.0/DC-CustomItems-1.325.0.jar
 
 # Перезапустить сервер
 ./restart.sh
@@ -128,12 +128,18 @@ curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/do
 
 ### Ручная установка
 
-1. Скачай `DC-CustomItems-1.324.0.jar` из [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.324.0)
+1. Скачай `DC-CustomItems-1.325.0.jar` из [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.325.0)
 2. Помести в папку `plugins/`
 3. Перезапусти сервер
 4. Настрой `plugins/DC-CustomItems/config.yml`
 
 > 🧩 При первом запуске плагин сам скопирует штатные модули и предметы из jar в `plugins/DC-CustomItems/items/` (только отсутствующие файлы, твои настройки не трогаются). Всё функциональное — файлы: удали `give-command.java` — пропадёт `/give`, удали папку `items/vault/` — отключится экономика. Отключить автокопирование: `extract-default-modules: false` в config.yml.
+
+> ⚠️ О безопасности Java API: плагин компилирует `.java`-файлы из `items/` прямо
+> на сервере — это выполнение произвольного кода. Если доступ к файлам плагина
+> может быть у недоверенных лиц, отключи это в `config.yml`:
+> `java-compilation: false` (YAML-предметы продолжат работать). Подробнее —
+> [SECURITY.md](SECURITY.md).
 
 ### Зависимости (опционально)
 
@@ -264,7 +270,7 @@ my-item:
     amount: 1
     glowing: true
     unbreakable: true
-    item-model: "custom_model"  # Resource Pack model (1.21.11+)
+    item-model: "custom_model"  # Resource Pack model (1.21.8+)
     custom-model-data: 100      # Legacy model data
     texture: "eyJ..."          # Skull texture (PLAYER_HEAD)
 
@@ -374,7 +380,7 @@ my-item:
 
 | Плейсхолдер | Описание | Пример |
 |-------------|----------|--------|
-| `%dci_version%` | Версия плагина | `1.324.0` |
+| `%dci_version%` | Версия плагина | `1.325.0` |
 | `%dci_item_count%` | YAML-предметов | `45` |
 | `%dci_java_item_count%` | Java API предметов | `6` |
 | `%dci_command_count%` | Команд | `3` |
@@ -641,9 +647,9 @@ DC-CustomItems/
 
 ## 🛠️ Требования
 
-- Minecraft 1.21.11+
-- Paper/Spigot
-- Java 17+
+- Minecraft 1.21.8+
+- Paper/Spigot (рекомендуется Paper — плагин компилируется против paper-api)
+- Java 21+
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) (опционально)
 - [Vault](https://www.spigotmc.org/resources/vault.34315/) + economy plugin (опционально)
 

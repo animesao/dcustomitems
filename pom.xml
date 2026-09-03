@@ -6,22 +6,22 @@
 
     <groupId>me.dcplugin</groupId>
     <artifactId>dcustomitems</artifactId>
-    <version>1.324.0</version>
+    <version>1.325.0</version>
     <packaging>jar</packaging>
 
     <name>DC-CustomItems</name>
     <description>Custom Items plugin for Bukkit/Spigot</description>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <repositories>
         <repository>
-            <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         <repository>
             <id>placeholderapi</id>
@@ -35,8 +35,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
             <version>1.21.8-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -82,10 +82,13 @@
 
     <build>
         <finalName>${project.name}-${project.version}</finalName>
+        <!-- Фильтрация отключена: Maven-подстановка ${...} может тихо ломать
+             YAML-файлы предметов с плейсхолдерами. Версию в pom.xml и plugin.yml
+             на релизе проставляет CI (versions:set + sed), а не фильтрация. -->
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>true</filtering>
+                <filtering>false</filtering>
             </resource>
         </resources>
 
@@ -95,8 +98,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <source>17</source>
-                    <target>17</target>
+                    <source>21</source>
+                    <target>21</target>
                 </configuration>
             </plugin>
 
@@ -104,6 +107,25 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
+            </plugin>
+
+            <!-- Покрытие тестами: отчёт генерируется в CI и локально
+                 командой mvn jacoco:report (target/site/jacoco/). -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.13</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -133,4 +155,25 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Аудит зависимостей по OWASP: запускается вручную или в CI
+             командой mvn -Psecurity dependency-check:check.
+             При наличии переменной окружения OWASP_NVD_API_KEY работает быстро. -->
+        <profile>
+            <id>security</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>10.0.4</version>
+                        <configuration>
+                            <failBuildOnCVSS>9</failBuildOnCVSS>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

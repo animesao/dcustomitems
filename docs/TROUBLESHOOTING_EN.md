@@ -22,7 +22,7 @@ This guide helps you solve common problems with DC-CustomItems.
    ```bash
    java -version
    ```
-   Need Java 17 or higher.
+   Need Java 21 or higher.
 
 2. **Check File Location:**
    ```

@@ -29,15 +29,24 @@ The jar will be in `target/DC-CustomItems-*.jar`
 
 - Follow existing code style
 - Add Javadoc to public methods
-- Test on Paper 1.21.11+
+- Add/update unit tests for changed logic (`mvn test` must pass)
+- Test on Paper 1.21.8+
 
 ### 5. Commit and Push
 
+Use [Conventional Commits](https://www.conventionalcommits.org/) so release
+notes and changelogs stay readable:
+
 ```bash
+git checkout -b feature/your-feature   # или fix/your-fix
 git add .
-git commit -m "Description of changes"
+git commit -m "feat: add charge cooldown to triggers"
+git commit -m "fix: attribute removal on unequip"
 git push origin feature/your-feature
 ```
+
+Commit types: `feat` (новая фича), `fix` (исправление), `docs`, `test`,
+`refactor`, `chore`. Ветки: `feature/*`, `fix/*`, `docs/*`.
 
 ### 6. Create a Pull Request
 
@@ -79,7 +88,7 @@ src/main/java/me/dcplugin/dcustomitems/
 
 ### Java
 
-- Use Java 17+
+- Use Java 21 (target of the build; Paper 1.21.x requires Java 21 at runtime)
 - Follow Google Java Style Guide
 - Add Javadoc to public methods
 - Use `EnumCache` for all Bukkit enum lookups (Material, Particle, Sound, etc.)

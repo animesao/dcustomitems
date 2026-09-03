@@ -1,8 +1,8 @@
 # DC-CustomItems — Complete Documentation
 
-**Documentation version:** 1.324.0
+**Documentation version:** 1.325.0
 **Minecraft:** Paper/Spigot 1.21.x
-**Server Java:** Java 21 is recommended for Paper 1.21.11; Java 17+ is required to build the project.
+**Server Java:** Java 21+ is required for Paper 1.21.8+ and to build the project.
 
 DC-CustomItems lets you create custom items, abilities, commands, placeholders, modules, and GUI menus. You can start with **no Java knowledge**: ordinary items are configured in YAML. Java is only needed for advanced mechanics, custom commands, and modules.
 
@@ -67,7 +67,7 @@ Important: DC-CustomItems compiles user Java files while the server is running. 
 ### Requirements
 
 - Paper or Spigot 1.21.x;
-- Java 21 for Paper 1.21.11;
+- Java 21 for Paper 1.21.8+;
 - server administrator access;
 - a backup of the world and `plugins/` directory.
 

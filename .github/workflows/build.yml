@@ -18,10 +18,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up JDK 17
+    - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: '21'
         distribution: 'temurin'
 
     - name: Cache Maven packages
@@ -42,10 +42,10 @@ jobs:
     - name: Update pom.xml version
       run: |
         VERSION="${{ steps.version.outputs.version }}"
-        # Update first <version> tag (project version)
-        sed -i "0,/<version>.*<\/version>/s//<version>${VERSION}<\/version>/" pom.xml
+        # Надёжнее, чем sed по первому <version>: versions:set меняет именно project.version
+        mvn -q versions:set -DnewVersion="${VERSION}" -DgenerateBackupPoms=false
         echo "✅ pom.xml updated to $VERSION"
-        head -12 pom.xml
+        grep -m1 "<version>" pom.xml
 
     - name: Update plugin.yml version
       run: |
@@ -56,6 +56,13 @@ jobs:
 
     - name: Build with Maven
       run: mvn clean package -q
+
+    - name: Upload coverage report (JaCoCo)
+      uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-report-${{ steps.version.outputs.version }}
+        path: target/site/jacoco/
+        retention-days: 14
 
     - name: Verify JAR exists
       run: |

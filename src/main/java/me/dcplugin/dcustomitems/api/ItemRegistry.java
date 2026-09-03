@@ -221,6 +221,15 @@ public class ItemRegistry {
     }
 
     private void loadJavaFiles(File itemsDir) {
+        // Безопасность: runtime-компиляция .java — это исполнение произвольного
+        // кода. Держим выключенной, если сервер администрируют несколько человек
+        // или есть риск записи в папку плагина извне.
+        if (!plugin.getConfig().getBoolean("java-compilation", true)) {
+            plugin.getLogger().info(
+                    "[API] Runtime Java compilation disabled (java-compilation: false)"
+                    + " — .java files in items/ are skipped.");
+            return;
+        }
         List<File> files = new ArrayList<>();
         collectJavaFiles(itemsDir, files);
         if (files.isEmpty()) return;
