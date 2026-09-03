@@ -37,7 +37,7 @@
 | 📦 **YAML + Java** | Простые предметы через YAML, сложные — через Java API |
 | 🎒 **Универсальный /give** | Выдача и кастомных, и ванильных предметов |
 | 🔗 **PlaceholderAPI** | 25+ плейсхолдеров для интеграции с другими плагинами |
-| 🏪 **Vault Economy** | Покупка/продажа предметов через модуль |
+| 💰 **Vault Economy** | Валюта игроков: баланс и переводы (магазин — отдельные плагины) |
 | ☕ **Java API** | Предметы, команды, плейсхолдеры, GUI, uses/duration/миры — компиляция против Paper и любых сторонних jar |
 | 🧪 **Крафт-рецепты** | shaped / shapeless / furnace в YAML предмета и через `getRecipes()` в Java API |
 | 🛠 **GUI-крафт** | Модуль `customcraft/`: `/craft` собирает рецепты YAML и Java, идентичность по PDC/NBT |
@@ -424,31 +424,38 @@ my-sword:
 ```yaml
 # items/vault/config.yml
 name: "Vault Economy"
-version: "1.0"
+version: "2.0"
 enabled: true
 
-shop:
-  buy-enabled: true
-  sell-enabled: true
-  max-amount: 64
-```
+economy:
+  storage: vault   # vault = экономика Vault; own = собственная БД плагина (data.db/MySQL)
+  starting-balance: 0
+  pay-enabled: true
+  min-pay: 1.0
 
-### Предметы с ценами
 
-```yaml
-my-sword:
-  buy-price: 1000
-  sell-price: 500
-```
+### Собственная БД (`economy.storage: own`)
+
+При `storage: own` экономика модуля полностью живёт в базе данных плагина
+(`data.db` SQLite или MySQL — как задано в `config.yml` ядра):
+
+- **`dci_vault_balances`** — балансы игроков (uuid, name, balance)
+- **`dci_vault_transactions`** — журнал всех операций (pay/eco/starting)
+- Плагин экономики (EssentialsX и т.п.) **не требуется**; сам Vault должен быть
+  установлен — его jar нужен runtime-компилятору для сборки модуля
+- Валюта настраивается: `currency-symbol`, `currency-name`, `currency-name-plural`
+
 
 ### Команды
 
 | Команда | Описание |
 |---------|----------|
-| `/buy <id>` | Купить предмет |
-| `/buy <id> <amount>` | Купить N штук |
-| `/sell <id>` | Продать предмет |
-| `/sell <id> <amount>` | Продать N штук |
+| `/balance [player]` (алиасы `/bal`, `/money`) | Баланс свой или другого игрока |
+| `/pay <player> <amount>` | Перевести деньги игроку |
+| `/eco give\|take\|set\|reset <player> [amount]` | Управление балансом (право `dci.eco`, по умолчанию у OP) |
+
+Права: `dci.balance`, `dci.balance.others`, `dci.pay` — по умолчанию у всех игроков;
+`dci.eco` — у OP. Магазин/покупка-продажа предметов — отдельные плагины, работающие с валютой через Vault или публичный API модуля (`getBalance` / `withdraw` / `deposit` / `format`).
 
 ---
 
@@ -582,7 +589,7 @@ items/my-module/
 
 | Модуль | Описание | Команды |
 |--------|----------|---------|
-| `vault/` | Vault Economy | `/buy`, `/sell` |
+| `vault/` | Vault Economy | `/balance`, `/pay` |
 | `deluxemenux/` | GUI-меню | `/menu`, `/shop`, `/kits` |
 | `shop/` | Магазин | `/shop` |
 | `_template/` | Шаблон | — |

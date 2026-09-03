@@ -2,12 +2,18 @@
 # 💰 Vault Economy Module
 # ==========================================
 #
-# Модуль экономики для DC-CustomItems.
-# Позволяет покупать и продавать кастомные предметы за виртуальную валюту.
+# Простая валюта для игроков (в стиле Essentials) — без магазина.
+#
+# Команды:
+#   /balance (алиасы /bal /money), /pay, /eco (админ)
+#
+# Покупка/продажа предметов — это отдельные плагины (магазин, аукцион
+# и т.п.), которые работают с валютой модуля через Vault или публичный
+# API: getBalance / withdraw / deposit / format.
 #
 # Требования:
 #   - Vault (плагин)
-#   - Плагин экономики (EssentialsX, ChargeMe, и т.д.)
+#   - Плагин экономики (EssentialsX, ChargeMe и т.д.)
 #
 # Отключение:
 #   Установите enabled: false или удалите папку items/vault/
@@ -15,38 +21,68 @@
 # ==========================================
 
 name: "Vault Economy"
-version: "1.0"
+version: "2.0"
 enabled: true
 
-# Настройки магазина
-shop:
-  # Разрешить покупку предметов
-  buy-enabled: true
-  # Разрешить продажу предметов
-  sell-enabled: true
-  # Максимальное количество за одну покупку
-  max-amount: 64
-  # Сообщение при недостатке средств
-  insufficient-funds: "&c[DCI] &cНедостаточно средств! Нужно: &e{price} &c| У вас: &e{balance}"
-  # Сообщение при успешной покупке
-  buy-success: "&a[DCI] &aВы купили &e{item} x{amount} &aза &e{price}&a!"
-  # Сообщение при успешной продаже
-  sell-success: "&a[DCI] &aВы продали &e{item} x{amount} &aза &e{price}&a!"
-  # Сообщение если предмет нельзя купить
-  not-buyable: "&c[DCI] &cЭтот предмет нельзя купить!"
-  # Сообщение если предмет нельзя продать
-  not-sellable: "&c[DCI] &cЭтот предмет нельзя продать!"
-  # Сообщение если инвентарь полон
-  inventory-full: "&c[DCI] &cИнвентарь полон!"
-  # Сообщение если нет предметов для продажи
-  nothing-to-sell: "&c[DCI] &cУ вас нет этого предмета!"
+# ==========================================
+# 💵 ЭКОНОМИКА (Essentials-style)
+# ==========================================
+economy:
+  # Где хранить балансы:
+  #   vault — экономика Vault (нужны Vault + плагин экономики, например EssentialsX)
+  #   own   — СВОЯ БАЗА ДАННЫХ плагина (data.db SQLite или MySQL из config.yml ядра).
+  #           Vault-плагин экономики НЕ требуется. Балансы хранятся в таблице
+  #           dci_vault_balances, все операции пишутся в журнал dci_vault_transactions.
+  storage: vault
 
-# Команды модуля
+  currency-symbol: "$"         # символ валюты (для storage: own)
+  currency-name: "dollar"      # название валюты, ед. ч. (%vault_currency_singular%)
+  currency-name-plural: "dollars"  # мн. ч. (%vault_currency%)
+
+  # Стартовый баланс новому игроку (0 = выключено).
+  # storage: own  → строка в dci_vault_balances создаётся сразу со стартовой суммой
+  # storage: vault → список получившихся — items/vault/starting-paid.yml
+  starting-balance: 0
+
+  pay-enabled: true          # разрешить /pay
+  min-pay: 1.0               # минимальная сумма перевода
+  insufficient-funds: "&c[DCI] &cНедостаточно средств! Нужно: &e{price} &c| У вас: &e{balance}"
+
+  players-only: "&c[DCI] &cТолько для игроков!"
+  no-permission: "&c[DCI] &cНет прав!"
+  economy-not-loaded: "&c[DCI] &cЭкономика не подключена! Установите Vault + плагин экономики."
+  transaction-error: "&c[DCI] &cОшибка транзакции!"
+  player-not-found: "&c[DCI] &cИгрок '&e{player}&c' не найден."
+
+  balance-own: "&a[DCI] &aВаш баланс: &e{balance}"
+  balance-others: "&a[DCI] &aБаланс игрока &e{player}&a: &e{balance}"
+
+  pay-usage: "&c[DCI] &cИспользование: /pay <игрок> <сумма>"
+  pay-disabled: "&c[DCI] &cПереводы отключены!"
+  pay-offline: "&c[DCI] &cИгрок должен быть онлайн!"
+  pay-self: "&c[DCI] &cНельзя переводить самому себе!"
+  pay-min: "&c[DCI] &cМинимальная сумма перевода: &e{min}"
+  pay-sent: "&a[DCI] &aВы перевели &e{amount} &aигроку &e{player}&a. Баланс: &e{balance}"
+  pay-received: "&a[DCI] &e{player} &aперевёл вам &e{amount}&a. Баланс: &e{balance}"
+
+  eco-usage: "&c[DCI] &cИспользование: /eco <give|take|set|reset> <игрок> [сумма]"
+  eco-done: "&a[DCI] &aБаланс &e{player}&a: &e{balance}"
+
+  starting-balance-given: "&a[DCI] &aВам начислен стартовый баланс: &e{amount}"
+
+# Команды модуля (справочно; регистрируются автоматически)
 commands:
-  - buy
-  - sell
+  - balance
+  - bal
+  - money
+  - pay
+  - eco
 
 # Права модуля
+# Игрокам (по умолчанию у всех): dci.balance, dci.balance.others, dci.pay
+# Админам (по умолчанию у OP): dci.eco
 permissions:
-  - dci.buy
-  - dci.sell
+  - dci.balance
+  - dci.balance.others
+  - dci.pay
+  - dci.eco
