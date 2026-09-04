@@ -62,7 +62,10 @@ permissions:
 
 ## 3. DeluxeMenuX
 
-Готовый модуль находится в:
+Готовый модуль в jar/repository лежит как образец `EXAMPLE-deluxemenux/`.
+Включите его: скопируйте папку в `plugins/DC-CustomItems/items/` и уберите
+префикс `EXAMPLE-` из имени (`EXAMPLE-deluxemenux/` → `deluxemenux/`),
+затем `/ci reload`. После этого модуль находится в:
 
 ```text
 plugins/DC-CustomItems/items/deluxemenux/

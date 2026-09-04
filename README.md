@@ -53,31 +53,36 @@ DC-CustomItems построен по принципу **"ядро + модули
 
 ```
 plugins/DC-CustomItems/
-├── items/                      # Все модули и предметы
-│   ├── vault/                  # 💰 Модуль экономики (Vault)
+├── items/                      # Все модули, предметы и образцы
+│   ├── EXAMPLE-vault/          # 💰 Модуль экономики (Vault) — образец
 │   │   ├── config.yml          # Настройки модуля
 │   │   └── vault.java          # Java-класс модуля
-│   ├── deluxemenux/            # 🎨 Модуль GUI-меню
-│   ├── shop/                   # 🛒 Модуль магазина
-│   ├── _template/              # 📋 Шаблон для новых модулей
-│   ├── give-command.java       # 🎒 Команда /give
-│   ├── runes.yml               # Предметы: руны
-│   ├── armor.yml               # Предметы: броня
-│   ├── tools.yml               # Предметы: оружие
-│   ├── totems.yml              # Предметы: тотемы
+│   ├── EXAMPLE-deluxemenux/    # 🎨 Модуль GUI-меню — образец
+│   ├── EXAMPLE-shop/           # 🛒 Модуль магазина — образец
+│   ├── EXAMPLE-give-command.java  # 🎒 Команда /give — образец
+│   ├── EXAMPLE-runes.yml       # Предметы: руны — образец
+│   ├── EXAMPLE-armor.yml       # Предметы: броня — образец
+│   ├── EXAMPLE-tools.yml       # Предметы: оружие — образец
+│   ├── EXAMPLE-totems.yml      # Предметы: тотемы — образец
 │   └── messages.java           # Кастомные сообщения
 ├── config.yml                  # Глобальные настройки
 └── data.db                     # База данных (SQLite)
 ```
 
+> 📦 В jar и репозитории весь контент хранится как образцы с префиксом
+> `EXAMPLE-*`: при первом запуске они копируются в `items/`, но **не
+> загружаются**. Включить образец = убрать префикс `EXAMPLE-` из имени
+> файла/папки (`EXAMPLE-vault/` → `vault/`) и сделать `/ci reload`.
+
 ### Как работает модульность
 
 ```bash
-# Включить модуль — оставить папку
-items/vault/        # ✅ Экономика включена
+# Включить модуль из образца: убрать префикс EXAMPLE-
+mv items/EXAMPLE-vault/ items/vault/   # ✅ Экономика включена
+/ci reload
 
 # Выключить модуль — удалить папку
-rm -rf items/vault/ # ❌ Экономика выключена
+rm -rf items/vault/                     # ❌ Экономика выключена
 
 # Или отключить в config.yml модуля
 enabled: false
@@ -133,7 +138,7 @@ curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/do
 3. Перезапусти сервер
 4. Настрой `plugins/DC-CustomItems/config.yml`
 
-> 🧩 При первом запуске плагин сам скопирует штатные модули и предметы из jar в `plugins/DC-CustomItems/items/` (только отсутствующие файлы, твои настройки не трогаются). Всё функциональное — файлы: удали `give-command.java` — пропадёт `/give`, удали папку `items/vault/` — отключится экономика. Отключить автокопирование: `extract-default-modules: false` в config.yml.
+> 🧩 При первом запуске плагин копирует из jar в `plugins/DC-CustomItems/items/` только **образцы `EXAMPLE-*`** (только отсутствующие файлы, твои настройки не трогаются). Они не загружаются сами по себе: включи образец, убрав префикс `EXAMPLE-` из имени файла/папки (`EXAMPLE-give-command.java` → `give-command.java`, `EXAMPLE-vault/` → `vault/`). Контент можно отключить, удалив файл/папку в `items/`; отключить автокопирование образцов: `extract-default-modules: false` в config.yml.
 
 > ⚠️ О безопасности Java API: плагин компилирует `.java`-файлы из `items/` прямо
 > на сервере — это выполнение произвольного кода. Если доступ к файлам плагина
@@ -224,11 +229,11 @@ my-sword:
 
 ### Модульные команды
 
-| Модуль | Команды | Описание |
+| Модуль (включить: убрать EXAMPLE-) | Команды | Описание |
 |--------|---------|----------|
-| `vault/` | `/buy <id> [amount]`, `/sell <id> [amount]` | Покупка/продажа |
-| `deluxemenux/` | `/menu`, `/shop`, `/kits` | GUI-меню |
-| `give-command.java` | `/give` | Выдача предметов |
+| `EXAMPLE-vault/` → `vault/` | `/buy <id> [amount]`, `/sell <id> [amount]` | Покупка/продажа |
+| `EXAMPLE-deluxemenux/` → `deluxemenux/` | `/menu`, `/shop`, `/kits` | GUI-меню |
+| `EXAMPLE-give-command.java` → `give-command.java` | `/give` | Выдача предметов |
 | Java API | Любые команды | Создавай свои! |
 
 ### Примеры
@@ -416,13 +421,13 @@ my-sword:
 ### Настройка
 
 1. Установи [Vault](https://www.spigotmc.org/resources/vault.34315/) + плагин экономики (EssentialsX)
-2. Папка `items/vault/` автоматически подключает экономику
+2. Включи модуль-образец: переименуй `items/EXAMPLE-vault/` → `items/vault/`
 3. Для отключения — удали папку `items/vault/`
 
 ### YAML-конфиг модуля
 
 ```yaml
-# items/vault/config.yml
+# items/vault/config.yml (после включения EXAMPLE-vault/ -> vault/)
 name: "Vault Economy"
 version: "2.0"
 enabled: true
@@ -548,7 +553,7 @@ public class KillsPlaceholder extends CustomPlaceholder {
 | `EXAMPLE-status-placeholder.java` | Ранг игрока |
 | `EXAMPLE-dark-sword.java` | Тёмный меч |
 | `EXAMPLE-phoenix-totem.java` | Тотем Феникса |
-| `give-command.java` | Команда /give |
+| `EXAMPLE-give-command.java` | Команда /give |
 
 ---
 
@@ -557,11 +562,12 @@ public class KillsPlaceholder extends CustomPlaceholder {
 ### Включение/выключение
 
 ```bash
-# Включить модуль — оставить папку
-items/vault/        # ✅ Включён
+# Включить модуль из образца — убрать префикс EXAMPLE-
+mv items/EXAMPLE-vault/ items/vault/   # ✅ Включён
+/ci reload
 
 # Выключить модуль — удалить папку
-rm -rf items/vault/ # ❌ Выключен
+rm -rf items/vault/                     # ❌ Выключен
 
 # Или в config.yml модуля:
 enabled: false
@@ -587,12 +593,13 @@ items/my-module/
 
 ### Доступные модули
 
-| Модуль | Описание | Команды |
+| Образец (включить: убрать EXAMPLE-) | Описание | Команды |
 |--------|----------|---------|
-| `vault/` | Vault Economy | `/balance`, `/pay` |
-| `deluxemenux/` | GUI-меню | `/menu`, `/shop`, `/kits` |
-| `shop/` | Магазин | `/shop` |
-| `_template/` | Шаблон | — |
+| `EXAMPLE-vault/` | Vault Economy | `/balance`, `/pay` |
+| `EXAMPLE-deluxemenux/` | GUI-меню | `/menu`, `/shop`, `/kits` |
+| `EXAMPLE-shop/` | Магазин | `/shop` |
+| `EXAMPLE-customcraft/` | GUI-крафт | `/craft` |
+| `_template/` | Шаблон (в jar, не копируется) | — |
 
 ---
 
@@ -630,12 +637,12 @@ DC-CustomItems/
 ├── src/main/resources/
 │   ├── plugin.yml                   # Конфигурация плагина
 │   ├── config.yml                   # Настройки
-│   └── items/                       # YAML-предметы + модули
-│       ├── *.yml                    # Предметы
-│       ├── *.java                   # Java API модули
-│       ├── vault/                   # Модуль экономики
-│       ├── deluxemenux/             # Модуль GUI
-│       └── _template/              # Шаблон для новых модулей
+│   └── items/                   # Образцы EXAMPLE-* (копируются в items/ при первом запуске)
+│       ├── EXAMPLE-*.yml        # Предметы
+│       ├── EXAMPLE-*.java       # Java API модули
+│       ├── EXAMPLE-vault/       # Модуль экономики — образец
+│       ├── EXAMPLE-deluxemenux/ # Модуль GUI — образец
+│       └── _template/           # Шаблон для новых модулей (в jar)
 ```
 
 ---

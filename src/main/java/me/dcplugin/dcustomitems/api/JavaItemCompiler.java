@@ -337,6 +337,12 @@ public class JavaItemCompiler {
         Arrays.sort(children, Comparator.comparing(File::getPath));
         for (File child : children) {
             if (child.isDirectory()) {
+                // Образцы и справочные папки (EXAMPLE-*, EXAMPLES/, _template/)
+                // не компилируются — это справочный материал.
+                String name = child.getName();
+                if (name.startsWith("EXAMPLE-")
+                        || name.equalsIgnoreCase("EXAMPLES")
+                        || name.equalsIgnoreCase("_template")) continue;
                 files.addAll(findJavaFiles(child));
             } else if (child.getName().endsWith(".java")
                     && !child.getName().startsWith("Abstract")

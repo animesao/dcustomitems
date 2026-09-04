@@ -161,8 +161,11 @@ rm -rf plugins/DC-CustomItems/items/my-module/
 
 ## 📚 Готовые модули
 
-| Модуль | Описание |
-|--------|----------|
-| `vault/` | 💰 Экономика (Vault) |
-| `deluxemenux/` | 🎨 GUI-меню |
-| `shop/` | 🛒 Магазин |
+В jar/repository модули лежат как образцы с префиксом `EXAMPLE-*` —
+скопируйте папку в `items/` и уберите префикс из имени:
+
+| Образец | Описание |
+|---------|----------|
+| `EXAMPLE-vault/` | 💰 Экономика (Vault) |
+| `EXAMPLE-deluxemenux/` | 🎨 GUI-меню |
+| `EXAMPLE-shop/` | 🛒 Магазин |

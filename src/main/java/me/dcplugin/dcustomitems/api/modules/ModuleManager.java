@@ -52,6 +52,14 @@ public class ModuleManager {
         plugin.getLogger().info("[Modules] Found " + subfolders.length + " potential modules");
 
         for (File folder : subfolders) {
+            // Образцы и справочные папки (EXAMPLE-*, EXAMPLES/, _template/)
+            // не считаются модулями — это справочный материал.
+            String folderName = folder.getName();
+            if (folderName.startsWith("EXAMPLE-")
+                    || folderName.equalsIgnoreCase("EXAMPLES")
+                    || folderName.equalsIgnoreCase("_template")) {
+                continue;
+            }
             try {
                 loadModule(folder);
             } catch (Exception e) {

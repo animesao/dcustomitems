@@ -22,7 +22,7 @@ DC-CustomItems позволяет создавать кастомные пред
 8. [Оптимизация и решение проблем](TROUBLESHOOTING_RU.md)
 9. [Resource pack и модели](RESOURCE_PACK_RU.md)
 
-Если вы хотите сразу посмотреть рабочие примеры, откройте `src/main/resources/items/` в репозитории. Файлы с префиксом `EXAMPLE-`, папки `EXAMPLES/` и `_template/` являются образцами/справочниками и не загружаются автоматически — их нужно вручную скопировать в `items/`, чтобы включить.
+Рабочие примеры лежат в `src/main/resources/items/` в репозитории: файлы с префиксом `EXAMPLE-*` при первом запуске копируются в `items/`, но не загружаются сами по себе — чтобы включить образец, уберите префикс `EXAMPLE-` из имени файла/папки и выполните `/ci reload`. Папки `EXAMPLES/` и `_template/` — справочники в jar, их нужно копировать вручную.
 
 ---
 
@@ -92,7 +92,7 @@ curl -fL -o dcustomitems.jar "https://github.com/animesao/dcustomitems/releases/
 
 ```text
 plugins/DC-CustomItems/
-├── config.yml       # встроенные YAML-предметы и настройки
+├── config.yml       # настройки плагина
 ├── data.db          # SQLite-база (если выбран sqlite)
 ├── storage/         # небольшие YAML-хранилища
 ├── items/           # ваши YAML и Java-файлы
@@ -486,7 +486,7 @@ my-crafted-sword:
 
 Каждый список (`shaped`, `shapeless`, `furnace`) — это список рецептов, можно добавить несколько. См. также `src/main/resources/items/EXAMPLE-crafting.yml`.
 
-Рецепты можно крафтить и через **GUI-верстак**: модуль `items/customcraft/` добавляет команду `/craft` и окно 3×3 с предпросмотром результата. Ингредиенты матчатся по PDC/NBT: кастомные предметы — по их ID (можно и «сам себя»), предметы других плагинов — по материалу, их данные не повреждаются. Готовый предмет инициализируется (uses/duration). Удали папку `customcraft/` — команда исчезнет.
+Рецепты можно крафтить и через **GUI-верстак**: модуль-образец `items/EXAMPLE-customcraft/` добавляет команду `/craft` и окно 3×3 с предпросмотром результата. Чтобы включить модуль, скопируйте папку в `items/` и уберите префикс `EXAMPLE-` (`EXAMPLE-customcraft/` → `customcraft/`). Ингредиенты матчатся по PDC/NBT: кастомные предметы — по их ID (можно и «сам себя»), предметы других плагинов — по материалу, их данные не повреждаются. Готовый предмет инициализируется (uses/duration). Удали папку `customcraft/` — команда исчезнет.
 
 Java API-предметы объявляют рецепты тем же способом через `getRecipes()` (класс `RecipeDef`) — они попадают и в обычный верстак, и в `/craft`. Пример см. в [JAVA_API_RU.md](JAVA_API_RU.md#-крафт-рецепты-java).
 
@@ -653,7 +653,7 @@ public class ServerNamePlaceholder extends CustomPlaceholder {
 Модуль находится в:
 
 ```text
-plugins/DC-CustomItems/items/deluxemenux/
+plugins/DC-CustomItems/items/deluxemenux/   # после включения EXAMPLE-deluxemenux/ → deluxemenux/
 ├── config.yml
 ├── deluxemenux.java
 ├── menu-command.java
@@ -860,7 +860,7 @@ dck attach test2
 | `cannot find symbol` | Нет импорта, неверный API Paper или опечатка |
 | `Unknown or incomplete command` | Команда не зарегистрирована из-за ошибки компиляции/конфликта |
 | `duplicate class definition` | Используется старый JAR/кэш или Java-класс загружается повторно; обновите JAR и очистите cache/compiled |
-| `items folder is empty` | В папке нет пользовательских YAML; встроенные предметы находятся в `config.yml` |
+| `items folder is empty` | В items/ только образцы `EXAMPLE-*` — они не загружаются. Уберите префикс `EXAMPLE-` из имени файла или создайте свой `.yml` |
 | `UnknownHostException` контейнера | Paper не может определить hostname контейнера; обычно не связано с плагином |
 
 Полный список решений: [TROUBLESHOOTING_RU.md](TROUBLESHOOTING_RU.md).

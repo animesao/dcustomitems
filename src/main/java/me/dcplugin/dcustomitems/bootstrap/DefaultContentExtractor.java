@@ -1,7 +1,6 @@
 package me.dcplugin.dcustomitems.bootstrap;
 
 import me.dcplugin.dcustomitems.Main;
-import org.bukkit.Bukkit;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,21 +14,23 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * Извлекает штатные модули и предметы из .jar плагина в папку items/.
+ * Извлекает образцы EXAMPLE-* из .jar плагина в папку items/.
  *
- * Ядро плагина — только компилятор (Java + YAML) и базовая инфраструктура.
  * Вся функциональность (предметы, команды, модули) живёт в items/ как файлы,
- * которые администратор может удалить или изменить. Данный экстрактор делает
- * модульность реальной: на чистом сервере items/ заполняется один раз, а
- * повторные запуски ничего не перезаписывают (только добавляют отсутствующее).
+ * которые администратор может удалить, изменить или создать сам. В jar плагина
+ * лежат только образцы с префиксом EXAMPLE-* — по умолчанию на чистом сервере
+ * копируются именно они (только отсутствующие файлы, ничего не перезаписывая).
+ *
+ * Чтобы включить предмет/команду/модуль из образца: скопируйте файл (или
+ * папку) в items/ и уберите префикс EXAMPLE- из имени — после /ci reload
+ * компилятор и загрузчики подхватят его как обычный контент.
  *
  * Правила:
  *  - копируются только отсутствующие файлы (настройки администратора не трогаются);
- *  - файлы EXAMPLE-* не копируются (это образцы, компилятор их игнорирует);
- *  - папка EXAMPLES/ не копируется (справочные примеры для ручного копирования);
- *  - папка _template/ не копируется (шаблон для ручного копирования);
- *  - модуль vault/ копируется только если на сервере установлен Vault
- *    (иначе его .java не скомпилируется из-за отсутствия VaultAPI).
+ *  - копируются только файлы/папки, имя которых начинается с EXAMPLE-;
+ *  - папки EXAMPLES/ и _template/ не копируются (справочные материалы для
+ *    ручного копирования, в jar они остаются всегда);
+ *  - остальной контент репозитория не копируется — это примеры для изучения.
  */
 public final class DefaultContentExtractor {
 
@@ -39,7 +40,7 @@ public final class DefaultContentExtractor {
 
     public static void extract(Main plugin) {
         if (!plugin.getConfig().getBoolean("extract-default-modules", true)) {
-            plugin.getLogger().info("[Extract] extract-default-modules = false, штатные модули не копируются");
+            plugin.getLogger().info("[Extract] extract-default-modules = false, образцы EXAMPLE-* не копируются");
             return;
         }
 
@@ -71,8 +72,8 @@ public final class DefaultContentExtractor {
         }
 
         if (copied > 0) {
-            plugin.getLogger().info("[Extract] Штатные модули скопированы: " + copied
-                    + " файлов. Всё функциональное — файлы в items/, удалите их, чтобы отключить.");
+            plugin.getLogger().info("[Extract] Образцы EXAMPLE-* скопированы: " + copied
+                    + " файлов. Чтобы включить образец — уберите префикс EXAMPLE- из имени файла/папки");
         }
     }
 
@@ -182,17 +183,11 @@ public final class DefaultContentExtractor {
     private static boolean shouldExtract(Main plugin, String relative) {
         if (relative.isEmpty()) return false;
         if (relative.startsWith(".")) return false;
-        if (relative.contains("EXAMPLE-")) return false; // образцы, компилятор их игнорирует
-        if (relative.toLowerCase().startsWith("examples/")) return false; // справочные примеры (папка EXAMPLES/)
-        if (relative.startsWith("_template/")) return false; // шаблон для ручного копирования
-
-        // Модуль vault/ компилируется только при установленном Vault (VaultAPI в classpath)
-        if (relative.startsWith("vault/")) {
-            if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
-                return false;
-            }
-        }
-        return true;
+        // По умолчанию копируются только образцы EXAMPLE-*: компилятор и
+        // загрузчики их игнорируют, так что items/ заполняется примерами,
+        // а не готовым контентом. EXAMPLES/ и _template/ под это правило не
+        // попадают и остаются справочными материалами внутри jar.
+        return relative.startsWith("EXAMPLE-");
     }
 
     private static void copyStream(InputStream in, File target) throws Exception {

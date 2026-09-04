@@ -2,10 +2,15 @@
 
 Полноценная система меню для Minecraft сервера.
 
+> 📦 Эта папка — образец модуля (`EXAMPLE-*`). Чтобы включить модуль:
+> скопируй её в `items/` и убери префикс `EXAMPLE-` из имени папки
+> (`EXAMPLE-deluxemenux/` → `deluxemenux/`), затем `/ci reload`.
+> Пока папка называется `EXAMPLE-*`, она не загружается.
+
 ## 📁 Структура модуля
 
 ```
-items/deluxemenux/
+items/deluxemenux/   (после включения EXAMPLE-deluxemenux/ -> deluxemenux/)
 ├── config.yml          # Настройки модуля
 ├── deluxemenux.java    # Основной класс
 ├── menu-command.java   # Команда /menu

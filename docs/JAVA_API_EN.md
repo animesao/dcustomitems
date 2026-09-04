@@ -618,7 +618,7 @@ public List<RecipeDef> getRecipes() {
 }
 ```
 
-These recipes are registered into the vanilla crafting table automatically and also appear in the GUI crafting module `/craft` (`items/customcraft/`). Any custom item — YAML or Java — can be an ingredient by id (including the item itself). `RecipeDef.shapeless(...)` defaults to 1 result item; overloads accept `amount`, and `furnace` accepts `experience` and `cookingTime`.
+These recipes are registered into the vanilla crafting table automatically and also appear in the GUI crafting module `/craft` (sample `items/EXAMPLE-customcraft/`). Any custom item — YAML or Java — can be an ingredient by id (including the item itself). `RecipeDef.shapeless(...)` defaults to 1 result item; overloads accept `amount`, and `furnace` accepts `experience` and `cookingTime`.
 
 ---
 

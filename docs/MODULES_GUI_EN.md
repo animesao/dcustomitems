@@ -62,7 +62,10 @@ After changing files, run:
 
 ## 3. DeluxeMenuX
 
-The included module lives at:
+The module ships as the `EXAMPLE-deluxemenux/` sample in the jar/repository.
+Enable it by copying the folder into `plugins/DC-CustomItems/items/` and
+removing the `EXAMPLE-` prefix from its name (`EXAMPLE-deluxemenux/` →
+`deluxemenux/`), then run `/ci reload`. After that it lives at:
 
 ```text
 plugins/DC-CustomItems/items/deluxemenux/

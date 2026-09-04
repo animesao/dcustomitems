@@ -89,9 +89,11 @@ public class ItemLoader {
             return;
         }
 
-        File[] files = itemsFolder.listFiles((dir, name) -> name.endsWith(".yml") || name.endsWith(".yaml"));
+        File[] files = itemsFolder.listFiles((dir, name) ->
+                (name.endsWith(".yml") || name.endsWith(".yaml")) && !name.startsWith("EXAMPLE-"));
         if (files == null || files.length == 0) {
-            plugin.getLogger().info("Папка items/ пуста. Добавьте .yml файлы с предметами.");
+            plugin.getLogger().info("Активных .yml предметов нет. В items/ лежат только образцы "
+                    + "EXAMPLE-* — уберите префикс EXAMPLE- из имени файла, чтобы включить.");
             return;
         }
 

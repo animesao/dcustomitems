@@ -265,8 +265,12 @@ public class ItemRegistry {
         Arrays.sort(children, Comparator.comparing(File::getPath));
         for (File child : children) {
             if (child.isDirectory()) {
-                // Справочная папка EXAMPLES/ не компилируется (это образцы)
-                if (child.getName().equalsIgnoreCase("EXAMPLES")) continue;
+                // Образцы и справочные папки (EXAMPLE-*, EXAMPLES/, _template/)
+                // не компилируются — это справочный материал.
+                String name = child.getName();
+                if (name.startsWith("EXAMPLE-")
+                        || name.equalsIgnoreCase("EXAMPLES")
+                        || name.equalsIgnoreCase("_template")) continue;
                 collectJavaFiles(child, files);
             } else if (child.getName().endsWith(".java") && !child.getName().startsWith("EXAMPLE-")) {
                 files.add(child);

@@ -22,7 +22,7 @@ If YAML and Java are new to you, read these guides in order:
 8. [Performance and troubleshooting](TROUBLESHOOTING_EN.md)
 9. [Resource packs and models](RESOURCE_PACK_EN.md)
 
-For working examples, inspect `src/main/resources/items/` in the repository. Files beginning with `EXAMPLE-` plus the `EXAMPLES/` and `_template/` folders are examples/references and are never auto-loaded — copy a file into `items/` manually to enable it.
+Working examples live in `src/main/resources/items/` in the repository. Files starting with `EXAMPLE-` are copied into `items/` on the first run but are never loaded on their own — to enable an example, remove the `EXAMPLE-` prefix from the file/folder name and run `/ci reload`. The `EXAMPLES/` and `_template/` folders are jar-only references and must be copied manually.
 
 ---
 
@@ -92,7 +92,7 @@ The first run creates approximately:
 
 ```text
 plugins/DC-CustomItems/
-├── config.yml       # built-in YAML items and settings
+├── config.yml       # plugin settings
 ├── data.db          # SQLite database (when sqlite is selected)
 ├── storage/         # small YAML storage files
 ├── items/           # your YAML and Java files
@@ -487,7 +487,7 @@ my-crafted-sword:
 
 Each list (`shaped`, `shapeless`, `furnace`) accepts several recipes. See also `src/main/resources/items/EXAMPLE-crafting.yml`.
 
-Recipes can also be crafted in a **GUI workbench**: the `items/customcraft/` module adds `/craft` and a 3×3 window with a result preview. Ingredients match by PDC/NBT: custom items by their id (an item can even be its own ingredient), other plugins' items by material without touching their data. The crafted result is fully initialized (uses/duration). Delete the `customcraft/` folder to remove the command.
+Recipes can also be crafted in a **GUI workbench**: the `items/EXAMPLE-customcraft/` sample module adds `/craft` and a 3×3 window with a result preview. To enable it, copy the folder into `items/` and remove the `EXAMPLE-` prefix (`EXAMPLE-customcraft/` → `customcraft/`). Ingredients match by PDC/NBT: custom items by their id (an item can even be its own ingredient), other plugins' items by material without touching their data. The crafted result is fully initialized (uses/duration). Delete the `customcraft/` folder to remove the command.
 
 Java API items declare recipes the same way via `getRecipes()` (class `RecipeDef`) — they register into the vanilla crafting table and appear in `/craft` as well. See [JAVA_API_EN.md](JAVA_API_EN.md#-crafting-recipes-java).
 
@@ -654,7 +654,7 @@ Its value is requested as `%server_name%` by systems that call PlaceholderManage
 The module lives at:
 
 ```text
-plugins/DC-CustomItems/items/deluxemenux/
+plugins/DC-CustomItems/items/deluxemenux/   # after enabling EXAMPLE-deluxemenux/ → deluxemenux/
 ├── config.yml
 ├── deluxemenux.java
 ├── menu-command.java
@@ -861,7 +861,7 @@ Common errors:
 | `cannot find symbol` | Missing import, wrong Paper API, or typo |
 | `Unknown or incomplete command` | Command failed to register due to compilation or name conflict |
 | `duplicate class definition` | Old JAR/cache or a class loaded twice; update the JAR and clear cache/compiled |
-| `items folder is empty` | No user YAML files; built-in items are in `config.yml` |
+| `items folder is empty` | `items/` holds only `EXAMPLE-*` samples, which are not loaded. Remove the `EXAMPLE-` prefix from a file name or create your own `.yml` |
 | container `UnknownHostException` | Paper cannot resolve the container hostname; usually unrelated to the plugin |
 
 Full solutions: [TROUBLESHOOTING_EN.md](TROUBLESHOOTING_EN.md).
