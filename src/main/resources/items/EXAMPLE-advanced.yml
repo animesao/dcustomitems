@@ -39,10 +39,11 @@ legendary-sword:
   effects:
     - 'INCREASE_DAMAGE:3'
     - 'SPEED:2'
-  trigger-actions:
-    - 'on_kill:effect:REGENERATION:10:2'
-    - 'on_kill:message:&6⚔ &fВраг повержен! Регенерация на 10 сек!'
-    - 'on_kill:particle:VILLAGER_HAPPY:15'
+  triggers:
+    on_kill:
+      - 'effect:REGENERATION:10:2'
+      - 'message:&6⚔ &fВраг повержен! Регенерация на 10 сек!'
+      - 'particle:VILLAGER_HAPPY:15'
 
 guardian-shield:
   item:
@@ -72,12 +73,14 @@ guardian-shield:
   effects:
     - 'DAMAGE_RESISTANCE:2'
     - 'HEALTH_BOOST:1'
-  trigger-actions:
-    - 'on_damage_taken:effect:DAMAGE_RESISTANCE:5:1'
-    - 'on_damage_taken:particle:EXPLOSION_NORMAL:5'
-    - 'on_damage_taken:sound:ENTITY_IRON_GOLEM_ATTACK:1:1'
-    - 'on_jump:effect:SPEED:3:1'
-    - 'on_jump:particle:CLOUD:8'
+  triggers:
+    on_damage_taken:
+      - 'effect:DAMAGE_RESISTANCE:5:1'
+      - 'particle:EXPLOSION_NORMAL:5'
+      - 'sound:ENTITY_IRON_GOLEM_ATTACK:1:1'
+    on_jump:
+      - 'effect:SPEED:3:1'
+      - 'particle:CLOUD:8'
 
 farmer-scissors:
   item:
@@ -104,11 +107,13 @@ farmer-scissors:
     - 'BLOCK_GRASS_PLACE:1:1'
   effects:
     - 'HASTE:2'
-  trigger-actions:
-    - 'on_jump:effect:HASTE:5:2'
-    - 'on_jump:message:&a🌿 Спешка включена!'
-    - 'on_kill:effect:SATURATION:10:1'
-    - 'on_kill:message:&a🍎 Насыщение активировано!'
+  triggers:
+    on_jump:
+      - 'effect:HASTE:5:2'
+      - 'message:&a🌿 Спешка включена!'
+    on_kill:
+      - 'effect:SATURATION:10:1'
+      - 'message:&a🍎 Насыщение активировано!'
 
 example-custom-messages:
   item:

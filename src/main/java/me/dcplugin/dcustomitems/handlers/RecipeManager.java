@@ -86,6 +86,8 @@ public class RecipeManager {
         registerShaped(item, recipes, result);
         registerShapeless(item, recipes, result);
         registerFurnace(item, recipes, result);
+        registerSmithing(item, recipes, result);
+        registerStonecutting(item, recipes, result);
     }
 
     // ===== Java API-предметы (AbstractCustomItem.getRecipes()) =====
@@ -184,6 +186,37 @@ public class RecipeManager {
                     FurnaceRecipe furnace = new FurnaceRecipe(key, out, choice,
                             def.getExperience(), def.getCookingTime() <= 0 ? 200 : def.getCookingTime());
                     addJava(key, furnace, item.getId());
+                    break;
+                }
+                case SMITHING: {
+                    if (def.getIngredients().size() < 3) {
+                        plugin.getLogger().warning("[Recipes] '" + item.getId() + "': smithing требует template+base+addition");
+                        return;
+                    }
+                    RecipeChoice template = resolveChoice(def.getIngredients().get(0));
+                    RecipeChoice base = resolveChoice(def.getIngredients().get(1));
+                    RecipeChoice addition = resolveChoice(def.getIngredients().get(2));
+                    if (template == null || base == null || addition == null) return;
+                    try {
+                        org.bukkit.inventory.SmithingTransformRecipe smithing =
+                            new org.bukkit.inventory.SmithingTransformRecipe(key, out, template, base, addition);
+                        addJava(key, smithing, item.getId());
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("[Recipes] smithing недоступен на этом ядре: " + e.getMessage());
+                    }
+                    break;
+                }
+                case STONECUTTING: {
+                    if (def.getIngredients().isEmpty()) return;
+                    RecipeChoice choice = resolveChoice(def.getIngredients().get(0));
+                    if (choice == null) return;
+                    try {
+                        org.bukkit.inventory.StonecuttingRecipe stone =
+                            new org.bukkit.inventory.StonecuttingRecipe(key, out, choice);
+                        addJava(key, stone, item.getId());
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("[Recipes] stonecutting недоступен на этом ядре: " + e.getMessage());
+                    }
                     break;
                 }
             }
@@ -368,6 +401,59 @@ public class RecipeManager {
     }
 
     // ===== Helpers =====
+
+    private void registerSmithing(CustomItem item, Map<String, Object> recipes, ItemStack result) {
+        Object raw = recipes.get("smithing");
+        if (!(raw instanceof List)) return;
+        int index = 0;
+        for (Object recipeObj : (List<?>) raw) {
+            Map<String, Object> recipe = asMap(recipeObj);
+            if (recipe == null) { index++; continue; }
+            RecipeChoice template = resolveChoice(asString(recipe.get("template")));
+            RecipeChoice base = resolveChoice(asString(recipe.get("base")));
+            RecipeChoice addition = resolveChoice(asString(recipe.get("addition")));
+            if (template == null || base == null || addition == null) {
+                plugin.getLogger().warning("[Recipes] '" + item.getId() + "': smithing #%d — проверьте template/base/addition".formatted(index));
+                index++; continue;
+            }
+            try {
+                NamespacedKey key = recipeKey(item.getId(), "smithing", index);
+                ItemStack out = result.clone();
+                out.setAmount(asInt(recipe.get("amount"), 1));
+                org.bukkit.inventory.SmithingTransformRecipe r =
+                    new org.bukkit.inventory.SmithingTransformRecipe(key, out, template, base, addition);
+                if (add(key, r, item)) plugin.getLogger().info("[Recipes] '" + item.getId() + "': smithing рецепт #" + index);
+            } catch (Exception e) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING, "[Recipes] Ошибка smithing-рецепта '" + item.getId() + "': " + e.getMessage(), e);
+            }
+            index++;
+        }
+    }
+
+    private void registerStonecutting(CustomItem item, Map<String, Object> recipes, ItemStack result) {
+        Object raw = recipes.get("stonecutting");
+        if (!(raw instanceof List)) return;
+        int index = 0;
+        for (Object recipeObj : (List<?>) raw) {
+            Map<String, Object> recipe = asMap(recipeObj);
+            if (recipe == null) { index++; continue; }
+            RecipeChoice choice = resolveChoice(asString(recipe.get("ingredient")));
+            if (choice == null) {
+                plugin.getLogger().warning("[Recipes] '" + item.getId() + "': stonecutting #%d — неизвестный ingredient".formatted(index));
+                index++; continue;
+            }
+            try {
+                NamespacedKey key = recipeKey(item.getId(), "stonecutting", index);
+                ItemStack out = result.clone();
+                out.setAmount(asInt(recipe.get("amount"), 1));
+                org.bukkit.inventory.StonecuttingRecipe r = new org.bukkit.inventory.StonecuttingRecipe(key, out, choice);
+                if (add(key, r, item)) plugin.getLogger().info("[Recipes] '" + item.getId() + "': stonecutting рецепт #" + index);
+            } catch (Exception e) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING, "[Recipes] Ошибка stonecutting-рецепта '" + item.getId() + "': " + e.getMessage(), e);
+            }
+            index++;
+        }
+    }
 
     private boolean add(NamespacedKey key, Recipe recipe, CustomItem item) {
         try {

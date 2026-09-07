@@ -119,5 +119,3 @@ flame-blade-demo:
       - 'effect:SPEED:3:1'
       - 'particles:FLAME:5'
 
-  buy-price: 5000
-  sell-price: 2500

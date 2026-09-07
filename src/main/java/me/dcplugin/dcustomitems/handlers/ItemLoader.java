@@ -246,6 +246,9 @@ public class ItemLoader {
             }
 
             // === Build CustomItem ===
+            if (section.contains("buy-price") || section.contains("sell-price")) {
+                plugin.getLogger().warning("[LOAD] '" + itemId + "': buy-price/sell-price удалены в 1.328 — ключ игнорируется.");
+            }
             CustomItem customItem = CustomItem.builder(itemId, itemStack)
                     .type(type)
                     .activationSlot(activationSlot)
@@ -271,8 +274,6 @@ public class ItemLoader {
                     .activationMessage(activationMessage)
                     .deactivationMessage(deactivationMessage)
                     .usesDepletedMessage(usesDepletedMessage)
-                    .buyPrice(section.getDouble("buy-price", -1))
-                    .sellPrice(section.getDouble("sell-price", -1))
                     .duration(duration)
                     .maxDurationMessage(maxDurationMessage)
                     .trailParticles(trailParticles)
@@ -405,14 +406,14 @@ public class ItemLoader {
     }
 
     private List<String> loadTriggerActions(ConfigurationSection section) {
-        List<String> triggerActions = section.getStringList("trigger-actions");
-        if (!triggerActions.isEmpty()) return triggerActions;
+        if (section.contains("trigger-actions")) {
+            plugin.getLogger().severe("[LOAD] 'trigger-actions' удалён в 1.328 — используйте секцию 'triggers:'. Ключ проигнорирован.");
+        }
 
         // New format: triggers: { on_click_left: ['particles:FLAME:10'] }
         ConfigurationSection triggersSection = section.getConfigurationSection("triggers");
+        List<String> triggerActions = new ArrayList<>();
         if (triggersSection == null) return triggerActions;
-
-        triggerActions = new ArrayList<>();
         for (String triggerName : triggersSection.getKeys(false)) {
             for (String action : triggersSection.getStringList(triggerName)) {
                 triggerActions.add(triggerName + ":" + action);

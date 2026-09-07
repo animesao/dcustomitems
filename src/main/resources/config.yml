@@ -37,6 +37,11 @@ java-compilation: true
 # Отладочное логирование (выключить в продакшене)
 debug-mode: false
 
+# Бэкапы items/ + config.yml + data.db перед каждым /ci reload.
+backup:
+  on-reload: true
+  keep: 5
+
 # ==========================================
 # ОБРАЗЦЫ EXAMPLE-*
 # ==========================================

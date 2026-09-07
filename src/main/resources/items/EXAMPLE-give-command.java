@@ -216,11 +216,7 @@ public class GiveCommand extends CustomCommand {
         for (var entry : allItems.entrySet()) {
             CustomItem item = entry.getValue();
             String type = item.getType() != null ? item.getType() : "UNKNOWN";
-            String price = "";
-            if (item.isBuyable()) {
-                price = " &7[&e$" + String.format("%.0f", item.getBuyPrice()) + "&7]";
-            }
-            msg(sender, " &e" + entry.getKey() + " &7(" + type + ")" + price);
+            msg(sender, " &e" + entry.getKey() + " &7(" + type + ")");
         }
 
         // Java API-предметы

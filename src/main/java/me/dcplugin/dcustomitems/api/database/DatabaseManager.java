@@ -383,7 +383,15 @@ public class DatabaseManager {
 
     /** Stop the database worker threads during full plugin shutdown. */
     public void shutdownAsync() {
-        asyncExecutor.shutdownNow();
+        asyncExecutor.shutdown();
+        try {
+            if (!asyncExecutor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                asyncExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            asyncExecutor.shutdownNow();
+        }
     }
 
     /** Convert a generic insert to the correct upsert syntax for the selected database. */

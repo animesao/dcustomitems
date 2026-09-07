@@ -116,8 +116,10 @@ public class PluginBootstrap {
     public void disable() {
         plugin.getLogger().info("CustomItems disabling...");
 
-        if (databaseManager != null) databaseManager.shutdownAsync();
-        if (databaseManager != null) databaseManager.disconnect();
+        if (databaseManager != null) {
+            try { databaseManager.shutdownAsync(); } catch (Exception ignored) {}
+            try { databaseManager.disconnect(); } catch (Exception ignored) {}
+        }
 
         if (effectManager != null) {
             plugin.getServer().getOnlinePlayers().forEach(effectManager::stopPeriodicEffects);

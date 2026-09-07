@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.21.8%2B-green?style=for-the-badge&logo=minecraft" alt="Minecraft">
   <img src="https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Version-1.325.0-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-1.328.0-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Modules-5-purple?style=for-the-badge" alt="Modules">
   <img src="https://img.shields.io/github/license/animesao/dcustomitems-purple?style=for-the-badge" alt="License">
 </p>
@@ -125,7 +125,7 @@ vim items/my-module/config.yml
 ```bash
 # Скачать последний релиз
 cd ~/server/plugins
-curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.325.0/DC-CustomItems-1.325.0.jar
+curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.328.0/DC-CustomItems-1.328.0.jar
 
 # Перезапустить сервер
 ./restart.sh
@@ -133,7 +133,7 @@ curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/do
 
 ### Ручная установка
 
-1. Скачай `DC-CustomItems-1.325.0.jar` из [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.325.0)
+1. Скачай `DC-CustomItems-1.328.0.jar` из [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.328.0)
 2. Помести в папку `plugins/`
 3. Перезапусти сервер
 4. Настрой `plugins/DC-CustomItems/config.yml`
@@ -199,8 +199,6 @@ my-sword:
   click-cooldown: 3000
   equip-message: '&aМеч экипирован!'
   unequip-message: '&cМеч снят!'
-  buy-price: 1000
-  sell-price: 500
 ```
 
 ### 3. Перезагрузи и используй
@@ -319,11 +317,11 @@ my-item:
     - 'announce:&eИгрок %player% использовал предмет!'
     - 'command:give %player% diamond 1'
 
-  trigger-actions:
-    - 'on_kill:heal:5'
-    - 'on_jump:particle:FLAME:20'
-
-  triggers:                     # Новый формат
+  triggers:                     # Канон с 1.328 (trigger-actions удалён)
+    on_kill:
+      - 'heal:5'
+    on_jump:
+      - 'particle:FLAME:20'
     on_equip:
       - 'sound:ENTITY_PLAYER_LEVELUP:1:1.5'
     on_click_right:
@@ -348,8 +346,6 @@ my-item:
   deactivation-message: '&7Предмет деактивирован!'
   uses-depleted-message: '&cПредмет использован!'
 
-  buy-price: 1000
-  sell-price: 500
 ```
 
 ---
@@ -385,7 +381,7 @@ my-item:
 
 | Плейсхолдер | Описание | Пример |
 |-------------|----------|--------|
-| `%dci_version%` | Версия плагина | `1.325.0` |
+| `%dci_version%` | Версия плагина | `1.328.0` |
 | `%dci_item_count%` | YAML-предметов | `45` |
 | `%dci_java_item_count%` | Java API предметов | `6` |
 | `%dci_command_count%` | Команд | `3` |

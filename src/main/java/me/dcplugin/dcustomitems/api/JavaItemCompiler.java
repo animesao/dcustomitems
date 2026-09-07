@@ -38,6 +38,11 @@ public class JavaItemCompiler {
     private final AtomicBoolean compiling = new AtomicBoolean(false);
     
     private static final String PACKAGE = "items";
+    private static final long MAX_FILE_BYTES = 512 * 1024;
+    private static final int MAX_FILES = 300;
+    private static final String[] DANGEROUS_TOKENS = {
+        "System.exit", "Runtime.getRuntime().exec", "ProcessBuilder", ".setAccessible("
+    };
 
     public JavaItemCompiler(Main plugin) {
         this.plugin = plugin;
@@ -93,6 +98,11 @@ public class JavaItemCompiler {
         // Ищем .java файлы рекурсивно, включая подпапки-модули.
         List<File> javaFiles = findJavaFiles(itemsDir.toFile());
         if (javaFiles.isEmpty()) {
+            return result;
+        }
+        if (javaFiles.size() > MAX_FILES) {
+            plugin.getLogger().severe("[JavaCompiler] Слишком много .java файлов: " + javaFiles.size() + " (лимит " + MAX_FILES + "). Проверьте items/.");
+            result.errors.add("Too many .java files: " + javaFiles.size());
             return result;
         }
 
@@ -176,7 +186,19 @@ public class JavaItemCompiler {
 
     private boolean compileFile(File javaFile, CompileResult result) {
         try {
+            if (javaFile.length() > MAX_FILE_BYTES) {
+                String err = javaFile.getName() + ": файл >512KB — отклонён (защита от перегрузки компилятора)";
+                plugin.getLogger().warning("[JavaCompiler] ❌ " + err);
+                result.errors.add(err);
+                return false;
+            }
             String sourceCode = readFileContent(javaFile);
+            for (String token : DANGEROUS_TOKENS) {
+                if (sourceCode.contains(token)) {
+                    plugin.getLogger().warning("[JavaCompiler] ⚠ " + javaFile.getName() + " содержит опасный вызов '" + token + "' — проверьте файл вручную (java-compilation исполняет произвольный код).");
+                    break;
+                }
+            }
             String fileName = javaFile.getName().replace(".java", "");
 
             // Добавляем импорты если нет

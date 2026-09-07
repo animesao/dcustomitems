@@ -18,14 +18,17 @@ lightning-staff:
   activation-slot: HAND
   placeable: false
   click-cooldown: 2000
-  trigger-actions:
-    - 'on_click_right:lightning:1'
-    - 'on_click_right:particle:FIREWORKS_SPARK:10'
-    - 'on_click_right:sound:ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
-    - 'on_click_right:message:&6⚡ &7Молния призвана!'
-    - 'on_equip:particle:PORTAL:10'
-    - 'on_equip:message:&6⚡ &7Посох извлечен!'
-    - 'on_unequip:message:&6⚡ &7Посох убран.'
+  triggers:
+    on_click_right:
+      - 'lightning:1'
+      - 'particle:FIREWORKS_SPARK:10'
+      - 'sound:ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
+      - 'message:&6⚡ &7Молния призвана!'
+    on_equip:
+      - 'particle:PORTAL:10'
+      - 'message:&6⚡ &7Посох извлечен!'
+    on_unequip:
+      - 'message:&6⚡ &7Посох убран.'
 
 lightning-axe:
   item:
@@ -45,16 +48,20 @@ lightning-axe:
   activation-slot: HAND
   placeable: false
   click-cooldown: 1000
-  trigger-actions:
-    - 'on_click_right:lightning:2'
-    - 'on_click_right:particle:FIREWORKS_SPARK:15'
-    - 'on_click_right:message:&c⚡ &72 молнии!'
-    - 'on_click_left:lightning:3'
-    - 'on_click_left:particle:EXPLOSION_HUGE:5'
-    - 'on_click_left:message:&c💥 &7Взрыв молний!'
-    - 'on_equip:particle:FIREWORKS_SPARK:10'
-    - 'on_equip:message:&c⚡ &7Топор извлечен!'
-    - 'on_unequip:message:&c⚡ &7Топор убран.'
+  triggers:
+    on_click_right:
+      - 'lightning:2'
+      - 'particle:FIREWORKS_SPARK:15'
+      - 'message:&c⚡ &72 молнии!'
+    on_click_left:
+      - 'lightning:3'
+      - 'particle:EXPLOSION_HUGE:5'
+      - 'message:&c💥 &7Взрыв молний!'
+    on_equip:
+      - 'particle:FIREWORKS_SPARK:10'
+      - 'message:&c⚡ &7Топор извлечен!'
+    on_unequip:
+      - 'message:&c⚡ &7Топор убран.'
 
 magic-wand:
   item:
@@ -71,16 +78,20 @@ magic-wand:
   activation-slot: HAND
   placeable: false
   click-cooldown: 500
-  trigger-actions:
-    - 'on_click_right:effect:INCREASE_DAMAGE:10:2'
-    - 'on_click_right:particle:ENCHANTMENT_TABLE:15'
-    - 'on_click_right:message:&d✨ Сила активирована!'
-    - 'on_click_left:effect:SPEED:8:2'
-    - 'on_click_left:particle:CRIT:10'
-    - 'on_click_left:message:&b⚡ Спешка активирована!'
-    - 'on_equip:particle:PORTAL:10'
-    - 'on_equip:message:&5✨ &7Палочка извлечена!'
-    - 'on_unequip:message:&5✨ &7Палочка убрана.'
+  triggers:
+    on_click_right:
+      - 'effect:INCREASE_DAMAGE:10:2'
+      - 'particle:ENCHANTMENT_TABLE:15'
+      - 'message:&d✨ Сила активирована!'
+    on_click_left:
+      - 'effect:SPEED:8:2'
+      - 'particle:CRIT:10'
+      - 'message:&b⚡ Спешка активирована!'
+    on_equip:
+      - 'particle:PORTAL:10'
+      - 'message:&5✨ &7Палочка извлечена!'
+    on_unequip:
+      - 'message:&5✨ &7Палочка убрана.'
 
 command-staff:
   item:
@@ -99,12 +110,15 @@ command-staff:
   max-uses: 10
   effects:
     - 'NIGHT_VISION:1'
-  trigger-actions:
-    - 'on_click_right:command:give %player% diamond 1'
-    - 'on_click_right:particle:VILLAGER_HAPPY:10'
-    - 'on_click_right:message:&e+1 алмаз!'
-    - 'on_equip:message:&9📜 &7Посох извлечен!'
-    - 'on_unequip:message:&9📜 &7Посох убран.'
+  triggers:
+    on_click_right:
+      - 'command:give %player% diamond 1'
+      - 'particle:VILLAGER_HAPPY:10'
+      - 'message:&e+1 алмаз!'
+    on_equip:
+      - 'message:&9📜 &7Посох извлечен!'
+    on_unequip:
+      - 'message:&9📜 &7Посох убран.'
 
 healing-staff:
   item:
@@ -120,14 +134,17 @@ healing-staff:
   activation-slot: HAND
   placeable: false
   click-cooldown: 3000
-  trigger-actions:
-    - 'on_click_right:effect:REGENERATION:15:2'
-    - 'on_click_right:effect:ABSORPTION:15:2'
-    - 'on_click_right:particle:HEART:20'
-    - 'on_click_right:sound:ENTITY_PLAYER_LEVELUP:1:1'
-    - 'on_click_right:message:&c❤ Исцеление началось!'
-    - 'on_equip:message:&c❤ &7Посох извлечен!'
-    - 'on_unequip:message:&c❤ &7Посох убран.'
+  triggers:
+    on_click_right:
+      - 'effect:REGENERATION:15:2'
+      - 'effect:ABSORPTION:15:2'
+      - 'particle:HEART:20'
+      - 'sound:ENTITY_PLAYER_LEVELUP:1:1'
+      - 'message:&c❤ Исцеление началось!'
+    on_equip:
+      - 'message:&c❤ &7Посох извлечен!'
+    on_unequip:
+      - 'message:&c❤ &7Посох убран.'
 
 energy-blast:
   item:
@@ -145,13 +162,16 @@ energy-blast:
   activation-slot: HAND
   placeable: false
   click-cooldown: 1000
-  trigger-actions:
-    - 'on_click_right:lightning:2'
-    - 'on_click_right:particle:FIREWORKS_SPARK:15'
-    - 'on_click_right:sound:ENTITY_LIGHTNING_BOLT_IMPACT:1:0.8'
-    - 'on_click_right:message:&e⚡ &7Энергетический взрыв!'
-    - 'on_equip:message:&e⚡ &7Меч извлечен!'
-    - 'on_unequip:message:&e⚡ &7Меч убран.'
+  triggers:
+    on_click_right:
+      - 'lightning:2'
+      - 'particle:FIREWORKS_SPARK:15'
+      - 'sound:ENTITY_LIGHTNING_BOLT_IMPACT:1:0.8'
+      - 'message:&e⚡ &7Энергетический взрыв!'
+    on_equip:
+      - 'message:&e⚡ &7Меч извлечен!'
+    on_unequip:
+      - 'message:&e⚡ &7Меч убран.'
 
 magic-orb:
   item:
@@ -168,16 +188,20 @@ magic-orb:
   activation-slot: HAND
   placeable: false
   click-cooldown: 600
-  trigger-actions:
-    - 'on_click_right:effect:INVISIBILITY:10:0'
-    - 'on_click_right:particle:SPELL_WITCH:10'
-    - 'on_click_right:message:&d✨ Вы невидимы!'
-    - 'on_click_left:effect:GLOWING:5:0'
-    - 'on_click_left:particle:PORTAL:20'
-    - 'on_click_left:sound:BLOCK_BEACON_ACTIVATE:1:1'
-    - 'on_click_left:message:&d⭐ Активирована магия!'
-    - 'on_equip:message:&d🔮 &7Кристалл извлечен!'
-    - 'on_unequip:message:&d🔮 &7Кристалл убран.'
+  triggers:
+    on_click_right:
+      - 'effect:INVISIBILITY:10:0'
+      - 'particle:SPELL_WITCH:10'
+      - 'message:&d✨ Вы невидимы!'
+    on_click_left:
+      - 'effect:GLOWING:5:0'
+      - 'particle:PORTAL:20'
+      - 'sound:BLOCK_BEACON_ACTIVATE:1:1'
+      - 'message:&d⭐ Активирована магия!'
+    on_equip:
+      - 'message:&d🔮 &7Кристалл извлечен!'
+    on_unequip:
+      - 'message:&d🔮 &7Кристалл убран.'
 
 sound-staff:
   item:
@@ -194,11 +218,15 @@ sound-staff:
   activation-slot: HAND
   placeable: false
   click-cooldown: 300
-  trigger-actions:
-    - 'on_click_right:sound:UI_BUTTON_CLICK:1:1'
-    - 'on_click_right:message:&9Ding!'
-    - 'on_click_left:sound:BLOCK_END_PORTAL_SPAWN:0.5:0.7'
-    - 'on_click_left:particle:PORTAL:30'
-    - 'on_click_left:message:&9🌀 &7Портал!'
-    - 'on_equip:message:&9🔊 &7Посох извлечен!'
-    - 'on_unequip:message:&9🔊 &7Посох убран.'
+  triggers:
+    on_click_right:
+      - 'sound:UI_BUTTON_CLICK:1:1'
+      - 'message:&9Ding!'
+    on_click_left:
+      - 'sound:BLOCK_END_PORTAL_SPAWN:0.5:0.7'
+      - 'particle:PORTAL:30'
+      - 'message:&9🌀 &7Портал!'
+    on_equip:
+      - 'message:&9🔊 &7Посох извлечен!'
+    on_unequip:
+      - 'message:&9🔊 &7Посох убран.'

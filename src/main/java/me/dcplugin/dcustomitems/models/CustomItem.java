@@ -15,7 +15,7 @@ public class CustomItem {
     private final String activationSlot;
     private final boolean placeable;
     private final List<String> effects;
-    private Map<PotionEffectType, Integer> parsedEffects;
+    private volatile Map<PotionEffectType, Integer> parsedEffects;
     private final Map<String, Double> attributes;
     private final String armorSetId;
     private final boolean hasSetBonus;
@@ -37,8 +37,6 @@ public class CustomItem {
     private final String activationMessage;
     private final String deactivationMessage;
     private final String usesDepletedMessage;
-    private final double buyPrice;
-    private final double sellPrice;
 
     // === Новые поля ===
     private final long duration;                    // Время жизни предмета (секунды, -1 = бессрочно)
@@ -78,8 +76,6 @@ public class CustomItem {
         this.activationMessage = b.activationMessage;
         this.deactivationMessage = b.deactivationMessage;
         this.usesDepletedMessage = b.usesDepletedMessage;
-        this.buyPrice = b.buyPrice;
-        this.sellPrice = b.sellPrice;
         this.duration = b.duration;
         this.maxDurationMessage = b.maxDurationMessage;
         this.trailParticles = b.trailParticles;
@@ -127,8 +123,6 @@ public class CustomItem {
         private String activationMessage = null;
         private String deactivationMessage = null;
         private String usesDepletedMessage = null;
-        private double buyPrice = -1;  // -1 = нельзя купить
-        private double sellPrice = -1; // -1 = нельзя продать
 
         // Новые поля
         private long duration = -1;                    // Время жизни (секунды, -1 = бессрочно)
@@ -169,8 +163,6 @@ public class CustomItem {
         public Builder activationMessage(String msg) { this.activationMessage = msg; return this; }
         public Builder deactivationMessage(String msg) { this.deactivationMessage = msg; return this; }
         public Builder usesDepletedMessage(String msg) { this.usesDepletedMessage = msg; return this; }
-        public Builder buyPrice(double price) { this.buyPrice = price; return this; }
-        public Builder sellPrice(double price) { this.sellPrice = price; return this; }
         public Builder duration(long seconds) { this.duration = seconds; return this; }
         public Builder maxDurationMessage(String msg) { this.maxDurationMessage = msg; return this; }
         public Builder trailParticles(List<String> particles) { this.trailParticles = particles != null ? particles : new ArrayList<>(); return this; }
@@ -219,8 +211,13 @@ public class CustomItem {
     public String getDeactivationMessage() { return deactivationMessage; }
     public String getUsesDepletedMessage() { return usesDepletedMessage; }
 
-    public Map<PotionEffectType, Integer> getParsedEffects() { return parsedEffects; }
-    public void setParsedEffects(Map<PotionEffectType, Integer> parsedEffects) { this.parsedEffects = parsedEffects; }
+    public Map<PotionEffectType, Integer> getParsedEffects() {
+        Map<PotionEffectType, Integer> copy = parsedEffects;
+        return copy == null ? null : Map.copyOf(copy);
+    }
+    public synchronized void setParsedEffects(Map<PotionEffectType, Integer> parsedEffects) {
+        this.parsedEffects = parsedEffects == null ? null : Map.copyOf(parsedEffects);
+    }
 
     public boolean hasEffect(PotionEffectType effectType) {
         return parsedEffects != null && parsedEffects.containsKey(effectType);
@@ -239,10 +236,6 @@ public class CustomItem {
     public boolean hasActivationMessage() { return activationMessage != null && !activationMessage.trim().isEmpty(); }
     public boolean hasDeactivationMessage() { return deactivationMessage != null && !deactivationMessage.trim().isEmpty(); }
     public boolean hasUsesDepletedMessage() { return usesDepletedMessage != null && !usesDepletedMessage.trim().isEmpty(); }
-    public double getBuyPrice() { return buyPrice; }
-    public double getSellPrice() { return sellPrice; }
-    public boolean isBuyable() { return buyPrice > 0; }
-    public boolean isSellable() { return sellPrice > 0; }
 
     // === Новые геттеры ===
     public long getDuration() { return duration; }

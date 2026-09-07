@@ -26,9 +26,10 @@ import java.util.UUID;
  *   ActionBar: "&cКомбо x%combo%! Множитель: %combo_multiplier%"
  *
  * Для активации комбо-системы используй триггеры:
- *   trigger-actions:
- *     - 'on_kill:combo_add:1'
- *     - 'on_kill:message:&cКомбо x%combo%! &eМножитель: %combo_multiplier%'
+ *   triggers:
+ *     on_kill:
+ *       - 'combo_add:1'
+ *       - 'message:&cКомбо x%combo%! &eМножитель: %combo_multiplier%'
  */
 public class ComboPlaceholder extends CustomPlaceholder {
 

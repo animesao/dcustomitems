@@ -7,6 +7,27 @@
 
 ---
 
+## v1.328.0
+
+### 💥 Удалено (breaking)
+
+- **`buy-price` / `sell-price` удалены**: поля выпилены из `CustomItem`, `ItemLoader` их игнорирует с варнингом. Магазин мёртв с v1.326 — экономика только через Vault/shop-модули.
+- **`trigger-actions:` удалён**: остался только канон `triggers:` (секция с v1.324). Старый ключ игнорируется с SEVERE-логом. Примеры `EXAMPLE-tools.yml`, `EXAMPLE-advanced.yml` переведены на `triggers:` скриптом.
+
+### ✨ Новое (из прошлого спринта, релизится здесь)
+
+- **`/ci validate`** — проверка рецептов (`ItemValidator`): shaped/shapeless/smithing/stonecutting, неизвестные ингредиенты.
+- **`/ci debug <id>`** — дамп предмета (тип/слот/uses/cd/рецепты/PDC).
+- **`/ci backup` + автобэкап** перед `/ci reload` (`backup.on-reload/keep`, `BackupManager`).
+- **Рецепты `smithing` / `stonecutting`** — YAML + Java API (`RecipeDef.smithing()/stonecutting()`), `schema/items.schema.json` для IDE.
+- **`CooldownStore`** — персистентные кулдауны (`cooldowns.yml`).
+- **Безопасность**: лимиты компилятора (300 файлов / 512KB), варнинги на `System.exit/Runtime.exec/ProcessBuilder/setAccessible`.
+- **БД**: `shutdownAsync()` с `awaitTermination(5с)` — гонки при disable больше нет.
+- **`CustomItem.parsedEffects`** — `volatile` + defensive copy.
+- **Дока**: `docs.md` стал редиректом на `docs/`.
+
+---
+
 ## v1.327.0
 
 ### 📦 Контент — только образцы по умолчанию

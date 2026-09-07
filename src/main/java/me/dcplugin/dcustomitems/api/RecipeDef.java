@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public final class RecipeDef {
 
-    public enum Type { SHAPED, SHAPELESS, FURNACE }
+    public enum Type { SHAPED, SHAPELESS, FURNACE, SMITHING, STONECUTTING }
 
     private final Type type;
     private final List<String> pattern;              // shaped
@@ -85,6 +85,24 @@ public final class RecipeDef {
         return new RecipeDef(Type.FURNACE, null, null, List.of(ingredient), 1, experience, cookingTime);
     }
 
+    public static RecipeDef smithing(String template, String base, String addition) {
+        return smithing(template, base, addition, 1);
+    }
+
+    public static RecipeDef smithing(String template, String base, String addition, int amount) {
+        return new RecipeDef(Type.SMITHING, null, null,
+            List.of(template == null ? "" : template, base == null ? "" : base, addition == null ? "" : addition),
+            amount <= 0 ? 1 : amount, 0, 0);
+    }
+
+    public static RecipeDef stonecutting(String ingredient) {
+        return stonecutting(ingredient, 1);
+    }
+
+    public static RecipeDef stonecutting(String ingredient, int amount) {
+        return new RecipeDef(Type.STONECUTTING, null, null, List.of(ingredient), amount <= 0 ? 1 : amount, 0, 0);
+    }
+
     // ===== Getters =====
 
     public Type getType() { return type; }
@@ -108,6 +126,10 @@ public final class RecipeDef {
                 return "shaped " + pattern;
             case SHAPELESS:
                 return "shapeless " + ingredients;
+            case SMITHING:
+                return "smithing " + ingredients;
+            case STONECUTTING:
+                return "stonecutting " + ingredients;
             default:
                 return "furnace " + ingredients;
         }
