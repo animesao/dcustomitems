@@ -7,6 +7,20 @@
 
 ---
 
+## v1.329.0
+
+### 🔧 Исправлено
+
+- **Образцы `EXAMPLE-*` больше не спамят `items/` по умолчанию**: `extract-default-modules` теперь `false` из коробки (было `true`). На чистом сервере папка `items/` остаётся пустой — только рабочий `items/messages.java`. Автокопирование включается только явно (`extract-default-modules: true`), копируются лишь отсутствующие файлы.
+- **Включение образца — копированием без префикса**: `EXAMPLE-runes.yml` → `runes.yml`, `EXAMPLE-vault/` → `vault/`, далее `/ci reload` (комментарии в `config.yml` и javadoc обновлены).
+- **`config.yml`: ключи `java-compilation`, `backup`, `extract-default-modules` больше не считаются предметами** — добавлены в skip-списки `ItemLoader.CONFIG_SKIP_KEYS` и `ConfigMigrator` (убирает ложные варнинги и ложное предложение миграции).
+
+### ⚠️ Обновление с прошлых версий
+
+- На существующем сервере `config.yml` не перезаписывается автоматически: удалите вручную `items/EXAMPLE-*` и выставьте `extract-default-modules: false`, если не хотите автокопирования.
+
+---
+
 ## v1.328.0
 
 ### 💥 Удалено (breaking)
