@@ -63,7 +63,8 @@ public class PluginBootstrap {
 
         plugin.saveDefaultConfig();
 
-        // Штатные модули: копируются из jar в items/ только если отсутствуют.
+        // Образцы EXAMPLE-*: копируются из jar в items/ только если включены
+        // опцией extract-default-modules (по умолчанию false — без спама).
         // Так вся функциональность (предметы, команды, модули) остаётся файлами,
         // которые администратор может удалить или изменить.
         DefaultContentExtractor.extract(plugin);

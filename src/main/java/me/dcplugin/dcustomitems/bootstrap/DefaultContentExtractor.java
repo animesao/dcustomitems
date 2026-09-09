@@ -19,7 +19,8 @@ import java.util.jar.JarFile;
  * Вся функциональность (предметы, команды, модули) живёт в items/ как файлы,
  * которые администратор может удалить, изменить или создать сам. В jar плагина
  * лежат только образцы с префиксом EXAMPLE-* — по умолчанию на чистом сервере
- * копируются именно они (только отсутствующие файлы, ничего не перезаписывая).
+ * они НЕ копируются (extract-default-modules: false). При включенной опции
+ * копируются только отсутствующие файлы, ничего не перезаписывая.
  *
  * Чтобы включить предмет/команду/модуль из образца: скопируйте файл (или
  * папку) в items/ и уберите префикс EXAMPLE- из имени — после /ci reload
@@ -39,8 +40,8 @@ public final class DefaultContentExtractor {
     private DefaultContentExtractor() {}
 
     public static void extract(Main plugin) {
-        if (!plugin.getConfig().getBoolean("extract-default-modules", true)) {
-            plugin.getLogger().info("[Extract] extract-default-modules = false, образцы EXAMPLE-* не копируются");
+        if (!plugin.getConfig().getBoolean("extract-default-modules", false)) {
+            plugin.getLogger().info("[Extract] extract-default-modules = false, образцы EXAMPLE-* не копируются (папка items/ остаётся как есть)");
             return;
         }
 

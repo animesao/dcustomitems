@@ -60,7 +60,8 @@ public class ItemLoader {
     private static final Set<String> CONFIG_SKIP_KEYS = Set.of(
             "debug-mode", "database", "set-bonuses",
             "update-available", "latest-version",
-            "disable-worlds", "whitelist-blocks"
+            "disable-worlds", "whitelist-blocks",
+            "java-compilation", "backup", "extract-default-modules"
     );
 
     private void loadFromConfig(Map<String, CustomItem> items) {

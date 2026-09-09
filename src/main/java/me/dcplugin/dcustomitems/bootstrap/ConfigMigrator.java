@@ -50,7 +50,8 @@ public class ConfigMigrator {
         Set<String> settingKeys = Set.of(
                 "debug-mode", "database", "set-bonuses",
                 "update-available", "latest-version",
-                "disable-worlds", "whitelist-blocks"
+                "disable-worlds", "whitelist-blocks",
+                "java-compilation", "backup", "extract-default-modules"
         );
         List<String> itemKeys = new ArrayList<>();
         for (String key : configKeys) {
