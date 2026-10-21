@@ -7,6 +7,53 @@
 
 ---
 
+## v1.333.0
+
+### 💬 One central message system
+
+Every text the player sees now lives in one place and can be overridden by
+the administrator.
+
+- **All hard-coded player-facing strings were moved to the message system**:
+  item expiry and world bans, the permission and "uses depleted" texts, the
+  `/ci` output (help, validation, debug, backup), the custom-command texts
+  (`Command not found`, `Player not found`, `Specify a player`), the
+  permission message of `CustomCommand` and the update-checker notification.
+- **`MessagesConfig` is now addressed by path** — `items.expired`,
+  `items.world-blocked`, `commands.not-found`, `ci.reload.success`,
+  `update.title` and so on. The old constants still work.
+- **Modules can plug their own texts into the same system**:
+  - `registerMessage("my-module.no-money", "...")` in a module
+  - `getMessage("my-module.no-money", "...")` to read it
+  - `MessageManager#registerMessage(path, value)` for third-party plugins
+  - `CustomCommand#message(path, default)` for custom commands
+- **Any path works**, including your own: `MessagesConfig.set("my.text", "...")`
+  in `items/messages.java` and the module reads it back by the same path.
+- **Priority:** override from `items/messages.java` → the module's own text →
+  the plugin's built-in message → the fallback default.
+- Overrides that were removed from `items/messages.java` no longer survive a
+  reload.
+
+### 🐛 Fixed
+
+- **`samples/EXAMPLE-messages.java` did not compile**: it referenced about
+  fifty fields that do not exist in `MessagesConfig` (`CI_HELP_GIVE`,
+  `LIST_HEADER`, `API_HEADER`, `BERSERK_ENABLED`, …). Copying it to
+  `items/messages.java` produced a compile error, so the messages were never
+  applied. The sample now only uses existing fields and demonstrates the
+  custom-path API. Verified by compiling the sample the same way the plugin
+  does.
+
+### ⚠️ Update notes
+
+- Nothing changes for existing servers: `items/messages.java` keeps working
+  as before.
+- If you use a custom command that relied on the old default permission
+  message, it is now resolved through the message system — the text is the
+  same unless you override it.
+
+---
+
 ## v1.332.0
 
 ### 📦 The plugin installs exactly one file
