@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 /**
- * Обработчик всех кастомных команд
+ * Handler for all custom commands
  */
 public class CustomCommandExecutor implements CommandExecutor, TabCompleter {
 
@@ -23,7 +23,7 @@ public class CustomCommandExecutor implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         CustomCommand cmd = registry.getCommand(label.toLowerCase());
         if (cmd == null) {
-            // Попробовать поискать по имени
+            // Try to look the command up by name
             for (CustomCommand c : registry.getAllCommands().values()) {
                 if (c.getName().equalsIgnoreCase(label) || c.getAliases().contains(label.toLowerCase())) {
                     cmd = c;
@@ -33,11 +33,11 @@ public class CustomCommandExecutor implements CommandExecutor, TabCompleter {
         }
 
         if (cmd == null) {
-            sender.sendMessage("§cКоманда не найдена: " + label);
+            sender.sendMessage("§cCommand not found: " + label);
             return true;
         }
 
-        // Проверка прав
+        // Permission check
         if (!cmd.hasPermission(sender)) {
             sender.sendMessage(cmd.getPermissionMessage());
             return true;
@@ -46,7 +46,7 @@ public class CustomCommandExecutor implements CommandExecutor, TabCompleter {
         try {
             return cmd.execute(sender, args);
         } catch (Exception e) {
-            sender.sendMessage("§cОшибка выполнения команды: " + e.getMessage());
+            sender.sendMessage("§cError executing command: " + e.getMessage());
             Main plugin = Main.getInstance();
             if (plugin != null) {
                 plugin.getLogger().log(Level.WARNING,

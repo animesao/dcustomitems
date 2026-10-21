@@ -2,21 +2,21 @@
 # 💰 Vault Economy Module
 # ==========================================
 #
-# Простая валюта для игроков (в стиле Essentials) — без магазина.
+# A simple player currency (Essentials-style) — without a shop.
 #
-# Команды:
-#   /balance (алиасы /bal /money), /pay, /eco (админ)
+# Commands:
+#   /balance (aliases /bal /money), /pay, /eco (admin)
 #
-# Покупка/продажа предметов — это отдельные плагины (магазин, аукцион
-# и т.п.), которые работают с валютой модуля через Vault или публичный
+# Buying/selling items — those are separate plugins (shop, auction
+# etc.) that work with the module's currency through Vault or the public
 # API: getBalance / withdraw / deposit / format.
 #
-# Требования:
-#   - Vault (плагин)
-#   - Плагин экономики (EssentialsX, ChargeMe и т.д.)
+# Requirements:
+#   - Vault (plugin)
+#   - An economy plugin (EssentialsX, ChargeMe etc.)
 #
-# Отключение:
-#   Установите enabled: false или удалите папку items/vault/
+# Disabling:
+#   Set enabled: false or delete the items/vault/ folder
 #
 # ==========================================
 
@@ -25,52 +25,52 @@ version: "2.0"
 enabled: true
 
 # ==========================================
-# 💵 ЭКОНОМИКА (Essentials-style)
+# 💵 ECONOMY (Essentials-style)
 # ==========================================
 economy:
-  # Где хранить балансы:
-  #   vault — экономика Vault (нужны Vault + плагин экономики, например EssentialsX)
-  #   own   — СВОЯ БАЗА ДАННЫХ плагина (data.db SQLite или MySQL из config.yml ядра).
-  #           Vault-плагин экономики НЕ требуется. Балансы хранятся в таблице
-  #           dci_vault_balances, все операции пишутся в журнал dci_vault_transactions.
+  # Where to store the balances:
+  #   vault — the Vault economy (Vault + an economy plugin such as EssentialsX are required)
+  #   own   — the plugin's OWN DATABASE (data.db SQLite or MySQL from the core config.yml).
+  #           NO Vault economy plugin is required. Balances are stored in the
+  #           dci_vault_balances table, all operations are written to the dci_vault_transactions log.
   storage: vault
 
-  currency-symbol: "$"         # символ валюты (для storage: own)
-  currency-name: "dollar"      # название валюты, ед. ч. (%vault_currency_singular%)
-  currency-name-plural: "dollars"  # мн. ч. (%vault_currency%)
+  currency-symbol: "$"         # currency symbol (for storage: own)
+  currency-name: "dollar"      # currency name, singular (%vault_currency_singular%)
+  currency-name-plural: "dollars"  # plural (%vault_currency%)
 
-  # Стартовый баланс новому игроку (0 = выключено).
-  # storage: own  → строка в dci_vault_balances создаётся сразу со стартовой суммой
-  # storage: vault → список получившихся — items/vault/starting-paid.yml
+  # Starting balance for a new player (0 = disabled).
+  # storage: own  → the row in dci_vault_balances is created right away with the starting amount
+  # storage: vault → the list of those who received it — items/vault/starting-paid.yml
   starting-balance: 0
 
-  pay-enabled: true          # разрешить /pay
-  min-pay: 1.0               # минимальная сумма перевода
-  insufficient-funds: "&c[DCI] &cНедостаточно средств! Нужно: &e{price} &c| У вас: &e{balance}"
+  pay-enabled: true          # allow /pay
+  min-pay: 1.0               # minimum transfer amount
+  insufficient-funds: "&c[DCI] &cInsufficient funds! Needed: &e{price} &c| You have: &e{balance}"
 
-  players-only: "&c[DCI] &cТолько для игроков!"
-  no-permission: "&c[DCI] &cНет прав!"
-  economy-not-loaded: "&c[DCI] &cЭкономика не подключена! Установите Vault + плагин экономики."
-  transaction-error: "&c[DCI] &cОшибка транзакции!"
-  player-not-found: "&c[DCI] &cИгрок '&e{player}&c' не найден."
+  players-only: "&c[DCI] &cPlayers only!"
+  no-permission: "&c[DCI] &cNo permission!"
+  economy-not-loaded: "&c[DCI] &cThe economy is not connected! Install Vault + an economy plugin."
+  transaction-error: "&c[DCI] &cTransaction error!"
+  player-not-found: "&c[DCI] &cPlayer '&e{player}&c' not found."
 
-  balance-own: "&a[DCI] &aВаш баланс: &e{balance}"
-  balance-others: "&a[DCI] &aБаланс игрока &e{player}&a: &e{balance}"
+  balance-own: "&a[DCI] &aYour balance: &e{balance}"
+  balance-others: "&a[DCI] &aBalance of the player &e{player}&a: &e{balance}"
 
-  pay-usage: "&c[DCI] &cИспользование: /pay <игрок> <сумма>"
-  pay-disabled: "&c[DCI] &cПереводы отключены!"
-  pay-offline: "&c[DCI] &cИгрок должен быть онлайн!"
-  pay-self: "&c[DCI] &cНельзя переводить самому себе!"
-  pay-min: "&c[DCI] &cМинимальная сумма перевода: &e{min}"
-  pay-sent: "&a[DCI] &aВы перевели &e{amount} &aигроку &e{player}&a. Баланс: &e{balance}"
-  pay-received: "&a[DCI] &e{player} &aперевёл вам &e{amount}&a. Баланс: &e{balance}"
+  pay-usage: "&c[DCI] &cUsage: /pay <player> <amount>"
+  pay-disabled: "&c[DCI] &cTransfers are disabled!"
+  pay-offline: "&c[DCI] &cThe player must be online!"
+  pay-self: "&c[DCI] &cYou cannot transfer to yourself!"
+  pay-min: "&c[DCI] &cMinimum transfer amount: &e{min}"
+  pay-sent: "&a[DCI] &aYou transferred &e{amount} &ato the player &e{player}&a. Balance: &e{balance}"
+  pay-received: "&a[DCI] &e{player} &atransferred you &e{amount}&a. Balance: &e{balance}"
 
-  eco-usage: "&c[DCI] &cИспользование: /eco <give|take|set|reset> <игрок> [сумма]"
-  eco-done: "&a[DCI] &aБаланс &e{player}&a: &e{balance}"
+  eco-usage: "&c[DCI] &cUsage: /eco <give|take|set|reset> <player> [amount]"
+  eco-done: "&a[DCI] &aBalance &e{player}&a: &e{balance}"
 
-  starting-balance-given: "&a[DCI] &aВам начислен стартовый баланс: &e{amount}"
+  starting-balance-given: "&a[DCI] &aYou have been credited with the starting balance: &e{amount}"
 
-# Команды модуля (справочно; регистрируются автоматически)
+# Module commands (for reference; they are registered automatically)
 commands:
   - balance
   - bal
@@ -78,9 +78,9 @@ commands:
   - pay
   - eco
 
-# Права модуля
-# Игрокам (по умолчанию у всех): dci.balance, dci.balance.others, dci.pay
-# Админам (по умолчанию у OP): dci.eco
+# Module permissions
+# For players (by default everyone): dci.balance, dci.balance.others, dci.pay
+# For admins (by default OP): dci.eco
 permissions:
   - dci.balance
   - dci.balance.others

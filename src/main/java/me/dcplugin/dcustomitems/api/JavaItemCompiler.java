@@ -18,13 +18,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Оптимизированный Runtime компилятор для .java файлов
- * 
- * Оптимизации:
- * - Кэширование скомпилированных классов
- * - Пропуск неизмененных файлов
- * - Асинхронная компиляция
- * - Минимальная нагрузка на сервер
+ * Optimized Runtime compiler for .java files
+ *
+ * Optimizations:
+ * - Caching of the compiled classes
+ * - Skipping of the unchanged files
+ * - Asynchronous compilation
+ * - Minimal server load
  */
 public class JavaItemCompiler {
 
@@ -47,10 +47,10 @@ public class JavaItemCompiler {
     };
 
     /**
-     * Импорты, добавляемые автоматически, если их нет в исходнике.
-     * Проверяются поимённо: раньше блок импортов добавлялся только если в
-     * файле вообще не было строки "import me.dcplugin.dcustomitems.api",
-     * и файл с одним импортом (например RecipeDef) не компилировался.
+     * The imports that are added automatically if they are missing in the source.
+     * They are checked by name: previously the import block was only added if
+     * the file did not contain the line "import me.dcplugin.dcustomitems.api" at all,
+     * and a file with a single import (for example RecipeDef) was not compiled.
      */
     private static final String[] DEFAULT_IMPORTS = {
         "me.dcplugin.dcustomitems.api.AbstractCustomItem",
@@ -59,7 +59,7 @@ public class JavaItemCompiler {
         "me.dcplugin.dcustomitems.api.placeholders.CustomPlaceholder"
     };
 
-    /** Скомпилированные шаблоны замены имён классов (по одному на алиас). */
+    /** The compiled templates for the class name replacement (one per alias). */
     private final List<Map.Entry<Pattern, String>> aliasPatterns = new ArrayList<>();
 
     public JavaItemCompiler(Main plugin) {
@@ -70,8 +70,8 @@ public class JavaItemCompiler {
     }
 
     /**
-     * Асинхронная компиляция всех .java файлов
-     * Возвращает CompletableFuture с результатом
+     * Asynchronous compilation of all .java files
+     * Returns a CompletableFuture with the result
      */
     public CompletableFuture<CompileResult> compileAllAsync() {
         if (compiling.get()) {
@@ -90,7 +90,7 @@ public class JavaItemCompiler {
     }
 
     /**
-     * Синхронная компиляция (для использования при старте)
+     * Synchronous compilation (for use at startup)
      */
     public CompileResult compileAll() {
         return compileAllInternal();
@@ -111,22 +111,22 @@ public class JavaItemCompiler {
             return result;
         }
 
-        // Загружаем кэш хэшей файлов
+        // Load the file hash cache
         loadFileHashesCache();
 
-        // Ищем .java файлы рекурсивно, включая подпапки-модули.
+        // Look for .java files recursively, including the module subfolders.
         List<File> javaFiles = findJavaFiles(itemsDir.toFile());
         if (javaFiles.isEmpty()) {
             return result;
         }
         if (javaFiles.size() > MAX_FILES) {
-            plugin.getLogger().severe("[JavaCompiler] Слишком много .java файлов: " + javaFiles.size() + " (лимит " + MAX_FILES + "). Проверьте items/.");
+            plugin.getLogger().severe("[JavaCompiler] Too many .java files: " + javaFiles.size() + " (limit " + MAX_FILES + "). Check items/.");
             result.errors.add("Too many .java files: " + javaFiles.size());
             return result;
         }
 
-        // Сначала строим таблицу имён. Это позволяет файлам одного модуля
-        // ссылаться друг на друга после переименования классов компилятором.
+        // First the name table is built. This allows the files of one module
+        // to reference each other after the compiler renames the classes.
         sourceClassAliases.clear();
         for (File javaFile : javaFiles) {
             String source = readFileContent(javaFile);
@@ -142,8 +142,8 @@ public class JavaItemCompiler {
             }
         }
 
-        // Шаблоны замены имён компилируются один раз, а не на каждый файл
-        // (раньше Pattern.compile вызывался для каждого алиаса в каждом файле).
+        // The class name replacement patterns are compiled once, not for every file
+        // (previously Pattern.compile was called for every alias in every file).
         buildAliasPatterns();
 
         plugin.getLogger().info("[JavaCompiler] Found " + javaFiles.size() + " .java files");
@@ -152,19 +152,19 @@ public class JavaItemCompiler {
         int compiled = 0;
 
         for (File javaFile : javaFiles) {
-            // Проверяем, изменился ли файл
+            // Check whether the file has changed
             String currentHash = getFileHash(javaFile);
             String cacheKey = getCacheKey(javaFile);
             String cachedHash = fileHashes.get(cacheKey);
             
             if (currentHash.equals(cachedHash)) {
-                // Файл не изменился - пропускаем компиляцию
+                // The file has not changed - skip the compilation
                 String fullClassName = PACKAGE + "." + getGeneratedClassName(javaFile);
                 
-                // Загружаем из кэша весь класс-пакет: основной класс и его
-                // вложенные классы (например, Outer$MenuItem). Раньше здесь
-                // загружался только Outer.class, из-за чего модули с nested
-                // classes падали после рестарта при режиме Skipped.
+                // The whole class bundle is loaded from the cache: the main class and its
+                // nested classes (for example Outer$MenuItem). Previously only
+                // Outer.class was loaded here, which made the modules with
+                // nested classes fail after a restart in the Skipped mode.
                 Map<String, byte[]> cachedBundle = loadClassBundleFromCache(
                     fullClassName,
                     readFileContent(javaFile)
@@ -178,19 +178,19 @@ public class JavaItemCompiler {
                 }
             }
 
-            // Компилируем файл
+            // Compile the file
             if (compileFile(javaFile, result)) {
                 compiled++;
                 fileHashes.put(cacheKey, currentHash);
             }
         }
 
-        // Сохраняем кэш хэшей
+        // Save the hash cache
         saveFileHashesCache();
 
-        // Загружаем классы
-        // Новый загрузчик создаём всегда: иначе после удаления всех .java
-        // файлов оставался старый classLoader со старыми классами.
+        // Load the classes
+        // A new loader is always created: otherwise the old classLoader with the
+        // old classes remained after all .java files were deleted.
         CustomClassLoader loader = new CustomClassLoader(getClass().getClassLoader());
         for (Map.Entry<String, byte[]> entry : compiledClasses.entrySet()) {
             loader.addClass(entry.getKey(), entry.getValue());
@@ -206,25 +206,25 @@ public class JavaItemCompiler {
     private boolean compileFile(File javaFile, CompileResult result) {
         try {
             if (javaFile.length() > MAX_FILE_BYTES) {
-                String err = javaFile.getName() + ": файл >512KB — отклонён (защита от перегрузки компилятора)";
+                String err = javaFile.getName() + ": file >512KB - rejected (compiler overload protection)";
                 plugin.getLogger().warning("[JavaCompiler] ❌ " + err);
                 result.errors.add(err);
                 return false;
             }
             String sourceCode = readFileContent(javaFile);
-            // Компилятор добавляет своё объявление package — собственное
-            // объявление пользователя нужно убрать, иначе в исходнике
-            // окажется два package и javac откажется его собирать.
+            // The compiler adds its own package declaration — the user's own
+            // declaration has to be removed, otherwise the source would
+            // contain two package statements and javac would refuse to build it.
             sourceCode = stripPackageDeclaration(sourceCode);
             for (String token : DANGEROUS_TOKENS) {
                 if (sourceCode.contains(token)) {
-                    plugin.getLogger().warning("[JavaCompiler] ⚠ " + javaFile.getName() + " содержит опасный вызов '" + token + "' — проверьте файл вручную (java-compilation исполняет произвольный код).");
+                    plugin.getLogger().warning("[JavaCompiler] ⚠ " + javaFile.getName() + " contains a dangerous call '" + token + "' - check the file manually (java-compilation executes arbitrary code).");
                     break;
                 }
             }
             String fileName = javaFile.getName().replace(".java", "");
 
-            // Добавляем недостающие импорты API плагина
+            // Add the missing plugin API imports
             sourceCode = injectDefaultImports(sourceCode);
 
             ClassType classType = detectClassType(sourceCode);
@@ -293,11 +293,11 @@ public class JavaItemCompiler {
                 if (success) {
                     compiledClasses.putAll(classBytesHolder);
 
-                    // Сохраняем в кэш
+                    // Save to the cache
                     for (Map.Entry<String, byte[]> entry : classBytesHolder.entrySet()) {
                         saveToCache(entry.getKey(), entry.getValue());
-                        // Оставляем class-файлы на диске, чтобы следующий исходник
-                        // из той же папки мог использовать уже скомпилированный класс.
+                        // The class files are left on disk, so that the next source file
+                        // from the same folder can use the already compiled class.
                         saveToCompiledDir(entry.getKey(), entry.getValue());
                     }
 
@@ -312,12 +312,12 @@ public class JavaItemCompiler {
                     return false;
                 }
             } finally {
-                // FileManager держит ресурсы — закрываем всегда, иначе при
-                // исключении внутри компиляции оставались открытые дескрипторы.
+                // The FileManager holds resources — it is always closed, otherwise
+                // an exception inside the compilation left open file descriptors.
                 try {
                     fileManager.close();
                 } catch (Exception ignored) {
-                    // Закрытие не должно ломать компиляцию
+                    // Closing must not break the compilation
                 }
             }
 
@@ -344,7 +344,7 @@ public class JavaItemCompiler {
                 result.modules.add(fullClassName);
                 break;
             case UTILITY:
-                // Компилируется, но не регистрируется (messages.java и т.п.)
+                // Compiled, but not registered (messages.java and similar)
                 break;
         }
     }
@@ -359,12 +359,12 @@ public class JavaItemCompiler {
     }
 
     private ClassType detectClassType(String sourceCode) {
-        // Порядок важен: не-утилитные файлы могут упоминать имена других типов
+        // The order matters: the non-utility files may mention the names of other types
         if (sourceCode.contains("extends Module")) return ClassType.MODULE;
         if (sourceCode.contains("extends CustomCommand")) return ClassType.COMMAND;
         if (sourceCode.contains("extends CustomPlaceholder")) return ClassType.PLACEHOLDER;
         if (sourceCode.contains("extends AbstractCustomItem")) return ClassType.ITEM;
-        // Утилиты (например messages.java) компилируются, но не регистрируются
+        // The utilities (for example messages.java) are compiled, but not registered
         return ClassType.UTILITY;
     }
 
@@ -378,8 +378,8 @@ public class JavaItemCompiler {
     }
 
     /**
-     * Компилирует шаблоны замены имён классов (длинные имена — первыми,
-     * чтобы "Foo" не съел "FooBar").
+     * Compiles the templates for the class name replacement (the longer names
+     * first, so that "Foo" does not swallow "FooBar").
      */
     private void buildAliasPatterns() {
         aliasPatterns.clear();
@@ -393,21 +393,21 @@ public class JavaItemCompiler {
     }
 
     /**
-     * Добавляет недостающие импорты API плагина.
+     * Adds the missing plugin API imports.
      *
-     * Проверка идёт поимённо: если в файле есть любой импорт из пакета
-     * api, старый код не добавлял остальные — и файл не компилировался.
+     * The check is done by name: if the file contains any import from the api
+     * package, the old code did not add the others — and the file was not compiled.
      *
-     * Импорты вставляются ПОСЛЕ объявления package (если оно есть):
-     * в начало файла они попасть не могут — javac требует, чтобы
-     * package был первым оператором.
+     * The imports are inserted AFTER the package declaration (if there is one):
+     * they cannot go at the beginning of the file — javac requires the
+     * package to be the first statement.
      */
     private String injectDefaultImports(String sourceCode) {
         List<String> imports = new ArrayList<>();
         for (String fqcn : DEFAULT_IMPORTS) {
             String simpleName = fqcn.substring(fqcn.lastIndexOf('.') + 1);
-            // Если пользователь объявил одноимённый класс, импорт API ему не нужен
-            // (и после подмены имён он бы сломался).
+            // If the user declared a class with the same name, the API import is not needed
+            // (and after the name replacement it would break).
             if (sourceClassAliases.containsKey(simpleName)) continue;
             if (sourceCode.contains("import " + fqcn + ";")) continue;
             imports.add(fqcn);
@@ -416,11 +416,11 @@ public class JavaItemCompiler {
     }
 
     /**
-     * Вставляет импорты в исходник.
+     * Inserts the imports into the source.
      *
-     * Импорты вставляются ПОСЛЕ объявления package (если оно есть):
-     * в начало файла они попасть не могут — javac требует, чтобы
-     * package был первым оператором.
+     * The imports are inserted AFTER the package declaration (if there is one):
+     * they cannot go at the beginning of the file — javac requires the
+     * package to be the first statement.
      */
     static String insertImports(String sourceCode, List<String> imports) {
         if (imports == null || imports.isEmpty()) return sourceCode;
@@ -435,25 +435,25 @@ public class JavaItemCompiler {
     }
 
     /**
-     * Удаляет объявление package из исходника (компилятор добавляет своё).
+     * Removes the package declaration from the source (the compiler adds its own).
      *
-     * Учитывает BOM (файл в UTF-8 с BOM начинается с U+FEFF) и не задевает
-     * строки в блочных комментариях: package должен быть первой строкой
-     * файла, а не случайным словом в тексте.
+     * Takes the BOM into account (a UTF-8 file with a BOM starts with U+FEFF)
+     * and does not touch the lines inside block comments: the package must be
+     * the first line of the file, not a random word in the text.
      */
     static String stripPackageDeclaration(String sourceCode) {
         String source = sourceCode;
         if (!source.isEmpty() && source.charAt(0) == '\uFEFF') {
             source = source.substring(1);
         }
-        // Якорь начала строки + только пробелы/табы до "package":
-        // многострочный \s* мог бы захватить строку внутри комментария.
+        // The start-of-line anchor + only spaces/tabs before "package":
+        // a multi-line \s* could capture a line inside a comment.
         return source.replaceFirst("(?m)^[ \\t]*package[ \\t]+[\\w.]+[ \\t]*;[^\\S\\n]*\\n?", "");
     }
 
     /**
-     * Возвращает индекс символа сразу после объявления package (и его перевода строки).
-     * Если объявления нет — 0.
+     * Returns the index of the character right after the package declaration
+     * (and its line break). If there is no declaration — 0.
      */
     static int findPackageDeclarationEnd(String sourceCode) {
         java.util.regex.Matcher matcher = java.util.regex.Pattern
@@ -461,8 +461,8 @@ public class JavaItemCompiler {
                 .matcher(sourceCode);
         if (!matcher.find()) return 0;
         int end = matcher.end();
-        // Переносим вставку на следующую строку, чтобы не приклеивать импорт
-        // к точке с запятой.
+        // The insertion is moved to the next line, so that the import is not
+        // glued to the semicolon.
         int newline = sourceCode.indexOf('\n', end);
         return newline >= 0 ? newline + 1 : end;
     }
@@ -474,8 +474,8 @@ public class JavaItemCompiler {
         Arrays.sort(children, Comparator.comparing(File::getPath));
         for (File child : children) {
             if (child.isDirectory()) {
-                // Образцы и справочные папки (EXAMPLE-*, EXAMPLES/, _template/)
-                // не компилируются — это справочный материал.
+                // The sample and reference folders (EXAMPLE-*, EXAMPLES/, _template/)
+                // are not compiled — they are reference material.
                 String name = child.getName();
                 if (name.startsWith("EXAMPLE-")
                         || name.equalsIgnoreCase("EXAMPLES")
@@ -492,11 +492,11 @@ public class JavaItemCompiler {
     }
 
     /**
-     * Имя генерируемого класса по пути файла.
+     * The name of the generated class based on the file path.
      *
-     * Имя должно быть корректным Java-идентификатором: раньше файл
-     * "1abc.java" давал класс "1abcItem", а "my.item.java" — "my.itemItem",
-     * и такой исходник не компилировался.
+     * The name must be a valid Java identifier: previously the file
+     * "1abc.java" produced the class "1abcItem", and "my.item.java" produced
+     * "my.itemItem", and such a source was not compiled.
      */
     public String getGeneratedClassName(File javaFile) {
         String relative;
@@ -509,7 +509,7 @@ public class JavaItemCompiler {
     }
 
     /**
-     * Превращает относительный путь исходника в корректный Java-идентификатор.
+     * Turns the relative source path into a valid Java identifier.
      */
     static String sanitizeGeneratedClassName(String relativePath) {
         String base = relativePath == null ? "" : relativePath.replace('\\', '_').replace('/', '_');
@@ -525,7 +525,7 @@ public class JavaItemCompiler {
         }
         sb.append("Item");
 
-        // Java-идентификатор не может начинаться с цифры
+        // A Java identifier cannot start with a digit
         if (sb.length() > 0 && Character.isDigit(sb.charAt(0))) {
             sb.insert(0, '_');
         }
@@ -540,7 +540,7 @@ public class JavaItemCompiler {
         }
     }
 
-    // ===== КЭШИРОВАНИЕ =====
+    // ===== CACHING =====
 
     private String getFileHash(File file) {
         try {
@@ -646,7 +646,7 @@ public class JavaItemCompiler {
         } catch (Exception ignored) {}
     }
 
-    // ===== КЛАССПАС =====
+    // ===== CLASSPATH =====
 
     private String getClasspath() {
         StringBuilder classpath = new StringBuilder();
@@ -658,8 +658,8 @@ public class JavaItemCompiler {
             classpath.append("plugins/DC-CustomItems.jar");
         }
 
-        // Серверный jar: Paper/Spigot/Folia/Purpur и т.д. Ищем в корне сервера
-        // (plugins/..), в текущей папке и по относительным путям.
+        // The server jar: Paper/Spigot/Folia/Purpur and so on. It is searched in the
+        // server root (plugins/..), in the current folder and by relative paths.
         File serverRoot = plugin.getDataFolder().getParentFile() != null
                 ? plugin.getDataFolder().getParentFile().getParentFile() : null;
         List<String> candidates = new ArrayList<>();
@@ -686,17 +686,17 @@ public class JavaItemCompiler {
             }
         }
 
-        // Папка plugins/DC-CustomItems/libs/ — любые сторонние библиотеки
-        // (jars), которые нужны вашим Java-модулям. Кладёшь jar туда —
-        // компилятор подхватит его на следующем /ci reload.
+        // The plugins/DC-CustomItems/libs/ folder — any third-party libraries
+        // (jars) that your Java modules need. Put a jar there and the
+        // compiler will pick it up on the next /ci reload.
         File dataLibsDir = new File(plugin.getDataFolder(), "libs");
         if (dataLibsDir.exists() && dataLibsDir.isDirectory()) {
             addJarsFromClassDir(dataLibsDir, classpath);
         }
 
-        // Jars установленных плагинов (VaultAPI, PlaceholderAPI, DeluxeMenus и т.д.).
-        // Даёт модулям компилироваться против API других плагинов. Если нужного
-        // плагина нет — скомпилируется только его модуль и ошибка ограничится им.
+        // The jars of the installed plugins (VaultAPI, PlaceholderAPI, DeluxeMenus and so on).
+        // This allows the modules to be compiled against the API of other plugins. If the
+        // required plugin is missing, only its module is compiled and the error is limited to it.
         File pluginsDir = plugin.getDataFolder().getParentFile(); // .../plugins
         if (pluginsDir != null && pluginsDir.exists() && pluginsDir.isDirectory()) {
             addJarsFromClassDir(pluginsDir, classpath);
@@ -719,7 +719,7 @@ public class JavaItemCompiler {
         }
     }
 
-    // ===== ЗАГРУЗКА КЛАССОВ =====
+    // ===== CLASS LOADING =====
 
     public Class<?> loadClass(String fullClassName) {
         if (classLoader == null) return null;
@@ -810,7 +810,7 @@ public class JavaItemCompiler {
         return compiling.get();
     }
 
-    // ===== КЛАССЫ =====
+    // ===== CLASSES =====
 
     public enum ClassType { ITEM, COMMAND, PLACEHOLDER, MODULE, UTILITY }
 

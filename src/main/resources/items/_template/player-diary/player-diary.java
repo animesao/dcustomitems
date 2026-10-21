@@ -22,20 +22,20 @@ import java.io.File;
 import java.util.*;
 
 /**
- * 📔 Player Diary Module — Дневник игрока
+ * 📔 Player Diary Module — the player's diary
  *
- * Трекер статистики:
- *   - kills (убийства)
- *   - deaths (смерти)
- *   - playtime (время игры)
- *   - K/D соотношение
+ * Statistics tracker:
+ *   - kills
+ *   - deaths
+ *   - playtime
+ *   - K/D ratio
  *
- * Команды:
- *   /diary           — открыть GUI дневника
- *   /diary stats     — показать статистику в чате
- *   /diary top       — топ игроков по kills
+ * Commands:
+ *   /diary           — open the diary GUI
+ *   /diary stats     — show the statistics in chat
+ *   /diary top       — the top players by kills
  *
- * Плейсхолдеры:
+ * Placeholders:
  *   %dci_diary_kills%
  *   %dci_diary_deaths%
  *   %dci_diary_playtime%
@@ -43,7 +43,7 @@ import java.util.*;
  */
 public class playerDiary extends Module implements Listener, CommandExecutor, TabCompleter {
 
-    // Кэш статистики: uuid -> { kills, deaths, playtime (сек), loginTime (мс) }
+    // Statistics cache: uuid -> { kills, deaths, playtime (sec), loginTime (ms) }
     private final Map<UUID, PlayerStats> statsCache = new HashMap<>();
 
     public playerDiary(Main plugin, String id, File folder) {
@@ -52,7 +52,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
 
     @Override
     protected void onEnable() {
-        // Создаём таблицу
+        // Create the table
         plugin.getDatabaseManager().execute(
             "CREATE TABLE IF NOT EXISTS diary_stats (" +
             "  uuid TEXT PRIMARY KEY," +
@@ -62,21 +62,21 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
             ")"
         );
 
-        // Регистрируем команду
+        // Register the command
         registerDynamicCommand("diary", this, "diary.use");
 
-        // Регистрируем слушатель
+        // Register the listener
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
-        // Регистрируем плейсхолдеры
+        // Register the placeholders
         registerPlaceholders();
 
-        // Загружаем данные онлайн-игроков
+        // Load the data of the online players
         for (Player player : Bukkit.getOnlinePlayers()) {
             loadPlayerStats(player.getUniqueId());
         }
 
-        // Периодическое сохранение
+        // Periodic save
         long saveInterval = config.getLong("settings.save-interval", 600);
         Bukkit.getScheduler().runTaskTimer(plugin, this::saveAll, saveInterval, saveInterval);
 
@@ -91,11 +91,11 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         plugin.getLogger().info("[Diary] Player Diary module disabled!");
     }
 
-    // ===== Команды =====
+    // ===== COMMANDS =====
 
     /**
-     * Регистрация команды через базовый класс Module (право "dci.diary").
-     * Базовый класс сам удалит команду при disable модуля.
+     * Command registration through the Module base class (permission "dci.diary").
+     * The base class removes the command itself when the module is disabled.
      */
 
     @Override
@@ -103,7 +103,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         if (!command.getName().equalsIgnoreCase("diary")) return false;
 
         if (!(sender instanceof Player)) {
-            sender.sendMessage("Только для игроков!");
+            sender.sendMessage("Players only!");
             return true;
         }
 
@@ -125,7 +125,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         }
 
         String prefix = config.getString("settings.message-prefix", "&6📔 &r");
-        player.sendMessage(colorize(prefix + "&7Использование: &e/diary [stats|top|gui]"));
+        player.sendMessage(colorize(prefix + "&7Usage: &e/diary [stats|top|gui]"));
         return true;
     }
 
@@ -137,19 +137,19 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         return Collections.emptyList();
     }
 
-    // ===== Статистика =====
+    // ===== Statistics =====
 
     private void showStats(Player player) {
         PlayerStats stats = getStats(player.getUniqueId());
         String prefix = config.getString("settings.message-prefix", "&6📔 &r");
 
         player.sendMessage(colorize(prefix + "&e━━━━━━━━━━━━━━━━━━━━━━━━━━"));
-        player.sendMessage(colorize(prefix + "&6Статистика: &f" + player.getName()));
+        player.sendMessage(colorize(prefix + "&6Statistics: &f" + player.getName()));
         player.sendMessage(colorize(prefix + "&e━━━━━━━━━━━━━━━━━━━━━━━━━━"));
-        player.sendMessage(colorize(prefix + "&7Убийства: &c" + stats.kills));
-        player.sendMessage(colorize(prefix + "&7Смерти: &4" + stats.deaths));
+        player.sendMessage(colorize(prefix + "&7Kills: &c" + stats.kills));
+        player.sendMessage(colorize(prefix + "&7Deaths: &4" + stats.deaths));
         player.sendMessage(colorize(prefix + "&7K/D: &e" + String.format("%.2f", stats.getKd())));
-        player.sendMessage(colorize(prefix + "&7Время игры: &a" + formatTime(stats.playtime)));
+        player.sendMessage(colorize(prefix + "&7Play time: &a" + formatTime(stats.playtime)));
         player.sendMessage(colorize(prefix + "&e━━━━━━━━━━━━━━━━━━━━━━━━━━"));
     }
 
@@ -161,11 +161,11 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         );
 
         player.sendMessage(colorize(prefix + "&e━━━━━━━━━━━━━━━━━━━━━━━━━━"));
-        player.sendMessage(colorize(prefix + "&6Топ по убийствам:"));
+        player.sendMessage(colorize(prefix + "&6Top by kills:"));
         player.sendMessage(colorize(prefix + "&e━━━━━━━━━━━━━━━━━━━━━━━━━━"));
 
         if (results.isEmpty()) {
-            player.sendMessage(colorize(prefix + "&7Пока нет данных"));
+            player.sendMessage(colorize(prefix + "&7There is no data yet"));
         } else {
             int rank = 1;
             for (Map<String, Object> row : results) {
@@ -174,7 +174,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
                 int deaths = row.get("deaths") != null ? ((Number) row.get("deaths")).intValue() : 0;
                 double kd = deaths > 0 ? (double) kills / deaths : kills;
 
-                // Получаем имя игрока
+                // Get the player's name
                 UUID uuid = UUID.fromString(uuidStr);
                 Player target = Bukkit.getPlayer(uuid);
                 String name = target != null ? target.getName() : uuid.toString().substring(0, 8);
@@ -191,9 +191,9 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
     // ===== GUI =====
 
     private void openDiary(Player player) {
-        Inventory menu = Bukkit.createInventory(null, 27, colorize("&6📔 Дневник игрока"));
+        Inventory menu = Bukkit.createInventory(null, 27, colorize("&6📔 Player Diary"));
 
-        // Заполняем фон
+        // Fill the background
         ItemStack glass = new ItemStack(org.bukkit.Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta glassMeta = glass.getItemMeta();
         if (glassMeta != null) {
@@ -208,22 +208,22 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
 
         // Kills
         ItemStack kills = createMenuItem(org.bukkit.Material.IRON_SWORD,
-            "&c⚔ Убийства", "&7Всего: &f" + stats.kills);
+            "&c⚔ Kills", "&7Total: &f" + stats.kills);
         menu.setItem(11, kills);
 
         // Deaths
         ItemStack deaths = createMenuItem(org.bukkit.Material.WITHER_SKELETON_SKULL,
-            "&4💀 Смерти", "&7Всего: &f" + stats.deaths);
+            "&4💀 Deaths", "&7Total: &f" + stats.deaths);
         menu.setItem(13, deaths);
 
         // K/D
         ItemStack kd = createMenuItem(org.bukkit.Material.GOLD_INGOT,
-            "&e📊 K/D", "&7Соотношение: &f" + String.format("%.2f", stats.getKd()));
+            "&e📊 K/D", "&7Ratio: &f" + String.format("%.2f", stats.getKd()));
         menu.setItem(15, kd);
 
         // Playtime
         ItemStack playtime = createMenuItem(org.bukkit.Material.CLOCK,
-            "&a⏰ Время игры", "&7Всего: &f" + formatTime(stats.playtime));
+            "&a⏰ Play time", "&7Total: &f" + formatTime(stats.playtime));
         menu.setItem(22, playtime);
 
         player.openInventory(menu);
@@ -240,19 +240,19 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         return item;
     }
 
-    // ===== События =====
+    // ===== Events =====
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player dead = event.getEntity();
         Player killer = dead.getKiller();
 
-        // Увеличиваем смерти
+        // Increase the deaths
         PlayerStats deadStats = getStats(dead.getUniqueId());
         deadStats.deaths++;
         savePlayerStats(dead.getUniqueId());
 
-        // Увеличиваем убийства киллера
+        // Increase the killer's kills
         if (killer != null && killer != dead) {
             PlayerStats killerStats = getStats(killer.getUniqueId());
             killerStats.kills++;
@@ -265,7 +265,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         Player player = event.getPlayer();
         loadPlayerStats(player.getUniqueId());
 
-        // Устанавливаем время входа
+        // Set the login time
         PlayerStats stats = getStats(player.getUniqueId());
         stats.loginTime = System.currentTimeMillis();
     }
@@ -275,7 +275,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         Player player = event.getPlayer();
         PlayerStats stats = getStats(player.getUniqueId());
 
-        // Добавляем время игры
+        // Add the play time
         if (stats.loginTime > 0) {
             long sessionTime = (System.currentTimeMillis() - stats.loginTime) / 1000;
             stats.playtime += sessionTime;
@@ -285,7 +285,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         statsCache.remove(player.getUniqueId());
     }
 
-    // ===== База данных =====
+    // ===== Database =====
 
     private void loadPlayerStats(UUID uuid) {
         if (statsCache.containsKey(uuid)) return;
@@ -340,7 +340,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         });
     }
 
-    // ===== Плейсхолдеры =====
+    // ===== Placeholders =====
 
     private void registerPlaceholders() {
         PlaceholderManager pm = plugin.getPlaceholderManager();
@@ -364,7 +364,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         });
     }
 
-    // ===== Утилиты =====
+    // ===== Utils =====
 
     private String formatTime(long totalSeconds) {
         long hours = totalSeconds / 3600;
@@ -372,11 +372,11 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         long seconds = totalSeconds % 60;
 
         if (hours > 0) {
-            return hours + "ч " + minutes + "м";
+            return hours + "h " + minutes + "m";
         } else if (minutes > 0) {
-            return minutes + "м " + seconds + "с";
+            return minutes + "m " + seconds + "s";
         } else {
-            return seconds + "с";
+            return seconds + "s";
         }
     }
 
@@ -384,7 +384,7 @@ public class playerDiary extends Module implements Listener, CommandExecutor, Ta
         return msg == null ? "" : ChatColor.translateAlternateColorCodes('&', msg);
     }
 
-    // ===== Модель данных =====
+    // ===== Data model =====
 
     private static class PlayerStats {
         int kills = 0;

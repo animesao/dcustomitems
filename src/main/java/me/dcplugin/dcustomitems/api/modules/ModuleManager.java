@@ -7,11 +7,11 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Менеджер модулей
+ * Module manager
  * 
- * Загружает модули из подпапок в items/
+ * Loads modules from the subfolders of items/
  * 
- * Структура:
+ * Structure:
  * items/
  * ├── shop/
  * │   ├── config.yml
@@ -33,7 +33,7 @@ public class ModuleManager {
     }
 
     /**
-     * Загрузить все модули из подпапок
+     * Loads all modules from the subfolders
      */
     public void loadAll() {
         unloadAll();
@@ -43,7 +43,7 @@ public class ModuleManager {
             return;
         }
 
-        // Ищем подпапки (каждая подпапка = модуль)
+        // Look for subfolders (each subfolder = one module)
         File[] subfolders = modulesDir.listFiles(File::isDirectory);
         if (subfolders == null || subfolders.length == 0) {
             return;
@@ -52,8 +52,8 @@ public class ModuleManager {
         plugin.getLogger().info("[Modules] Found " + subfolders.length + " potential modules");
 
         for (File folder : subfolders) {
-            // Образцы и справочные папки (EXAMPLE-*, EXAMPLES/, _template/)
-            // не считаются модулями — это справочный материал.
+            // Sample and reference folders (EXAMPLE-*, EXAMPLES/, _template/)
+            // are not treated as modules — they are reference material.
             String folderName = folder.getName();
             if (folderName.startsWith("EXAMPLE-")
                     || folderName.equalsIgnoreCase("EXAMPLES")
@@ -72,15 +72,15 @@ public class ModuleManager {
     }
 
     /**
-     * Загрузить модуль из папки
+     * Loads a module from a folder
      */
     private void loadModule(File folder) {
         String moduleId = folder.getName();
         
-        // Проверяем есть ли config.yml
+        // Check whether config.yml exists
         File configFile = new File(folder, "config.yml");
         if (!configFile.exists()) {
-            // Создаём дефолтный конфиг
+            // Create a default config
             createDefaultConfig(folder, moduleId);
         }
 
@@ -89,7 +89,7 @@ public class ModuleManager {
         
         plugin.getLogger().info("[Modules] Loading module: " + moduleName + " (" + moduleId + ")");
 
-        // Java-модули уже скомпилированы ItemRegistry вместе с командами.
+        // Java modules are already compiled by the ItemRegistry together with the commands.
         Module javaModule = plugin.getApiItemRegistry() == null
             ? null : plugin.getApiItemRegistry().getModule(moduleId);
         if (javaModule != null) {
@@ -98,24 +98,24 @@ public class ModuleManager {
             return;
         }
 
-        // Если Java-модуля нет, поддерживаем простой YAML-модуль.
+        // If there is no Java module, fall back to a simple YAML module.
         loadSimpleModule(folder, moduleId, config);
     }
 
     /**
-     * Загрузить простой YAML модуль
+     * Loads a simple YAML module
      */
     private void loadSimpleModule(File folder, String moduleId, YamlConfiguration config) {
         SimpleModule module = new SimpleModule(plugin, moduleId, folder, config);
-        // Ключ регистрируется в нижнем регистре — как и для Java-модулей.
-        // Раньше здесь был moduleId без нормализации, из-за чего модуль
-        // с именем папки в верхнем регистре было невозможно найти.
+        // The key is registered in lower case — same as for Java modules.
+        // Previously moduleId was used without normalisation, which made a module
+        // whose folder name is in upper case impossible to find.
         modules.put(moduleId.toLowerCase(java.util.Locale.ROOT), module);
         module.enable();
     }
 
     /**
-     * Создать дефолтный конфиг
+     * Creates a default config
      */
     private void createDefaultConfig(File folder, String moduleId) {
         try {
@@ -136,7 +136,7 @@ public class ModuleManager {
     }
 
     /**
-     * Выгрузить все модули
+     * Unloads all modules
      */
     public void unloadAll() {
         for (Module module : modules.values()) {
@@ -150,7 +150,7 @@ public class ModuleManager {
     }
 
     /**
-     * Перезагрузить все модули
+     * Reloads all modules
      */
     public void reloadAll() {
         unloadAll();
@@ -158,21 +158,21 @@ public class ModuleManager {
     }
 
     /**
-     * Получить модуль по ID
+     * Gets a module by ID
      */
     public Module getModule(String id) {
         return modules.get(id.toLowerCase());
     }
 
     /**
-     * Получить все модули
+     * Gets all modules
      */
     public Map<String, Module> getAllModules() {
         return Collections.unmodifiableMap(modules);
     }
 
     /**
-     * Количество модулей
+     * Number of modules
      */
     public int getModuleCount() {
         return modules.size();

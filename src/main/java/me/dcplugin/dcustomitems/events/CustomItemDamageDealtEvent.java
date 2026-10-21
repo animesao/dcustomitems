@@ -8,13 +8,13 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 /**
- * Событие нанесения урона кастомным предметом (on_damage_dealt / onDamageDealt).
+ * Event fired when a custom item deals damage (on_damage_dealt / onDamageDealt).
  *
- * Работает для YAML-предметов (getCustomItem()) и Java API-предметов
- * (getJavaItem()). Стреляет ДО выполнения триггеров/хука при нанесении урона.
+ * Works for YAML items (getCustomItem()) and Java API items
+ * (getJavaItem()). Fired BEFORE the triggers/hook are executed on damage.
  *
- * Если событие отменено — стандартные триггеры/хук не выполняются
- * (сам урон Bukkit не отменяется; для этого меняйте event.getBukkitEvent()).
+ * If the event is cancelled the standard triggers/hook are not executed
+ * (the Bukkit damage itself is not cancelled; use event.getBukkitEvent() for that).
  */
 public class CustomItemDamageDealtEvent extends CustomItemEvent implements Cancellable {
 
@@ -23,29 +23,29 @@ public class CustomItemDamageDealtEvent extends CustomItemEvent implements Cance
     private final EntityDamageByEntityEvent bukkitEvent;
     private boolean cancelled;
 
-    /** Для YAML-предметов. */
+    /** For YAML items. */
     public CustomItemDamageDealtEvent(Player player, CustomItem customItem, EntityDamageByEntityEvent bukkitEvent) {
         super(player, customItem);
         this.bukkitEvent = bukkitEvent;
     }
 
-    /** Для Java API-предметов (AbstractCustomItem). */
+    /** For Java API items (AbstractCustomItem). */
     public CustomItemDamageDealtEvent(Player player, AbstractCustomItem javaItem, EntityDamageByEntityEvent bukkitEvent) {
         super(player, javaItem);
         this.bukkitEvent = bukkitEvent;
     }
 
-    /** Исходное Bukkit-событие (можно менять урон и т.д.). */
+    /** The original Bukkit event (damage and similar can be modified). */
     public EntityDamageByEntityEvent getBukkitEvent() {
         return bukkitEvent;
     }
 
-    /** Итоговый урон (шорткат к getBukkitEvent().getDamage()). */
+    /** The resulting damage (shortcut for getBukkitEvent().getDamage()). */
     public double getDamage() {
         return bukkitEvent.getDamage();
     }
 
-    /** Установить урон (шорткат к bukkitEvent.setDamage()). */
+    /** Set the damage (shortcut for bukkitEvent.setDamage()). */
     public void setDamage(double damage) {
         bukkitEvent.setDamage(damage);
     }

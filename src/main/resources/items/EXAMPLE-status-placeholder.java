@@ -6,40 +6,40 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Плейсхолдер %rank% - ранг игрока
+ * %rank% placeholder - the player's rank
  *
- * Форматы:
- *   %rank%             → "VIP" (название ранга)
- *   %rank_prefix%      → "&6[VIP] &r" (префикс для чата)
- *   %rank_color%       → "&6" (цвет ранга)
- *   %rank_level%       → "3" (числовой уровень ранга)
- *   %rank_next%        → "Premium" (следующий ранг)
- *   %rank_progress%    → "75%" (прогресс до следующего ранга)
+ * Formats:
+ *   %rank%             → "VIP" (rank name)
+ *   %rank_prefix%      → "&6[VIP] &r" (chat prefix)
+ *   %rank_color%       → "&6" (rank color)
+ *   %rank_level%       → "3" (numeric rank level)
+ *   %rank_next%        → "Premium" (next rank)
+ *   %rank_progress%    → "75%" (progress towards the next rank)
  *
- * Ранги: Новичок(1) → Игрок(2) → VIP(3) → Premium(4) → Legendary(5)
+ * Ranks: Novice(1) → Player(2) → VIP(3) → Premium(4) → Legendary(5)
  *
- * Положи этот файл в plugins/DC-CustomItems/items/
- * Сделай /ci reload
+ * Put this file in plugins/DC-CustomItems/items/
+ * Run /ci reload
  *
- * Примеры:
+ * Examples:
  *   Chat: "%rank_prefix%%player%&7: %message%"
- *   Scoreboard: "&7Ранг: %rank_color%%rank%"
+ *   Scoreboard: "&7Rank: %rank_color%%rank%"
  *   Tablist: "%rank_prefix%%player_name%"
  *
- * Установить ранг:
+ * To set a rank:
  *   /api-item setrank <player> <level>
  */
 public class StatusPlaceholder extends CustomPlaceholder {
 
     private static final String[] RANK_NAMES = {
-        "Новичок", "Игрок", "VIP", "Premium", "Legendary"
+        "Novice", "Player", "VIP", "Premium", "Legendary"
     };
     private static final String[] RANK_COLORS = {
         "&7", "&a", "&6", "&b", "&d"
     };
     private static final String[] RANK_PREFIXES = {
-        "&7[Новичок] &r",
-        "&a[Игрок] &r",
+        "&7[Novice] &r",
+        "&a[Player] &r",
         "&6[VIP] &r",
         "&b[Premium] &r",
         "&d[Legendary] &r"
@@ -53,11 +53,11 @@ public class StatusPlaceholder extends CustomPlaceholder {
 
     @Override
     public String getValue(Player player) {
-        if (player == null) return "Новичок";
+        if (player == null) return "Novice";
         return getRankName(player);
     }
 
-    // ===== Основные методы =====
+    // ===== Main methods =====
 
     public static int getRankLevel(Player player) {
         return playerRanks.getOrDefault(player.getUniqueId(), 1);
@@ -92,19 +92,19 @@ public class StatusPlaceholder extends CustomPlaceholder {
 
     public static String getNextRank(Player player) {
         int level = getRankLevel(player);
-        if (level >= RANK_NAMES.length) return "Максимум";
+        if (level >= RANK_NAMES.length) return "Maximum";
         return RANK_NAMES[level]; // level-1 + 1 = level
     }
 
     /**
-     * Прогресс до следующего ранга (на основе времени/активности)
-     * Здесь просто пример — в реальном плагине берите из БД
+     * Progress towards the next rank (based on time/activity)
+     * This is just an example — in a real plugin take it from the database
      */
     public static int getProgress(Player player) {
         int level = getRankLevel(player);
         if (level >= RANK_NAMES.length) return 100;
-        // Пример: каждый ранг требует больше времени
-        // В реальном плагине — запрос к БД
+        // Example: every rank requires more time
+        // In a real plugin — a database query
         return Math.min(100, level * 25);
     }
 }

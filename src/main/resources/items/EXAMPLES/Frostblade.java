@@ -16,30 +16,30 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * ❄ Frostblade — полный справочный пример Java-ОРУЖИЯ (клики + кулдаун).
+ * ❄ Frostblade — a complete reference example of a Java WEAPON (clicks + cooldown).
  *
- * Файл лежит в items/EXAMPLES/ — папка НЕ копируется на сервер и НЕ
- * компилируется рантаймом (см. DefaultContentExtractor / ItemRegistry).
- * Чтобы включить: скопируйте в plugins/DC-CustomItems/items/ и /ci reload,
- * затем /api-item give frostblade.
+ * The file is in items/EXAMPLES/ — the folder is NOT copied to the server and is NOT
+ * compiled at runtime (see DefaultContentExtractor / ItemRegistry).
+ * To enable it: copy it into plugins/DC-CustomItems/items/ and /ci reload,
+ * then /api-item give frostblade.
  *
- * Что показывает пример:
- *   1. onRightClick / onLeftClick — кликовые хуки (вызывает ApiEventListener,
- *      только пока предмет в руке; ПКМ/ЛКМ по блоку/воздуху).
- *   2. getClickCooldown() — кулдаун между кликами в миллисекундах.
- *      ⚠️ В текущей реализации это ОДИН таймер на игрока: оба клика (ЛКМ и
- *      ПКМ) делят его. Не ставьте разные кулдауны на левую и правую кнопку.
- *   3. onDamageDealt — хук при ударе по существу (ЛКМ по мобу идёт сюда,
- *      а НЕ в onLeftClick).
- *   4. onKill — убийство игрока (хук получает только Player-жертв).
- *   5. getRecipes() — крафт в верстаке и в GUI /craft.
+ * What the example shows:
+ *   1. onRightClick / onLeftClick — the click hooks (called by ApiEventListener,
+ *      only while the item is in the hand; Right/Left Click on a block/air).
+ *   2. getClickCooldown() — the cooldown between clicks in milliseconds.
+ *      ⚠️ In the current implementation this is ONE timer per player: both clicks (LMB and
+ *      RMB) share it. Do not set different cooldowns for the left and right button.
+ *   3. onDamageDealt — the hook when you hit an entity (LMB on a mob goes here,
+ *      and NOT into onLeftClick).
+ *   4. onKill — a player kill (the hook only receives Player victims).
+ *   5. getRecipes() — crafting in the crafting table and in the GUI /craft.
  *
- * getPermission() проверяется при кликах (ЛКМ/ПКМ), как у YAML-предметов:
- * без права клик отменяется и предмет не срабатывает.
+ * getPermission() is checked on clicks (LMB/RMB), just like for YAML items:
+ * without the permission the click is cancelled and the item does not trigger.
  */
 public class Frostblade extends AbstractCustomItem {
 
-    // ===== ИДЕНТИФИКАЦИЯ =====
+    // ===== IDENTIFICATION =====
 
     @Override
     public String getId() {
@@ -48,7 +48,7 @@ public class Frostblade extends AbstractCustomItem {
 
     @Override
     public String getDisplayName() {
-        return "&b❄ Ледяной Клинок";
+        return "&b❄ Frost Blade";
     }
 
     @Override
@@ -60,19 +60,19 @@ public class Frostblade extends AbstractCustomItem {
     public List<String> getLore() {
         return List.of(
             "",
-            " &7Клинок из вечной мерзлоты.",
+            " &7A blade from the eternal frost.",
             "",
-            " &bЛКМ: &fЛедяной рывок вперёд",
-            " &bПКМ: &fЛедяной взрыв (заморозка + урон)",
-            " &bУдары: &fзамедляют цель и добавляют урон",
+            " &bLeft Click: &fFrost dash forward",
+            " &bRight Click: &fFrost explosion (freeze + damage)",
+            " &bHits: &fslow down the target and add damage",
             "",
-            " &8Кулдаун: 1.5 сек"
+            " &8Cooldown: 1.5 sec"
         );
     }
 
     @Override
     public String getItemModel() {
-        // Ресурс-пак: assets/minecraft/models/item/frostblade.json
+        // Resource pack: assets/minecraft/models/item/frostblade.json
         return "frostblade";
     }
 
@@ -87,16 +87,16 @@ public class Frostblade extends AbstractCustomItem {
     }
 
     /**
-     * Общий кулдаун кликов (ЛКМ и ПКМ) в миллисекундах.
-     * Пока кулдаун активен, клик игнорируется полностью (и событие
-     * CustomItemUseEvent не стреляет).
+     * The shared click cooldown (LMB and RMB) in milliseconds.
+     * While the cooldown is active the click is ignored completely (and the
+     * CustomItemUseEvent does not fire).
      */
     @Override
     public long getClickCooldown() {
         return 1500;
     }
 
-    // ===== КРАФТ =====
+    // ===== CRAFTING =====
 
     @Override
     public List<RecipeDef> getRecipes() {
@@ -112,11 +112,11 @@ public class Frostblade extends AbstractCustomItem {
         ), keys));
     }
 
-    // ===== КЛИКИ =====
+    // ===== CLICKS =====
 
     /**
-     * ПКМ — Ледяной взрыв: AoE вокруг игрока.
-     * Замедляет и отбрасывает живых существ, наносит урон (4 HP).
+     * RMB — Frost explosion: AoE around the player.
+     * Slows down and knocks back the living entities, deals damage (4 HP).
      */
     @Override
     public void onRightClick(PlayerInteractEvent event, Player player) {
@@ -129,7 +129,7 @@ public class Frostblade extends AbstractCustomItem {
             target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4 * 20, 1, false, true));
             target.damage(4.0, player);
 
-            // Лёгкий отброс от игрока
+            // A slight push away from the player
             org.bukkit.util.Vector away = target.getLocation().toVector()
                     .subtract(player.getLocation().toVector()).normalize();
             target.setVelocity(away.multiply(0.9).setY(0.4));
@@ -138,12 +138,12 @@ public class Frostblade extends AbstractCustomItem {
         ItemAPI.particlesCustom(player, Particle.SNOWFLAKE, 120, 2, 2, 2);
         ItemAPI.sound(player, Sound.ENTITY_PLAYER_HURT_FREEZE, 1f, 0.6f);
         ItemAPI.sound(player, Sound.BLOCK_GLASS_BREAK, 0.8f, 1.8f);
-        ItemAPI.title(player, "&b❄ ЛЕДЯНОЙ ВЗРЫВ", "&fВсё вокруг замерзает");
+        ItemAPI.title(player, "&b❄ FROST EXPLOSION", "&fEverything around freezes");
     }
 
     /**
-     * ЛКМ — Ледяной рывок: рывок вперёд + ледяной след.
-     * (Атака по мобам идёт в onDamageDealt, не сюда.)
+     * LMB — Frost dash: a dash forward + a frost trail.
+     * (Attacking mobs goes into onDamageDealt, not here.)
      */
     @Override
     public void onLeftClick(PlayerInteractEvent event, Player player) {
@@ -154,10 +154,10 @@ public class Frostblade extends AbstractCustomItem {
         ItemAPI.sound(player, Sound.ENTITY_SNOWBALL_THROW, 1f, 1.4f);
     }
 
-    // ===== БОЙ =====
+    // ===== COMBAT =====
 
     /**
-     * Удар по цели: замораживает (Slowness III на 3 сек) и добавляет урон.
+     * A hit on the target: freezes it (Slowness III for 3 sec) and adds damage.
      */
     @Override
     public void onDamageDealt(EntityDamageByEntityEvent event, Player player) {
@@ -172,14 +172,14 @@ public class Frostblade extends AbstractCustomItem {
     }
 
     /**
-     * Убийство игрока: «осколки» + немного поглощения победителю.
-     * Внимание: onKill вызывается только при убийстве ИГРОКА (PlayerDeathEvent).
+     * A player kill: "shards" + a bit of absorption for the winner.
+     * Note: onKill is only called when a PLAYER is killed (PlayerDeathEvent).
      */
     @Override
     public void onKill(Player killer, Player victim) {
         ItemAPI.particlesAt(victim.getLocation(), Particle.SNOWFLAKE, 200);
         ItemAPI.sound(killer, Sound.BLOCK_GLASS_BREAK, 1f, 0.8f);
         ItemAPI.effect(killer, PotionEffectType.ABSORPTION, 30, 2);
-        ItemAPI.message(killer, "&b❄ Жертва рассыпалась во льду!");
+        ItemAPI.message(killer, "&b❄ The victim shattered into ice!");
     }
 }

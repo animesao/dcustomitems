@@ -7,15 +7,15 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
 /**
- * Событие экипировки/снятия кастомного предмета.
+ * Event fired when a custom item is equipped/unequipped.
  *
- * Вызывается, когда игрок берёт предмет в активирующий слот (или убирает его),
- * перед применением эффектов/сообщений/триггеров экипировки (YAML-предметы)
- * или перед вызовом хука {@code onEquip()/onUnequip()} (Java API-предметы).
+ * Fired when the player puts the item into an activation slot (or takes it out),
+ * before the equip effects/messages/triggers are applied (YAML items)
+ * or before the {@code onEquip()/onUnequip()} hook is invoked (Java API items).
  *
- * Если событие отменено, стандартные эффекты экипировки и сообщения
- * не применяются (для equip) и частицы снятия не спавнятся (для unequip),
- * а хук Java-предмета не вызывается.
+ * If the event is cancelled, the standard equip effects and messages
+ * are not applied (for equip) and the unequip particles are not spawned (for unequip),
+ * and the Java item hook is not invoked.
  */
 public class CustomItemEquipEvent extends CustomItemEvent implements Cancellable {
 
@@ -24,27 +24,27 @@ public class CustomItemEquipEvent extends CustomItemEvent implements Cancellable
     private final boolean equip;
     private boolean cancelled;
 
-    /** Для YAML-предметов. */
+    /** For YAML items. */
     public CustomItemEquipEvent(Player player, CustomItem customItem, boolean equip) {
         super(player, customItem);
         this.equip = equip;
     }
 
-    /** Для Java API-предметов (AbstractCustomItem). */
+    /** For Java API items (AbstractCustomItem). */
     public CustomItemEquipEvent(Player player, AbstractCustomItem javaItem, boolean equip) {
         super(player, javaItem);
         this.equip = equip;
     }
 
     /**
-     * true = предмет экипирован, false = снят.
+     * true = the item was equipped, false = it was removed.
      */
     public boolean isEquip() {
         return equip;
     }
 
     /**
-     * true = предмет снят.
+     * true = the item was removed.
      */
     public boolean isUnequip() {
         return !equip;

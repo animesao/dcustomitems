@@ -8,22 +8,23 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 
 /**
- * Событие крафта кастомного предмета в GUI-верстаке (/craft, модуль customcraft).
+ * Event fired when a custom item is crafted in the GUI crafting table
+ * (/craft, customcraft module).
  *
- * Вызывается в момент клика по слоту результата — ДО списания ингредиентов.
- * Работает для YAML-предметов (getCustomItem()) и Java API-предметов
+ * Fired at the moment the result slot is clicked — BEFORE the ingredients are
+ * consumed. Works for YAML items (getCustomItem()) and Java API items
  * (getJavaItem()).
  *
- * Если событие отменено — крафт не выполняется: ингредиенты остаются в сетке,
- * предпросмотр результата не исчезает. Иначе можно заменить выдаваемый предмет
- * через {@link #setResult(ItemStack)} (например, добавить зачарование) — игрок
- * получит изменённый стек.
+ * If the event is cancelled the craft is not performed: the ingredients stay in
+ * the grid and the result preview does not disappear. Otherwise the granted item
+ * can be replaced via {@link #setResult(ItemStack)} (for example to add
+ * enchantments) — the player receives the modified stack.
  *
  * <pre>
  * {@literal @}EventHandler
  * public void onCraft(CustomItemCraftEvent event) {
  *     if (event.getItemId() != null &amp;&amp; event.getItemId().startsWith("admin-")) {
- *         event.setCancelled(true); // запретить крафт админ-предметов
+ *         event.setCancelled(true); // forbid crafting admin items
  *     }
  * }
  * </pre>
@@ -35,28 +36,28 @@ public class CustomItemCraftEvent extends CustomItemEvent implements Cancellable
     private ItemStack result;
     private boolean cancelled;
 
-    /** Для YAML-предметов. */
+    /** For YAML items. */
     public CustomItemCraftEvent(Player player, CustomItem customItem, ItemStack result) {
         super(player, customItem);
         this.result = result;
     }
 
-    /** Для Java API-предметов (AbstractCustomItem). */
+    /** For Java API items (AbstractCustomItem). */
     public CustomItemCraftEvent(Player player, AbstractCustomItem javaItem, ItemStack result) {
         super(player, javaItem);
         this.result = result;
     }
 
     /**
-     * Предмет, который будет выдан игроку. Можете изменить стек —
-     * игрок получит именно его (например, добавить зачарование).
+     * The item that will be given to the player. The stack can be modified —
+     * the player receives exactly that stack (for example with extra enchantments).
      */
     public ItemStack getResult() {
         return result;
     }
 
     /**
-     * Заменить выдаваемый предмет. null игнорируется — останется прежний стек.
+     * Replace the granted item. A null value is ignored — the previous stack stays.
      */
     public void setResult(ItemStack result) {
         if (result != null) {
@@ -65,7 +66,7 @@ public class CustomItemCraftEvent extends CustomItemEvent implements Cancellable
     }
 
     /**
-     * Количество выдаваемых предметов (шорткат к result.getAmount()).
+     * The amount of granted items (shortcut for result.getAmount()).
      */
     public int getAmount() {
         return result == null ? 0 : result.getAmount();

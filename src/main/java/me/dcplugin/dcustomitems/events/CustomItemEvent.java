@@ -6,26 +6,26 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
 /**
- * Базовое событие кастомных предметов.
+ * Base event for custom items.
  *
- * События работают и для YAML-предметов (модель {@link CustomItem}),
- * и для Java-предметов из API ({@link AbstractCustomItem}).
+ * Events work both for YAML items (the {@link CustomItem} model)
+ * and for Java items from the API ({@link AbstractCustomItem}).
  *
- * Сторонние плагины могут слушать конкретные события:
+ * Third-party plugins can listen for specific events:
  * <pre>
  * public class MyListener implements Listener {
  *     {@literal @}EventHandler
  *     public void onEquip(CustomItemEquipEvent event) {
- *         event.setCancelled(true); // запретить экипировку/эффекты
+ *         event.setCancelled(true); // forbid equipping/effects
  *     }
  *
  *     {@literal @}EventHandler
  *     public void onUse(CustomItemUseEvent event) {
  *         Player player = event.getPlayer();
- *         String itemId = event.getItemId();          // общий ID
- *         if (event.getJavaItem() != null) {           // Java API предмет
+ *         String itemId = event.getItemId();          // common ID
+ *         if (event.getJavaItem() != null) {           // Java API item
  *             AbstractCustomItem javaItem = event.getJavaItem();
- *         } else {                                     // YAML предмет
+ *         } else {                                     // YAML item
  *             CustomItem item = event.getCustomItem();
  *         }
  *     }
@@ -38,12 +38,12 @@ public abstract class CustomItemEvent extends Event {
     private final CustomItem customItem;
     private final AbstractCustomItem javaItem;
 
-    /** Для YAML-предметов. */
+    /** For YAML items. */
     protected CustomItemEvent(Player player, CustomItem customItem) {
         this(player, customItem, null);
     }
 
-    /** Для Java API-предметов (AbstractCustomItem). */
+    /** For Java API items (AbstractCustomItem). */
     protected CustomItemEvent(Player player, AbstractCustomItem javaItem) {
         this(player, null, javaItem);
     }
@@ -55,37 +55,37 @@ public abstract class CustomItemEvent extends Event {
     }
 
     /**
-     * Игрок, который экипировал / использовал предмет.
+     * The player who equipped / used the item.
      */
     public Player getPlayer() {
         return player;
     }
 
     /**
-     * Модель кастомного предмета (из YAML). {@code null}, если предмет
-     * создан через Java API — тогда смотрите {@link #getJavaItem()}.
+     * The custom item model (from YAML). {@code null} if the item was
+     * created through the Java API — see {@link #getJavaItem()} in that case.
      */
     public CustomItem getCustomItem() {
         return customItem;
     }
 
     /**
-     * Java API-предмет (AbstractCustomItem). {@code null}, если предмет
-     * определён в YAML — тогда смотрите {@link #getCustomItem()}.
+     * The Java API item (AbstractCustomItem). {@code null} if the item is
+     * defined in YAML — see {@link #getCustomItem()} in that case.
      */
     public AbstractCustomItem getJavaItem() {
         return javaItem;
     }
 
     /**
-     * true, если событие относится к Java API-предмету.
+     * true if the event refers to a Java API item.
      */
     public boolean isJavaItem() {
         return javaItem != null;
     }
 
     /**
-     * ID кастомного предмета (например "vampire-blade").
+     * The custom item ID (for example "vampire-blade").
      */
     public String getItemId() {
         if (customItem != null) return customItem.getId();

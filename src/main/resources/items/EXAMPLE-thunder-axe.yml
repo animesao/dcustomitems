@@ -1,5 +1,5 @@
 # ============================================
-# ТОПОР ГРОМА - Мощный топор с молниями
+# THUNDER AXE - Powerful axe with lightning
 # ============================================
 
 thunder-axe:
@@ -10,7 +10,7 @@ thunder-axe:
 
   item:
     type: NETHERITE_AXE
-    title: '&e[⚡] &fТопор &eГрома'
+    title: '&e[⚡] &fThunder &eAxe'
     glowing: true
     unbreakable: true
     item-model: "thunder_axe"
@@ -23,14 +23,14 @@ thunder-axe:
   lore:
     - ''
     - ' &e━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Топор, закаленный в'
-    - ' &7небесной ярости'
+    - ' &7An axe tempered in'
+    - ' &7heavenly fury'
     - ' &e━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eСила &eIII'
-    - ' &6├ &eСкорость &eII'
-    - ' &6└ &eСпешка &eI'
+    - ' &e⚡ &fWhile in main hand:'
+    - ' &6┌ &eStrength &eIII'
+    - ' &6├ &eSpeed &eII'
+    - ' &6└ &eHaste &eI'
     - ''
 
   effects:
@@ -62,7 +62,7 @@ thunder-axe:
       - 'particles:FIREWORKS_SPARK:30'
       - 'particles:EXPLOSION_HUGE:5'
       - 'sound:ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
-      - 'title:&e⚡ &7УДАР МОЛНИИ!|&eНебеса повинуются!:10:40:10'
+      - 'title:&e⚡ &7LIGHTNING STRIKE!|&eThe heavens obey!:10:40:10'
 
     on_click_left:
       - 'lightning_forward:100'

@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Единственная встроенная команда плагина: /ci reload
+ * The only built-in plugin command: /ci reload
  *
- * Все остальные команды (give, buy, sell, и т.д.)
- * регистрируются модулями через items/<module>/
+ * All other commands (give, buy, sell, etc.)
+ * are registered by modules through items/<module>/
  */
 public class CustomItemsCommand implements CommandExecutor, TabCompleter {
 
@@ -38,9 +38,9 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
 
         sender.sendMessage(MessagesConfig.colorize(MessagesConfig.CI_HEADER));
         sender.sendMessage(MessagesConfig.colorize(MessagesConfig.CI_HELP_RELOAD));
-        sender.sendMessage(MessagesConfig.colorize("&7/ci validate &8— проверить YAML-рецепты"));
-        sender.sendMessage(MessagesConfig.colorize("&7/ci debug <id> &8— дамп предмета+PDC"));
-        sender.sendMessage(MessagesConfig.colorize("&7/ci backup &8— бэкап items/"));
+        sender.sendMessage(MessagesConfig.colorize("&7/ci validate &8- validate YAML recipes"));
+        sender.sendMessage(MessagesConfig.colorize("&7/ci debug <id> &8- dump item + PDC"));
+        sender.sendMessage(MessagesConfig.colorize("&7/ci backup &8- back up items/"));
         return true;
     }
 
@@ -56,19 +56,19 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
                     me.dcplugin.dcustomitems.utils.BackupManager.backup(
                         plugin.getDataFolder(), plugin.getConfig().getInt("backup.keep", 5));
                 } catch (Exception e) {
-                    plugin.getLogger().warning("[Backup] не создан перед reload: " + e.getMessage());
+                    plugin.getLogger().warning("[Backup] not created before reload: " + e.getMessage());
                 }
             }
-            // Перезагружаем конфиг
+            // Reload the config
             plugin.getConfigManager().reloadConfig();
 
-            // Перезагружаем YAML-предметы
+            // Reload the YAML items
             plugin.getItemHandler().reloadItems();
 
-            // Перезагружаем сет-бонусы
+            // Reload the set bonuses
             plugin.getArmorSetManager().reload();
 
-            // Перезагружаем Java API (предметы, команды, плейсхолдеры)
+            // Reload the Java API (items, commands, placeholders)
             if (plugin.getApiItemRegistry() != null) {
                 plugin.getApiItemRegistry().reload();
 
@@ -76,10 +76,10 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
                 int cmds = plugin.getApiItemRegistry().getCommandCount();
                 int phs = plugin.getApiItemRegistry().getPlaceholderCount();
 
-                // Команды перерегистрируются внутри registry.reload()
-                // (reloadSynchronously вызывает registerCustomCommands) —
-                // повторная регистрация здесь создавала бы дубликаты
-                // команд в CommandMap.
+                // The commands are re-registered inside registry.reload()
+                // (reloadSynchronously calls registerCustomCommands) —
+                // registering them again here would create duplicates
+                // in the CommandMap.
 
                 sender.sendMessage(MessagesConfig.colorize(MessagesConfig.RELOAD_SUCCESS));
                 sender.sendMessage(MessagesConfig.format(MessagesConfig.RELOAD_YAML,
@@ -94,14 +94,14 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(MessagesConfig.colorize(MessagesConfig.RELOAD_SUCCESS));
             }
 
-            // Перезагружаем модули
+            // Reload the modules
             if (plugin.getModuleManager() != null) {
                 plugin.getModuleManager().reloadAll();
                 sender.sendMessage(MessagesConfig.colorize(
-                    "&7Модулей: &e" + plugin.getModuleManager().getModuleCount()));
+                    "&7Modules: &e" + plugin.getModuleManager().getModuleCount()));
             }
 
-            // EnumCache статистика (для отладки)
+            // EnumCache statistics (for debugging)
             if (plugin.getConfig().getBoolean("debug-mode", false)) {
                 Map<String, Integer> cacheStats = EnumCache.getCacheStats();
                 sender.sendMessage(MessagesConfig.colorize("&8[&6DCI&8] &7EnumCache:"));
@@ -185,7 +185,7 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
                 }
             }
         }
-        sender.sendMessage(MessagesConfig.colorize(problems == 0 ? "&aВалидация OK: проблем нет." : "&eВалидация: найдено проблем: " + problems));
+        sender.sendMessage(MessagesConfig.colorize(problems == 0 ? "&aValidation OK: no problems found." : "&eValidation: problems found: " + problems));
         return true;
     }
 
@@ -195,13 +195,13 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
             return false;
         }
         if (args.length < 2) {
-            sender.sendMessage(MessagesConfig.colorize("&cИспользование: /ci debug <id>"));
+            sender.sendMessage(MessagesConfig.colorize("&cUsage: /ci debug <id>"));
             return false;
         }
         String id = args[1].toLowerCase();
         var item = plugin.getItemHandler().getCustomItem(id);
         if (item == null) {
-            sender.sendMessage(MessagesConfig.colorize("&cПредмет не найден: " + args[1]));
+            sender.sendMessage(MessagesConfig.colorize("&cItem not found: " + args[1]));
             return false;
         }
         sender.sendMessage(MessagesConfig.colorize("&6" + item.getId() + " &8type=" + item.getType() + " slot=" + item.getActivationSlot()));
@@ -223,9 +223,9 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
         try {
             int keep = plugin.getConfig().getInt("backup.keep", 5);
             var dest = me.dcplugin.dcustomitems.utils.BackupManager.backup(plugin.getDataFolder(), keep);
-            sender.sendMessage(MessagesConfig.colorize("&aБэкап создан: &e" + dest.getFileName()));
+            sender.sendMessage(MessagesConfig.colorize("&aBackup created: &e" + dest.getFileName()));
         } catch (Exception e) {
-            sender.sendMessage(MessagesConfig.colorize("&cОшибка бэкапа: " + e.getMessage()));
+            sender.sendMessage(MessagesConfig.colorize("&cBackup failed: " + e.getMessage()));
         }
         return true;
     }

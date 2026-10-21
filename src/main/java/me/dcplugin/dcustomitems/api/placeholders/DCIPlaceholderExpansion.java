@@ -191,7 +191,7 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
         if (customItem != null) {
             activationSlot = customItem.getActivationSlot();
         } else {
-            // Java API-предмет — у него тоже есть слот активации
+            // A Java API item — it has an activation slot as well
             me.dcplugin.dcustomitems.api.AbstractCustomItem javaItem =
                     plugin.getApiItemRegistry() != null
                             ? plugin.getApiItemRegistry().getItem(itemId)
@@ -215,13 +215,13 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * Кэш известных ID предметов.
+     * Cache of the known item IDs.
      *
-     * Список ID копировался на каждый запрос плейсхолдера — на сервере с
-     * активными скорбордами это тысячи копий в секунду. Кэш пересобирается
-     * только когда изменился набор предметов (сравнивается контрольная
-     * сумма состава, а не только количество: reload может заменить один
-     * предмет другим).
+     * The list of IDs was copied on every placeholder request — on a server with
+     * active scoreboards that is thousands of copies per second. The cache is rebuilt
+     * only when the set of items has changed (a checksum of the contents is
+     * compared, not just the count: a reload may replace one item with
+     * another).
      */
     private java.util.Set<String> knownItemIds = java.util.Set.of();
     private int knownItemIdsChecksum;
@@ -231,8 +231,8 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
      * Tries exact match first, then tries progressively shorter segments
      * (from right to left) to handle multi-word IDs like "vampire_blade".
      *
-     * Учитываются и YAML-предметы, и Java API-предметы — раньше искались
-     * только YAML, поэтому %dci_holding_<java-item>% никогда не работал.
+     * Both YAML items and Java API items are taken into account — previously only
+     * YAML was searched, so %dci_holding_<java-item>% never worked.
      */
     private String findMatchingItemId(String remainder) {
         // Exact match
@@ -269,7 +269,7 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * Актуальный набор ID предметов (с кэшем по контрольной сумме состава).
+     * Current set of item IDs (cached by a checksum of the contents).
      */
     private java.util.Set<String> getKnownItemIds() {
         java.util.Set<String> yamlIds = plugin.getItemHandler().getAllCustomItems().keySet();

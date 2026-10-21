@@ -7,12 +7,12 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
 /**
- * Событие использования кастомного предмета (ЛКМ/ПКМ).
+ * Event fired when a custom item is used (left/right click).
  *
- * Вызывается перед выполнением действий клика (right/left-click-actions,
- * триггеров и эффектов — для YAML; хуков {@code onRightClick/onLeftClick} —
- * для Java API). Если событие отменено — клик полностью игнорируется:
- * действия, триггеры, хуки и расходование предмета не выполняются.
+ * Fired before the click actions are executed (right/left-click-actions,
+ * triggers and effects — for YAML; the {@code onRightClick/onLeftClick} hooks —
+ * for the Java API). If the event is cancelled the click is fully ignored:
+ * actions, triggers, hooks and item consumption are not performed.
  */
 public class CustomItemUseEvent extends CustomItemEvent implements Cancellable {
 
@@ -25,34 +25,34 @@ public class CustomItemUseEvent extends CustomItemEvent implements Cancellable {
     private final UseType useType;
     private boolean cancelled;
 
-    /** Для YAML-предметов. */
+    /** For YAML items. */
     public CustomItemUseEvent(Player player, CustomItem customItem, UseType useType) {
         super(player, customItem);
         this.useType = useType;
     }
 
-    /** Для Java API-предметов (AbstractCustomItem). */
+    /** For Java API items (AbstractCustomItem). */
     public CustomItemUseEvent(Player player, AbstractCustomItem javaItem, UseType useType) {
         super(player, javaItem);
         this.useType = useType;
     }
 
     /**
-     * Тип клика: RIGHT_CLICK или LEFT_CLICK.
+     * The click type: RIGHT_CLICK or LEFT_CLICK.
      */
     public UseType getUseType() {
         return useType;
     }
 
     /**
-     * true если это ПКМ.
+     * true if this is a right click.
      */
     public boolean isRightClick() {
         return useType == UseType.RIGHT_CLICK;
     }
 
     /**
-     * true если это ЛКМ.
+     * true if this is a left click.
      */
     public boolean isLeftClick() {
         return useType == UseType.LEFT_CLICK;

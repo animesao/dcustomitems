@@ -1,6 +1,6 @@
-# DC-CustomItems - Полная документация по действиям и триггерам
+# DC-CustomItems - Complete documentation on actions and triggers
 
-## 📋 Формат YAML (v1.320.225+)
+## 📋 YAML format (v1.320.225+)
 
 ```yaml
 item-id:
@@ -12,143 +12,143 @@ item-id:
 
 ---
 
-## Доступные триггеры
+## Available triggers
 
-| Триггер | Описание |
-|---------|----------|
-| `on_equip` | При экипировке предмета |
-| `on_unequip` | При снятии предмета |
-| `on_click_right` | ПКМ с предметом |
-| `on_click_left` | ЛКМ с предметом |
-| `on_kill` | При убийстве моба/игрока |
-| `on_death` | При смерти игрока |
-| `on_damage_taken` | При получении урона |
-| `on_damage_dealt` | При нанесении урона |
-| `on_jump` | При прыжке |
-| `on_sprint` | При начале бега |
-| `on_pickup` | При подборе предмета |
-| `on_drop` | При выбрасывании предмета |
+| Trigger | Description |
+|---------|-------------|
+| `on_equip` | When the item is equipped |
+| `on_unequip` | When the item is removed |
+| `on_click_right` | Right Click with the item |
+| `on_click_left` | Left Click with the item |
+| `on_kill` | When a mob/player is killed |
+| `on_death` | When the player dies |
+| `on_damage_taken` | When damage is taken |
+| `on_damage_dealt` | When damage is dealt |
+| `on_jump` | When jumping |
+| `on_sprint` | When sprinting starts |
+| `on_pickup` | When the item is picked up |
+| `on_drop` | When the item is dropped |
 
 ---
 
-## Все доступные действия
+## All available actions
 
-### 📢 Коммуникация
+### 📢 Communication
 
-| Действие | Формат | Описание |
+| Action | Format | Description |
 |----------|--------|----------|
-| `message` | `message:Текст` | Сообщение игроку |
-| `title` | `title:Заголовок:Подзаголовок:IN:STAY:OUT` | Заголовок на экране |
-| `actionbar` | `actionbar:Текст` | Текст над хотбаром |
-| `broadcast` | `broadcast:Текст` | Объявление всем игрокам |
+| `message` | `message:TEXT` | A message to the player |
+| `title` | `title:HEADER:SUBTITLE:IN:STAY:OUT` | A title on the screen |
+| `actionbar` | `actionbar:TEXT` | Text above the hotbar |
+| `broadcast` | `broadcast:TEXT` | An announcement to all the players |
 
 ---
 
-### ⚡ Эффекты
+### ⚡ Effects
 
-| Действие | Формат | Описание |
+| Action | Format | Description |
 |----------|--------|----------|
-| `effect` | `effect:ТИП:СЕКУНДЫ:УРОВЕНЬ` | Эффект зелья |
-| `speed` | `speed:СЕКУНДЫ:УРОВЕНЬ` | Скорость (короткий) |
-| `vanish` | `vanish:СЕКУНДЫ` | Невидимость |
-| `glow` | `glow:СЕКУНДЫ` | Сияние |
-| `flight` | `flight:true/false` | Полёт |
+| `effect` | `effect:TYPE:SECONDS:LEVEL` | A potion effect |
+| `speed` | `speed:SECONDS:LEVEL` | Speed (short) |
+| `vanish` | `vanish:SECONDS` | Invisibility |
+| `glow` | `glow:SECONDS` | Glowing |
+| `flight` | `flight:true/false` | Flight |
 
 ---
 
-### 💥 Боевые действия
+### 💥 Combat actions
 
-| Действие | Формат | Описание |
+| Action | Format | Description |
 |----------|--------|----------|
-| `heal` | `heal:СУММА` | Исцелить себя |
-| `heal_nearby` | `heal_nearby:СУММА:РАДИУС` | Исцелить ближайших игроков |
-| `damage` | `damage:СУММА` | Урон себе |
-| `damage_nearby` | `damage_nearby:УРОН:РАДИУС` | AoE урон |
-| `damage_mobs` | `damage_mobs:УРОН:РАДИУС` | Урон только мобам |
-| `damage_players` | `damage_players:УРОН:РАДИУС` | Урон только игрокам |
-| `lightning` | `lightning:КОЛИЧЕСТВО` | Молния на месте |
-| `lightning_forward` | `lightning_forward:ДАЛЬНОСТЬ` | Молния далеко вперед |
-| `knockback` | `knockback:РАДИУС` | Отбросить nearby |
-| `launch` | `launch:СИЛА` | Подбросить nearby |
-| `stun` | `stun:СЕКУНДЫ:РАДИУС` | Оглушить nearby |
+| `heal` | `heal:AMOUNT` | Heal yourself |
+| `heal_nearby` | `heal_nearby:AMOUNT:RADIUS` | Heal the nearest players |
+| `damage` | `damage:AMOUNT` | Damage yourself |
+| `damage_nearby` | `damage_nearby:DAMAGE:RADIUS` | AoE damage |
+| `damage_mobs` | `damage_mobs:DAMAGE:RADIUS` | Damage to mobs only |
+| `damage_players` | `damage_players:DAMAGE:RADIUS` | Damage to players only |
+| `lightning` | `lightning:COUNT` | Lightning in place |
+| `lightning_forward` | `lightning_forward:DISTANCE` | Lightning far forward |
+| `knockback` | `knockback:RADIUS` | Knock back the nearby ones |
+| `launch` | `launch:STRENGTH` | Launch the nearby ones |
+| `stun` | `stun:SECONDS:RADIUS` | Stun the nearby ones |
 
 ---
 
-### 🌍 Телепортация
+### 🌍 Teleportation
 
-| Действие | Формат | Описание |
+| Action | Format | Description |
 |----------|--------|----------|
-| `teleport` | `teleport:X:Y:Z` | Телепорт в точку |
-| `teleport_relative` | `teleport_relative:X:Y:Z` | Относительный телепорт |
+| `teleport` | `teleport:X:Y:Z` | Teleport to a point |
+| `teleport_relative` | `teleport_relative:X:Y:Z` | Relative teleport |
 
 ---
 
-### 🎁 Предметы
+### 🎁 Items
 
-| Действие | Формат | Описание |
+| Action | Format | Description |
 |----------|--------|----------|
-| `give` | `give:МАТЕРИАЛ:КОЛИЧЕСТВО` | Выдать предмет |
-| `remove` | `remove:МАТЕРИАЛ:КОЛИЧЕСТВО` | Забрать предмет |
-| `exp` | `exp:ОПЫТ:УРОВНИ` | Выдать опыт |
+| `give` | `give:MATERIAL:COUNT` | Give an item |
+| `remove` | `remove:MATERIAL:COUNT` | Take an item away |
+| `exp` | `exp:XP:LEVELS` | Give experience |
 
 ---
 
-### 🌎 Мир
+### 🌎 World
 
-| Действие | Формат | Описание |
+| Action | Format | Description |
 |----------|--------|----------|
-| `sethealth` | `sethealth:ЗНАЧЕНИЕ` | Установить здоровье |
-| `setfood` | `setfood:ЗНАЧЕНИЕ` | Установить голод |
+| `sethealth` | `sethealth:VALUE` | Set the health |
+| `setfood` | `setfood:VALUE` | Set the food |
 
 ---
 
-### 🎆 Эффекты
+### 🎆 Effects
 
-| Действие | Формат | Описание |
+| Action | Format | Description |
 |----------|--------|----------|
-| `particles` | `particles:ТИП:КОЛИЧЕСТВО` | Частицы |
-| `sound` | `sound:ТИП:ГРОМКОСТЬ:ТОНАЛЬНОСТЬ` | Звук |
-| `fireworks` | `fireworks:1` | Фейерверк |
+| `particles` | `particles:TYPE:COUNT` | Particles |
+| `sound` | `sound:TYPE:VOLUME:PITCH` | Sound |
+| `fireworks` | `fireworks:1` | A firework |
 
 ---
 
-### 🔧 Команды
+### 🔧 Commands
 
-| Действие | Формат | Описание |
+| Action | Format | Description |
 |----------|--------|----------|
-| `command` | `command:КОМАНДА` | Команда от имени игрока |
-| `console_command` | `console_command:КОМАНДА` | Команда от консоли |
+| `command` | `command:COMMAND` | A command on behalf of the player |
+| `console_command` | `console_command:COMMAND` | A command from the console |
 
 ---
 
-## 🚀 Продвинутые действия (БЕЗ ОГРАНИЧЕНИЙ!)
+## 🚀 Advanced actions (NO RESTRICTIONS!)
 
-### 🎨 Кастомные частицы
+### 🎨 Custom particles
 
 ```yaml
-# Формат: particles_custom:ТИП:КОЛИЧЕСТВО:X:Y:Z:OFF_X:OFF_Y:OFF_Z
+# Format: particles_custom:TYPE:COUNT:X:Y:Z:OFF_X:OFF_Y:OFF_Z
 - 'particles_custom:FLAME:100:0:1:0:2:2:2'
 ```
 
-**Примеры:**
+**Examples:**
 ```yaml
-- 'particles_custom:FLAME:200:0:1:0:3:1:3'           # Огненное кольцо
-- 'particles_custom:DRAGON_BREATH:100:0:2:0:2:2:2'    # Дыхание дракона
-- 'particles_custom:PORTAL:150:0:1:0:2:2:2'           # Портальные частицы
-- 'particles_custom:HEART:50:0:2:0:1:1:1'             # Сердечки
-- 'particles_custom:EXPLOSION_HUGE:10:0:1:0:2:2:2'    # Взрыв
+- 'particles_custom:FLAME:200:0:1:0:3:1:3'           # A fiery ring
+- 'particles_custom:DRAGON_BREATH:100:0:2:0:2:2:2'    # Dragon breath
+- 'particles_custom:PORTAL:150:0:1:0:2:2:2'           # Portal particles
+- 'particles_custom:HEART:50:0:2:0:1:1:1'             # Little hearts
+- 'particles_custom:EXPLOSION_HUGE:10:0:1:0:2:2:2'    # An explosion
 ```
 
 ---
 
-### 🔊 Последовательность звуков
+### 🔊 Sound sequence
 
 ```yaml
-# Формат: sound_sequence:ЗВУК1:ГРОМКОСТЬ1:ТОН1;ЗВУК2:ГРОМКОСТЬ2:ТОН2;...
+# Format: sound_sequence:SOUND1:VOLUME1:PITCH1;SOUND2:VOLUME2:PITCH2;...
 - 'sound_sequence:ENTITY_PLAYER_LEVELUP:1:1;ENTITY_ORB_PICKUP:0.5:1.5'
 ```
 
-**Примеры:**
+**Examples:**
 ```yaml
 - 'sound_sequence:ENTITY_BLAZE_SHOOT:1:1;ENTITY_GENERIC_EXPLODE:1:0.8'
 - 'sound_sequence:ENTITY_ENDERMAN_TELEPORT:1:1;ENTITY_PLAYER_LEVELUP:0.5:1.5'
@@ -156,101 +156,101 @@ item-id:
 
 ---
 
-### 🎬 Последовательность заголовков (анимация!)
+### 🎬 Title sequence (an animation!)
 
 ```yaml
-# Формат: title_sequence:ЗАГОЛОВОК:ПОД:IN:STAY:OUT;...
-- 'title_sequence:🔥 ПОДГОТОВКА!:::10:20:10;🔥 ОГОНЬ!:::10:30:10;🔥 ШТОРМ!:::10:40:10'
+# Format: title_sequence:TITLE:SUB:IN:STAY:OUT;...
+- 'title_sequence:🔥 PREPARATION!:::10:20:10;🔥 FIRE!:::10:30:10;🔥 STORM!:::10:40:10'
 ```
 
-**Примеры:**
+**Examples:**
 ```yaml
-# Анимация перед ударом
-- 'title_sequence:⚡ 3!:::5:10:5;⚡ 2!:::5:10:5;⚡ 1!:::5:10:5;💥 УДАР!:::10:40:10'
+# An animation before the hit
+- 'title_sequence:⚡ 3!:::5:10:5;⚡ 2!:::5:10:5;⚡ 1!:::5:10:5;💥 STRIKE!:::10:40:10'
 
-# Фазы боя
-- 'title_sequence:🔥 ФАЗА 1!:::10:30:10;🔥 ФАЗА 2!:::10:30:10;🔥 ФАЗА 3!:::10:40:10'
+# Combat phases
+- 'title_sequence:🔥 PHASE 1!:::10:30:10;🔥 PHASE 2!:::10:30:10;🔥 PHASE 3!:::10:40:10'
 ```
 
 ---
 
-### 📜 Последовательность команд с задержками
+### 📜 Command sequence with delays
 
 ```yaml
-# Формат: command_sequence:КОМАНДА1:ЗАДЕРЖКА1;КОМАНДА2:ЗАДЕРЖКА2;...
-- 'command_sequence:give %player% diamond 1:20;say Привет!:40;give %player% emerald 1:60'
+# Format: command_sequence:COMMAND1:DELAY1;COMMAND2:DELAY2;...
+- 'command_sequence:give %player% diamond 1:20;say Hello!:40;give %player% emerald 1:60'
 ```
 
-**Примеры:**
+**Examples:**
 ```yaml
-# Награда поэтапно
+# A staged reward
 - 'command_sequence:give %player% diamond 5:100;give %player% emerald 3:200;give %player% gold 10:300'
 ```
 
 ---
 
-### 🌀 Последовательность телепортаций
+### 🌀 Teleportation sequence
 
 ```yaml
-# Формат: teleport_sequence:X1:Y1:Z1:ЗАДЕРЖКА1;X2:Y2:Z2:ЗАДЕРЖКА2;...
+# Format: teleport_sequence:X1:Y1:Z1:DELAY1;X2:Y2:Z2:DELAY2;...
 - 'teleport_sequence:100:64:200:200;200:64:300:200;300:64:400'
 ```
 
-**Примеры:**
+**Examples:**
 ```yaml
-# Телепорт-серия
+# A teleport series
 - 'teleport_sequence:100:64:200:100;200:64:300:100;300:64:400:100;400:64:500'
 ```
 
 ---
 
-### 💫 Последовательность эффектов
+### 💫 Effect sequence
 
 ```yaml
-# Формат: effect_sequence:ТИП1:СЕКУНДЫ1:УРОВЕНЬ1:ЗАДЕРЖКА1;...
+# Format: effect_sequence:TYPE1:SECONDS1:LEVEL1:DELAY1;...
 - 'effect_sequence:SPEED:10:2:0;STRENGTH:10:3:1000;REGENERATION:10:2:2000'
 ```
 
-**Примеры:**
+**Examples:**
 ```yaml
-# Наращивание силы
+# Building up the strength
 - 'effect_sequence:SPEED:10:1:0;SPEED:10:2:2000;SPEED:10:3:4000;SPEED:10:4:6000'
 ```
 
 ---
 
-### 💥 Кастомный урон (точные размеры)
+### 💥 Custom damage (exact dimensions)
 
 ```yaml
-# Формат: damage_custom:УРОН:ШИРИНА:ВЫСОТА:ГЛУБИНА
-- 'damage_custom:20:5:3:5'  # 20 урона в области 5x3x5 блоков
+# Format: damage_custom:DAMAGE:WIDTH:HEIGHT:DEPTH
+- 'damage_custom:20:5:3:5'  # 20 damage in a 5x3x5 block area
 ```
 
-**Примеры:**
+**Examples:**
 ```yaml
-- 'damage_custom:30:6:4:6'  # Мощный AoE удар
-- 'damage_custom:10:3:2:3'  # Маленький AoE удар
-- 'damage_custom:50:8:6:8'  # Огромный AoE удар
-```
-
----
-
-### ❤️ Кастомное исцеление (с частицами)
-
-```yaml
-# Формат: heal_custom:ИСЦЕЛЕНИЕ:ШИРИНА:ВЫСОТА:ГЛУБИНА:ЧАСТИЦЫ
-- 'heal_custom:10:5:5:5:HEART'  # Лечит 10 HP в области 5x5x5 с сердечками
-```
-
-**Примеры:**
-```yaml
-- 'heal_custom:15:8:5:8:HEART'      # Лечение союзников
-- 'heal_custom:20:10:8:10:VILLAGER_HAPPY'  # Массовое лечение
+- 'damage_custom:30:6:4:6'  # A powerful AoE strike
+- 'damage_custom:10:3:2:3'  # A small AoE strike
+- 'damage_custom:50:8:6:8'  # A huge AoE strike
 ```
 
 ---
 
-## 🎮 Полный пример (все действия)
+### ❤️ Custom healing (with particles)
+
+```yaml
+# Format: heal_custom:HEAL:WIDTH:HEIGHT:DEPTH:PARTICLES
+- 'heal_custom:10:5:5:5:HEART'  # Heals 10 HP in a 5x5x5 area with hearts
+```
+
+**Examples:**
+```yaml
+- 'heal_custom:15:8:5:8:HEART'      # Healing for the allies
+- 'heal_custom:20:10:8:10:VILLAGER_HAPPY'  # Mass healing
+```
+
+---
+
+## 🎮 A full example (all the actions)
 
 ```yaml
 ultimate-fire-sword:
@@ -259,7 +259,7 @@ ultimate-fire-sword:
   
   item:
     type: NETHERITE_SWORD
-    title: '&c🔥 Огненный Клинок'
+    title: '&c🔥 Fiery Blade'
     glowing: true
     unbreakable: true
     
@@ -272,10 +272,10 @@ ultimate-fire-sword:
     on_equip:
       - 'particles_custom:FLAME:100:0:1:0:2:2:2'
       - 'sound_sequence:ENTITY_BLAZE_AMBIENT:1:1;ENTITY_PLAYER_LEVELUP:0.5:2'
-      - 'title:&c🔥 КЛИНОК ИЗВЛЕЧЁН!::&7Стихия огня!:10:40:10'
+      - 'title:&c🔥 BLADE DRAWN!::&7The fire element!:10:40:10'
       
     on_click_right:
-      - 'title_sequence:🔥 ПОДГОТОВКА!:::10:20:10;🔥 ОГОНЬ!:::10:30:10;🔥 ШТОРМ!:::10:40:10'
+      - 'title_sequence:🔥 PREPARATION!:::10:20:10;🔥 FIRE!:::10:30:10;🔥 STORM!:::10:40:10'
       - 'particles_custom:FLAME:200:0:1:0:3:1:3'
       - 'damage_custom:30:6:4:6'
       - 'sound_sequence:ENTITY_BLAZE_SHOOT:1:1;ENTITY_GENERIC_EXPLODE:1:0.8'
@@ -291,46 +291,46 @@ ultimate-fire-sword:
 
 ---
 
-## 🌍 Ограничения по мирам
+## 🌍 World restrictions
 
-Предмет может работать только в определённых мирах или быть запрещён в некоторых.
+An item can work only in certain worlds or be forbidden in some of them.
 
 ```yaml
 my-item:
-  # Только в этих мирах (пусто = все миры)
+  # Only in these worlds (empty = all the worlds)
   allowed-worlds:
     - world
     - world_nether
 
-  # Запрещён в этих мирах
+  # Forbidden in these worlds
   disabled-worlds:
     - world_the_end
 ```
 
-**Приоритет:** `allowed-worlds` проверяется первым. Если оба списка пусты — предмет работает везде.
+**Priority:** `allowed-worlds` is checked first. If both lists are empty — the item works everywhere.
 
 ---
 
-## ⏱️ Таймер предмета (auto-destroy)
+## ⏱️ Item timer (auto-destroy)
 
-Предмет автоматически удаляется через указанное время (в секундах).
+The item is automatically removed after the specified time (in seconds).
 
 ```yaml
 my-item:
-  # Время жизни в секундах (-1 = бессрочно)
+  # The lifetime in seconds (-1 = forever)
   duration: 30
 
-  # Сообщение при истечении времени
-  max-duration-message: '&cПредмет испарился!'
+  # The message when the time runs out
+  max-duration-message: '&cThe item evaporated!'
 ```
 
-**Примеры:**
+**Examples:**
 ```yaml
-# Граната — исчезает через 10 секунд
+# A grenade — it disappears after 10 seconds
 bomb:
   type: TOOL
   duration: 10
-  max-duration-message: '&c💣 Граната взорвалась!'
+  max-duration-message: '&c💣 The grenade exploded!'
   right-click-actions:
     - 'damage_nearby:30:5'
     - 'particles_custom:EXPLOSION_HUGE:50:0:1:0:3:3:3'
@@ -339,24 +339,24 @@ bomb:
 
 ---
 
-## ✨ Частицы-следы (trail particles)
+## ✨ Trail particles
 
-Предмет оставляет частицы при движении игрока.
+The item leaves particles behind while the player moves.
 
 ```yaml
 my-item:
-  # Частицы-следы (формат как в equip-particles)
+  # Trail particles (the same format as in equip-particles)
   trail-particles:
     - 'FLAME:5'
     - 'SMOKE:3'
 
-  # Интервал спавна частиц (в тиках, 20 тиков = 1 секунда)
+  # The particle spawn interval (in ticks, 20 ticks = 1 second)
   trail-particle-interval: 3
 ```
 
-**Примеры:**
+**Examples:**
 ```yaml
-# Огненный клинок — огненный след
+# A fiery blade — a fiery trail
 fire-sword:
   type: TOOL
   trail-particles:
@@ -364,7 +364,7 @@ fire-sword:
     - 'LAVA:3'
   trail-particle-interval: 2
 
-# Ледяной клинок — ледяной след
+# An icy blade — an icy trail
 ice-sword:
   type: TOOL
   trail-particles:
@@ -372,7 +372,7 @@ ice-sword:
     - 'CLOUD:3'
   trail-particle-interval: 3
 
-# Теневой клинок — теневой след
+# A shadow blade — a shadow trail
 shadow-sword:
   type: TOOL
   trail-particles:
@@ -383,29 +383,29 @@ shadow-sword:
 
 ---
 
-## 🎨 Анимированные модели (item-model-variant)
+## 🎨 Animated models (item-model-variant)
 
-Для использования анимированных текстур в Resource Pack.
+For using animated textures in a Resource Pack.
 
 ```yaml
 my-item:
   item:
     type: NETHERITE_SWORD
-    # Вариант модели (для анимированных текстур)
-    # Должен совпадать с именем в item_model_definition
+    # The model variant (for animated textures)
+    # Must match the name in item_model_definition
     item-model-variant: "animated_sword"
 ```
 
-**Пример Resource Pack структуры:**
+**An example of the Resource Pack structure:**
 ```
 assets/minecraft/
 ├── textures/
 │   └── item/
-│       └── animated_sword.png          # Спрайтшит анимации
+│       └── animated_sword.png          # The animation spritesheet
 ├── items/
-│   └── netherite_sword.json            # Определение модели
+│   └── netherite_sword.json            # The model definition
 └── materials/
-    └── animated_sword.png.mcmeta       # Метаданные анимации
+    └── animated_sword.png.mcmeta       # The animation metadata
 ```
 
 **animated_sword.png.mcmeta:**
@@ -436,7 +436,7 @@ assets/minecraft/
 
 ---
 
-## 🔧 Полный пример с новыми фичами
+## 🔧 A full example with the new features
 
 ```yaml
 ultimate-flame-sword:
@@ -445,18 +445,18 @@ ultimate-flame-sword:
   placeable: false
   permission: flame.sword
 
-  # Таймер: живёт 60 секунд
+  # Timer: it lives for 60 seconds
   duration: 60
-  max-duration-message: '&c🔥 Клинок расплавился!'
+  max-duration-message: '&c🔥 The blade melted!'
 
-  # Ограничения по миру
+  # World restrictions
   allowed-worlds:
     - world
     - world_nether
   disabled-worlds:
     - world_the_end
 
-  # Частицы-следы
+  # Trail particles
   trail-particles:
     - 'FLAME:8'
     - 'LAVA:3'
@@ -464,7 +464,7 @@ ultimate-flame-sword:
 
   item:
     type: NETHERITE_SWORD
-    title: '&c🔥 Пламенный Клинок'
+    title: '&c🔥 Fiery Blade'
     glowing: true
     unbreakable: true
     item-model: "flame_sword"
@@ -483,7 +483,7 @@ ultimate-flame-sword:
     on_equip:
       - 'particles_custom:FLAME:50:0:1:0:2:2:2'
       - 'sound:ENTITY_BLAZE_AMBIENT:1:1'
-      - 'title:&c🔥 Пламенный Клинок извлечён!|||10:40:10'
+      - 'title:&c🔥 Fiery Blade drawn!|||10:40:10'
 
     on_sprint:
       - 'trail-particles:FLAME:3'

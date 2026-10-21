@@ -1,5 +1,5 @@
 # ============================================
-# ЗЕЛЬЕ ЗДОРОВЬЯ - Исцеляет и даёт регенерацию
+# HEALTH POTION - Heals and grants regeneration
 # ============================================
 
 health-potion:
@@ -10,7 +10,7 @@ health-potion:
 
   item:
     type: GLASS_BOTTLE
-    title: '&c[❤] &fЗелье &cЗдоровья'
+    title: '&c[❤] &fHealth &cPotion'
     glowing: true
     unbreakable: false
     item-model: "health_potion"
@@ -19,14 +19,14 @@ health-potion:
   lore:
     - ''
     - ' &c━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Исцеляющее зелье природы'
+    - ' &7Healing potion of nature'
     - ' &c━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &c❤ &fПКМ: Выпить'
-    - ' &7Восстанавливает 10 HP'
-    - ' &7Даёт регенерацию на 10 секунд'
+    - ' &c❤ &fRight Click: Drink'
+    - ' &7Restores 10 HP'
+    - ' &7Grants regeneration for 10 seconds'
     - ''
-    - ' &eОсталось глотков: &c%uses% &7из &43'
+    - ' &eSips left: &c%uses% &7of &43'
     - ''
 
   max-uses: 3

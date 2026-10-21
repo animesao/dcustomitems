@@ -1,15 +1,15 @@
 # ============================================
-# ПРИМЕР КРАФТ-РЕЦЕПТОВ
+# CRAFTING RECIPE EXAMPLE
 # ============================================
-# Файл начинается с EXAMPLE- — это образец: он копируется в items/ при
-# первом запуске, но не загружается. Чтобы включить — уберите префикс
-# EXAMPLE- из имени файла или скопируйте нужную часть в свой предмет.
+# The file starts with EXAMPLE- — it is a sample: it is copied into items/ on
+# first launch but is not loaded. To enable it — remove the EXAMPLE- prefix
+# from the file name or copy the part you need into your own item.
 #
-# Рецепты задаются в секции recipes самого предмета.
-# Ингредиент: материал (DIAMOND, STICK...) ИЛИ id другого кастомного предмета.
+# Recipes are defined in the recipes section of the item itself.
+# Ingredient: a material (DIAMOND, STICK...) OR the id of another custom item.
 #
-# ВАЖНО: результат крафта — сам предмет (со всеми его механиками).
-# После изменения рецептов выполните /ci reload.
+# IMPORTANT: the crafting result is the item itself (with all of its mechanics).
+# Run /ci reload after changing recipes.
 
 my-crafted-sword:
   type: TOOL
@@ -17,32 +17,32 @@ my-crafted-sword:
 
   item:
     type: DIAMOND_SWORD
-    title: '&bКрафтовый Меч'
+    title: '&bCrafted Sword'
     glowing: true
 
-  # ---- Крафт в верстаке (форма) ----
+  # ---- Crafting in a crafting table (shaped) ----
   recipes:
     shaped:
       - pattern:
           - " A "
           - "ABA"
           - " A "
-        # A = алмаз, B = палка. Пробел = пустая ячейка.
+        # A = diamond, B = stick. A space = an empty slot.
         keys:
           A: DIAMOND
           B: STICK
         amount: 1
 
-    # ---- Крафт без формы (любое расположение) ----
+    # ---- Crafting without a shape (any arrangement) ----
     shapeless:
       - ingredients:
           - DIAMOND
           - DIAMOND
-          - my-crafted-sword   # ингредиентом может быть другой кастомный предмет!
+          - my-crafted-sword   # an ingredient can be another custom item!
         amount: 1
 
-    # ---- Переплавка в печи ----
+    # ---- Smelting in a furnace ----
     furnace:
       - ingredient: IRON_INGOT
         experience: 0.7
-        cooking-time: 200      # тики (200 = 10 сек)
+        cooking-time: 200      # ticks (200 = 10 sec)

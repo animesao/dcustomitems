@@ -10,8 +10,8 @@ import java.util.Set;
 import java.util.logging.Level;
 
 /**
- * Миграция конфигурации и создание файлов по умолчанию.
- * Вынесен из Main для разделения ответственности.
+ * Configuration migration and creation of default files.
+ * Extracted from Main to separate responsibilities.
  */
 public class ConfigMigrator {
 
@@ -22,7 +22,7 @@ public class ConfigMigrator {
     }
 
     /**
-     * Создать items/messages.java если не существует
+     * Create items/messages.java if it does not exist
      */
     public void createDefaultMessagesFile() {
         File itemsDir = new File(plugin.getDataFolder(), "items");
@@ -32,9 +32,9 @@ public class ConfigMigrator {
         if (messagesFile.exists()) return;
 
         try {
-            // Явный UTF-8: FileWriter использовал системную кодировку,
-            // и на Windows с cp1251 русские тексты в messages.java
-            // превращались в «кракозябры».
+            // Explicit UTF-8: FileWriter used the system encoding,
+            // and on Windows with cp1251 the Russian texts in messages.java
+            // turned into garbled characters.
             java.nio.file.Files.write(messagesFile.toPath(),
                     generateDefaultMessagesContent().getBytes(java.nio.charset.StandardCharsets.UTF_8));
             plugin.getLogger().info("[Config] Created default messages.java");
@@ -44,7 +44,7 @@ public class ConfigMigrator {
     }
 
     /**
-     * Проверить наличие предметов в config.yml и предложить миграцию
+     * Check for items in config.yml and suggest a migration
      */
     public void checkConfigMigration() {
         Set<String> configKeys = plugin.getConfig().getKeys(false);
@@ -78,29 +78,29 @@ public class ConfigMigrator {
     }
 
     /**
-     * Содержимое файла messages.java по умолчанию
+     * The default content of the messages.java file
      */
     private String generateDefaultMessagesContent() {
         StringBuilder sb = new StringBuilder();
         sb.append("import me.dcplugin.dcustomitems.api.config.MessagesConfig;\n");
         sb.append("\n");
         sb.append("/**\n");
-        sb.append(" * DC-CustomItems - Сообщения плагина\n");
-        sb.append(" * Используй /ci reload после изменений\n");
+        sb.append(" * DC-CustomItems - Plugin messages\n");
+        sb.append(" * Run /ci reload after editing\n");
         sb.append(" */\n");
         sb.append("public class messages {\n");
         sb.append("\n");
         sb.append("    public static void load() {\n");
         sb.append("        MessagesConfig.PREFIX = \"&8[&6DCI&8] &r\";\n");
-        sb.append("        MessagesConfig.NO_PERMISSION = MessagesConfig.PREFIX + \"&cНет прав!\";\n");
-        sb.append("        MessagesConfig.PLAYER_NOT_FOUND = MessagesConfig.PREFIX + \"&cИгрок не найден!\";\n");
-        sb.append("        MessagesConfig.ITEM_NOT_FOUND = MessagesConfig.PREFIX + \"&cПредмет '{item}' не найден!\";\n");
+        sb.append("        MessagesConfig.NO_PERMISSION = MessagesConfig.PREFIX + \"&cNo permission!\";\n");
+        sb.append("        MessagesConfig.PLAYER_NOT_FOUND = MessagesConfig.PREFIX + \"&cPlayer not found!\";\n");
+        sb.append("        MessagesConfig.ITEM_NOT_FOUND = MessagesConfig.PREFIX + \"&cItem '{item}' not found!\";\n");
         sb.append("        MessagesConfig.CI_HEADER = \"&6=== DC-CustomItems ===\";\n");
-        sb.append("        MessagesConfig.CI_HELP_RELOAD = \"&e/ci reload &7- Перезагрузить\";\n");
-        sb.append("        MessagesConfig.RELOAD_SUCCESS = MessagesConfig.PREFIX + \"&a&lПерезагружено!\";\n");
+        sb.append("        MessagesConfig.CI_HELP_RELOAD = \"&e/ci reload &7- Reload\";\n");
+        sb.append("        MessagesConfig.RELOAD_SUCCESS = MessagesConfig.PREFIX + \"&a&lReloaded!\";\n");
         sb.append("        MessagesConfig.RELOAD_YAML = MessagesConfig.PREFIX + \"&7YAML: &e{count}\";\n");
         sb.append("        MessagesConfig.RELOAD_JAVA_ITEMS = MessagesConfig.PREFIX + \"&7Java: &e{count}\";\n");
-        sb.append("        MessagesConfig.RELOAD_ERROR = MessagesConfig.PREFIX + \"&cОшибка: {error}\";\n");
+        sb.append("        MessagesConfig.RELOAD_ERROR = MessagesConfig.PREFIX + \"&cError: {error}\";\n");
         sb.append("    }\n");
         sb.append("}\n");
         return sb.toString();

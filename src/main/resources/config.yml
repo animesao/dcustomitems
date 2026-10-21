@@ -1,77 +1,77 @@
 # ==========================================
-# DC-CustomItems - Настройки плагина
+# DC-CustomItems - Plugin settings
 # ==========================================
 #
-# Все предметы находятся в отдельных файлах в папке items/.
-# Каждый предмет или группа предметов — отдельный файл (.yml / .java).
+# All items live in separate files in the items/ folder.
+# Each item (or group of items) is a separate file (.yml / .java).
 #
-# В jar плагина лежат только образцы с префиксом EXAMPLE-*:
+# The jar only ships samples with the EXAMPLE-* prefix:
 #   items/
-#   ├── EXAMPLE-runes.yml          — Руны и шары
-#   ├── EXAMPLE-armor.yml          — Броня (сеты)
-#   ├── EXAMPLE-tools.yml          — Оружие и инструменты
-#   ├── EXAMPLE-totems.yml         — Тотемы бессмертия
-#   ├── EXAMPLE-vampire-blade.yml  — Кастомные мечи
-#   ├── EXAMPLE-give-command.java  — Команда /give
-#   ├── EXAMPLE-vault/             — Модуль экономики
-#   ├── EXAMPLE-shop/              — Модуль магазина
+#   ├── EXAMPLE-runes.yml          — Runes and orbs
+#   ├── EXAMPLE-armor.yml          — Armor (sets)
+#   ├── EXAMPLE-tools.yml          — Weapons and tools
+#   ├── EXAMPLE-totems.yml         — Totems of immortality
+#   ├── EXAMPLE-vampire-blade.yml  — Custom swords
+#   ├── EXAMPLE-give-command.java  — /give command
+#   ├── EXAMPLE-vault/             — Economy module
+#   ├── EXAMPLE-shop/              — Shop module
 #   └── ...
 #
-# По умолчанию образцы НЕ копируются в items/ (extract-default-modules: false).
-# Загрузчики их игнорируют: чтобы включить образец, скопируйте его из jar
-# без префикса EXAMPLE- в имени файла/папки и сделайте /ci reload.
+# By default the samples are NOT copied into items/ (extract-default-modules: false).
+# The loaders ignore them: to enable a sample, copy it from the jar
+# without the EXAMPLE- prefix in the name and run /ci reload.
 #
 # ==========================================
 
 # ==========================================
-# БЕЗОПАСНОСТЬ: RUNTIME-КОМПИЛЯЦИЯ JAVA
+# SECURITY: RUNTIME JAVA COMPILATION
 # ==========================================
-# Плагин компилирует .java-файлы из items/ прямо на сервере (Java API).
-# Это выполнение произвольного кода: любой, кто может записать файл в
-# items/, получает контроль над сервером. На админ-сервере это удобно;
-# если доступ к файлам плагина есть у недоверенных лиц — выключите.
-# При false все .java-файлы в items/ игнорируются (YAML-предметы работают).
+# The plugin compiles .java files from items/ right on the server (Java API).
+# This executes arbitrary code: anyone who can write a file into items/
+# gains control over the server. It is convenient on an admin server;
+# turn it off if untrusted people can write to the plugin folder.
+# With false all .java files in items/ are ignored (YAML items still work).
 java-compilation: true
 
-# Отладочное логирование (выключить в продакшене)
+# Debug logging (turn off in production)
 debug-mode: false
 
-# Логи плагина в plugins/DC-CustomItems/logs/latest.log вместо консоли.
-# По умолчанию выключено — сообщения плагина идут в консоль сервера.
+# Plugin logs to plugins/DC-CustomItems/logs/latest.log instead of the console.
+# Disabled by default - the plugin messages go to the server console.
 file-logging: false
 
-# Бэкапы items/ + config.yml + data.db перед каждым /ci reload.
+# Backups of items/ + config.yml + data.db before every /ci reload.
 backup:
   on-reload: true
   keep: 5
 
 # ==========================================
-# ОБРАЗЦЫ EXAMPLE-*
+# EXAMPLE-* SAMPLES
 # ==========================================
-# По умолчанию образцы EXAMPLE-* НЕ копируются в папку items/ — папка
-# остаётся пустой, спама файлами нет. Это справочный материал в jar:
-# компилятор и загрузчики их игнорируют.
+# By default the EXAMPLE-* samples are NOT copied into the items/ folder -
+# the folder stays empty, no file spam. They are reference material inside
+# the jar: the compiler and the loaders ignore them.
 #
-# Чтобы добавить на сервер свой контент, создайте файлы в items/:
-#   - .yml  — предметы (удали файл = предмет исчез)
-#   - .java — команды и Java-предметы (удали файл = команда исчезла)
-#   - папки — модули (удали папку = модуль отключён)
+# To add your own content to the server, create files in items/:
+#   - .yml  - items (delete a file = the item is gone)
+#   - .java - commands and Java items (delete a file = the command is gone)
+#   - folders - modules (delete a folder = the module is disabled)
 #
-# Образец включается копированием из jar/репозитория без префикса:
+# A sample is enabled by copying it from the jar/repository without the prefix:
 # EXAMPLE-runes.yml -> runes.yml, EXAMPLE-vault/ -> vault/.
 #
-# Включите, только если хотите, чтобы образцы копировались автоматически
-# при старте (только отсутствующие файлы, ничего не перезаписывая).
+# Enable this only if you want the samples to be copied automatically
+# on start (only missing files are copied, nothing is overwritten).
 extract-default-modules: false
 
 # ==========================================
-# БАЗА ДАННЫХ
+# DATABASE
 # ==========================================
-# По умолчанию используется локальный SQLite-файл data.db.
-# Для MySQL измените type на mysql и заполните credentials.
-# После изменения database.type перезапустите сервер.
+# A local SQLite file (data.db) is used by default.
+# For MySQL change type to mysql and fill in the credentials.
+# Restart the server after changing database.type.
 database:
-  type: sqlite # sqlite или mysql
+  type: sqlite # sqlite or mysql
   mysql:
     host: 127.0.0.1
     port: 3306
@@ -84,10 +84,10 @@ database:
     leak-detection-ms: 0
 
 # ==========================================
-# СЕТ-БОНУСЫ (для полных комплектов брони)
+# SET BONUSES (for full armor sets)
 # ==========================================
-# Определяются здесь, т.к. ArmorSetManager читает из config.yml.
-# Каждый ID сета должен совпадать с armor-set в YAML-файлах брони.
+# They are defined here because ArmorSetManager reads from config.yml.
+# Every set ID must match the armor-set value in the armor YAML files.
 set-bonuses:
   dark-lord:
     effects:
@@ -96,54 +96,51 @@ set-bonuses:
       - 'REGENERATION:2'
 
 # ==========================================
-# СПИСОК АТРИБУТОВ (справочник)
+# ATTRIBUTE REFERENCE
 # ==========================================
 #
-# Простое значение (ADD_NUMBER):
+# Plain value (ADD_NUMBER):
 #   attributes:
 #     GENERIC_ATTACK_DAMAGE: 2.0
 #
-# С указанием операции:
-#   attributes:
-#     GENERIC_ATTACK_DAMAGE:
-#       value: 2.0
-#       operation: ADD_NUMBER
+# Legacy names (GENERIC_*/PLAYER_*) and modern names (attack_damage)
+# are both supported.
 #
-# Операции атрибутов:
-#   ADD_NUMBER      - Добавить к базовому значению
-#   MULTIPLY_BASE   - Умножить базовое значение
-#   MULTIPLY_TOTAL  - Умножить итоговое значение
+# Attribute operations:
+#   ADD_NUMBER      - add to the base value
+#   MULTIPLY_BASE   - multiply the base value
+#   MULTIPLY_TOTAL  - multiply the final value
 #
-# ПОЛНЫЙ СПИСОК АТРИБУТОВ:
+# FULL LIST OF ATTRIBUTES:
 # ========================
-# GENERIC_MAX_HEALTH              - Макс. здоровье
-# GENERIC_FOLLOW_RANGE           - Дистанция следования мобов
-# GENERIC_KNOCKBACK_RESISTANCE   - Сопротивление отбросу
-# GENERIC_MOVEMENT_SPEED         - Скорость передвижения
-# GENERIC_FLYING_SPEED          - Скорость полёта
-# GENERIC_ATTACK_DAMAGE         - Урон атаки
-# GENERIC_ATTACK_KNOCKBACK      - Отброс при атаке
-# GENERIC_ATTACK_SPEED          - Скорость атаки
-# GENERIC_ARMOR                 - Броня
-# GENERIC_ARMOR_TOUGHNESS       - Прочность брони
-# GENERIC_FALL_DAMAGE_MULTIPLIER - Множитель урона от падения
-# GENERIC_LUCK                  - Удача
-# GENERIC_MAX_ABSORPTION        - Макс. поглощение урона
-# GENERIC_SAFE_FALL_DISTANCE    - Безопасная дистанция падения
-# GENERIC_SCALE                 - Размер сущности
-# GENERIC_STEP_HEIGHT           - Высота шага
-# GENERIC_GRAVITY               - Гравитация
-# GENERIC_JUMP_STRENGTH         - Сила прыжка
-# GENERIC_BURNING_TIME          - Время горения
-# GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE - Сопр. отбросу от взрывов
-# GENERIC_MOVEMENT_EFFICIENCY   - Эффективность движения
-# GENERIC_OXYGEN_BONUS         - Бонус кислорода
-# GENERIC_WATER_MOVEMENT_EFFICIENCY - Скорость в воде
-# PLAYER_BLOCK_INTERACTION_RANGE - Дистанция взаимодействия с блоками
-# PLAYER_ENTITY_INTERACTION_RANGE - Дистанция взаимодействия с сущностями
-# PLAYER_BLOCK_BREAK_SPEED     - Скорость добычи блоков
-# PLAYER_MINING_EFFICIENCY     - Эффективность добычи
-# PLAYER_SNEAKING_SPEED        - Скорость кражи
-# PLAYER_SUBMERGED_MINING_SPEED - Скорость добычи под водой
-# PLAYER_SWEEPING_DAMAGE_RATIO - Урон размаха
-# ZOMBIE_SPAWN_REINFORCEMENTS  - Шанс подкрепления зомби
+# GENERIC_MAX_HEALTH              - Max health
+# GENERIC_FOLLOW_RANGE           - Mob follow range
+# GENERIC_KNOCKBACK_RESISTANCE   - Knockback resistance
+# GENERIC_MOVEMENT_SPEED         - Movement speed
+# GENERIC_FLYING_SPEED          - Flying speed
+# GENERIC_ATTACK_DAMAGE         - Attack damage
+# GENERIC_ATTACK_KNOCKBACK      - Knockback on attack
+# GENERIC_ATTACK_SPEED          - Attack speed
+# GENERIC_ARMOR                 - Armor
+# GENERIC_ARMOR_TOUGHNESS       - Armor toughness
+# GENERIC_FALL_DAMAGE_MULTIPLIER - Fall damage multiplier
+# GENERIC_LUCK                  - Luck
+# GENERIC_MAX_ABSORPTION        - Max absorption
+# GENERIC_SAFE_FALL_DISTANCE    - Safe fall distance
+# GENERIC_SCALE                 - Entity scale
+# GENERIC_STEP_HEIGHT           - Step height
+# GENERIC_GRAVITY               - Gravity
+# GENERIC_JUMP_STRENGTH         - Jump strength
+# GENERIC_BURNING_TIME          - Burning time
+# GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE - Explosion knockback resistance
+# GENERIC_MOVEMENT_EFFICIENCY   - Movement efficiency
+# GENERIC_OXYGEN_BONUS         - Oxygen bonus
+# GENERIC_WATER_MOVEMENT_EFFICIENCY - Water movement efficiency
+# PLAYER_BLOCK_INTERACTION_RANGE - Block interaction range
+# PLAYER_ENTITY_INTERACTION_RANGE - Entity interaction range
+# PLAYER_BLOCK_BREAK_SPEED     - Block break speed
+# PLAYER_MINING_EFFICIENCY     - Mining efficiency
+# PLAYER_SNEAKING_SPEED        - Sneaking speed
+# PLAYER_SUBMERGED_MINING_SPEED - Submerged mining speed
+# PLAYER_SWEEPING_DAMAGE_RATIO - Sweeping damage ratio
+# ZOMBIE_SPAWN_REINFORCEMENTS  - Zombie spawn reinforcements

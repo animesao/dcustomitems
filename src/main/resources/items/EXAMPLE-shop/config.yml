@@ -1,22 +1,22 @@
 # ============================================
 # Shop Module
 # ============================================
-name: "Магазин"
+name: "Shop"
 version: "1.0"
 enabled: true
 
-# Команды модуля
+# Module commands
 commands:
   - shop
 
-# Права
+# Permissions
 permissions:
   - shop.use
   - shop.admin
 
-# Меню
+# Menu
 menu:
-  title: "&6Магазин"
+  title: "&6Shop"
   size: 27
   fill:
     material: GRAY_STAINED_GLASS_PANE

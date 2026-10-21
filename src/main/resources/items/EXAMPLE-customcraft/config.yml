@@ -1,41 +1,41 @@
 # ============================================
-# 🛠 CustomCraft — GUI-крафт кастомных предметов
+# 🛠 CustomCraft — GUI crafting of custom items
 # ============================================
-# Модуль: кастомный крафт через виртуальный верстак.
-# Берёт рецепты из YAML-секции `recipes` всех кастомных предметов
-# (shaped / shapeless) и позволяет скрафтить их в GUI.
+# Module: custom crafting through a virtual crafting table.
+# Takes the recipes from the `recipes` YAML section of all custom items
+# (shaped / shapeless) and lets you craft them in the GUI.
 #
-# Идентичность предметов — по PDC (PersistentDataContainer / NBT):
-#   - кастомные предметы матчатся по их ID (не по названию/материалу);
-#   - ингредиенты других плагинов — по материалу, их NBT не портится;
-#   - готовый предмет получает корректные uses/duration через ItemHandler.
+# Item identity is based on PDC (PersistentDataContainer / NBT):
+#   - custom items are matched by their ID (not by name/material);
+#   - ingredients from other plugins are matched by material, their NBT is not spoiled;
+#   - the finished item gets the correct uses/duration through ItemHandler.
 #
-# Отключение: удалите папку items/customcraft/ или enabled: false.
+# Disabling: delete the items/customcraft/ folder or set enabled: false.
 
 name: "CustomCraft"
 version: "1.0"
 enabled: true
 
-# Команда модуля
+# Module command
 command: craft
 
-# Права (пусто = без ограничений)
+# Permission (empty = no restrictions)
 permission: dci.craft
 
-# Настройки GUI
+# GUI settings
 gui:
-  # Название окна
+  # Window title
   title: "&8\u2692 CustomCraft"
-  # Материал фона
+  # Background material
   filler: GRAY_STAINED_GLASS_PANE
-  # Слот результата (в 27-слотовом сундуке)
+  # Result slot (in the 27-slot chest)
   result-slot: 22
-  # Вернуть предметы из сетки при закрытии окна
+  # Return the items from the grid when the window is closed
   return-items-on-close: true
 
-# Сообщения
+# Messages
 messages:
-  no-recipes: "&cУ вас нет доступных рецептов."
-  no-permission: "&cУ вас нет прав на /craft!"
-  crafted: "&aПредмет скрафчен!"
-  inventory-full: "&cИнвентарь полон!"
+  no-recipes: "&cYou have no available recipes."
+  no-permission: "&cYou do not have permission for /craft!"
+  crafted: "&aItem crafted!"
+  inventory-full: "&cInventory is full!"

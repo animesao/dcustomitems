@@ -2,28 +2,28 @@ import me.dcplugin.dcustomitems.api.placeholders.CustomPlaceholder;
 import org.bukkit.entity.Player;
 
 /**
- * Плейсхолдер %playtime% - время игры игрока
+ * %playtime% placeholder - the player's play time
  * 
- * Форматы:
- *   %playtime%          → "2ч 15м 30с"
+ * Formats:
+ *   %playtime%          → "2h 15m 30s"
  *   %playtime_hours%    → "2"
  *   %playtime_minutes%  → "135"
  *   %playtime_seconds%  → "8130"
  *
- * Положи этот файл в plugins/DC-CustomItems/items/
- * Сделай /ci reload
- * Используй в любом тексте!
+ * Put this file in plugins/DC-CustomItems/items/
+ * Run /ci reload
+ * Use it in any text!
  *
- * Примеры:
- *   "Время в игре: %playtime%"
- *   "Часов на сервере: %playtime_hours%"
- *   Scoreboard: "&7Время: &e%playtime%"
+ * Examples:
+ *   "Time played: %playtime%"
+ *   "Hours on the server: %playtime_hours%"
+ *   Scoreboard: "&7Time: &e%playtime%"
  */
 public class PlaytimePlaceholder extends CustomPlaceholder {
 
-    // Хранилище времени входа (timestamp)
+    // Storage of the join time (timestamp)
     private static final java.util.Map<java.util.UUID, Long> joinTimes = new java.util.HashMap<>();
-    // Накопленное время (в секундах) до текущей сессии
+    // Accumulated time (in seconds) up to the current session
     private static final java.util.Map<java.util.UUID, Long> totalSeconds = new java.util.HashMap<>();
 
     public PlaytimePlaceholder() {
@@ -32,20 +32,20 @@ public class PlaytimePlaceholder extends CustomPlaceholder {
 
     @Override
     public String getValue(Player player) {
-        if (player == null) return "0с";
+        if (player == null) return "0s";
         long seconds = getTotalSeconds(player);
         return formatTime(seconds);
     }
 
     /**
-     * Вызывать при входе игрока на сервер
+     * Call when a player joins the server
      */
     public static void onJoin(Player player) {
         joinTimes.put(player.getUniqueId(), System.currentTimeMillis());
     }
 
     /**
-     * Вызывать при выходе игрока с сервера
+     * Call when a player leaves the server
      */
     public static void onQuit(Player player) {
         long joinTime = joinTimes.remove(player.getUniqueId());
@@ -56,7 +56,7 @@ public class PlaytimePlaceholder extends CustomPlaceholder {
     }
 
     /**
-     * Получить общее время в секундах
+     * Get the total time in seconds
      */
     public static long getTotalSeconds(Player player) {
         long total = totalSeconds.getOrDefault(player.getUniqueId(), 0L);
@@ -68,7 +68,7 @@ public class PlaytimePlaceholder extends CustomPlaceholder {
     }
 
     /**
-     * Форматировать секунды в читаемый вид
+     * Format seconds into a readable form
      */
     private String formatTime(long totalSeconds) {
         long hours = totalSeconds / 3600;
@@ -76,11 +76,11 @@ public class PlaytimePlaceholder extends CustomPlaceholder {
         long seconds = totalSeconds % 60;
 
         if (hours > 0) {
-            return hours + "ч " + minutes + "м " + seconds + "с";
+            return hours + "h " + minutes + "m " + seconds + "s";
         } else if (minutes > 0) {
-            return minutes + "м " + seconds + "с";
+            return minutes + "m " + seconds + "s";
         } else {
-            return seconds + "с";
+            return seconds + "s";
         }
     }
 }

@@ -67,8 +67,8 @@ public class ArmorSetManager {
 
     public void reload() {
         loadSetBonuses();
-        // Кэш разобранных эффектов сет-бонусов тоже сбрасываем,
-        // иначе после reload использовались бы старые значения.
+        // The cache of the parsed set-bonus effects is reset as well,
+        // otherwise the old values would be used after a reload.
         plugin.getEffectManager().invalidateSetBonusCache();
     }
 }

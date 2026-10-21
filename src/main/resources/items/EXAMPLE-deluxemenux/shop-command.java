@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Открывает магазин DeluxeMenuX.
+ * Opens the DeluxeMenuX shop.
  *
- * Команда:
+ * Command:
  * /shop
  */
 public class shop_commandItem extends CustomCommand {
@@ -18,7 +18,7 @@ public class shop_commandItem extends CustomCommand {
     public shop_commandItem() {
         super(
             "shop",
-            "Открыть магазин",
+            "Open the shop",
             "/shop",
             "deluxemenux.use"
         );
@@ -27,19 +27,19 @@ public class shop_commandItem extends CustomCommand {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
-            msg(sender, "&cТолько для игроков!");
+            msg(sender, "&cPlayers only!");
             return true;
         }
 
         Main plugin = Main.getInstance();
         if (plugin == null || plugin.getModuleManager() == null) {
-            msg(sender, "&cМодуль DeluxeMenuX не загружен!");
+            msg(sender, "&cThe DeluxeMenuX module is not loaded!");
             return true;
         }
 
         Module module = plugin.getModuleManager().getModule("deluxemenux");
         if (!module.openMenu((Player) sender, "shop")) {
-            msg(sender, "&cМеню shop не найдено!");
+            msg(sender, "&cThe shop menu was not found!");
         }
         return true;
     }

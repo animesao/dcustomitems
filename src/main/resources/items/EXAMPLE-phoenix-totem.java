@@ -7,10 +7,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
 /**
- * Пример талисмана Феникса на Java API.
+ * Example of a Phoenix talisman on the Java API.
  * 
- * При смерти воскрешает игрока с эффектами.
- * Использование: автоматически при смерти.
+ * On death it resurrects the player with effects.
+ * Usage: automatically on death.
  */
 public class PhoenixTotem extends AbstractCustomItem {
 
@@ -18,7 +18,7 @@ public class PhoenixTotem extends AbstractCustomItem {
     public String getId() { return "phoenix_totem"; }
 
     @Override
-    public String getDisplayName() { return "&c🔥 Талисман Феникса"; }
+    public String getDisplayName() { return "&c🔥 Phoenix Talisman"; }
 
     @Override
     public Material getMaterial() { return Material.TOTEM_OF_UNDYING; }
@@ -27,15 +27,15 @@ public class PhoenixTotem extends AbstractCustomItem {
     public java.util.List<String> getLore() {
         return java.util.List.of(
             "",
-            " &7Древний талисман, созданный из",
-            " &7перьев огненной птицы",
+            " &7Ancient talisman crafted from",
+            " &7the ashes of a fire bird",
             "",
-            " &cДействие:",
-            " &f• Воскрешение при смерти",
-            " &f• Полное исцеление",
-            " &f• Сила + Скорость на 30 сек",
+            " &cEffect:",
+            " &f• Resurrect on death",
+            " &f• Full healing",
+            " &f• Strength + Speed for 30 sec",
             "",
-            " &7Перезарядка: 5 минут"
+            " &7Cooldown: 5 minutes"
         );
     }
 
@@ -52,30 +52,30 @@ public class PhoenixTotem extends AbstractCustomItem {
     public String getActivationSlot() { return "OFFHAND"; }
 
     @Override
-    public long getClickCooldown() { return 300000; } // 5 минут
+    public long getClickCooldown() { return 300000; } // 5 minutes
 
     @Override
     public void onDeath(Player player, org.bukkit.event.entity.PlayerDeathEvent event) {
-        // Отменяем смерть и воскрешаем
+        // Cancel the death and resurrect
         event.setCancelled(true);
         
-        // Воскрешаем с полным здоровьем
+        // Resurrect with full health
         player.setHealth(player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH).getValue());
         player.setFoodLevel(20);
         player.setSaturation(20f);
         
-        // Даём мощные эффекты
+        // Grant powerful effects
         ItemAPI.effect(player, PotionEffectType.STRENGTH, 30, 2);
         ItemAPI.effect(player, PotionEffectType.SPEED, 30, 2);
         ItemAPI.effect(player, PotionEffectType.FIRE_RESISTANCE, 60, 1);
         
-        // Эффекты воскрешения
+        // Resurrection effects
         ItemAPI.particles(player, Particle.FLAME, 200);
         ItemAPI.particles(player, Particle.TOTEM_OF_UNDYING, 100);
         ItemAPI.sound(player, Sound.ITEM_TOTEM_USE, 2f, 0.5f);
-        ItemAPI.title(player, "&c🔥 ФЕНИКС!", "&7Вы воскресли из пепла!");
+        ItemAPI.title(player, "&c🔥 PHOENIX!", "&7You rose from the ashes!");
         
-        // Забираем талисман
+        // Take the talisman
         player.getInventory().removeItem(org.bukkit.inventory.ItemStack.from(
             new org.bukkit.inventory.ItemStack(Material.TOTEM_OF_UNDYING)
         ));
@@ -83,7 +83,7 @@ public class PhoenixTotem extends AbstractCustomItem {
 
     @Override
     public void onRightClick(org.bukkit.event.player.PlayerInteractEvent event, Player player) {
-        ItemAPI.message(player, "&c🔥 Талисман Феникса готов к защите!");
+        ItemAPI.message(player, "&c🔥 Phoenix Talisman is ready to protect you!");
         ItemAPI.particles(player, Particle.FLAME, 20);
         ItemAPI.sound(player, Sound.BLOCK_FIRE_AMBIENT, 1f, 1f);
     }

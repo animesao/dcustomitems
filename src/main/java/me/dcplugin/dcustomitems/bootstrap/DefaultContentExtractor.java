@@ -14,24 +14,24 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * Извлекает образцы EXAMPLE-* из .jar плагина в папку items/.
+ * Extracts the EXAMPLE-* samples from the plugin .jar into the items/ folder.
  *
- * Вся функциональность (предметы, команды, модули) живёт в items/ как файлы,
- * которые администратор может удалить, изменить или создать сам. В jar плагина
- * лежат только образцы с префиксом EXAMPLE-* — по умолчанию на чистом сервере
- * они НЕ копируются (extract-default-modules: false). При включенной опции
- * копируются только отсутствующие файлы, ничего не перезаписывая.
+ * All functionality (items, commands, modules) lives in items/ as files that
+ * the administrator can delete, modify or create themselves. The plugin jar
+ * contains only samples with the EXAMPLE-* prefix — by default on a clean
+ * server they are NOT copied (extract-default-modules: false). With the option
+ * enabled only missing files are copied, nothing is overwritten.
  *
- * Чтобы включить предмет/команду/модуль из образца: скопируйте файл (или
- * папку) в items/ и уберите префикс EXAMPLE- из имени — после /ci reload
- * компилятор и загрузчики подхватят его как обычный контент.
+ * To enable an item/command/module from a sample: copy the file (or folder)
+ * into items/ and remove the EXAMPLE- prefix from the name — after /ci reload
+ * the compiler and the loaders pick it up as regular content.
  *
- * Правила:
- *  - копируются только отсутствующие файлы (настройки администратора не трогаются);
- *  - копируются только файлы/папки, имя которых начинается с EXAMPLE-;
- *  - папки EXAMPLES/ и _template/ не копируются (справочные материалы для
- *    ручного копирования, в jar они остаются всегда);
- *  - остальной контент репозитория не копируется — это примеры для изучения.
+ * Rules:
+ *  - only missing files are copied (the administrator's settings are left alone);
+ *  - only files/folders whose name starts with EXAMPLE- are copied;
+ *  - the EXAMPLES/ and _template/ folders are not copied (reference material for
+ *    manual copying, they always stay in the jar);
+ *  - the rest of the repository content is not copied — it is examples for study.
  */
 public final class DefaultContentExtractor {
 
@@ -41,7 +41,7 @@ public final class DefaultContentExtractor {
 
     public static void extract(Main plugin) {
         if (!plugin.getConfig().getBoolean("extract-default-modules", false)) {
-            plugin.getLogger().info("[Extract] extract-default-modules = false, образцы EXAMPLE-* не копируются (папка items/ остаётся как есть)");
+            plugin.getLogger().info("[Extract] extract-default-modules = false, EXAMPLE-* samples are not copied (the items/ folder is left as is)");
             return;
         }
 
@@ -50,7 +50,7 @@ public final class DefaultContentExtractor {
 
         URL resourceUrl = plugin.getClass().getClassLoader().getResource(RESOURCE_ROOT);
         if (resourceUrl == null) {
-            plugin.getLogger().warning("[Extract] Не найден ресурс items/ внутри jar");
+            plugin.getLogger().warning("[Extract] items/ resource not found inside the jar");
             return;
         }
 
@@ -58,27 +58,27 @@ public final class DefaultContentExtractor {
         int skipped = 0;
         try {
             if ("file".equals(resourceUrl.getProtocol())) {
-                // Режим разработки: ресурсы лежат в исходной папке
+                // Development mode: the resources live in the source folder
                 File sourceDir = new File(URLDecoder.decode(resourceUrl.getPath(), StandardCharsets.UTF_8));
                 copied = copyDir(plugin, sourceDir, itemsDir);
             } else if ("jar".equals(resourceUrl.getProtocol())) {
                 copied = copyFromJar(plugin, resourceUrl, itemsDir);
             } else {
-                plugin.getLogger().warning("[Extract] Неизвестный протокол ресурса: " + resourceUrl.getProtocol());
+                plugin.getLogger().warning("[Extract] Unknown resource protocol: " + resourceUrl.getProtocol());
             }
         } catch (Exception e) {
             plugin.getLogger().log(java.util.logging.Level.WARNING,
-                    "[Extract] Ошибка извлечения штатных модулей: " + e.getMessage(), e);
+                    "[Extract] Error while extracting bundled modules: " + e.getMessage(), e);
             return;
         }
 
         if (copied > 0) {
-            plugin.getLogger().info("[Extract] Образцы EXAMPLE-* скопированы: " + copied
-                    + " файлов. Чтобы включить образец — уберите префикс EXAMPLE- из имени файла/папки");
+            plugin.getLogger().info("[Extract] EXAMPLE-* samples copied: " + copied
+                    + " files. To enable a sample - remove the EXAMPLE- prefix from the file/folder name");
         }
     }
 
-    // ===== Из jar =====
+    // ===== From the jar =====
 
     private static int copyFromJar(Main plugin, URL resourceUrl, File itemsDir) throws Exception {
         String spec = resourceUrl.toString();
@@ -109,14 +109,14 @@ public final class DefaultContentExtractor {
                     if (in == null) continue;
                     copyStream(in, target);
                     copied++;
-                    plugin.getLogger().fine("[Extract] Добавлен модуль: " + relative);
+                    plugin.getLogger().fine("[Extract] Added module: " + relative);
                 }
             }
         }
         return copied;
     }
 
-    // ===== Из исходной папки (режим разработки) =====
+    // ===== From the source folder (development mode) =====
 
     private static int copyDir(Main plugin, File sourceDir, File targetRoot) {
         int copied = 0;
@@ -125,7 +125,7 @@ public final class DefaultContentExtractor {
         for (File child : children) {
             String relative = child.getName();
             if (child.isDirectory()) {
-                // Рекурсивно: путь в items/ собираем из имён подпапок
+                // Recursive: the path in items/ is built from the subfolder names
                 File[] nested = child.listFiles();
                 if (nested == null) continue;
                 for (File nestedFile : nested) {
@@ -179,15 +179,15 @@ public final class DefaultContentExtractor {
         return copied;
     }
 
-    // ===== Правила =====
+    // ===== Rules =====
 
     private static boolean shouldExtract(Main plugin, String relative) {
         if (relative.isEmpty()) return false;
         if (relative.startsWith(".")) return false;
-        // По умолчанию копируются только образцы EXAMPLE-*: компилятор и
-        // загрузчики их игнорируют, так что items/ заполняется примерами,
-        // а не готовым контентом. EXAMPLES/ и _template/ под это правило не
-        // попадают и остаются справочными материалами внутри jar.
+        // By default only the EXAMPLE-* samples are copied: the compiler and
+        // the loaders ignore them, so items/ gets filled with examples
+        // instead of ready-to-use content. EXAMPLES/ and _template/ do not
+        // match this rule and stay as reference material inside the jar.
         return relative.startsWith("EXAMPLE-");
     }
 

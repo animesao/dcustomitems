@@ -9,20 +9,20 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 🎨 Команда /menu - Открыть меню
+ * 🎨 /menu command - Open a menu
  * 
- * Использование:
- *   /menu          - главное меню
- *   /menu <id>     - открыть меню по ID
- *   /menu list     - список меню
- *   /menu reload   - перезагрузить меню
+ * Usage:
+ *   /menu          - the main menu
+ *   /menu <id>     - open a menu by ID
+ *   /menu list     - a list of the menus
+ *   /menu reload   - reload the menus
  */
 public class menu_commandItem extends CustomCommand {
 
     public menu_commandItem() {
         super(
             "menu",
-            "Открыть меню",
+            "Open a menu",
             "/menu [id]",
             "deluxemenux.use",
             "deluxemenu"
@@ -33,23 +33,23 @@ public class menu_commandItem extends CustomCommand {
     public boolean execute(CommandSender sender, String[] args) {
         Main plugin = Main.getInstance();
         if (plugin == null) {
-            msg(sender, "&cПлагин не найден!");
+            msg(sender, "&cPlugin not found!");
             return true;
         }
 
-        // Получаем модуль DeluxeMenuX
+        // Get the DeluxeMenuX module
         Module module = plugin.getModuleManager().getModule("deluxemenux");
         if (module == null) {
-            msg(sender, "&cМодуль DeluxeMenuX не загружен!");
+            msg(sender, "&cThe DeluxeMenuX module is not loaded!");
             return true;
         }
 
         if (args.length == 0) {
-            // Открываем главное меню
+            // Open the main menu
             if (sender instanceof Player) {
                 openMenu((Player) sender, "main");
             } else {
-                msg(sender, "&cТолько для игроков!");
+                msg(sender, "&cPlayers only!");
             }
             return true;
         }
@@ -60,32 +60,32 @@ public class menu_commandItem extends CustomCommand {
             case "reload":
                 return handleReload(sender, module);
             default:
-                // Открыть меню по ID
+                // Open a menu by ID
                 if (sender instanceof Player) {
                     openMenu((Player) sender, args[0]);
                 } else {
-                    msg(sender, "&cТолько для игроков!");
+                    msg(sender, "&cPlayers only!");
                 }
                 return true;
         }
     }
 
     private boolean handleList(CommandSender sender) {
-        msg(sender, "&6=== Меню ===");
-        // TODO: Получить список меню из модуля
-        msg(sender, "&e/shop &7- Магазин");
-        msg(sender, "&e/main &7- Главное меню");
+        msg(sender, "&6=== Menus ===");
+        // TODO: Get the list of menus from the module
+        msg(sender, "&e/shop &7- Shop");
+        msg(sender, "&e/main &7- Main menu");
         return true;
     }
 
     private boolean handleReload(CommandSender sender, Module module) {
         if (!sender.hasPermission("deluxemenux.admin")) {
-            msg(sender, "&cУ вас нет прав!");
+            msg(sender, "&cYou do not have permission!");
             return true;
         }
         
         module.reload();
-        msg(sender, "&aМеню перезагружены!");
+        msg(sender, "&aMenus have been reloaded!");
         return true;
     }
 

@@ -15,29 +15,29 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Менеджер эффектов от кастомных предметов.
+ * Manager of the effects of custom items.
  *
- * Использует map-based подход: эффекты применяются через applyEffectsFromMap(),
- * который вызывается из глобального EquippedItemsChecker (1 таск на сервер).
+ * Uses a map-based approach: the effects are applied via applyEffectsFromMap(),
+ * which is called from the global EquippedItemsChecker (1 task per server).
  *
- * Мёртвый код (per-player BukkitRunnable) удалён — startPeriodicEffects()
- * никогда не вызывался извне.
+ * The dead code (per-player BukkitRunnable) was removed — startPeriodicEffects()
+ * was never called from the outside.
  */
 public class EffectManager {
 
     private final Main plugin;
 
-    // Отслеживаем какие эффекты применены к каждому игроку (для удаления)
+    // Track which effects were applied to each player (for removal)
     private final Map<UUID, Map<PotionEffectType, Integer>> playerAppliedEffects;
 
-    // Длительность эффектов: 60 секунд (в тиках)
-    // EquippedItemsChecker обновляет каждые 150ms, поэтому 60s достаточно
+    // Effect duration: 60 seconds (in ticks)
+    // EquippedItemsChecker refreshes every 150ms, so 60s is enough
     private static final int EFFECT_DURATION_TICKS = 60 * 20;
 
-    // Кэш разобранных сет-бонусов: setId -> (effectType -> amplifier).
-    // Пересчитывается только при reload конфига, а не на каждый пересчёт
-    // экипировки (это было горячим путём — recalculateEquipment вызывается
-    // при каждом изменении инвентаря игрока).
+    // Cache of the parsed set bonuses: setId -> (effectType -> amplifier).
+    // It is recalculated only on a config reload, not on every equipment
+    // recalculation (that was a hot path — recalculateEquipment is called
+    // on every change of the player's inventory).
     private final Map<String, Map<PotionEffectType, Integer>> setBonusCache = new HashMap<>();
 
     public EffectManager(Main plugin) {
@@ -65,11 +65,11 @@ public class EffectManager {
                         int amplifier = Integer.parseInt(parts[1].trim());
                         parsedEffects.put(effectType, amplifier);
                     } else {
-                        plugin.getLogger().warning("Неизвестный эффект: " + effectName);
+                        plugin.getLogger().warning("Unknown effect: " + effectName);
                     }
                 }
             } catch (Exception e) {
-                plugin.getLogger().warning("Ошибка при парсинге эффекта: " + effectString);
+                plugin.getLogger().warning("Error while parsing effect: " + effectString);
             }
         }
 
@@ -79,7 +79,7 @@ public class EffectManager {
     // ===== Apply / Remove (one-shot) =====
 
     /**
-     * Применить эффекты от предмета (разово, например CONSUMABLE)
+     * Apply the effects of the item (one-shot, for example CONSUMABLE)
      */
     public void applyEffects(Player player, CustomItem item) {
         if (item == null || item.getParsedEffects() == null || item.getParsedEffects().isEmpty()) return;
@@ -92,7 +92,7 @@ public class EffectManager {
     }
 
     /**
-     * Удалить эффекты от конкретного предмета
+     * Remove the effects of a specific item
      */
     public void removeEffects(Player player, CustomItem item) {
         if (item == null || item.getParsedEffects() == null || item.getParsedEffects().isEmpty()) return;
@@ -102,14 +102,14 @@ public class EffectManager {
         }
     }
 
-    // ===== Map-based (для EquippedItemsChecker) =====
+    // ===== Map-based (for EquippedItemsChecker) =====
 
     /**
-     * Добавить эффекты предмета в карту для суммирования.
+     * Add the item effects to the map for the summation.
      *
-     * Уровень эффекта НЕ суммируется: два предмета с эффектом 1 и 2 дают
-     * уровень 2 (максимум), а не 3. Раньше здесь был Integer::sum, из-за
-     * чего экипировка двух предметов неожиданно усиливала эффект.
+     * The effect level is NOT summed up: two items with effect level 1 and 2
+     * give level 2 (the maximum), not 3. Previously this was Integer::sum,
+     * which made equipping two items unexpectedly strengthen the effect.
      */
     public void addEffectsToMap(Map<PotionEffectType, Integer> effectsMap, CustomItem item) {
         if (item == null || item.getParsedEffects() == null) return;
@@ -119,17 +119,17 @@ public class EffectManager {
     }
 
     /**
-     * Добавить эффекты сет-бонуса в карту
+     * Add the set-bonus effects to the map
      */
     public void addSetBonusEffectsToMap(Map<PotionEffectType, Integer> effectsMap, String setId) {
         if (setId == null) return;
 
         Map<PotionEffectType, Integer> setBonusEffects = getSetBonusEffects(setId);
         if (setBonusEffects.isEmpty()) {
-            // Предупреждение один раз на сет: пересчёт экипировки happens
-            // при каждом изменении инвентаря, иначе лог засорялся бы.
+            // The warning is issued once per set: the equipment recalculation happens
+            // on every inventory change, otherwise the log would be flooded.
             if (!warnedMissingSets.add(setId)) return;
-            plugin.getLogger().warning("Сет-бонусы для '" + setId + "' не найдены в конфиге!");
+            plugin.getLogger().warning("Set bonuses for '" + setId + "' were not found in the config!");
             return;
         }
 
@@ -138,11 +138,11 @@ public class EffectManager {
         }
     }
 
-    /** Сеты, о которых уже выводилось предупреждение. */
+    /** The sets for which a warning was already issued. */
     private final Set<String> warnedMissingSets = new HashSet<>();
 
     /**
-     * Разобранные эффекты сет-бонуса (из кэша).
+     * The parsed set-bonus effects (from the cache).
      */
     public Map<PotionEffectType, Integer> getSetBonusEffects(String setId) {
         if (setId == null) return Map.of();
@@ -158,7 +158,7 @@ public class EffectManager {
     }
 
     /**
-     * Сбросить кэш сет-бонусов (после reload конфига).
+     * Reset the set-bonus cache (after a config reload).
      */
     public void invalidateSetBonusCache() {
         setBonusCache.clear();
@@ -166,15 +166,15 @@ public class EffectManager {
     }
 
     /**
-     * Применить суммарные эффекты из карты к игроку
+     * Apply the summed-up effects from the map to the player
      */
     public void applyEffectsFromMap(Player player, Map<PotionEffectType, Integer> effectsMap) {
         UUID playerId = player.getUniqueId();
 
-        // Сохраняем для удаления (immutable — внешние вызовы не должны менять состояние)
+        // Save for removal (immutable — external calls must not change the state)
         playerAppliedEffects.put(playerId, java.util.Collections.unmodifiableMap(new HashMap<>(effectsMap)));
 
-        // Применяем
+        // Apply
         for (Map.Entry<PotionEffectType, Integer> entry : effectsMap.entrySet()) {
             player.addPotionEffect(new PotionEffect(
                     entry.getKey(),
@@ -187,7 +187,7 @@ public class EffectManager {
     }
 
     /**
-     * Удалить все ранее применённые эффекты от кастомных предметов
+     * Remove all previously applied effects of custom items
      */
     public void removeAllEffectsFromPlayer(Player player) {
         if (player == null) return;
@@ -201,31 +201,31 @@ public class EffectManager {
         }
     }
 
-    // ===== Compatibility (вызывается из PlayerListener.onPlayerQuit и PluginBootstrap.disable) =====
+    // ===== Compatibility (called from PlayerListener.onPlayerQuit and PluginBootstrap.disable) =====
 
     /**
-     * Снять эффекты кастомных предметов с игрока и забыть его состояние.
+     * Remove the effects of custom items from the player and forget its state.
      *
-     * Метод был заглушкой: эффекты оставались на игроке до конца своей
-     * длительности (60 с), а запись в playerAppliedEffects оставалась в памяти
-     * — это была утечка на каждого вышедшего игрока.
+     * The method used to be a stub: the effects stayed on the player until the
+     * end of their duration (60 s), and the entry in playerAppliedEffects stayed
+     * in memory — that was a leak for every player who left.
      */
     public void stopPeriodicEffects(Player player) {
         removeAllEffectsFromPlayer(player);
     }
 
     /**
-     * Остановить все эффекты (при отключении плагина)
+     * Stop all effects (on plugin disable)
      */
     public void stopAllEffects() {
         playerAppliedEffects.clear();
     }
 
     /**
-     * Получить карту применённых эффектов от кастомных предметов для игрока.
+     * Get the map of applied effects of custom items for the player.
      *
-     * Возвращается копия: внешний код не должен менять внутреннее состояние
-     * (иначе рассинхронизация с removeAllEffectsFromPlayer).
+     * A copy is returned: the external code must not change the internal state
+     * (otherwise it gets out of sync with removeAllEffectsFromPlayer).
      */
     public Map<PotionEffectType, Integer> getAppliedEffects(Player player) {
         if (player == null) return new HashMap<>();

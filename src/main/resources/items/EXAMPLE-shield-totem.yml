@@ -1,5 +1,5 @@
 # ============================================
-# ТОТЕМ ЗАЩИТЫ - Даёт поглощение и сопротивление
+# SHIELD TOTEM - Grants absorption and resistance
 # ============================================
 
 shield-totem:
@@ -10,7 +10,7 @@ shield-totem:
 
   item:
     type: TOTEM_OF_UNDYING
-    title: '&9[🛡] &fТотем &9Защиты'
+    title: '&9[🛡] &fTotem &9of Protection'
     glowing: true
     unbreakable: false
     item-model: "shield_totem"
@@ -19,14 +19,14 @@ shield-totem:
   lore:
     - ''
     - ' &9━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Тотем древней защиты'
+    - ' &7Totem of ancient protection'
     - ' &9━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &9🛡 &fПКМ: Активировать'
-    - ' &7Даёт Absorption на 60 секунд'
-    - ' &7Даёт Resistance на 30 секунд'
+    - ' &9🛡 &fRight Click: Activate'
+    - ' &7Grants Absorption for 60 seconds'
+    - ' &7Grants Resistance for 30 seconds'
     - ''
-    - ' &eОсталось активаций: &9%uses% &7из &44'
+    - ' &eActivations left: &9%uses% &7of &44'
     - ''
 
   max-uses: 4

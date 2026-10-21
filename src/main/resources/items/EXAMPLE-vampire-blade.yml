@@ -1,8 +1,8 @@
 # ============================================
-# КЛИНОК ВАМПИРА - Меч, крадущий жизнь
+# VAMPIRE BLADE - Sword that steals life
 # ============================================
-# ПКМ = Режим вампира (кража здоровья)
-# ЛКМ = AoE урон по площади
+# Right Click = Vampire mode (health theft)
+# Left Click = AoE damage in an area
 # ============================================
 
 vampire-blade:
@@ -13,7 +13,7 @@ vampire-blade:
 
   item:
     type: NETHERITE_SWORD
-    title: '&4[🦇] &fКлинок &4Вампира'
+    title: '&4[🦇] &fBlade &4of the Vampire'
     glowing: true
     unbreakable: true
     item-model: "minecraft:item/smoke"
@@ -25,16 +25,16 @@ vampire-blade:
   lore:
     - ''
     - ' &4━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Древний клинок вампиров'
+    - ' &7Ancient blade of the vampires'
     - ' &4━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eСила &4III'
-    - ' &6├ &eСкорость &4I'
-    - ' &6└ &eРегенерация &4II'
+    - ' &e⚡ &fWhile in main hand:'
+    - ' &6┌ &eStrength &4III'
+    - ' &6├ &eSpeed &4I'
+    - ' &6└ &eRegeneration &4II'
     - ''
-    - '&c❤ &fПКМ: Кровавый режим'
-    - '&4💀 &fЛКМ: AoE удар!'
+    - '&c❤ &fRight Click: Blood mode'
+    - '&4💀 &fLeft Click: AoE strike!'
     - ''
 
   effects:
@@ -56,7 +56,7 @@ vampire-blade:
       - 'particles:DUST:25'
       - 'particles:WITCH:15'
       - 'sound:ENTITY_WITHER_AMBIENT:1:1.2'
-      - 'message:&4👁 &7Вы чувствуете жажду крови!'
+      - 'message:&4👁 &7You feel a thirst for blood!'
 
     on_unequip:
       - 'particles:SMOKE:15'
@@ -70,7 +70,7 @@ vampire-blade:
       - 'particles:DRAGON_BREATH:30'
       - 'particles:DUST:20'
       - 'sound:ENTITY_VAMPIRE_BITE:1:1'
-      - 'title:&4🦇 &7КРОВАВЫЙ РЕЖИМ!|&cКража здоровья активна!:10:40:10'
+      - 'title:&4🦇 &7BLOOD MODE!|&cHealth theft is active!:10:40:10'
 
     on_click_left:
       - 'damage_nearby:20:4'
@@ -81,7 +81,7 @@ vampire-blade:
       - 'particles:WITCH:30'
       - 'sound:ENTITY_ENDER_DRAGON_GROWL:1:1'
       - 'knockback:4'
-      - 'title:&4💀 &7AoE УДАР ВАМПИРА!|&4Все враги поражены!:10:40:10'
+      - 'title:&4💀 &7VAMPIRE AoE STRIKE!|&4All enemies are hit!:10:40:10'
 
     on_kill:
       - 'heal:40'

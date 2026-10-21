@@ -1,12 +1,12 @@
 # ============================================
-# 🔥 ПЛАМЕННЫЙ КЛИНОК — Демо новых фич
+# 🔥 FIERY BLADE — Demo of the new features
 # ============================================
-# Демонстрирует:
-#   • duration (таймер — предмет исчезает через 60 сек)
-#   • trail-particles (огненный след при движении)
-#   • allowed-worlds / disabled-worlds (ограничения по миру)
-#   • item-model-variant (анимированная текстура)
-#   • on_sprint триггер (эффект при начале бега)
+# Demonstrates:
+#   • duration (timer — the item disappears after 60 sec)
+#   • trail-particles (fiery trail while moving)
+#   • allowed-worlds / disabled-worlds (world restrictions)
+#   • item-model-variant (animated texture)
+#   • on_sprint trigger (effect when sprint starts)
 # ============================================
 
 flame-blade-demo:
@@ -15,30 +15,30 @@ flame-blade-demo:
   placeable: false
   permission: demo.flame
 
-  # ⏱️ Таймер: предмет живёт 60 секунд, потом исчезает
+  # ⏱️ Timer: the item lives for 60 seconds, then disappears
   duration: 60
-  max-duration-message: '&c🔥 Клинок расплавился!'
+  max-duration-message: '&c🔥 The blade melted!'
 
-  # 🌍 Ограничения по миру
+  # 🌍 World restrictions
   allowed-worlds:
     - world
     - world_nether
   disabled-worlds:
     - world_the_end
 
-  # ✨ Частицы-следы (огненный шлейф)
+  # ✨ Trail particles (fiery trail)
   trail-particles:
     - 'FLAME:6'
     - 'LAVA:2'
-  trail-particle-interval: 3  # каждые 3 тика
+  trail-particle-interval: 3  # every 3 ticks
 
   item:
     type: NETHERITE_SWORD
-    title: '&c🔥 Пламенный Клинок &7(демо)'
+    title: '&c🔥 Fiery Blade &7(demo)'
     glowing: true
     unbreakable: true
     item-model: 'minecraft:item/netherite_sword'
-    item-model-variant: 'flame_sword_animated'  # анимированная модель
+    item-model-variant: 'flame_sword_animated'  # animated model
     enchantments:
       SHARPNESS: 5
       FIRE_ASPECT: 2
@@ -46,19 +46,19 @@ flame-blade-demo:
   lore:
     - ''
     - ' &4━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Пламенный клинок из преисподней'
+    - ' &7Fiery blade from the underworld'
     - ' &4━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⏱ &fВремя жизни: &c60 секунд'
-    - ' &e🌍 &fМиры: &aworld, &bnether'
-    - ' &e🔥 &fСлед: &cогонь + лава'
+    - ' &e⏱ &fLifetime: &c60 seconds'
+    - ' &e🌍 &fWorlds: &aworld, &bnether'
+    - ' &e🔥 &fTrail: &cfire + lava'
     - ''
-    - ' &6⚡ &fКогда в основной руке:'
-    - ' &6┌ &eСила &cIII'
-    - ' &6├ &eСкорость &cII'
-    - ' &6└ &cОгнестойкость'
+    - ' &6⚡ &fWhile in main hand:'
+    - ' &6┌ &eStrength &cIII'
+    - ' &6├ &eSpeed &cII'
+    - ' &6└ &cFire Resistance'
     - ''
-    - '&e🏃 &fНачни бег — получи бонус!'
+    - '&e🏃 &fStart sprinting — get a bonus!'
     - ''
 
   effects:
@@ -76,13 +76,13 @@ flame-blade-demo:
     on_equip:
       - 'particles_custom:FLAME:50:0:1:0:2:2:2'
       - 'sound:ENTITY_BLAZE_AMBIENT:1:1'
-      - 'title:&c🔥 Пламенный Клинок!|||10:40:10'
+      - 'title:&c🔥 Fiery Blade!|||10:40:10'
 
     on_unequip:
       - 'particles:SMOKE:15'
       - 'sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
 
-    # 🏃 Новый триггер: при начале бега
+    # 🏃 New trigger: when sprint starts
     on_sprint:
       - 'effect:SPEED:3:1'
       - 'particles:FLAME:8'
@@ -93,7 +93,7 @@ flame-blade-demo:
       - 'effect:SPEED:8:2'
       - 'particles_custom:FLAME:80:0:1:0:3:2:3'
       - 'sound:ENTITY_BLAZE_SHOOT:1:1'
-      - 'title:&c🔥 ПЛАМЕННЫЙ УДАР!|||10:40:10'
+      - 'title:&c🔥 FIERY STRIKE!|||10:40:10'
 
     on_click_left:
       - 'damage_nearby:25:4'

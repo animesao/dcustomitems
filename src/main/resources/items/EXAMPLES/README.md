@@ -1,38 +1,38 @@
-# 📚 Справочные Java-примеры (папка `EXAMPLES/`)
+# 📚 Reference Java examples (the `EXAMPLES/` folder)
 
-Эта папка содержит **полноценные справочные Java-предметы** для изучения Java API.
+This folder contains **complete reference Java items** for learning the Java API.
 
-## ⚠️ Эта папка не загружается
+## ⚠️ This folder is not loaded
 
-`EXAMPLES/` — справочные материалы: **не копируются** на сервер
-(см. `DefaultContentExtractor`) и **не компилируются** рантайм-компилятором
-(см. `ItemRegistry`). То же самое относится к папке `_template/`.
+`EXAMPLES/` — reference material: it is **not copied** to the server
+(see `DefaultContentExtractor`) and **not compiled** by the runtime compiler
+(see `ItemRegistry`). The same applies to the `_template/` folder.
 
-## 📋 Правило образцов `EXAMPLE-*`
+## 📋 The `EXAMPLE-*` sample rule
 
-Файлы с префиксом `EXAMPLE-*` в корне `items/` — это образцы: при первом
-запуске плагин копирует их в `plugins/DC-CustomItems/items/` как справочный
-материал, но компилятор и загрузчики их игнорируют.
+Files with the `EXAMPLE-*` prefix in the root of `items/` are samples: on the first
+launch the plugin copies them into `plugins/DC-CustomItems/items/` as reference
+material, but the compiler and the loaders ignore them.
 
-## ▶️ Как включить пример
+## ▶️ How to enable an example
 
-1. Скопируйте нужный файл из этой папки (или из `items/` в jar)
-   в `plugins/DC-CustomItems/items/`.
-2. Уберите префикс `EXAMPLE-` из имени файла (или папки).
-3. Выполните `/ci reload`.
-4. Проверьте: `api-item list` → должен появиться ID предмета.
-5. Выдайте: `/api-item give <id>`.
+1. Copy the needed file from this folder (or from `items/` in the jar)
+   into `plugins/DC-CustomItems/items/`.
+2. Remove the `EXAMPLE-` prefix from the file name (or the folder).
+3. Run `/ci reload`.
+4. Check: `api-item list` → the item ID should appear.
+5. Give it: `/api-item give <id>`.
 
-> Имя публичного класса должно совпадать с именем файла
-> (рантайм-компилятор сам приводит класс к имени файла, но лучше
-> не переименовывать).
+> The public class name must match the file name
+> (the runtime compiler matches the class to the file name, but it is better
+> not to rename it).
 
-## 🧭 Что внутри
+## 🧭 What is inside
 
-| Файл | Демонстрирует |
+| File | Demonstrates |
 |------|---------------|
-| `DragonboneArmor.java` | Полный предмет-броня: `getRecipes()` (shaped+shapeless, ингредиенты-материалы и кастомные ID), `getActivationSlot`/`getType`, хуки `onEquip`/`onUnequip`/`onPeriodic`, боевой `onDamageTaken`, helpers `ItemAPI` |
-| `Frostblade.java` | Полное Java-оружие: кликовые хуки `onRightClick`/`onLeftClick`, `getClickCooldown()` (общий на оба клика), боевые `onDamageDealt`/`onKill`, крафт `RecipeDef.shaped`, урон/AoE/эффекты через `ItemAPI` |
+| `DragonboneArmor.java` | A complete armor item: `getRecipes()` (shaped+shapeless, material ingredients and custom IDs), `getActivationSlot`/`getType`, the `onEquip`/`onUnequip`/`onPeriodic` hooks, the combat `onDamageTaken`, the `ItemAPI` helpers |
+| `Frostblade.java` | Complete Java weapon: the click hooks `onRightClick`/`onLeftClick`, `getClickCooldown()` (shared by both clicks), the combat `onDamageDealt`/`onKill`, the crafting `RecipeDef.shaped`, damage/AoE/effects through `ItemAPI` |
 
-См. также: `EXAMPLE-dark-sword.java` и `EXAMPLE-royal-helmet.java` (корень
-`items/`) — короткие образцы оружия и брони.
+See also: `EXAMPLE-dark-sword.java` and `EXAMPLE-royal-helmet.java` (root
+`items/`) — short weapon and armor samples.

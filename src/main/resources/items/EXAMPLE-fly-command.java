@@ -8,49 +8,49 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * ✈ Команда /fly - Включить/выключить полёт
+ * ✈ /fly command - Enable/disable flight
  * 
- * Использование:
- *   /fly        - включить/выключить полёт себе
- *   /fly <nick> - включить/выключить полёт игроку
+ * Usage:
+ *   /fly        - enable/disable flight for yourself
+ *   /fly <nick> - enable/disable flight for a player
  * 
- * Право: dci.command.fly
+ * Permission: dci.command.fly
  */
 public class fly_commandItem extends CustomCommand {
 
     public fly_commandItem() {
         super(
-            "fly",           // ID команды
-            "Включить/выключить полёт",  // Описание
-            "/fly [nick]",   // Использование
-            "dci.command.fly" // Право
+            "fly",           // Command ID
+            "Enable/disable flight",  // Description
+            "/fly [nick]",   // Usage
+            "dci.command.fly" // Permission
         );
     }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        // Получаем целевого игрока
+        // Get the target player
         Player target = getTarget(sender, args, 0);
         if (target == null) {
             return false;
         }
 
-        // Переключаем полёт
+        // Toggle flight
         boolean wasFlying = target.getAllowFlight();
         target.setAllowFlight(!wasFlying);
         target.setFlying(!wasFlying);
 
-        // Отправляем сообщение
+        // Send the message
         if (!wasFlying) {
-            msg(sender, "&a✈ Полёт включён для &e" + target.getName());
+            msg(sender, "&a✈ Flight enabled for &e" + target.getName());
             if (!sender.equals(target)) {
-                msg(target, "&a✈ Полёт включён!");
+                msg(target, "&a✈ Flight enabled!");
             }
             target.playSound(target.getLocation(), org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.5f);
         } else {
-            msg(sender, "&c✈ Полёт выключен для &e" + target.getName());
+            msg(sender, "&c✈ Flight disabled for &e" + target.getName());
             if (!sender.equals(target)) {
-                msg(target, "&c✈ Полёт выключен!");
+                msg(target, "&c✈ Flight disabled!");
             }
             target.playSound(target.getLocation(), org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 0.5f);
         }
@@ -61,7 +61,7 @@ public class fly_commandItem extends CustomCommand {
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args, int cursor) {
         if (cursor == 0) {
-            // Автодополнение имён онлайн-игроков
+            // Autocomplete the names of online players
             List<String> players = new ArrayList<>();
             for (Player p : sender.getServer().getOnlinePlayers()) {
                 players.add(p.getName());

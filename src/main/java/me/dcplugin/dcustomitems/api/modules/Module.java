@@ -8,16 +8,16 @@ import java.io.File;
 import java.util.*;
 
 /**
- * Базовый класс для модуля (плагина внутри плагина)
+ * Base class for a module (a plugin inside a plugin)
  * 
- * Структура модуля:
+ * Module structure:
  * items/
  * └── shop/
  *     ├── config.yml
  *     ├── items.yml
  *     └── shop.java
  * 
- * В config.yml:
+ * In config.yml:
  * name: "Shop"
  * version: "1.0"
  * commands:
@@ -38,9 +38,9 @@ public abstract class Module {
     protected final List<String> permissions = new ArrayList<>();
 
     /**
-     * Динамически зарегистрированные команды модуля (CommandMap).
-     * Удаляются при disable(), чтобы при удалении/перезагрузке модуля
-     * в CommandMap не оставались "мёртвые" команды.
+     * Dynamically registered module commands (CommandMap).
+     * They are removed on disable(), so that no "dead" commands are left in the
+     * CommandMap when the module is removed or reloaded.
      */
     private final List<org.bukkit.command.Command> dynamicCommands = new ArrayList<>();
 
@@ -49,19 +49,19 @@ public abstract class Module {
         this.id = id;
         this.folder = folder;
         
-        // Загружаем конфиги
+        // Load the configs
         File configFile = new File(folder, "config.yml");
         File itemsFile = new File(folder, "items.yml");
         
         this.config = configFile.exists() ? YamlConfiguration.loadConfiguration(configFile) : new YamlConfiguration();
         this.itemsConfig = itemsFile.exists() ? YamlConfiguration.loadConfiguration(itemsFile) : new YamlConfiguration();
         
-        // Загружаем настройки из конфига
+        // Load the settings from the config
         loadConfig();
     }
 
     /**
-     * Загрузить настройки из config.yml
+     * Loads the settings from config.yml
      */
     protected void loadConfig() {
         commands.clear();
@@ -76,7 +76,7 @@ public abstract class Module {
     }
 
     /**
-     * Включить модуль
+     * Enables the module
      */
     public void enable() {
         if (enabled) return;
@@ -86,7 +86,7 @@ public abstract class Module {
     }
 
     /**
-     * Выключить модуль
+     * Disables the module
      */
     public void disable() {
         if (!enabled) return;
@@ -100,7 +100,7 @@ public abstract class Module {
     }
 
     /**
-     * Перезагрузить модуль
+     * Reloads the module
      */
     public void reload() {
         disable();
@@ -109,36 +109,36 @@ public abstract class Module {
     }
 
     /**
-     * Открыть меню модуля. Меню-модули могут переопределить этот метод.
+     * Opens a module menu. Menu modules may override this method.
      */
     public boolean openMenu(Player player, String menuId) {
         return false;
     }
 
-    // ===== АБСТРАКТНЫЕ МЕТОДЫ =====
+    // ===== ABSTRACT METHODS =====
 
     /**
-     * Вызывается при включении модуля
+     * Called when the module is enabled
      */
     protected abstract void onEnable();
 
     /**
-     * Вызывается при выключении модуля
+     * Called when the module is disabled
      */
     protected abstract void onDisable();
 
-    // ===== ДИНАМИЧЕСКАЯ РЕГИСТРАЦИЯ КОМАНД =====
+    // ===== DYNAMIC COMMAND REGISTRATION =====
 
     /**
-     * Зарегистрировать команду в CommandMap (право по умолчанию: "dci.<name>").
-     * Команда автоматически удалится при disable() модуля.
+     * Registers a command in the CommandMap (default permission: "dci.<name>").
+     * The command is removed automatically when the module is disabled.
      */
     protected void registerDynamicCommand(String name, org.bukkit.command.CommandExecutor executor) {
         registerDynamicCommand(name, executor, "dci." + name.toLowerCase());
     }
 
     /**
-     * Зарегистрировать команду с явным правом.
+     * Registers a command with an explicit permission.
      */
     protected void registerDynamicCommand(String name, org.bukkit.command.CommandExecutor executor, String permission) {
         try {
@@ -172,7 +172,7 @@ public abstract class Module {
     }
 
     /**
-     * Удалить все динамические команды модуля из CommandMap.
+     * Removes all dynamic module commands from the CommandMap.
      */
     private void unregisterDynamicCommands() {
         if (dynamicCommands.isEmpty()) return;
@@ -183,7 +183,7 @@ public abstract class Module {
             Map<String, org.bukkit.command.Command> knownCommands =
                     me.dcplugin.dcustomitems.utils.CommandMapAccessor.getKnownCommands(commandMap);
             if (knownCommands == null) {
-                plugin.getLogger().warning("[Module " + id + "] knownCommands недоступна — команды остаются в CommandMap");
+                plugin.getLogger().warning("[Module " + id + "] knownCommands is unavailable - commands stay in the CommandMap");
                 dynamicCommands.clear();
                 return;
             }
@@ -203,38 +203,38 @@ public abstract class Module {
         return me.dcplugin.dcustomitems.utils.CommandMapAccessor.getCommandMap();
     }
 
-    // ===== УТИЛИТЫ =====
+    // ===== UTILITIES =====
 
     /**
-     * Получить значение из config.yml
+     * Gets a value from config.yml
      */
     protected String getConfig(String path, String def) {
         return config.getString(path, def);
     }
 
     /**
-     * Получить int из config.yml
+     * Gets an int from config.yml
      */
     protected int getConfigInt(String path, int def) {
         return config.getInt(path, def);
     }
 
     /**
-     * Получить boolean из config.yml
+     * Gets a boolean from config.yml
      */
     protected boolean getConfigBoolean(String path, boolean def) {
         return config.getBoolean(path, def);
     }
 
     /**
-     * Получить список из config.yml
+     * Gets a list from config.yml
      */
     protected List<String> getConfigList(String path) {
         return config.getStringList(path);
     }
 
     /**
-     * Получить предмет из items.yml
+     * Gets an item from items.yml
      */
     protected Map<String, Object> getItem(String itemId) {
         Map<String, Object> item = new HashMap<>();
@@ -250,7 +250,7 @@ public abstract class Module {
     }
 
     /**
-     * Получить все предметы из items.yml
+     * Gets all items from items.yml
      */
     protected Set<String> getAllItemIds() {
         if (itemsConfig.contains("items")) {
@@ -259,7 +259,7 @@ public abstract class Module {
         return Collections.emptySet();
     }
 
-    // ===== ГЕТТЕРЫ =====
+    // ===== GETTERS =====
 
     public String getId() { return id; }
     public File getFolder() { return folder; }

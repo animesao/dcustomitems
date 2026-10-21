@@ -8,29 +8,29 @@ import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Пример промокодов с хранением в SQLite или MySQL.
+ * Example of promo codes with storage in SQLite or MySQL.
  *
- * Файл можно скопировать в plugins/DC-CustomItems/items/ как promo-code.java.
- * После этого выполните /ci reload и используйте /promo DEMO2026.
+ * This file can be copied into plugins/DC-CustomItems/items/ as promo-code.java.
+ * After that run /ci reload and use /promo DEMO2026.
  *
- * В config.yml:
- * database.type: sqlite  -> локальный data.db
- * database.type: mysql   -> MySQL из database.mysql.*
+ * In config.yml:
+ * database.type: sqlite  -> local data.db
+ * database.type: mysql   -> MySQL from database.mysql.*
  */
 public class PromoCodeCommand extends CustomCommand {
 
     public PromoCodeCommand() {
-        super("promo", "Активировать промокод", "/promo <код>", "dci.command.promo");
+        super("promo", "Activate a promo code", "/promo <code>", "dci.command.promo");
     }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
-            msg(sender, "&cЭта команда только для игроков.");
+            msg(sender, "&cThis command is for players only.");
             return true;
         }
         if (args.length == 0) {
-            msg(sender, "&eИспользование: /promo <код>");
+            msg(sender, "&eUsage: /promo <code>");
             return true;
         }
 
@@ -38,7 +38,7 @@ public class PromoCodeCommand extends CustomCommand {
         String code = args[0].trim().toUpperCase(Locale.ROOT);
         DatabaseManager database = Main.getInstance().getDatabaseManager();
 
-        // Таблица создаётся одинаково в SQLite и MySQL.
+        // The table is created identically in SQLite and MySQL.
         database.executeAsync(
             "CREATE TABLE IF NOT EXISTS promo_codes (" +
                 "code VARCHAR(64) PRIMARY KEY, " +
@@ -50,7 +50,7 @@ public class PromoCodeCommand extends CustomCommand {
             code
         )).thenAccept(rows -> {
             if (rows.isEmpty()) {
-                sendOnMain(player, "&cТакого промокода нет.");
+                sendOnMain(player, "&cThere is no such promo code.");
                 return;
             }
 
@@ -58,7 +58,7 @@ public class PromoCodeCommand extends CustomCommand {
             int maxUses = ((Number) row.get("max_uses")).intValue();
             int uses = ((Number) row.get("uses")).intValue();
             if (uses >= maxUses) {
-                sendOnMain(player, "&cЭтот промокод уже закончился.");
+                sendOnMain(player, "&cThis promo code has already expired.");
                 return;
             }
 
@@ -67,7 +67,7 @@ public class PromoCodeCommand extends CustomCommand {
                 code
             );
             if (updated != 1) {
-                sendOnMain(player, "&cНе удалось активировать промокод. Попробуйте позже.");
+                sendOnMain(player, "&cCould not activate the promo code. Please try again later.");
                 return;
             }
 
@@ -77,10 +77,10 @@ public class PromoCodeCommand extends CustomCommand {
                 Main.getInstance().getServer().dispatchCommand(
                     Main.getInstance().getServer().getConsoleSender(), reward
                 );
-                player.sendMessage(colorize("&aПромокод активирован!"));
+                player.sendMessage(colorize("&aPromo code activated!"));
             });
         }).exceptionally(error -> {
-            sendOnMain(player, "&cОшибка базы данных. Проверьте консоль.");
+            sendOnMain(player, "&cDatabase error. Check the console.");
             Main.getInstance().getLogger().warning("Promo code error: " + error.getMessage());
             return null;
         });

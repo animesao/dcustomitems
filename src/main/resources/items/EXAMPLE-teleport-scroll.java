@@ -19,7 +19,7 @@ public class TeleportScroll extends AbstractCustomItem {
     public String getId() { return "teleport_scroll"; }
 
     @Override
-    public String getDisplayName() { return "&d📜 &fСвиток Телепортации"; }
+    public String getDisplayName() { return "&d📜 &fScroll of Teleportation"; }
 
     @Override
     public Material getMaterial() { return Material.PAPER; }
@@ -32,13 +32,13 @@ public class TeleportScroll extends AbstractCustomItem {
         );
         return List.of(
             "",
-            " &7Телепортирует к случайному игроку",
-            " &7ПКМ - телепортация",
+            " &7Teleports you to a random player",
+            " &7Right Click - teleport",
             "",
-            " &d✦ &fИспользований: &e3/3",
+            " &d✦ &fUses: &e3/3",
             "",
-            " &7&oПредмет исчезнет после"
-            + " исчерпания зарядов"
+            " &7&oThe item will disappear after"
+            + " the charges run out"
         );
     }
 
@@ -53,49 +53,49 @@ public class TeleportScroll extends AbstractCustomItem {
 
     @Override
     public void onRightClick(PlayerInteractEvent event, Player player) {
-        // Получить текущие заряды
+        // Get the current charges
         int currentCharges = charges.getOrDefault(player.getUniqueId(), 3);
 
         if (currentCharges <= 0) {
-            ItemAPI.message(player, "&c❌ &7Свиток закончился!");
+            ItemAPI.message(player, "&c❌ &7The scroll has run out!");
             ItemAPI.sound(player, Sound.ENTITY_VILLAGER_NO, 1f, 1f);
             player.getInventory().getItemInMainHand().setAmount(0);
             return;
         }
 
-        // Найти рандомного игрока
+        // Find a random player
         List<Player> players = new java.util.ArrayList<>(org.bukkit.Bukkit.getOnlinePlayers());
         players.remove(player);
 
         if (players.isEmpty()) {
-            ItemAPI.message(player, "&c❌ &7Нет игроков для телепортации!");
+            ItemAPI.message(player, "&c❌ &7There are no players to teleport to!");
             return;
         }
 
         Player target = players.get(random.nextInt(players.size()));
 
-        // Эффект перед телепортацией
+        // Effect before the teleport
         ItemAPI.particles(player, Particle.PORTAL, 100);
         ItemAPI.sound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
-        ItemAPI.title(player, "&d📜 &fТЕЛЕПОРТАЦИЯ", "&7К " + target.getName() + "...");
+        ItemAPI.title(player, "&d📜 &fTELEPORTATION", "&7To " + target.getName() + "...");
 
-        // Телепортация
+        // Teleportation
         ItemAPI.teleportToPlayer(player, target, 2);
 
-        // Эффект после телепортации
+        // Effect after the teleport
         ItemAPI.particles(player, Particle.PORTAL, 100);
         ItemAPI.sound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
-        ItemAPI.title(player, "&a✅ &fПРИБЫТИЕ!", "&7Вы телепортированы к " + target.getName());
+        ItemAPI.title(player, "&a✅ &fARRIVED!", "&7You teleported to " + target.getName());
 
-        // Уменьшить заряды
+        // Decrease the charges
         currentCharges--;
         charges.put(player.getUniqueId(), currentCharges);
 
         if (currentCharges <= 0) {
-            ItemAPI.message(player, "&d📜 &7Свиток использован полностью!");
+            ItemAPI.message(player, "&d📜 &7The scroll has been fully used!");
             player.getInventory().getItemInMainHand().setAmount(0);
         } else {
-            ItemAPI.message(player, "&d📜 &7Осталось зарядов: &e" + currentCharges);
+            ItemAPI.message(player, "&d📜 &7Charges left: &e" + currentCharges);
         }
     }
 }

@@ -20,39 +20,39 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Единственный исполнитель действий кастомных предметов.
+ * The single executor of the actions of custom items.
  *
- * И PlayerListener, и TriggerListener вызывают только {@link #execute(Player, String)}.
- * Действия можно писать с дефисами или подчёркиваниями — они нормализуются
- * (например {@code damage-mobs} и {@code damage_mobs} это одно и то же).
+ * Both PlayerListener and TriggerListener only call {@link #execute(Player, String)}.
+ * The actions can be written with hyphens or underscores — they are normalized
+ * (for example {@code damage-mobs} and {@code damage_mobs} are the same thing).
  *
- * Зарегистрированные действия:
+ * Registered actions:
  *   message, title, actionbar, announce/broadcast,
  *   effect, heal, damage, damage_nearby, damage_mobs, damage_players, heal_nearby,
  *   effect_nearby (+ _mobs / _players),
  *   teleport, teleport_relative, teleport_sequence,
- *   give (материал или кастомный предмет), remove, exp,
+ *   give (a material or a custom item), remove, exp,
  *   lightning, lightning_forward, particle(s), sound, fireworks,
  *   sethealth, setfood, set_xp, vanish, glow, speed, flight,
  *   knockback, launch, stun (+ _mobs / _players),
- *   command (от консоли), console_command, break,
+ *   command (from the console), console_command, break,
  *   particles_custom, sound_sequence, title_sequence, command_sequence,
  *   effect_sequence, damage_custom, heal_custom.
  */
 public class ActionParser {
 
-    // Маппинг кастомных названий эффектов на Minecraft
-    // Лениво инициализируется: статические ссылки на PotionEffectType
-    // требуют инициализированного Bukkit и ломали бы чистые юнит-тесты.
-    // ConcurrentHashMap + double-check: lookup'ы могут прилететь из разных
-    // потоков (основной поток сервера + async-пулы).
+    // Mapping of the custom effect names to Minecraft
+    // Lazily initialized: static references to PotionEffectType
+    // require an initialized Bukkit and would break the plain unit tests.
+    // ConcurrentHashMap + double-check: the lookups may arrive from different
+    // threads (the server main thread + the async pools).
     private static final Map<String, PotionEffectType> EFFECT_MAP = new ConcurrentHashMap<>();
 
     private static Map<String, PotionEffectType> effectMap() {
         if (EFFECT_MAP.isEmpty()) {
             synchronized (EFFECT_MAP) {
                 if (EFFECT_MAP.isEmpty()) {
-                    // Стандартные названия
+                    // The standard names
                     putEffect("SPEED", PotionEffectType.SPEED);
                     putEffect("SLOW", PotionEffectType.SLOWNESS);
                     putEffect("SLOWNESS", PotionEffectType.SLOWNESS);
@@ -99,16 +99,16 @@ public class ActionParser {
     }
 
     /**
-     * Парсит и выполняет действие.
+     * Parses and executes the action.
      *
-     * @param player Игрок
-     * @param action Строка действия из конфига, например {@code "effect:SPEED:10:2"}
-     * @return true если действие выполнено
+     * @param player the Player
+     * @param action the action line from the config, for example {@code "effect:SPEED:10:2"}
+     * @return true if the action was executed
      */
     /**
-     * Разбирает строку действия на [тип, значение].
-     * Тип нормализуется: нижний регистр, дефисы = подчёркивания
-     * (damage-mobs == damage_mobs). null/пустая строка → null.
+     * Splits the action line into [type, value].
+     * The type is normalized: lower case, hyphens = underscores
+     * (damage-mobs == damage_mobs). null/empty string -> null.
      */
     public static String[] splitAction(String action) {
         if (action == null || action.trim().isEmpty()) return null;
@@ -122,8 +122,8 @@ public class ActionParser {
         if (action == null || action.isBlank()) return false;
 
         String[] parsed = splitAction(action);
-        // splitAction возвращает null для пустой строки — раньше здесь
-        // сразу шёл обращение к parsed[0] и вылетал NPE наружу.
+        // splitAction returns null for an empty string — previously
+        // parsed[0] was accessed right away and an NPE escaped.
         if (parsed == null) return false;
         if (player == null) return false;
 
@@ -132,7 +132,7 @@ public class ActionParser {
 
         try {
             switch (actionType) {
-                // === КОММУНИКАЦИЯ ===
+                // === COMMUNICATION ===
                 case "message":
                     executeMessage(player, actionValue);
                     return true;
@@ -147,7 +147,7 @@ public class ActionParser {
                     executeBroadcast(actionValue);
                     return true;
 
-                // === ЭФФЕКТЫ ===
+                // === EFFECTS ===
                 case "effect":
                     executeEffect(player, actionValue);
                     return true;
@@ -179,7 +179,7 @@ public class ActionParser {
                     executeEffectNearby(player, actionValue, true, false);
                     return true;
 
-                // === ТЕЛЕПОРТАЦИЯ ===
+                // === TELEPORTATION ===
                 case "teleport":
                     executeTeleport(player, actionValue);
                     return true;
@@ -187,7 +187,7 @@ public class ActionParser {
                     executeTeleportRelative(player, actionValue);
                     return true;
 
-                // === ПРЕДМЕТЫ ===
+                // === ITEMS ===
                 case "give":
                     executeGive(player, actionValue);
                     return true;
@@ -198,7 +198,7 @@ public class ActionParser {
                     executeExp(player, actionValue);
                     return true;
 
-                // === МИРОВЫЕ ===
+                // === WORLD ===
                 case "lightning":
                     executeLightning(player, actionValue);
                     return true;
@@ -219,7 +219,7 @@ public class ActionParser {
                     executeBreak(player, actionValue);
                     return true;
 
-                // === СТАТУС ===
+                // === STATUS ===
                 case "sethealth":
                     executeSetHealth(player, actionValue);
                     return true;
@@ -269,7 +269,7 @@ public class ActionParser {
                     executeStun(player, actionValue, true, false);
                     return true;
 
-                // === КОМАНДЫ ===
+                // === COMMANDS ===
                 case "command":
                     executeCommand(player, actionValue);
                     return true;
@@ -277,7 +277,7 @@ public class ActionParser {
                     executeConsoleCommand(actionValue);
                     return true;
 
-                // === ПРОДВИНУТЫЕ ===
+                // === ADVANCED ACTIONS ===
                 case "particles_custom":
                     executeParticleCustom(player, actionValue);
                     return true;
@@ -316,7 +316,7 @@ public class ActionParser {
         }
     }
 
-    // === КОММУНИКАЦИЯ ===
+    // === COMMUNICATION ===
 
     private static void executeMessage(Player player, String value) {
         if (value.isEmpty()) return;
@@ -325,10 +325,10 @@ public class ActionParser {
     }
 
     /**
-     * Поддерживаются все форматы:
-     *   title:Заголовок|Подзаголовок|fadeIn|stay|fadeOut   (рекомендуется)
-     *   title:Заголовок|Подзаголовок:fadeIn:stay:fadeOut    (legacy: fade приклеен к подзаголовку)
-     *   title:Заголовок:Подзаголовок:fadeIn:stay:fadeOut    (legacy: двоеточия)
+     * All supported formats:
+     *   title:Title|Subtitle|fadeIn|stay|fadeOut   (recommended)
+     *   title:Title|Subtitle:fadeIn:stay:fadeOut    (legacy: the fade is glued to the subtitle)
+     *   title:Title:Subtitle:fadeIn:stay:fadeOut    (legacy: colons)
      */
     private static void executeTitle(Player player, String value) {
         String[] parts = value.split("\\|");
@@ -343,12 +343,12 @@ public class ActionParser {
         int fadeOut = 10;
 
         if (parts.length >= 3) {
-            // title:Заголовок|Подзаголовок|fadeIn|stay|fadeOut
+            // title:Title|Subtitle|fadeIn|stay|fadeOut
             fadeIn = parseInt(parts[2], 10);
             stay = parts.length > 3 ? parseInt(parts[3], 40) : 40;
             fadeOut = parts.length > 4 ? parseInt(parts[4], 10) : 10;
         } else if (parts.length == 2 && subtitle.contains(":")) {
-            // title:Заголовок|Подзаголовок:fadeIn:stay:fadeOut
+            // title:Title|Subtitle:fadeIn:stay:fadeOut
             String[] subParts = subtitle.split(":");
             subtitle = subParts[0];
             if (subParts.length >= 2) fadeIn = parseInt(subParts[1], 10);
@@ -381,10 +381,10 @@ public class ActionParser {
         }
     }
 
-    // === ЭФФЕКТЫ ===
+    // === EFFECTS ===
 
     /**
-     * Формат: effect:ТИП:СЕКУНДЫ:УРОВЕНЬ[:ambient[:showParticles]]
+     * Format: effect:TYPE:SECONDS:LEVEL[:ambient[:showParticles]]
      */
     private static void executeEffect(Player player, String value) {
         String[] parts = value.split(":");
@@ -403,7 +403,7 @@ public class ActionParser {
     }
 
     /**
-     * Исцеление. Формат: heal:КОЛИЧЕСТВО_HP (например heal:10 = +10 HP).
+     * Healing. Format: heal:AMOUNT_HP (for example heal:10 = +10 HP).
      */
     private static void executeHeal(Player player, String value) {
         double amount = value.isEmpty() ? 10.0 : parseDouble(value, 10.0);
@@ -414,7 +414,7 @@ public class ActionParser {
     }
 
     /**
-     * Урон себе. Формат: damage:СУММА
+     * Damage to yourself. Format: damage:AMOUNT
      */
     private static void executeDamage(Player player, String value) {
         double amount = value.isEmpty() ? 5.0 : parseDouble(value, 5.0);
@@ -422,14 +422,14 @@ public class ActionParser {
     }
 
     /**
-     * AoE урон по всем живым рядом (включая игроков). Формат: damage_nearby:УРОН:РАДИУС
+     * AoE damage to all nearby living entities (including players). Format: damage_nearby:DAMAGE:RADIUS
      */
     private static void executeDamageNearby(Player player, String value) {
         executeDamageFiltered(player, value, true, true);
     }
 
     /**
-     * AoE урон с фильтром целей. Формат: УРОН:РАДИУС
+     * AoE damage with a target filter. Format: DAMAGE:RADIUS
      */
     private static void executeDamageFiltered(Player player, String value, boolean includePlayers, boolean includeMobs) {
         String[] parts = value.split(":");
@@ -445,7 +445,7 @@ public class ActionParser {
     }
 
     /**
-     * Исцеление ближайших игроков. Формат: heal_nearby:КОЛ-ВО:РАДИУС
+     * Healing of the nearest players. Format: heal_nearby:AMOUNT:RADIUS
      */
     private static void executeHealNearby(Player player, String value) {
         String[] parts = value.split(":");
@@ -464,7 +464,7 @@ public class ActionParser {
     }
 
     /**
-     * Эффект по области. Формат: effect_nearby:ТИП:СЕКУНДЫ:УРОВЕНЬ[:РАДИУС]
+     * Area effect. Format: effect_nearby:TYPE:SECONDS:LEVEL[:RADIUS]
      */
     private static void executeEffectNearby(Player player, String value, boolean includePlayers, boolean includeMobs) {
         String[] parts = value.split(":");
@@ -485,11 +485,11 @@ public class ActionParser {
         }
     }
 
-    // === ТЕЛЕПОРТАЦИЯ ===
+    // === TELEPORTATION ===
 
     /**
-     * Формат: teleport:X:Y:Z[:YAW]. Любая координата может начинаться с "~"
-     * для перемещения относительно текущей позиции (например teleport:~:5:~).
+     * Format: teleport:X:Y:Z[:YAW]. Any coordinate may start with "~"
+     * to move relative to the current position (for example teleport:~:5:~).
      */
     private static void executeTeleport(Player player, String value) {
         String[] parts = value.split(":");
@@ -504,8 +504,8 @@ public class ActionParser {
     }
 
     /**
-     * Телепорт относительно текущей позиции. Формат: teleport_relative:X:Y:Z
-     * (без "~" координаты складываются с текущими).
+     * Teleport relative to the current position. Format: teleport_relative:X:Y:Z
+     * (without "~" the coordinates are added to the current ones).
      */
     private static void executeTeleportRelative(Player player, String value) {
         String[] parts = value.split(":");
@@ -516,10 +516,10 @@ public class ActionParser {
         player.teleport(new Location(loc.getWorld(), x, y, z, loc.getYaw(), loc.getPitch()));
     }
 
-    // === ПРЕДМЕТЫ ===
+    // === ITEMS ===
 
     /**
-     * Выдать предмет. Формат: give:МАТЕРИАЛ:КОЛ  или  give:ID_КАСТОМНОГО_ПРЕДМЕТА:КОЛ
+     * Give an item. Format: give:MATERIAL:AMOUNT  or  give:CUSTOM_ITEM_ID:AMOUNT
      */
     private static void executeGive(Player player, String value) {
         String[] parts = value.split(":");
@@ -538,7 +538,7 @@ public class ActionParser {
             return;
         }
 
-        // Кастомный предмет из реестра плагина
+        // A custom item from the plugin registry
         Main plugin = Main.getInstance();
         if (plugin != null) {
             CustomItem customItem = plugin.getItemHandler().getCustomItem(parts[0].toLowerCase());
@@ -556,7 +556,7 @@ public class ActionParser {
     }
 
     /**
-     * Забрать предмет. Формат: remove:МАТЕРИАЛ:КОЛ
+     * Take an item. Format: remove:MATERIAL:AMOUNT
      */
     private static void executeRemove(Player player, String value) {
         String[] parts = value.split(":");
@@ -575,8 +575,8 @@ public class ActionParser {
                 int toRemove = Math.min(item.getAmount(), remaining);
                 int left = item.getAmount() - toRemove;
                 remaining -= toRemove;
-                // Стак с amount=0 остаётся в инвентаре «пустым» — убираем его,
-                // иначе он занимает слот и мешает авто-подбору.
+                // A stack with amount=0 stays in the inventory as an "empty" one — it is
+                // removed here, otherwise it occupies the slot and interferes with the auto-pickup.
                 contents[i] = left > 0 ? item : null;
                 changed = true;
             }
@@ -587,7 +587,7 @@ public class ActionParser {
     }
 
     /**
-     * Опыт. Формат: exp:ОПЫТ[:УРОВНИ]
+     * Experience. Format: exp:XP[:LEVELS]
      */
     private static void executeExp(Player player, String value) {
         String[] parts = value.split(":");
@@ -599,7 +599,7 @@ public class ActionParser {
         }
     }
 
-    // === МИРОВЫЕ ===
+    // === WORLD ===
 
     private static void executeLightning(Player player, String value) {
         int strikes = value.isEmpty() ? 1 : parseInt(value, 1);
@@ -660,7 +660,7 @@ public class ActionParser {
     }
 
     /**
-     * Ломает блок, на который смотрит игрок. Формат: break[:МАТЕРИАЛ]
+     * Breaks the block the player is looking at. Format: break[:MATERIAL]
      */
     private static void executeBreak(Player player, String value) {
         Block block = player.getTargetBlockExact(5);
@@ -674,7 +674,7 @@ public class ActionParser {
         block.breakNaturally();
     }
 
-    // === СТАТУС ===
+    // === STATUS ===
 
     private static void executeSetHealth(Player player, String value) {
         double health = parseDouble(value, 20.0);
@@ -690,7 +690,7 @@ public class ActionParser {
     }
 
     /**
-     * Установить уровень. Формат: set_xp:УРОВЕНЬ
+     * Set the level. Format: set_xp:LEVEL
      */
     private static void executeSetXp(Player player, String value) {
         int level = Math.max(0, parseInt(value, 0));
@@ -721,7 +721,7 @@ public class ActionParser {
     }
 
     /**
-     * Отброс. Формат: knockback[:РАДИУС]
+     * Knockback. Format: knockback[:RADIUS]
      */
     private static void executeKnockback(Player player, String value, boolean includePlayers, boolean includeMobs) {
         double range = value.isEmpty() ? 3.0 : parseDouble(value, 3.0);
@@ -744,7 +744,7 @@ public class ActionParser {
     }
 
     /**
-     * Подброс вверх. Формат: launch[:СИЛА]
+     * Launch upwards. Format: launch[:POWER]
      */
     private static void executeLaunch(Player player, String value, boolean includePlayers, boolean includeMobs) {
         double power = value.isEmpty() ? 1.5 : parseDouble(value, 1.5);
@@ -758,7 +758,7 @@ public class ActionParser {
     }
 
     /**
-     * Оглушение (Slowness 255 + Mining Fatigue 255). Формат: stun:СЕКУНДЫ[:РАДИУС]
+     * Stun (Slowness 255 + Mining Fatigue 255). Format: stun:SECONDS[:RADIUS]
      */
     private static void executeStun(Player player, String value, boolean includePlayers, boolean includeMobs) {
         String[] parts = value.split(":");
@@ -777,11 +777,11 @@ public class ActionParser {
         }
     }
 
-    // === КОМАНДЫ ===
+    // === COMMANDS ===
 
     /**
-     * Выполнить команду от имени консоли (без прав игрока).
-     * Формат: command:КОМАНДА (поддерживается %player%)
+     * Executes the command as the console (without the player permissions).
+     * Format: command:COMMAND (%player% is supported)
      */
     private static void executeCommand(Player player, String value) {
         String command = value.replace("%player%", player.getName());
@@ -792,11 +792,11 @@ public class ActionParser {
         Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), value);
     }
 
-    // === ПРОДВИНУТЫЕ ДЕЙСТВИЯ ===
+    // === ADVANCED ACTIONS ===
 
     /**
-     * Кастомные частицы с полным контролем.
-     * Формат: particles_custom:ТИП:КОЛИЧЕСТВО:X:Y:Z:OFF_X:OFF_Y:OFF_Z
+     * Custom particles with full control.
+     * Format: particles_custom:TYPE:COUNT:X:Y:Z:OFF_X:OFF_Y:OFF_Z
      */
     private static void executeParticleCustom(Player player, String value) {
         String[] parts = value.split(":");
@@ -817,8 +817,8 @@ public class ActionParser {
     }
 
     /**
-     * Последовательность звуков с задержками.
-     * Формат: sound_sequence:ЗВУК1:ГРОМКОСТЬ1:ТОН1;ЗВУК2:ГРОМКОСТЬ2:ТОН2;...
+     * A sequence of sounds with delays.
+     * Format: sound_sequence:SOUND1:VOLUME1:PITCH1;SOUND2:VOLUME2:PITCH2;...
      */
     private static void executeSoundSequence(Player player, String value) {
         String[] sounds = value.split(";");
@@ -836,8 +836,8 @@ public class ActionParser {
     }
 
     /**
-     * Последовательность заголовков.
-     * Формат: title_sequence:ЗАГОЛОВОК:ПОДЗАГОЛОВОК:FADEIN:STAY:FADEOUT;...
+     * A sequence of titles.
+     * Format: title_sequence:TITLE:SUBTITLE:FADEIN:STAY:FADEOUT;...
      */
     private static void executeTitleSequence(Player player, String value) {
         String[] titles = value.split(";");
@@ -856,8 +856,8 @@ public class ActionParser {
     }
 
     /**
-     * Последовательность команд с задержками.
-     * Формат: command_sequence:КОМАНДА1:ЗАДЕРЖКА1;КОМАНДА2:ЗАДЕРЖКА2;...
+     * A sequence of commands with delays.
+     * Format: command_sequence:COMMAND1:DELAY1;COMMAND2:DELAY2;...
      */
     private static void executeCommandSequence(Player player, String value) {
         String[] commands = value.split(";");
@@ -878,8 +878,8 @@ public class ActionParser {
     }
 
     /**
-     * Последовательность телепортаций.
-     * Формат: teleport_sequence:X1:Y1:Z1:ЗАДЕРЖКА1;X2:Y2:Z2:ЗАДЕРЖКА2;...
+     * A sequence of teleports.
+     * Format: teleport_sequence:X1:Y1:Z1:DELAY1;X2:Y2:Z2:DELAY2;...
      */
     private static void executeTeleportSequence(Player player, String value) {
         String[] points = value.split(";");
@@ -901,8 +901,8 @@ public class ActionParser {
     }
 
     /**
-     * Последовательность эффектов.
-     * Формат: effect_sequence:ТИП1:ДЛИТЕЛЬНОСТЬ1:УРОВЕНЬ1:ЗАДЕРЖКА1;...
+     * A sequence of effects.
+     * Format: effect_sequence:TYPE1:DURATION1:LEVEL1:DELAY1;...
      */
     private static void executeEffectSequence(Player player, String value) {
         String[] effects = value.split(";");
@@ -930,8 +930,8 @@ public class ActionParser {
     }
 
     /**
-     * Кастомный урон с параметрами.
-     * Формат: damage_custom:УРОН:ШИРИНА:ВЫСОТА:ГЛУБИНА
+     * Custom damage with parameters.
+     * Format: damage_custom:DAMAGE:WIDTH:HEIGHT:DEPTH
      */
     private static void executeDamageCustom(Player player, String value) {
         String[] parts = value.split(":");
@@ -950,8 +950,8 @@ public class ActionParser {
     }
 
     /**
-     * Кастомное исцеление с параметрами.
-     * Формат: heal_custom:ИСЦЕЛЕНИЕ:ШИРИНА:ВЫСОТА:ГЛУБИНА[:ТИП_ЧАСТИЦ]
+     * Custom healing with parameters.
+     * Format: heal_custom:HEALING:WIDTH:HEIGHT:DEPTH[:PARTICLE_TYPE]
      */
     private static void executeHealCustom(Player player, String value) {
         String[] parts = value.split(":");
@@ -986,7 +986,7 @@ public class ActionParser {
         }
     }
 
-    // === ХЕЛПЕРЫ ===
+    // === HELPERS ===
 
     private static PotionEffectType resolveEffect(String name) {
         PotionEffectType effectType = effectMap().get(name);
@@ -997,7 +997,7 @@ public class ActionParser {
     }
 
     /**
-     * Координата: "5" = 5, "~" = текущая, "~5" = текущая + 5.
+     * Coordinate: "5" = 5, "~" = current, "~5" = current + 5.
      */
     private static double parseRelative(String raw, double current) {
         if (raw.startsWith("~")) {

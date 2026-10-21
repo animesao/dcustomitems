@@ -12,21 +12,21 @@ import org.bukkit.util.*;
 import java.util.*;
 
 /**
- * ⚡ ТЕНЕВОЙ КЛИНОК - Механика Рывка
+ * ⚡ SHADOW BLADE - Dash mechanic
  * 
- * ПКМ - Рывок вперёд на 15 блоков
- * ЛКМ - Рывок к цели (если смотришь на моба/игрока)
+ * Right Click - Dash forward 15 blocks
+ * Left Click - Dash to the target (if you are looking at a mob/player)
  * 
- * Механика:
- * - Рывок сквозь воздух
- * - Оставляет теневые остатки
- * - Урон при рывке через врагов
- * - Кулдаун 5 сек
- * - 3 заряда (регенерация 1 заряд в 10 сек)
+ * Mechanic:
+ * - Dash through the air
+ * - Leaves shadow remnants behind
+ * - Damage to enemies you dash through
+ * - 5 sec cooldown
+ * - 3 charges (regenerates 1 charge every 10 sec)
  * 
- * Дополнительно:
- * - Невидимость 2 сек после рывка
- * - Скорость I на 3 сек после рывка
+ * Additionally:
+ * - Invisibility for 2 sec after the dash
+ * - Speed I for 3 sec after the dash
  */
 public class ShadowDashblade extends AbstractCustomItem {
 
@@ -37,7 +37,7 @@ public class ShadowDashblade extends AbstractCustomItem {
     public String getId() { return "shadow_dashblade"; }
 
     @Override
-    public String getDisplayName() { return "&5&l⚡ Теневой Клинок"; }
+    public String getDisplayName() { return "&5&l⚡ Shadow Blade"; }
 
     @Override
     public Material getMaterial() { return Material.NETHERITE_SWORD; }
@@ -46,19 +46,19 @@ public class ShadowDashblade extends AbstractCustomItem {
     public java.util.List<String> getLore() {
         return java.util.List.of(
             "",
-            " &7&o\"Тень не знает границ...\"",
+            " &7&o\"The shadow knows no bounds...\"",
             "",
-            " &5⚡ &fМеханика Рывка:",
-            " &7• ПКМ - Рывок вперёд (15 блоков)",
-            " &7• ЛКМ - Рывок к цели",
+            " &5⚡ &fDash mechanic:",
+            " &7• Right Click - Dash forward (15 blocks)",
+            " &7• Left Click - Dash to the target",
             "",
-            " &d✦ &fЗаряды: &e3/3",
-            " &7• Регенерация: 1 заряд / 10 сек",
+            " &d✦ &fCharges: &e3/3",
+            " &7• Regeneration: 1 charge / 10 sec",
             "",
-            " &5🔮 &fБонусы после рывка:",
-            " &7• Невидимость 2 сек",
-            " &7• Скорость I 3 сек",
-            " &7• Урон врагам на пути!",
+            " &5🔮 &fBonuses after the dash:",
+            " &7• Invisibility 2 sec",
+            " &7• Speed I 3 sec",
+            " &7• Damage to enemies on the way!",
             ""
         );
     }
@@ -73,10 +73,10 @@ public class ShadowDashblade extends AbstractCustomItem {
     public boolean isGlowing() { return true; }
 
     @Override
-    public long getPeriodicInterval() { return 200; } // Каждые 10 сек
+    public long getPeriodicInterval() { return 200; } // Every 10 sec
 
     /**
-     * Регенерация зарядов
+     * Charge regeneration
      */
     @Override
     public void onPeriodic(Player player) {
@@ -89,13 +89,13 @@ public class ShadowDashblade extends AbstractCustomItem {
             lastRegen.put(uuid, System.currentTimeMillis());
 
             if (charges.get(uuid) < 3) {
-                sendActionbar(player, ChatColor.LIGHT_PURPLE + "⚡ Заряд регенерирован: " + charges.get(uuid) + "/3");
+                sendActionbar(player, ChatColor.LIGHT_PURPLE + "⚡ Charge regenerated: " + charges.get(uuid) + "/3");
             }
         }
     }
 
     /**
-     * ПКМ - Рывок вперёд
+     * Right Click - Dash forward
      */
     @Override
     public void onRightClick(PlayerInteractEvent event, Player player) {
@@ -103,23 +103,23 @@ public class ShadowDashblade extends AbstractCustomItem {
         int currentCharges = charges.getOrDefault(uuid, 3);
 
         if (currentCharges <= 0) {
-            player.sendMessage(ChatColor.RED + "❌ Нет зарядов!");
+            player.sendMessage(ChatColor.RED + "❌ No charges left!");
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
             return;
         }
 
-        // Тратим заряд
+        // Spend a charge
         charges.put(uuid, currentCharges - 1);
 
-        // Рывок вперёд
+        // Dash forward
         performDash(player, player.getLocation().getDirection().multiply(15), true);
 
-        // Уведомление
-        sendActionbar(player, ChatColor.LIGHT_PURPLE + "⚡ Заряды: " + charges.get(uuid) + "/3");
+        // Notification
+        sendActionbar(player, ChatColor.LIGHT_PURPLE + "⚡ Charges: " + charges.get(uuid) + "/3");
     }
 
     /**
-     * ЛКМ - Рывок к цели (если смотришь на моба/игрока)
+     * Left Click - Dash to the target (if you are looking at a mob/player)
      */
     @Override
     public void onLeftClick(PlayerInteractEvent event, Player player) {
@@ -127,12 +127,12 @@ public class ShadowDashblade extends AbstractCustomItem {
         int currentCharges = charges.getOrDefault(uuid, 3);
 
         if (currentCharges <= 0) {
-            player.sendMessage(ChatColor.RED + "❌ Нет зарядов!");
+            player.sendMessage(ChatColor.RED + "❌ No charges left!");
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
             return;
         }
 
-        // Ищем цель в радиусе 20 блоков
+        // Look for a target within 20 blocks
         RayTraceResult rayTrace = player.getWorld().rayTraceEntities(
             player.getLocation().add(0, player.getEyeHeight(), 0),
             player.getLocation().getDirection(),
@@ -142,30 +142,30 @@ public class ShadowDashblade extends AbstractCustomItem {
         );
 
         if (rayTrace != null && rayTrace.getHitEntity() != null) {
-            // Рывок к цели
+            // Dash to the target
             Location targetLoc = rayTrace.getHitEntity().getLocation();
             charges.put(uuid, currentCharges - 1);
 
             performDashToTarget(player, targetLoc);
 
-            // Урон при приземлении
+            // Damage on landing
             if (rayTrace.getHitEntity() instanceof LivingEntity) {
                 LivingEntity target = (LivingEntity) rayTrace.getHitEntity();
                 target.damage(12, player);
                 target.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0, 1, 0), 30);
             }
 
-            sendActionbar(player, ChatColor.LIGHT_PURPLE + "⚡ Заряды: " + charges.get(uuid) + "/3");
+            sendActionbar(player, ChatColor.LIGHT_PURPLE + "⚡ Charges: " + charges.get(uuid) + "/3");
         } else {
-            // Обычный рывок вперёд если нет цели
+            // Normal forward dash if there is no target
             charges.put(uuid, currentCharges - 1);
             performDash(player, player.getLocation().getDirection().multiply(10), true);
-            sendActionbar(player, ChatColor.LIGHT_PURPLE + "⚡ Заряды: " + charges.get(uuid) + "/3");
+            sendActionbar(player, ChatColor.LIGHT_PURPLE + "⚡ Charges: " + charges.get(uuid) + "/3");
         }
     }
 
     /**
-     * Рывок вперёд с уроном
+     * Dash forward with damage
      */
     private void sendActionbar(Player player, String message) {
         player.spigot().sendMessage(
@@ -177,23 +177,23 @@ public class ShadowDashblade extends AbstractCustomItem {
     private void performDash(Player player, org.bukkit.util.Vector direction, boolean damageEntities) {
         Location startLoc = player.getLocation().clone();
 
-        // Эффекты перед рывком
+        // Effects before the dash
         player.getWorld().spawnParticle(Particle.LARGE_SMOKE, player.getLocation().add(0, 1, 0), 50);
         player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation().add(0, 1, 0), 30);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.5f);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_BREATH, 1f, 2f);
 
-        // Телепортация
+        // Teleportation
         Location targetLoc = player.getLocation().add(direction);
         targetLoc.setY(player.getWorld().getHighestBlockYAt(targetLoc) + 1);
         player.teleport(targetLoc);
 
-        // Эффекты после рывка
+        // Effects after the dash
         player.getWorld().spawnParticle(Particle.LARGE_SMOKE, player.getLocation().add(0, 1, 0), 50);
         player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation().add(0, 1, 0), 30);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
 
-        // Урон всем на пути
+        // Damage to everything on the way
         if (damageEntities) {
             for (Entity entity : player.getNearbyEntities(3, 3, 3)) {
                 if (entity instanceof LivingEntity && entity != player) {
@@ -204,24 +204,24 @@ public class ShadowDashblade extends AbstractCustomItem {
             }
         }
 
-        // Бонусы после рывка
+        // Bonuses after the dash
         applyPostDashEffects(player);
 
-        // Теневые остатки
+        // Shadow remnants
         createShadowTrail(startLoc, player.getLocation());
     }
 
     /**
-     * Рывок к цели (быстрая телепортация)
+     * Dash to the target (fast teleportation)
      */
     private void performDashToTarget(Player player, Location target) {
         Location startLoc = player.getLocation().clone();
 
-        // Эффекты перед рывком
+        // Effects before the dash
         player.getWorld().spawnParticle(Particle.LARGE_SMOKE, player.getLocation().add(0, 1, 0), 50);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.5f);
 
-        // Быстрая телепортация (через scheduler для анимации)
+        // Fast teleportation (via scheduler for the animation)
         Bukkit.getScheduler().runTaskLater(
             Bukkit.getPluginManager().getPlugin("DC-CustomItems"),
             () -> {
@@ -233,26 +233,26 @@ public class ShadowDashblade extends AbstractCustomItem {
                 applyPostDashEffects(player);
                 createShadowTrail(startLoc, player.getLocation());
             },
-            2L // 2 тика задержки
+            2L // 2 tick delay
         );
     }
 
     /**
-     * Бонусы после рывка
+     * Bonuses after the dash
      */
     private void applyPostDashEffects(Player player) {
-        // Невидимость 2 сек
+        // Invisibility 2 sec
         player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 40, 0, false, false));
 
-        // Скорость I на 3 сек
+        // Speed I for 3 sec
         player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 60, 0, false, false));
 
-        // Частицы
+        // Particles
         player.getWorld().spawnParticle(Particle.LARGE_SMOKE, player.getLocation().add(0, 1, 0), 30);
     }
 
     /**
-     * Создаёт теневые остатки между начальной и конечной точками
+     * Creates shadow remnants between the start and end points
      */
     private void createShadowTrail(Location start, Location end) {
         org.bukkit.util.Vector direction = end.toVector().subtract(start.toVector());

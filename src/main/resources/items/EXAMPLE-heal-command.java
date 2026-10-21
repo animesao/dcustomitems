@@ -5,16 +5,16 @@ import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
 /**
- * Команда /heal - Исцеление
+ * /heal command - Healing
  * 
- * Положи этот файл в plugins/DC-CustomItems/items/
- * Сделай /ci reload
- * Команда будет доступна!
+ * Put this file in plugins/DC-CustomItems/items/
+ * Run /ci reload
+ * The command will be available!
  */
 public class HealCommand extends CustomCommand {
 
     public HealCommand() {
-        super("heal", "Исцелить себя или игрока", "/heal [игрок]", "dci.command.heal", "healme");
+        super("heal", "Heal yourself or a player", "/heal [player]", "dci.command.heal", "healme");
     }
 
     @Override
@@ -22,13 +22,13 @@ public class HealCommand extends CustomCommand {
         Player target = getTarget(sender, args, 0);
         if (target == null) return false;
 
-        // Лечение
+        // Healing
         double maxHealth = target.getAttribute(Attribute.MAX_HEALTH).getValue();
         target.setHealth(maxHealth);
         target.setFoodLevel(20);
         target.setSaturation(20f);
 
-        // Очищаем негативные эффекты
+        // Clear the negative effects
         for (var effect : target.getActivePotionEffects()) {
             if (effect.getType().equals(PotionEffectType.POISON) ||
                 effect.getType().equals(PotionEffectType.WITHER) ||
@@ -37,21 +37,21 @@ public class HealCommand extends CustomCommand {
             }
         }
 
-        // Эффекты
+        // Effects
         target.getWorld().spawnParticle(Particle.HEART, target.getLocation().add(0, 2, 0), 30);
         target.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, target.getLocation().add(0, 1, 0), 20);
         target.playSound(target.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
 
-        // Сообщения
+        // Messages
         if (sender.equals(target)) {
-            msg(sender, "&aВы полностью исцелены!");
+            msg(sender, "&aYou have been fully healed!");
         } else {
-            msg(sender, "&aВы исцелили " + target.getName() + "!");
-            msg(target, "&aВы были исцелены!");
+            msg(sender, "&aYou healed " + target.getName() + "!");
+            msg(target, "&aYou have been healed!");
         }
 
-        // Заголовок
-        title(target, "&a❤ ИСЦЕЛЕНИЕ!", "&7Полное здоровье!");
+        // Title
+        title(target, "&a❤ HEALING!", "&7Full health!");
 
         return true;
     }
@@ -59,7 +59,7 @@ public class HealCommand extends CustomCommand {
     @Override
     public java.util.List<String> tabComplete(CommandSender sender, String[] args, int cursor) {
         if (cursor == 0) {
-            // Имена онлайн игроков
+            // Names of online players
             java.util.List<String> players = new java.util.ArrayList<>();
             for (Player p : sender.getServer().getOnlinePlayers()) {
                 players.add(p.getName());

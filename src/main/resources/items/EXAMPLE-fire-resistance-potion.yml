@@ -1,5 +1,5 @@
 # ============================================
-# ЗЕЛЬЕ ОГНЕСТОЙКОСТИ - Защита от огня
+# FIRE RESISTANCE POTION - Protection from fire
 # ============================================
 
 fire-resistance-potion:
@@ -10,7 +10,7 @@ fire-resistance-potion:
 
   item:
     type: GLASS_BOTTLE
-    title: '&c[🔥] &fЗелье &cОгнестойкости'
+    title: '&c[🔥] &fPotion &cof Fire Resistance'
     glowing: true
     unbreakable: false
     item-model: "fire_resistance_potion"
@@ -19,13 +19,13 @@ fire-resistance-potion:
   lore:
     - ''
     - ' &c━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Зелье огненной защиты'
+    - ' &7Potion of fire protection'
     - ' &c━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &c🔥 &fПКМ: Выпить'
-    - ' &7Даёт Огнестойкость на 60 секунд'
+    - ' &c🔥 &fRight Click: Drink'
+    - ' &7Grants Fire Resistance for 60 seconds'
     - ''
-    - ' &eОсталось глотков: &c%uses% &7из &43'
+    - ' &eSips left: &c%uses% &7of &43'
     - ''
 
   max-uses: 3

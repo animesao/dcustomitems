@@ -19,15 +19,15 @@ import java.util.*;
 /**
  * 🎨 DeluxeMenuX - Advanced Menu System
  *
- * Полноценная система меню как DeluxeMenus
+ * A full menu system like DeluxeMenus
  *
- * Функции:
- * - YAML конфигурация меню
- * - Предметы с командами
- * - Условия и проверки
- * - Анимации и звуки
- * - Плейсхолдеры
- * - Навигация между меню
+ * Features:
+ * - YAML menu configuration
+ * - Items with commands
+ * - Conditions and checks
+ * - Animations and sounds
+ * - Placeholders
+ * - Navigation between menus
  */
 public class deluxemenuxModule extends Module implements Listener {
 
@@ -40,10 +40,10 @@ public class deluxemenuxModule extends Module implements Listener {
 
     @Override
     protected void onEnable() {
-        // Регистрируем слушатель
+        // Register the listener
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
-        // Загружаем все меню
+        // Load all the menus
         loadAllMenus();
 
         plugin.getLogger().info("[DeluxeMenuX] Loaded " + menus.size() + " menus");
@@ -57,7 +57,7 @@ public class deluxemenuxModule extends Module implements Listener {
     }
 
     /**
-     * Загрузить все меню из папки menus/
+     * Load all the menus from the menus/ folder
      */
     private void loadAllMenus() {
         menus.clear();
@@ -67,7 +67,7 @@ public class deluxemenuxModule extends Module implements Listener {
             menusDir.mkdirs();
         }
 
-        // Создаём только отсутствующие примеры. Пользовательские YAML не перезаписываются.
+        // We only create the missing examples. Custom YAML files are not overwritten.
         createDefaultMenus(menusDir);
 
         File[] menuFiles = menusDir.listFiles((dir, name) -> name.endsWith(".yml"));
@@ -83,7 +83,7 @@ public class deluxemenuxModule extends Module implements Listener {
     }
 
     /**
-     * Загрузить меню из YAML файла
+     * Load a menu from a YAML file
      */
     private void loadMenu(File menuFile) {
         YamlConfiguration config = YamlConfiguration.loadConfiguration(menuFile);
@@ -94,7 +94,7 @@ public class deluxemenuxModule extends Module implements Listener {
         String openSound = config.getString("open-sound", "");
         String closeSound = config.getString("close-sound", "");
 
-        // Загружаем предметы
+        // Load the items
         Map<Integer, MenuItem> items = new HashMap<>();
         if (config.contains("items")) {
             for (String slotKey : config.getConfigurationSection("items").getKeys(false)) {
@@ -110,7 +110,7 @@ public class deluxemenuxModule extends Module implements Listener {
             }
         }
 
-        // Заполняем фон
+        // Fill the background
         MenuItem fillItem = null;
         if (config.contains("fill")) {
             fillItem = loadMenuItem(config, "fill");
@@ -121,7 +121,7 @@ public class deluxemenuxModule extends Module implements Listener {
     }
 
     /**
-     * Загрузить предмет меню
+     * Load a menu item
      */
     private MenuItem loadMenuItem(YamlConfiguration config, String path) {
         String materialName = config.getString(path + ".material", "STONE");
@@ -143,10 +143,10 @@ public class deluxemenuxModule extends Module implements Listener {
     }
 
     /**
-     * Создать дефолтные меню
+     * Create the default menus
      */
     private void createDefaultMenus(File menusDir) {
-        // Создаём только отсутствующие файлы, чтобы не затирать настройки владельца.
+        // We only create the missing files so that the owner's settings are not wiped.
         if (!new File(menusDir, "shop.yml").exists()) createShopMenu(menusDir);
         if (!new File(menusDir, "main.yml").exists()) createMainMenu(menusDir);
         if (!new File(menusDir, "kits.yml").exists()) createKitsMenu(menusDir);
@@ -155,48 +155,48 @@ public class deluxemenuxModule extends Module implements Listener {
     private void createShopMenu(File menusDir) {
         YamlConfiguration config = new YamlConfiguration();
 
-        config.set("title", "&6🛒 Магазин");
+        config.set("title", "&6🛒 Shop");
         config.set("size", 45);
         config.set("open-sound", "UI_BUTTON_CLICK");
         config.set("close-sound", "UI_BUTTON_CLICK");
 
-        // Фон
+        // Background
         config.set("fill.material", "GRAY_STAINED_GLASS_PANE");
         config.set("fill.name", " ");
 
-        // Заголовок
+        // Header
         config.set("items.4.material", "PLAYER_HEAD");
-        config.set("items.4.name", "&6&lМагазин");
-        config.set("items.4.lore", Arrays.asList("", "&7Выберите категорию", ""));
+        config.set("items.4.name", "&6&lShop");
+        config.set("items.4.lore", Arrays.asList("", "&7Choose a category", ""));
 
-        // Алмазы
+        // Diamonds
         config.set("items.19.material", "DIAMOND");
-        config.set("items.19.name", "&bАлмазы");
-        config.set("items.19.lore", Arrays.asList("", "&7Нажмите чтобы купить", ""));
+        config.set("items.19.name", "&bDiamonds");
+        config.set("items.19.lore", Arrays.asList("", "&7Click to buy", ""));
         config.set("items.19.command", "give %player% diamond 1");
-        config.set("items.19.message", "&aВы купили алмаз!");
+        config.set("items.19.message", "&aYou bought a diamond!");
         config.set("items.19.sound", "ENTITY_PLAYER_LEVELUP");
 
-        // Изумруды
+        // Emeralds
         config.set("items.22.material", "EMERALD");
-        config.set("items.22.name", "&aИзумруды");
-        config.set("items.22.lore", Arrays.asList("", "&7Нажмите чтобы купить", ""));
+        config.set("items.22.name", "&aEmeralds");
+        config.set("items.22.lore", Arrays.asList("", "&7Click to buy", ""));
         config.set("items.22.command", "give %player% emerald 1");
-        config.set("items.22.message", "&aВы купили изумруд!");
+        config.set("items.22.message", "&aYou bought an emerald!");
         config.set("items.22.sound", "ENTITY_PLAYER_LEVELUP");
 
-        // Золото
+        // Gold
         config.set("items.25.material", "GOLD_INGOT");
-        config.set("items.25.name", "&6Золото");
-        config.set("items.25.lore", Arrays.asList("", "&7Нажмите чтобы купить", ""));
+        config.set("items.25.name", "&6Gold");
+        config.set("items.25.lore", Arrays.asList("", "&7Click to buy", ""));
         config.set("items.25.command", "give %player% gold_ingot 1");
-        config.set("items.25.message", "&aВы купили золото!");
+        config.set("items.25.message", "&aYou bought gold!");
         config.set("items.25.sound", "ENTITY_PLAYER_LEVELUP");
 
-        // Закрыть
+        // Close
         config.set("items.40.material", "BARRIER");
-        config.set("items.40.name", "&cЗакрыть");
-        config.set("items.40.lore", Arrays.asList("", "&7Закрыть меню", ""));
+        config.set("items.40.name", "&cClose");
+        config.set("items.40.lore", Arrays.asList("", "&7Close the menu", ""));
         config.set("items.40.close", "true");
         config.set("items.40.sound", "UI_BUTTON_CLICK");
 
@@ -209,35 +209,35 @@ public class deluxemenuxModule extends Module implements Listener {
 
     private void createKitsMenu(File menusDir) {
         YamlConfiguration config = new YamlConfiguration();
-        config.set("title", "&6&lНаборы");
+        config.set("title", "&6&lKits");
         config.set("size", 27);
         config.set("open-sound", "UI_BUTTON_CLICK");
         config.set("close-sound", "UI_BUTTON_CLICK");
         config.set("fill.material", "BLACK_STAINED_GLASS_PANE");
         config.set("fill.name", " ");
         config.set("items.11.material", "STONE_SWORD");
-        config.set("items.11.name", "&a&lСтартовый набор");
-        config.set("items.11.lore", Arrays.asList("", "&7Получить стартовый комплект", "", "&eНажмите, чтобы получить"));
+        config.set("items.11.name", "&a&lStarter Kit");
+        config.set("items.11.lore", Arrays.asList("", "&7Get the starter set", "", "&eClick to receive it"));
         config.set("items.11.permission", "deluxemenux.kit.start");
         config.set("items.11.command", "give %player% stone_sword 1");
-        config.set("items.11.message", "&aСтартовый набор выдан!");
+        config.set("items.11.message", "&aStarter kit given!");
         config.set("items.11.sound", "ENTITY_PLAYER_LEVELUP");
         config.set("items.13.material", "IRON_CHESTPLATE");
-        config.set("items.13.name", "&b&lЖелезный набор");
-        config.set("items.13.lore", Arrays.asList("", "&7Железная броня и инструменты", "", "&eНажмите, чтобы получить"));
+        config.set("items.13.name", "&b&lIron Kit");
+        config.set("items.13.lore", Arrays.asList("", "&7Iron armor and tools", "", "&eClick to receive it"));
         config.set("items.13.permission", "deluxemenux.kit.iron");
         config.set("items.13.command", "give %player% iron_chestplate 1");
-        config.set("items.13.message", "&bЖелезный набор выдан!");
+        config.set("items.13.message", "&bIron kit given!");
         config.set("items.13.sound", "ENTITY_PLAYER_LEVELUP");
         config.set("items.15.material", "DIAMOND");
-        config.set("items.15.name", "&b&lАлмазный набор");
-        config.set("items.15.lore", Arrays.asList("", "&7Премиальный набор", "", "&eНажмите, чтобы получить"));
+        config.set("items.15.name", "&b&lDiamond Kit");
+        config.set("items.15.lore", Arrays.asList("", "&7Premium kit", "", "&eClick to receive it"));
         config.set("items.15.permission", "deluxemenux.kit.diamond");
         config.set("items.15.command", "give %player% diamond 3");
-        config.set("items.15.message", "&bАлмазный набор выдан!");
+        config.set("items.15.message", "&bDiamond kit given!");
         config.set("items.15.sound", "ENTITY_PLAYER_LEVELUP");
         config.set("items.22.material", "BARRIER");
-        config.set("items.22.name", "&cЗакрыть");
+        config.set("items.22.name", "&cClose");
         config.set("items.22.close", true);
         try { config.save(new File(menusDir, "kits.yml")); }
         catch (Exception e) { plugin.getLogger().warning("[DeluxeMenuX] Error creating kits menu"); }
@@ -246,39 +246,39 @@ public class deluxemenuxModule extends Module implements Listener {
     private void createMainMenu(File menusDir) {
         YamlConfiguration config = new YamlConfiguration();
 
-        config.set("title", "&6&lГлавное Меню");
+        config.set("title", "&6&lMain Menu");
         config.set("size", 27);
         config.set("open-sound", "UI_BUTTON_CLICK");
 
-        // Фон
+        // Background
         config.set("fill.material", "BLACK_STAINED_GLASS_PANE");
         config.set("fill.name", " ");
 
-        // Магазин
+        // Shop
         config.set("items.11.material", "EMERALD_BLOCK");
-        config.set("items.11.name", "&a&lМагазин");
-        config.set("items.11.lore", Arrays.asList("", "&7Открыть магазин", ""));
+        config.set("items.11.name", "&a&lShop");
+        config.set("items.11.lore", Arrays.asList("", "&7Open the shop", ""));
         config.set("items.11.command", "menu shop");
         config.set("items.11.sound", "UI_BUTTON_CLICK");
 
-        // Инвентарь
+        // Inventory
         config.set("items.13.material", "CHEST");
-        config.set("items.13.name", "&b&lИнвентарь");
-        config.set("items.13.lore", Arrays.asList("", "&7Управление предметами", ""));
+        config.set("items.13.name", "&b&lInventory");
+        config.set("items.13.lore", Arrays.asList("", "&7Manage the items", ""));
         config.set("items.13.command", "ci list");
         config.set("items.13.sound", "UI_BUTTON_CLICK");
 
-        // Команды
+        // Commands
         config.set("items.15.material", "COMMAND_BLOCK");
-        config.set("items.15.name", "&e&lКоманды");
-        config.set("items.15.lore", Arrays.asList("", "&7Список команд", ""));
+        config.set("items.15.name", "&e&lCommands");
+        config.set("items.15.lore", Arrays.asList("", "&7A list of the commands", ""));
         config.set("items.15.command", "help");
         config.set("items.15.sound", "UI_BUTTON_CLICK");
 
-        // Закрыть
+        // Close
         config.set("items.22.material", "BARRIER");
-        config.set("items.22.name", "&cЗакрыть");
-        config.set("items.22.lore", Arrays.asList("", "&7Закрыть меню", ""));
+        config.set("items.22.name", "&cClose");
+        config.set("items.22.lore", Arrays.asList("", "&7Close the menu", ""));
         config.set("items.22.close", "true");
         config.set("items.22.sound", "UI_BUTTON_CLICK");
 
@@ -290,27 +290,27 @@ public class deluxemenuxModule extends Module implements Listener {
     }
 
     /**
-     * Открыть меню игроку
+     * Open a menu for a player
      */
     @Override
     public boolean openMenu(Player player, String menuId) {
         MenuData menu = menus.get(menuId.toLowerCase());
         if (menu == null) {
-            player.sendMessage(colorize("&cМеню не найдено: " + menuId));
+            player.sendMessage(colorize("&cMenu not found: " + menuId));
             return false;
         }
 
-        // Проверяем права
-        // TODO:权限检查
+        // Check the permissions
+        // TODO: permission check
 
-        // Создаём инвентарь
+        // Create the inventory
         Inventory inventory = plugin.getServer().createInventory(
             new MenuHolder(menuId),
             menu.size,
             menu.title
         );
 
-        // Устанавливаем фон
+        // Set the background
         if (menu.fillItem != null) {
             ItemStack fillStack = createItemStack(menu.fillItem);
             for (int i = 0; i < menu.size; i++) {
@@ -318,13 +318,13 @@ public class deluxemenuxModule extends Module implements Listener {
             }
         }
 
-        // Устанавливаем предметы
+        // Set the items
         for (Map.Entry<Integer, MenuItem> entry : menu.items.entrySet()) {
             ItemStack item = createItemStack(entry.getValue());
             inventory.setItem(entry.getKey(), item);
         }
 
-        // Воспроизводим звук открытия
+        // Play the open sound
         if (!menu.openSound.isEmpty()) {
             playSound(player, menu.openSound);
         }
@@ -336,7 +336,7 @@ public class deluxemenuxModule extends Module implements Listener {
     }
 
     /**
-     * Создать ItemStack из MenuItem
+     * Create an ItemStack from a MenuItem
      */
     private ItemStack createItemStack(MenuItem menuItem) {
         ItemStack item = new ItemStack(menuItem.material, menuItem.amount);
@@ -360,7 +360,7 @@ public class deluxemenuxModule extends Module implements Listener {
     }
 
     /**
-     * Обработать клик в меню
+     * Handle a click in a menu
      */
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
@@ -385,44 +385,44 @@ public class deluxemenuxModule extends Module implements Listener {
         MenuItem menuItem = menu.items.get(slot);
         if (menuItem == null) return;
 
-        // Проверяем права
+        // Check the permissions
         if (!menuItem.permission.isEmpty() && !player.hasPermission(menuItem.permission)) {
-            player.sendMessage(colorize("&cУ вас нет прав!"));
+            player.sendMessage(colorize("&cYou do not have permission!"));
             return;
         }
 
-        // Внутренние переходы DeluxeMenuX должны выполняться от имени игрока.
-        // Раньше `menu shop` отправлялся через console sender, поэтому команда
-        // menu-command.java отвечала "Только для игроков!" вместо открытия меню.
+        // Internal DeluxeMenuX transitions must be executed on behalf of the player.
+        // Previously `menu shop` was sent through the console sender, so the
+        // menu-command.java replied "Players only!" instead of opening the menu.
         if (!menuItem.command.isEmpty()) {
             String cmd = menuItem.command.replace("%player%", player.getName());
             if (!executeInternalMenuCommand(player, cmd)) {
-                // Обычные команды (give, help и т.п.) по-прежнему выполняются
-                // от консоли, чтобы им не требовались права игрока.
+                // Regular commands (give, help, etc.) are still executed
+                // from the console so that they do not require the player's permissions.
                 plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
             }
         }
 
-        // Отправляем сообщение
+        // Send the message
         if (!menuItem.message.isEmpty()) {
             String msg = menuItem.message.replace("%player%", player.getName());
             player.sendMessage(colorize(msg));
         }
 
-        // Воспроизводим звук
+        // Play the sound
         if (!menuItem.sound.isEmpty()) {
             playSound(player, menuItem.sound);
         }
 
-        // Закрываем меню
+        // Close the menu
         if (menuItem.close) {
             player.closeInventory();
         }
     }
 
     /**
-     * Выполнить навигационную команду меню без повторного прохождения через
-     * Bukkit CommandMap. Это сохраняет контекст Player для /menu, /shop и /kits.
+     * Execute a menu navigation command without going through the
+     * Bukkit CommandMap again. This preserves the Player context for /menu, /shop and /kits.
      */
     private boolean executeInternalMenuCommand(Player player, String command) {
         String normalized = command == null ? "" : command.trim();
@@ -445,7 +445,7 @@ public class deluxemenuxModule extends Module implements Listener {
 
         Module menuModule = plugin.getModuleManager().getModule("deluxemenux");
         if (menuModule == null || !menuModule.openMenu(player, menuId)) {
-            player.sendMessage(colorize("&cМеню не найдено: " + menuId));
+            player.sendMessage(colorize("&cMenu not found: " + menuId));
         }
         return true;
     }
@@ -469,7 +469,7 @@ public class deluxemenuxModule extends Module implements Listener {
         return msg == null ? "" : msg.replace("&", "§");
     }
 
-    // ===== ВНУТРЕННИЕ КЛАССЫ =====
+    // ===== INNER CLASSES =====
 
     public static class MenuData {
         final String id;

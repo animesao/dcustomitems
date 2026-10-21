@@ -1,5 +1,5 @@
 # ============================================
-# ЗЕЛЬЕ СКОРОСТИ - Увеличивает скорость бега
+# SPEED POTION - Increases running speed
 # ============================================
 
 speed-potion:
@@ -10,7 +10,7 @@ speed-potion:
 
   item:
     type: GLASS_BOTTLE
-    title: '&e[⚡] &fЗелье &eСкорости'
+    title: '&e[⚡] &fSpeed &ePotion'
     glowing: true
     unbreakable: false
     item-model: "speed_potion"
@@ -19,13 +19,13 @@ speed-potion:
   lore:
     - ''
     - ' &e━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Зелье быстрого бега'
+    - ' &7Potion of swift running'
     - ' &e━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fПКМ: Выпить'
-    - ' &7Даёт Скорость II на 30 секунд'
+    - ' &e⚡ &fRight Click: Drink'
+    - ' &7Grants Speed II for 30 seconds'
     - ''
-    - ' &eОсталось глотков: &e%uses% &7из &65'
+    - ' &eSips left: &e%uses% &7of &65'
     - ''
 
   max-uses: 5

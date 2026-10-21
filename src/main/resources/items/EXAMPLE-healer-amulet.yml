@@ -1,5 +1,5 @@
 # ============================================
-# АМУЛЕТ ЦЕЛИТЕЛЯ - Исцеляющие способности
+# HEALER AMULET - Healing abilities
 # ============================================
 
 healer-amulet:
@@ -10,7 +10,7 @@ healer-amulet:
 
   item:
     type: NETHERITE_SWORD
-    title: '&a[💚] &fАмулет &aЦелителя'
+    title: '&a[💚] &fHealer &aAmulet'
     glowing: true
     unbreakable: true
     item-model: "healer_amulet"
@@ -22,14 +22,14 @@ healer-amulet:
   lore:
     - ''
     - ' &a━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Амулет исцеления'
+    - ' &7Amulet of healing'
     - ' &a━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eРегенерация &aIII'
-    - ' &6└ &eСкорость &aI'
+    - ' &e⚡ &fWhile in main hand:'
+    - ' &6┌ &eRegeneration &aIII'
+    - ' &6└ &eSpeed &aI'
     - ''
-    - '&a💚 &fПКМ: Исцеление'
+    - '&a💚 &fRight Click: Heal'
     - ''
 
   effects:
@@ -54,7 +54,7 @@ healer-amulet:
       - 'particles:HEART:50'
       - 'particles:VILLAGER_HAPPY:30'
       - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
-      - 'title:&a💚 &7ИСЦЕЛЕНИЕ!|&aПолное восстановление!:10:40:10'
+      - 'title:&a💚 &7HEALING!|&aFull restoration!:10:40:10'
 
     on_click_left:
       - 'heal_nearby:10:5'

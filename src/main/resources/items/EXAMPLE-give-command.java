@@ -15,24 +15,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Команда /give — выдача предметов (кастомных + ванильных).
+ * /give command — giving items (custom + vanilla).
  *
- * Использование:
- *   /give <id>                  — выдать себе
- *   /give <id> <player>         — выдать игроку
- *   /give <id> <player> <amount>— выдать N штук
- *   /give <id> all              — выдать всем онлайн
- *   /give list                  — список кастомных предметов
- *   /give materials             — поиск ванильных материалов
+ * Usage:
+ *   /give <id>                  — give yourself
+ *   /give <id> <player>         — give a player
+ *   /give <id> <player> <amount>— give N pieces
+ *   /give <id> all              — give to everyone online
+ *   /give list                  — a list of the custom items
+ *   /give materials             — search the vanilla materials
  *
- * Поддерживает:
- *   - Кастомные предметы: /give vampire-blade
- *   - Ванильные материалы: /give diamond, /give netherite_sword, /give cooked_beef 64
+ * Supports:
+ *   - Custom items: /give vampire-blade
+ *   - Vanilla materials: /give diamond, /give netherite_sword, /give cooked_beef 64
  */
 public class GiveCommand extends CustomCommand {
 
     public GiveCommand() {
-        super("give", "Выдать предмет (кастомный или ванильный)",
+        super("give", "Give an item (custom or vanilla)",
               "/give <id|material> [player] [amount]", "dcustomitems.give");
         setAliases("g");
     }
@@ -59,29 +59,29 @@ public class GiveCommand extends CustomCommand {
 
         String input = args[0];
 
-        // 1. Ищем среди YAML-предметов
+        // 1. Look among the YAML items
         CustomItem customItem = plugin.getItemHandler().getCustomItem(input.toLowerCase());
 
-        // 2. Ищем среди Java API-предметов (AbstractCustomItem)
+        // 2. Look among the Java API items (AbstractCustomItem)
         AbstractCustomItem javaItem = null;
         if (customItem == null) {
             javaItem = plugin.getApiItemRegistry().getItem(input);
             if (javaItem == null) javaItem = plugin.getApiItemRegistry().getItem(input.toLowerCase());
         }
 
-        // 3. Если не найден — ищем как ванильный материал
+        // 3. If not found — look for it as a vanilla material
         Material vanillaMaterial = null;
         if (customItem == null && javaItem == null) {
             vanillaMaterial = EnumCache.getMaterial(input);
         }
 
         if (customItem == null && javaItem == null && vanillaMaterial == null) {
-            msg(sender, "&cПредмет '&e" + input + "&c' не найден!");
-            msg(sender, "&7Попробуй &e/give list &7или &e/give materials");
+            msg(sender, "&cItem '&e" + input + "&c' not found!");
+            msg(sender, "&7Try &e/give list &7or &e/give materials");
             return true;
         }
 
-        // Определяем получателя
+        // Determine the recipient
         Player target;
         int amount = 1;
 
@@ -92,7 +92,7 @@ public class GiveCommand extends CustomCommand {
             }
             target = Bukkit.getPlayer(args[1]);
             if (target == null) {
-                msg(sender, "&cИгрок '&e" + args[1] + "&c' не найден!");
+                msg(sender, "&cPlayer '&e" + args[1] + "&c' not found!");
                 return true;
             }
             if (args.length >= 3) {
@@ -100,16 +100,16 @@ public class GiveCommand extends CustomCommand {
             }
         } else {
             if (!(sender instanceof Player)) {
-                msg(sender, "&cУкажите игрока: /give <id> <player>");
+                msg(sender, "&cPlease specify a player: /give <id> <player>");
                 return true;
             }
             target = (Player) sender;
         }
 
-        // Ограничиваем количество
+        // Limit the amount
         amount = Math.max(1, Math.min(amount, 64));
 
-        // Создаём ItemStack
+        // Create the ItemStack
         ItemStack itemStack;
         String displayName;
 
@@ -125,15 +125,15 @@ public class GiveCommand extends CustomCommand {
         }
         itemStack.setAmount(amount);
 
-        // Выдаём
+        // Give it
         target.getInventory().addItem(itemStack);
 
-        // Сообщение
-        String targetName = target.equals(sender) ? "себе" : target.getName();
-        msg(sender, "&aВыдано &e" + displayName + " &ax" + amount + " &7→ &f" + targetName);
+        // Message
+        String targetName = target.equals(sender) ? "yourself" : target.getName();
+        msg(sender, "&aGave &e" + displayName + " &ax" + amount + " &7→ &f" + targetName);
 
         if (!target.equals(sender)) {
-            msg(target, "&aВы получили &e" + displayName + " &ax" + amount);
+            msg(target, "&aYou received &e" + displayName + " &ax" + amount);
         }
 
         return true;
@@ -148,25 +148,25 @@ public class GiveCommand extends CustomCommand {
             String prefix = args[0].toLowerCase();
             List<String> completions = new ArrayList<>();
 
-            // Команды
+            // Commands
             if ("list".startsWith(prefix)) completions.add("list");
             if ("materials".startsWith(prefix)) completions.add("materials");
 
-            // YAML-предметы
+            // YAML items
             for (String id : plugin.getItemHandler().getAllCustomItems().keySet()) {
                 if (id.toLowerCase().startsWith(prefix)) {
                     completions.add(id);
                 }
             }
 
-            // Java API-предметы
+            // Java API items
             for (String id : plugin.getApiItemRegistry().getAllIds()) {
                 if (id.toLowerCase().startsWith(prefix) && !completions.contains(id)) {
                     completions.add(id);
                 }
             }
 
-            // Ванильные материалы (популярные)
+            // Vanilla materials (popular ones)
             for (Material mat : POPULAR_MATERIALS) {
                 String name = mat.name().toLowerCase();
                 if (name.startsWith(prefix) || name.replace("_", "").startsWith(prefix.replace("_", ""))) {
@@ -206,12 +206,12 @@ public class GiveCommand extends CustomCommand {
         var allJavaItems = plugin.getApiItemRegistry().getAllItems();
 
         if (allItems.isEmpty() && allJavaItems.isEmpty()) {
-            msg(sender, "&7Нет загруженных кастомных предметов.");
-            msg(sender, "&7Используй &e/give <material> &7для ванильных предметов");
+            msg(sender, "&7No custom items loaded.");
+            msg(sender, "&7Use &e/give <material> &7for vanilla items");
             return true;
         }
 
-        msg(sender, "&6=== Кастомные предметы (" + (allItems.size() + allJavaItems.size()) + ") ===");
+        msg(sender, "&6=== Custom items (" + (allItems.size() + allJavaItems.size()) + ") ===");
 
         for (var entry : allItems.entrySet()) {
             CustomItem item = entry.getValue();
@@ -219,7 +219,7 @@ public class GiveCommand extends CustomCommand {
             msg(sender, " &e" + entry.getKey() + " &7(" + type + ")");
         }
 
-        // Java API-предметы
+        // Java API items
         for (var entry : allJavaItems.entrySet()) {
             AbstractCustomItem item = entry.getValue();
             String type = item.getType() != null ? item.getType() : "UNKNOWN";
@@ -240,20 +240,20 @@ public class GiveCommand extends CustomCommand {
         }
 
         if (found.isEmpty()) {
-            msg(sender, "&cМатериалы с '&e" + filter + "&c' не найдены.");
+            msg(sender, "&cNo materials matching '&e" + filter + "&c' were found.");
             return true;
         }
 
-        // Ограничиваем вывод
+        // Limit the output
         int limit = Math.min(found.size(), 50);
-        msg(sender, "&6=== Материалы" + (filter.isEmpty() ? "" : " ('" + filter + "')") +
-            " [" + found.size() + "]" + (found.size() > limit ? " (первые " + limit + ")" : "") + " ===");
+        msg(sender, "&6=== Materials" + (filter.isEmpty() ? "" : " ('" + filter + "')") +
+            " [" + found.size() + "]" + (found.size() > limit ? " (first " + limit + ")" : "") + " ===");
 
         StringBuilder line = new StringBuilder(" &e");
         for (int i = 0; i < limit; i++) {
             if (i > 0) line.append("&7, &e");
             line.append(found.get(i).name().toLowerCase());
-            // Перенос строки каждые 5 предметов
+            // Line break every 5 items
             if ((i + 1) % 5 == 0 && i + 1 < limit) {
                 msg(sender, line.toString());
                 line = new StringBuilder(" &e");
@@ -283,12 +283,12 @@ public class GiveCommand extends CustomCommand {
             itemStack.setAmount(amount);
             target.getInventory().addItem(itemStack);
             String displayName = displayNameOf(customItem, javaItem, vanillaMat);
-            msg(target, "&aВы получили &e" + displayName + " &ax" + amount);
+            msg(target, "&aYou received &e" + displayName + " &ax" + amount);
             count++;
         }
 
         String displayName = displayNameOf(customItem, javaItem, vanillaMat);
-        msg(sender, "&aВыдано &e" + displayName + " &ax" + amount + " &7→ &fвсем (" + count + " игроков)");
+        msg(sender, "&aGave &e" + displayName + " &ax" + amount + " &7→ &fto everyone (" + count + " players)");
 
         return true;
     }
@@ -308,54 +308,54 @@ public class GiveCommand extends CustomCommand {
     }
 
     private void sendHelp(CommandSender sender) {
-        msg(sender, "&6=== /give — Выдача предметов ===");
-        msg(sender, "&e/give <id|material> &7— выдать себе");
-        msg(sender, "&7  Java-предметы тоже: &e/give dragonbone_armor");
-        msg(sender, "&e/give <id|material> <player> &7— выдать игроку");
-        msg(sender, "&e/give <id|material> <player> <amount> &7— выдать N штук");
-        msg(sender, "&e/give <id|material> all &7— выдать всем онлайн");
+        msg(sender, "&6=== /give — Giving items ===");
+        msg(sender, "&e/give <id|material> &7— give yourself");
+        msg(sender, "&7  Java items too: &e/give dragonbone_armor");
+        msg(sender, "&e/give <id|material> <player> &7— give a player");
+        msg(sender, "&e/give <id|material> <player> <amount> &7— give N pieces");
+        msg(sender, "&e/give <id|material> all &7— give to everyone online");
         msg(sender, "&7");
-        msg(sender, "&e/give list &7— список кастомных предметов");
-        msg(sender, "&e/give materials &7— все ванильные материалы");
-        msg(sender, "&e/give materials diamond &7— поиск по фильтру");
+        msg(sender, "&e/give list &7— a list of the custom items");
+        msg(sender, "&e/give materials &7— all vanilla materials");
+        msg(sender, "&e/give materials diamond &7— search by filter");
         msg(sender, "&7");
-        msg(sender, "&7Примеры:");
-        msg(sender, "&e/give vampire-blade &7— кастомный предмет");
-        msg(sender, "&e/give diamond &7— алмаз");
-        msg(sender, "&e/give netherite_sword Steve 1 &7— незеритовый меч");
-        msg(sender, "&e/give cooked_beef all 16 &7— стейк всем");
+        msg(sender, "&7Examples:");
+        msg(sender, "&e/give vampire-blade &7— a custom item");
+        msg(sender, "&e/give diamond &7— a diamond");
+        msg(sender, "&e/give netherite_sword Steve 1 &7— a netherite sword");
+        msg(sender, "&e/give cooked_beef all 16 &7— a steak for everyone");
     }
 
-    // Популярные ванильные материалы для tab-completion
+    // Popular vanilla materials for tab-completion
     private static final Material[] POPULAR_MATERIALS = {
-        // Алмазы
+        // Diamonds
         Material.DIAMOND, Material.DIAMOND_SWORD, Material.DIAMOND_PICKAXE,
         Material.DIAMOND_AXE, Material.DIAMOND_SHOVEL, Material.DIAMOND_HOE,
         Material.DIAMOND_HELMET, Material.DIAMOND_CHESTPLATE, Material.DIAMOND_LEGGINGS, Material.DIAMOND_BOOTS,
-        // Незерит
+        // Netherite
         Material.NETHERITE_INGOT, Material.NETHERITE_SWORD, Material.NETHERITE_PICKAXE,
         Material.NETHERITE_AXE, Material.NETHERITE_HELMET, Material.NETHERITE_CHESTPLATE,
         Material.NETHERITE_LEGGINGS, Material.NETHERITE_BOOTS,
-        // Железо
+        // Iron
         Material.IRON_INGOT, Material.IRON_SWORD, Material.IRON_PICKAXE,
         Material.IRON_AXE, Material.IRON_HELMET, Material.IRON_CHESTPLATE,
         Material.IRON_LEGGINGS, Material.IRON_BOOTS,
-        // Золото
+        // Gold
         Material.GOLD_INGOT, Material.GOLDEN_APPLE, Material.GOLDEN_CARROT,
-        // Еда
+        // Food
         Material.COOKED_BEEF, Material.COOKED_PORKCHOP, Material.COOKED_MUTTON,
         Material.COOKED_CHICKEN, Material.COOKED_RABBIT, Material.COOKED_COD,
         Material.BREAD, Material.PUMPKIN_PIE, Material.COOKIE,
-        // Зелья
+        // Potions
         Material.POTION, Material.SPLASH_POTION, Material.LINGERING_POTION,
-        // Ресурсы
+        // Resources
         Material.ENDER_PEARL, Material.ENDER_EYE, Material.ELYTRA,
         Material.TOTEM_OF_UNDYING, Material.SHULKER_SHELL, Material.NETHER_STAR,
         Material.DRAGON_EGG, Material.BEACON, Material.CONDUIT,
-        // Стройматериалы
+        // Building blocks
         Material.OBSIDIAN, Material.CRYING_OBSIDIAN, Material.BEDROCK,
         Material.END_STONE, Material.BRICKS, Material.DEEPSLATE_BRICKS,
-        // Разное
+        // Misc
         Material.BOW, Material.CROSSBOW, Material.SHIELD, Material.TRIDENT,
         Material.FLINT_AND_STEEL, Material.COMPASS, Material.CLOCK,
         Material.EXPERIENCE_BOTTLE, Material.EMERALD, Material.EMERALD_BLOCK,

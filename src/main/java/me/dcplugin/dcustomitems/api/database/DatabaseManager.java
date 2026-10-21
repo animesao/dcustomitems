@@ -148,10 +148,10 @@ public class DatabaseManager {
      * Returns the SQLite connection or a leased MySQL pool connection.
      * Callers receiving a MySQL connection must close it; prefer async helpers below.
      *
-     * Для SQLite возвращается потокобезопасная обёртка: единственное
-     * соединение используется всеми потоками, и обращения к нему
-     * сериализуются (иначе SQLite выдавал "database is locked" или
-     * повреждал данные при параллельных запросах).
+     * For SQLite a thread-safe wrapper is returned: the single
+     * connection is used by all threads, and access to it is
+     * serialised (otherwise SQLite reported "database is locked" or
+     * corrupted data during concurrent queries).
      */
     public Connection getConnection() {
         try {
@@ -166,11 +166,11 @@ public class DatabaseManager {
     }
 
     /**
-     * Обёртка, сериализующая обращения к общему SQLite-соединению.
+     * Wrapper that serialises access to the shared SQLite connection.
      *
-     * Исключения пробрасываются как есть: reflective-обёртка иначе
-     * превращала SQLException в InvocationTargetException, и вызывающий
-     * код с {@code catch (SQLException)} перестал бы ловить ошибки БД.
+     * Exceptions are propagated as they are: the reflective wrapper would otherwise
+     * turn an SQLException into an InvocationTargetException, and the calling
+     * code with {@code catch (SQLException)} would stop catching database errors.
      */
     private Connection synchronizedConnection(Connection delegate) {
         return (Connection) java.lang.reflect.Proxy.newProxyInstance(
@@ -457,25 +457,25 @@ public class DatabaseManager {
     }
 
     /**
-     * Проверяет, что имя таблицы/колонки — корректный SQL-идентификатор.
+     * Checks that a table/column name is a valid SQL identifier.
      *
-     * Имена таблиц и колонок подставляются в SQL как есть (параметры
-     * PreparedStatement для них не годятся), поэтому нельзя допустить
-     * произвольную строку — это путь к SQL-инъекции через код модуля.
+     * Table and column names are interpolated into the SQL as they are (PreparedStatement
+     * parameters do not work for them), so an arbitrary string must not be allowed —
+     * that would be a path to SQL injection through module code.
      *
-     * @throws IllegalArgumentException если имя некорректно
+     * @throws IllegalArgumentException if the name is invalid
      */
     private static String validateIdentifier(String identifier) {
         if (identifier == null || !IDENTIFIER_PATTERN.matcher(identifier).matches()) {
-            throw new IllegalArgumentException("Недопустимый SQL-идентификатор: " + identifier);
+            throw new IllegalArgumentException("Invalid SQL identifier: " + identifier);
         }
         return identifier;
     }
 
     /**
-     * То же, но без исключения: возвращает null и пишет в лог.
-     * Используется в публичных методах, где исключение сломало бы
-     * контракт "вернуть true/false".
+     * The same, but without throwing: returns null and writes to the log.
+     * Used in public methods where an exception would break the
+     * "return true/false" contract.
      */
     private String safeIdentifier(String identifier) {
         try {

@@ -12,20 +12,20 @@ import java.io.File;
 import java.util.*;
 
 /**
- * Простой модуль на YAML
+ * Simple YAML-based module
  * 
- * Пример items.yml:
+ * Example items.yml:
  * items:
  *   diamond:
  *     material: DIAMOND
- *     name: "&bАлмаз"
+ *     name: "&bDiamond"
  *     lore:
- *       - "&7Просто алмаз"
+ *       - "&7Just a diamond"
  *     price: 100
  *     command: "give %player% diamond 1"
  * 
  * menu:
- *   title: "&6Магазин"
+ *   title: "&6Shop"
  *   size: 27
  *   fill:
  *     material: GRAY_STAINED_GLASS_PANE
@@ -45,7 +45,7 @@ public class SimpleModule extends Module {
 
     @Override
     protected void onEnable() {
-        // Создаём меню если есть настройка
+        // Create the menu if the setting is present
         if (config.contains("menu")) {
             createMenu();
         }
@@ -57,7 +57,7 @@ public class SimpleModule extends Module {
     }
 
     /**
-     * Создать меню из конфига
+     * Creates the menu from the config
      */
     private void createMenu() {
         String title = colorize(config.getString("menu.title", "Menu"));
@@ -65,7 +65,7 @@ public class SimpleModule extends Module {
         
         menu = plugin.getServer().createInventory(null, size, title);
         
-        // Заполняем фон
+        // Fill the background
         if (config.contains("menu.fill")) {
             String materialName = config.getString("menu.fill.material", "GRAY_STAINED_GLASS_PANE");
             String name = config.getString("menu.fill.name", " ");
@@ -79,7 +79,7 @@ public class SimpleModule extends Module {
             }
         }
         
-        // Устанавливаем предметы
+        // Place the items
         if (config.contains("menu.items")) {
             for (String slotKey : config.getConfigurationSection("menu.items").getKeys(false)) {
                 try {
@@ -101,7 +101,7 @@ public class SimpleModule extends Module {
     }
 
     /**
-     * Открыть меню игроку
+     * Opens the menu for a player
      */
     public void openMenu(Player player) {
         if (menu != null) {
@@ -110,7 +110,7 @@ public class SimpleModule extends Module {
     }
 
     /**
-     * Обработать клик в меню
+     * Handles a click in the menu
      */
     public void handleMenuClick(Player player, int slot) {
         if (!config.contains("menu.items." + slot)) return;
@@ -121,14 +121,14 @@ public class SimpleModule extends Module {
         Map<String, Object> itemData = getItem(itemId);
         if (itemData.isEmpty()) return;
         
-        // Выполняем команду
+        // Execute the command
         String command = (String) itemData.get("command");
         if (command != null) {
             command = command.replace("%player%", player.getName());
             plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), command);
         }
         
-        // Отправляем сообщение
+        // Send the message
         String message = (String) itemData.get("message");
         if (message != null) {
             message = message.replace("%player%", player.getName());
@@ -137,7 +137,7 @@ public class SimpleModule extends Module {
     }
 
     /**
-     * Создать ItemStack из данных
+     * Creates an ItemStack from the data
      */
     private ItemStack createItemFromData(Map<String, Object> data) {
         String materialName = (String) data.get("material");

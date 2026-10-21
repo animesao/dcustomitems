@@ -23,38 +23,38 @@ import java.io.File;
 import java.util.*;
 
 /**
- * 💰 Vault Economy Module — простая валюта для игроков (в стиле Essentials)
+ * 💰 Vault Economy Module — a simple currency for players (Essentials-style)
  *
- * Покупка/продажа предметов — это отдельные плагины, работающие с валютой
- * через Vault или публичный API модуля (getBalance / withdraw / deposit / format).
+ * Buying/selling items — those are separate plugins that work with the currency
+ * through Vault or the module's public API (getBalance / withdraw / deposit / format).
  *
- * Экономика (Essentials-style):
- *   /balance [игрок]     (алиасы: /bal, /money)
- *   /pay <игрок> <сумма>
- *   /eco give|take|set|reset <игрок> <сумма>   (админ)
+ * Economy (Essentials-style):
+ *   /balance [player]     (aliases: /bal, /money)
+ *   /pay <player> <amount>
+ *   /eco give|take|set|reset <player> <amount>   (admin)
  *
- * Плюс: стартовый баланс новому игроку, плейсхолдеры баланса.
+ * Plus: a starting balance for new players, balance placeholders.
  *
- * Включение/выключение: наличие папки items/vault/
- * Настройки: items/vault/config.yml
+ * Enable/disable: the presence of the items/vault/ folder
+ * Settings: items/vault/config.yml
  */
 public class vaultModule extends Module implements Listener, CommandExecutor, TabCompleter {
 
     private Economy economy = null;
     private boolean vaultEnabled = false;
 
-    // Настройки экономики
+    // Economy settings
     private boolean payEnabled;
     private double minPay;
     private double startingBalance;
 
-    // Хранилище: false = экономика Vault (EssentialsX и т.п.),
-    // true = собственная БД плагина (data.db / MySQL)
+    // Storage: false = the Vault economy (EssentialsX etc.),
+    // true = the plugin's own database (data.db / MySQL)
     private boolean ownStorage;
     private boolean isMySqlDb;
     private String currencySymbol = "$";
 
-    // Кому уже выдан стартовый баланс (items/vault/starting-paid.yml)
+    // Who has already received the starting balance (items/vault/starting-paid.yml)
     private File startingPaidFile;
     private YamlConfiguration startingPaid;
 
@@ -68,29 +68,29 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
 
         ownStorage = "own".equalsIgnoreCase(config.getString("economy.storage", "vault"));
         if (ownStorage) {
-            // Собственной БД достаточно для работы экономики, но для КОМПИЛЯЦИИ
-            // этого .java-модуля нужны классы VaultAPI из jar плагина Vault.
+            // The own database is enough for the economy to work, but to COMPILE
+            // this .java module the VaultAPI classes from the Vault plugin jar are required.
             if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
-                plugin.getLogger().severe("[Vault] storage: own не требует Vault-экономику,");
-                plugin.getLogger().severe("[Vault] но jar плагина Vault нужен для компиляции модуля.");
-                plugin.getLogger().severe("[Vault] Установите Vault: https://www.spigotmc.org/resources/vault.34315/");
+                plugin.getLogger().severe("[Vault] storage: own does not require a Vault economy,");
+                plugin.getLogger().severe("[Vault] but the Vault plugin jar is needed to compile the module.");
+                plugin.getLogger().severe("[Vault] Install Vault: https://www.spigotmc.org/resources/vault.34315/");
                 return;
             }
-            // Собственная БД — плагин экономики (EssentialsX и т.п.) не нужен
+            // Own database — an economy plugin (EssentialsX etc.) is not needed
             if (!setupOwnStorage()) {
-                plugin.getLogger().severe("[Vault] Own database storage unavailable! Модуль отключён.");
-                plugin.getLogger().severe("[Vault] Проверьте database.* в config.yml ядра (data.db / MySQL).");
+                plugin.getLogger().severe("[Vault] Own database storage unavailable! The module is disabled.");
+                plugin.getLogger().severe("[Vault] Check database.* in the core config.yml (data.db / MySQL).");
                 return;
             }
             vaultEnabled = true;
         } else if (!setupVault()) {
-            plugin.getLogger().severe("[Vault] Vault/экономика не найдены! Модуль отключён.");
-            plugin.getLogger().severe("[Vault] Установите Vault + плагин экономики (EssentialsX и т.п.),");
-            plugin.getLogger().severe("[Vault] либо включите economy.storage: own для собственной БД.");
+            plugin.getLogger().severe("[Vault] Vault/economy not found! The module is disabled.");
+            plugin.getLogger().severe("[Vault] Install Vault + an economy plugin (EssentialsX etc.),");
+            plugin.getLogger().severe("[Vault] or enable economy.storage: own to use the own database.");
             return;
         }
 
-        // Права: команды для игроков — у всех, админские — у OP
+        // Permissions: the player commands — for everyone, the admin ones — for OP
         ensurePermission("dci.balance", PermissionDefault.TRUE);
         ensurePermission("dci.balance.others", PermissionDefault.TRUE);
         ensurePermission("dci.pay", PermissionDefault.TRUE);
@@ -98,7 +98,7 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
-        // Экономика
+        // Economy
         registerDynamicCommand("balance", this);
         registerDynamicCommand("bal", this);
         registerDynamicCommand("money", this);
@@ -136,11 +136,11 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
         try {
             Bukkit.getPluginManager().addPermission(new Permission(node, def));
         } catch (IllegalArgumentException ignored) {
-            // право уже зарегистрировано — оставляем как есть
+            // the permission is already registered — leave it as is
         }
     }
 
-    // ===== СОБСТВЕННАЯ БАЗА ДАННЫХ =====
+    // ===== OWN DATABASE =====
 
     private boolean setupOwnStorage() {
         DatabaseManager db = plugin.getDatabaseManager();
@@ -159,7 +159,7 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
                 && db.createTable("dci_vault_transactions", txCols);
     }
 
-    /** Создать строку баланса, если её ещё нет (только для собственной БД). */
+    /** Create the balance row if it does not exist yet (only for the own database). */
     private void ensureBalanceRow(OfflinePlayer p) {
         DatabaseManager db = plugin.getDatabaseManager();
         String uuid = p.getUniqueId().toString();
@@ -171,7 +171,7 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
         db.executeUpdate("UPDATE dci_vault_balances SET name=? WHERE uuid=? AND name<>?", name, uuid, name);
     }
 
-    /** Баланс игрока через активное хранилище. */
+    /** The player's balance via the active storage. */
     private double bal(OfflinePlayer p) {
         if (!ownStorage) return economy.getBalance(p);
         ensureBalanceRow(p);
@@ -187,7 +187,7 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
         if (!ownStorage) return economy.withdrawPlayer(p, amount).transactionSuccess();
         DatabaseManager db = plugin.getDatabaseManager();
         ensureBalanceRow(p);
-        // защита от ухода в минус: списываем только если хватает
+        // protection against going negative: we only write off if there is enough
         int rows = db.executeUpdate(
                 "UPDATE dci_vault_balances SET balance = balance - ? WHERE uuid=? AND balance >= ?",
                 amount, p.getUniqueId().toString(), amount);
@@ -231,7 +231,7 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
         return currencySymbol + String.format(java.util.Locale.US, "%.2f", amount);
     }
 
-    /** Журнал транзакций в dci_vault_transactions (own-режим). */
+    /** Transaction log in dci_vault_transactions (own mode). */
     private void logTx(OfflinePlayer actor, OfflinePlayer target, String action, double amount) {
         try {
             DatabaseManager db = plugin.getDatabaseManager();
@@ -281,20 +281,20 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
                 return false;
         }
 
-        sender.sendMessage(colorize(msg("economy.players-only", "&c[DCI] &cТолько для игроков!")));
+        sender.sendMessage(colorize(msg("economy.players-only", "&c[DCI] &cPlayers only!")));
         return true;
     }
 
     private boolean requireEconomy(CommandSender sender) {
         if (!vaultEnabled) {
             sender.sendMessage(colorize(msg("economy.economy-not-loaded",
-                    "&c[DCI] &cЭкономика не подключена! Установите Vault + плагин экономики.")));
+                    "&c[DCI] &cThe economy is not connected! Install Vault + an economy plugin.")));
             return false;
         }
         return true;
     }
 
-    /** Число >= 0 или null, если некорректно. */
+    /** A number >= 0 or null, if it is invalid. */
     private Double parseAmount(String raw) {
         try {
             double value = Double.parseDouble(raw.replace(',', '.'));
@@ -310,35 +310,35 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
     private boolean handleBalance(CommandSender sender, String[] args) {
         if (!requireEconomy(sender)) return true;
 
-        // Свой баланс
+        // Your own balance
         if (args.length < 1) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(colorize(msg("economy.players-only", "&c[DCI] &cТолько для игроков!")));
+                sender.sendMessage(colorize(msg("economy.players-only", "&c[DCI] &cPlayers only!")));
                 return true;
             }
             Player player = (Player) sender;
             player.sendMessage(colorize(msg("economy.balance-own",
-                    "&a[DCI] &aВаш баланс: &e{balance}")
+                    "&a[DCI] &aYour balance: &e{balance}")
                     .replace("{balance}", formatMoney(bal(player)))));
             return true;
         }
 
-        // Чужой баланс
+        // Someone else's balance
         if (!sender.hasPermission("dci.balance.others")) {
-            sender.sendMessage(colorize(msg("economy.no-permission", "&c[DCI] &cНет прав!")));
+            sender.sendMessage(colorize(msg("economy.no-permission", "&c[DCI] &cNo permission!")));
             return true;
         }
 
         OfflinePlayer target = resolveTarget(args[0]);
         if (target == null) {
             sender.sendMessage(colorize(msg("economy.player-not-found",
-                    "&c[DCI] &cИгрок '&e{player}&c' не найден.").replace("{player}", args[0])));
+                    "&c[DCI] &cPlayer '&e{player}&c' not found.").replace("{player}", args[0])));
             return true;
         }
 
         String name = target.getName() != null ? target.getName() : args[0];
         sender.sendMessage(colorize(msg("economy.balance-others",
-                "&a[DCI] &aБаланс игрока &e{player}&a: &e{balance}")
+                "&a[DCI] &aBalance of the player &e{player}&a: &e{balance}")
                 .replace("{player}", name)
                 .replace("{balance}", formatMoney(bal(target)))));
         return true;
@@ -350,71 +350,71 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
         if (!requireEconomy(player)) return true;
 
         if (!payEnabled) {
-            player.sendMessage(colorize(msg("economy.pay-disabled", "&c[DCI] &cПереводы отключены!")));
+            player.sendMessage(colorize(msg("economy.pay-disabled", "&c[DCI] &cTransfers are disabled!")));
             return true;
         }
         if (args.length < 2) {
             player.sendMessage(colorize(msg("economy.pay-usage",
-                    "&c[DCI] &cИспользование: /pay <игрок> <сумма>")));
+                    "&c[DCI] &cUsage: /pay <player> <amount>")));
             return true;
         }
 
         Player target = Bukkit.getPlayerExact(args[0]);
         if (target == null) {
-            player.sendMessage(colorize(msg("economy.pay-offline", "&c[DCI] &cИгрок должен быть онлайн!")));
+            player.sendMessage(colorize(msg("economy.pay-offline", "&c[DCI] &cThe player must be online!")));
             return true;
         }
         if (target.getUniqueId().equals(player.getUniqueId())) {
-            player.sendMessage(colorize(msg("economy.pay-self", "&c[DCI] &cНельзя переводить самому себе!")));
+            player.sendMessage(colorize(msg("economy.pay-self", "&c[DCI] &cYou cannot transfer to yourself!")));
             return true;
         }
 
         Double amount = parseAmount(args[1]);
         if (amount == null || amount < minPay) {
             player.sendMessage(colorize(msg("economy.pay-min",
-                    "&c[DCI] &cМинимальная сумма перевода: &e{min}")
+                    "&c[DCI] &cMinimum transfer amount: &e{min}")
                     .replace("{min}", formatMoney(minPay))));
             return true;
         }
         if (!hasMoney(player, amount)) {
             player.sendMessage(colorize(msg("economy.insufficient-funds",
-                    "&c[DCI] &cНедостаточно средств! Нужно: &e{price} &c| У вас: &e{balance}")
+                    "&c[DCI] &cInsufficient funds! Needed: &e{price} &c| You have: &e{balance}")
                     .replace("{price}", formatMoney(amount))
                     .replace("{balance}", formatMoney(bal(player)))));
             return true;
         }
 
         if (!withdrawOp(player, amount)) {
-            player.sendMessage(colorize(msg("economy.transaction-error", "&c[DCI] &cОшибка транзакции!")));
+            player.sendMessage(colorize(msg("economy.transaction-error", "&c[DCI] &cTransaction error!")));
             return true;
         }
         if (!depositOp(target, amount)) {
-            depositOp(player, amount); // откат при ошибке зачисления
-            player.sendMessage(colorize(msg("economy.transaction-error", "&c[DCI] &cОшибка транзакции!")));
+            depositOp(player, amount); // rollback if the crediting fails
+            player.sendMessage(colorize(msg("economy.transaction-error", "&c[DCI] &cTransaction error!")));
             return true;
         }
 
         player.sendMessage(colorize(msg("economy.pay-sent",
-                "&a[DCI] &aВы перевели &e{amount} &aигроку &e{player}&a. Баланс: &e{balance}")
+                "&a[DCI] &aYou transferred &e{amount} &ato the player &e{player}&a. Balance: &e{balance}")
                 .replace("{amount}", formatMoney(amount))
                 .replace("{player}", target.getName())
                 .replace("{balance}", formatMoney(bal(player)))));
         target.sendMessage(colorize(msg("economy.pay-received",
-                "&a[DCI] &e{player} &aперевёл вам &e{amount}&a. Баланс: &e{balance}")
+                "&a[DCI] &e{player} &atransferred you &e{amount}&a. Balance: &e{balance}")
                 .replace("{player}", player.getName())
                 .replace("{amount}", formatMoney(amount))
                 .replace("{balance}", formatMoney(bal(target)))));
         return true;
     }
 
-    // ===== /eco (админ) =====
+    // ===== /eco (admin) =====
 
     private boolean handleEco(CommandSender sender, String[] args) {
         if (!requireEconomy(sender)) return true;
 
         if (args.length < 2) {
             sender.sendMessage(colorize(msg("economy.eco-usage",
-                    "&c[DCI] &cИспользование: /eco <give|take|set|reset> <игрок> [сумма]")));
+                    "&c[DCI] &cUsage: /eco <give|take|set|reset> <player> [amount]")));
             return true;
         }
 
@@ -422,16 +422,16 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
         OfflinePlayer target = resolveTarget(args[1]);
         if (target == null) {
             sender.sendMessage(colorize(msg("economy.player-not-found",
-                    "&c[DCI] &cИгрок '&e{player}&c' не найден.").replace("{player}", args[1])));
+                    "&c[DCI] &cPlayer '&e{player}&c' not found.").replace("{player}", args[1])));
             return true;
         }
         String name = target.getName() != null ? target.getName() : args[1];
 
-        // /eco reset <игрок> — без суммы
+        // /eco reset <player> — without an amount
         if (action.equals("reset")) {
             setBalanceOp(target, 0);
             sender.sendMessage(colorize(msg("economy.eco-done",
-                    "&a[DCI] &aБаланс &e{player}&a: &e{balance}")
+                    "&a[DCI] &aBalance &e{player}&a: &e{balance}")
                     .replace("{player}", name)
                     .replace("{balance}", formatMoney(0))));
             return true;
@@ -439,13 +439,13 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
 
         if (args.length < 3) {
             sender.sendMessage(colorize(msg("economy.eco-usage",
-                    "&c[DCI] &cИспользование: /eco <give|take|set|reset> <игрок> [сумма]")));
+                    "&c[DCI] &cUsage: /eco <give|take|set|reset> <player> [amount]")));
             return true;
         }
 
         Double amount = parseAmount(args[2]);
         if (amount == null) {
-            sender.sendMessage(colorize("&c[DCI] &cНеверная сумма"));
+            sender.sendMessage(colorize("&c[DCI] &cInvalid amount"));
             return true;
         }
 
@@ -454,7 +454,7 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
                 depositOp(target, amount);
                 break;
             case "take":
-                // нельзя увести в минус больше, чем есть
+                // you cannot go below zero by more than what there is
                 withdrawOp(target, Math.min(amount, bal(target)));
                 break;
             case "set":
@@ -462,12 +462,12 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
                 break;
             default:
                 sender.sendMessage(colorize(msg("economy.eco-usage",
-                        "&c[DCI] &cИспользование: /eco <give|take|set|reset> <игрок> [сумма]")));
+                        "&c[DCI] &cUsage: /eco <give|take|set|reset> <player> [amount]")));
                 return true;
         }
 
         sender.sendMessage(colorize(msg("economy.eco-done",
-                "&a[DCI] &aБаланс &e{player}&a: &e{balance}")
+                "&a[DCI] &aBalance &e{player}&a: &e{balance}")
                 .replace("{player}", name)
                 .replace("{balance}", formatMoney(bal(target)))));
         return true;
@@ -482,19 +482,19 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
         }
     }
 
-    /** Онлайн-игрок по имени, иначе закэшированный offline-игрок, иначе null. */
+    /** The online player by name, otherwise the cached offline player, otherwise null. */
     private OfflinePlayer resolveTarget(String name) {
         Player online = Bukkit.getPlayerExact(name);
         if (online != null) return online;
         try {
             return Bukkit.getOfflinePlayerIfCached(name);
         } catch (NoSuchMethodError e) {
-            return null; // не-Paper сервер
+            return null; // a non-Paper server
         }
     }
 
 
-    // ===== СТАРТОВЫЙ БАЛАНС =====
+    // ===== STARTING BALANCE =====
 
     private void loadStartingPaid() {
         startingPaidFile = new File(folder, "starting-paid.yml");
@@ -517,8 +517,8 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
         Player player = event.getPlayer();
 
         if (ownStorage) {
-            // Стартовый баланс сразу в БД: строка создаётся с нужной суммой
-            // только если её ещё нет — повторно не выдаётся
+            // The starting balance goes straight into the database: the row is created with the needed amount
+            // only if it does not exist yet — it is not given again
             DatabaseManager db = plugin.getDatabaseManager();
             String insert = isMySqlDb
                     ? "INSERT IGNORE INTO dci_vault_balances (uuid, name, balance) VALUES (?,?,?)"
@@ -528,7 +528,7 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
             if (rows > 0) {
                 logTx(null, player, "starting", startingBalance);
                 player.sendMessage(colorize(msg("economy.starting-balance-given",
-                        "&a[DCI] &aВам начислен стартовый баланс: &e{amount}")
+                        "&a[DCI] &aYou have been credited with the starting balance: &e{amount}")
                         .replace("{amount}", formatMoney(startingBalance))));
             }
             return;
@@ -542,7 +542,7 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
         startingPaid.set("paid." + player.getUniqueId(), player.getName());
         saveStartingPaid();
         player.sendMessage(colorize(msg("economy.starting-balance-given",
-                "&a[DCI] &aВам начислен стартовый баланс: &e{amount}")
+                "&a[DCI] &aYou have been credited with the starting balance: &e{amount}")
                 .replace("{amount}", formatMoney(startingBalance))));
     }
 
@@ -611,32 +611,32 @@ public class vaultModule extends Module implements Listener, CommandExecutor, Ta
         }
     }
 
-    // ===== PUBLIC API (для других Java-модулей) =====
+    // ===== PUBLIC API (for other Java modules) =====
 
-    /** Включена ли экономика (Vault или собственная БД). */
+    /** Whether the economy is enabled (Vault or the own database). */
     public boolean isEconomyEnabled() {
         return vaultEnabled && (ownStorage || (economy != null && economy.isEnabled()));
     }
 
-    /** Баланс игрока (0, если экономика выключена). */
+    /** The player's balance (0, if the economy is disabled). */
     public double getBalance(Player player) {
         if (!isEconomyEnabled()) return 0;
         return bal(player);
     }
 
-    /** Снять деньги. true — успех. */
+    /** Withdraw money. true — success. */
     public boolean withdraw(Player player, double amount, String reason) {
         if (!isEconomyEnabled()) return false;
         return withdrawOp(player, amount);
     }
 
-    /** Начислить деньги. true — успех. */
+    /** Credit money. true — success. */
     public boolean deposit(Player player, double amount, String reason) {
         if (!isEconomyEnabled()) return false;
         return depositOp(player, amount);
     }
 
-    /** Форматированная сумма ("$1,000"). */
+    /** The formatted amount ("$1,000"). */
     public String format(double amount) {
         if (!isEconomyEnabled()) return String.valueOf(amount);
         return formatMoney(amount);

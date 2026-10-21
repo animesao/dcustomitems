@@ -1,5 +1,5 @@
 # ============================================
-# ДЕТОНИРУЮЩАЯ КИРКА - Разбивает блоки + спешка
+# DETONATING PICKAXE - Breaks blocks + haste
 # ============================================
 
 breaker-pickaxe:
@@ -10,7 +10,7 @@ breaker-pickaxe:
 
   item:
     type: DIAMOND_PICKAXE
-    title: '&a⛏ &fДетонирующая Кирка'
+    title: '&a⛏ &fDetonating Pickaxe'
     glowing: true
     unbreakable: true
     item-model: "breaker_pickaxe"
@@ -22,11 +22,11 @@ breaker-pickaxe:
   lore:
     - ''
     - ' &a━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Кирка с детонирующей силой'
+    - ' &7Pickaxe with a detonating force'
     - ' &a━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &a⛏ &fЛКМ: Разбить блок'
-    - ' &e⚡ &fПКМ: Спешка'
+    - ' &a⛏ &fLeft Click: Break a block'
+    - ' &e⚡ &fRight Click: Haste'
     - ''
 
   click-cooldown: 1000

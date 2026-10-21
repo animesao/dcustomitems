@@ -2,20 +2,20 @@ import me.dcplugin.dcustomitems.api.placeholders.CustomPlaceholder;
 import org.bukkit.entity.Player;
 
 /**
- * Плейсхолдер %kills% - количество убийств
+ * %kills% placeholder - kill count
  * 
- * Положи этот файл в plugins/DC-CustomItems/items/
- * Сделай /ci reload
- * Используй %kills% в любом тексте!
+ * Put this file in plugins/DC-CustomItems/items/
+ * Run /ci reload
+ * Use %kills% in any text!
  * 
- * Примеры использования:
- * - "Ваши убийства: %kills%"
- * - В title: "Убийства: %kills%"
- * - ВActionBar: "Убийств: %kills%"
+ * Usage examples:
+ * - "Your kills: %kills%"
+ * - In title: "Kills: %kills%"
+ * - In ActionBar: "Kills: %kills%"
  */
 public class KillsPlaceholder extends CustomPlaceholder {
 
-    // Временное хранилище (в реальном плагине - база данных)
+    // Temporary storage (in a real plugin - a database)
     private static final java.util.Map<java.util.UUID, Integer> kills = new java.util.HashMap<>();
 
     public KillsPlaceholder() {
@@ -29,21 +29,21 @@ public class KillsPlaceholder extends CustomPlaceholder {
     }
 
     /**
-     * Добавить убийство (вызывать при убийстве моба/игрока)
+     * Add a kill (call when a mob/player is killed)
      */
     public static void addKill(Player player) {
         kills.merge(player.getUniqueId(), 1, Integer::sum);
     }
 
     /**
-     * Получить количество убийств
+     * Get the kill count
      */
     public static int getKills(Player player) {
         return kills.getOrDefault(player.getUniqueId(), 0);
     }
 
     /**
-     * Сбросить убийства
+     * Reset kills
      */
     public static void resetKills(Player player) {
         kills.remove(player.getUniqueId());

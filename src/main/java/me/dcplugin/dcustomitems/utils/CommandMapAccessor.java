@@ -10,14 +10,14 @@ import java.util.Map;
 import java.util.logging.Level;
 
 /**
- * Доступ к Bukkit CommandMap и его карте известных команд.
+ * Access to the Bukkit CommandMap and its map of known commands.
  *
- * Bukkit не даёт публичного API для этого, поэтому используется рефлексия.
- * Раньше каждая реализация искала поле commandMap в классе {@code Bukkit},
- * где его нет (поле лежит в CraftServer) — команды модулей и Java-API
- * просто не регистрировались.
+ * Bukkit provides no public API for this, so reflection is used.
+ * Previously every implementation looked for the commandMap field in the
+ * {@code Bukkit} class, where it does not exist (the field lives in
+ * CraftServer) — the module and Java API commands simply were not registered.
  *
- * Результат кэшируется: рефлексия понадобилась один раз.
+ * The result is cached: the reflection is only needed once.
  */
 public final class CommandMapAccessor {
 
@@ -28,7 +28,7 @@ public final class CommandMapAccessor {
     private static boolean resolved;
 
     /**
-     * CommandMap сервера (null, если достучаться не удалось).
+     * The server's CommandMap (null if it could not be obtained).
      */
     public static synchronized CommandMap getCommandMap() {
         if (resolved) return commandMap;
@@ -49,27 +49,27 @@ public final class CommandMapAccessor {
                     return map;
                 }
             } catch (Exception ignored) {
-                // Переходим к следующему способу
+                // Fall through to the next approach
             }
         }
 
-        // 2) Поле commandMap в классе сервера (Spigot/CraftServer).
-        //    Поле нестатическое — читать его нужно у экземпляра сервера.
+        // 2) The commandMap field in the server class (Spigot/CraftServer).
+        //    The field is not static — it has to be read on the server instance.
         if (server != null) {
             CommandMap map = readCommandMapField(server.getClass(), server);
             if (map != null) return map;
         }
 
-        // 3) Исторический вариант: статическое поле в самом классе Bukkit
+        // 3) Historical variant: a static field in the Bukkit class itself
         try {
             CommandMap map = readCommandMapField(Bukkit.class, null);
             if (map != null) return map;
         } catch (Exception ignored) {
-            // Переходим к следующему способу
+            // Fall through to the next approach
         }
 
         Bukkit.getLogger().log(Level.WARNING,
-                "[DC-CustomItems] Не удалось получить CommandMap — динамические команды не будут зарегистрированы");
+                "[DC-CustomItems] Could not obtain the CommandMap - dynamic commands will not be registered");
         return null;
     }
 
@@ -85,17 +85,17 @@ public final class CommandMapAccessor {
     }
 
     /**
-     * Карта «известных» команд CommandMap.
+     * The map of the "known" commands of the CommandMap.
      *
-     * Возвращает null, если достучаться не удалось — раньше в этом случае
-     * возвращалась пустая копия, и команды модулей формально «удалялись»,
-     * но оставались в CommandMap навсегда.
+     * Returns null if it could not be obtained — previously an empty copy was
+     * returned in that case, and the module commands were formally "removed"
+     * but stayed in the CommandMap forever.
      */
     public static synchronized Map<String, Command> getKnownCommands(CommandMap map) {
         if (map == null) return null;
         if (knownCommands != null) return knownCommands;
 
-        // 1) Стандартное поле SimpleCommandMap#knownCommands
+        // 1) The standard field SimpleCommandMap#knownCommands
         try {
             Field field = map.getClass().getDeclaredField("knownCommands");
             field.setAccessible(true);
@@ -105,10 +105,10 @@ public final class CommandMapAccessor {
                 return knownCommands;
             }
         } catch (Exception ignored) {
-            // Переходим к перебору полей
+            // Fall through to the field enumeration
         }
 
-        // 2) Перебор всех полей: Paper/Purpur могут переименовать поле
+        // 2) Enumeration of all fields: Paper/Purpur may rename the field
         for (Field field : map.getClass().getDeclaredFields()) {
             if (!Map.class.isAssignableFrom(field.getType())) continue;
             try {
@@ -122,12 +122,12 @@ public final class CommandMapAccessor {
                     }
                 }
             } catch (Exception ignored) {
-                // Следующее поле
+                // The next field
             }
         }
 
         Bukkit.getLogger().log(Level.WARNING,
-                "[DC-CustomItems] Не удалось получить knownCommands — команды не будут сняты при reload");
+                "[DC-CustomItems] Could not obtain knownCommands - commands will not be removed on reload");
         return null;
     }
 
@@ -142,7 +142,7 @@ public final class CommandMapAccessor {
     }
 
     /**
-     * Сбросить кэш (на случай смены сервера в тестах).
+     * Reset the cache (in case the server is swapped in the tests).
      */
     public static synchronized void reset() {
         commandMap = null;

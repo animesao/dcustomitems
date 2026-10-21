@@ -6,13 +6,13 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
 /**
- * Событие периодического эффекта Java API-предмета (onPeriodic).
+ * Event fired for the periodic effect of a Java API item (onPeriodic).
  *
- * Стреляет перед каждым вызовом {@code onPeriodic} у экипированного
- * Java-предмета (глобальный чекер экипировки). YAML-предметы периодических
- * эффектов не имеют.
+ * Fired before every {@code onPeriodic} invocation of an equipped
+ * Java item (the global equipped-items checker). YAML items have
+ * no periodic effects.
  *
- * Если событие отменено — конкретный вызов {@code onPeriodic} пропускается.
+ * If the event is cancelled the specific {@code onPeriodic} call is skipped.
  */
 public class CustomItemPeriodicEvent extends CustomItemEvent implements Cancellable {
 
@@ -26,7 +26,7 @@ public class CustomItemPeriodicEvent extends CustomItemEvent implements Cancella
         this.interval = interval;
     }
 
-    /** Интервал предмета (тики), см. getPeriodicInterval(). */
+    /** The item interval (in ticks), see getPeriodicInterval(). */
     public long getInterval() {
         return interval;
     }

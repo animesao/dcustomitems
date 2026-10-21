@@ -18,15 +18,15 @@ import org.bukkit.util.Vector;
 import java.util.*;
 
 /**
- * Утилитный класс для работы с кастомными предметами.
+ * Utility class for working with custom items.
  *
- * Предоставляет статические методы для:
- * - Создания предметов
- * - Эффектов зелий
- * - Частиц и звуков
- * - Сообщений и заголовков
- * - Телепортации и урона
- * - Проверки предметов
+ * Provides static methods for:
+ * - Creating items
+ * - Potion effects
+ * - Particles and sounds
+ * - Messages and titles
+ * - Teleportation and damage
+ * - Item checks
  */
 public class ItemAPI {
 
@@ -34,17 +34,17 @@ public class ItemAPI {
     private static NamespacedKey itemModelKey;
 
     /**
-     * Namespace плагина для ключей модификаторов атрибутов.
+     * Plugin namespace used for the attribute modifier keys.
      *
-     * Он равен plugin.getName().toLowerCase() — то есть для текущего
-     * plugin.yml это "dc-customitems", а не "dcustomitems". Ручное значение
-     * давало ключи в другом namespace, и модификатор предмета не совпадал
-     * с модификатором, который вешает AttributeManager.
+     * It equals plugin.getName().toLowerCase() — for the current
+     * plugin.yml that is "dc-customitems", not "dcustomitems". A hardcoded value
+     * produced keys in a different namespace, so the item modifier did not match
+     * the modifier applied by AttributeManager.
      */
     private static String pluginNamespace = "dcustomitems";
 
     /**
-     * Инициализация ключей (вызывается при загрузке плагина).
+     * Initialises the keys (called when the plugin is loaded).
      */
     public static void init(org.bukkit.plugin.java.JavaPlugin plugin) {
         customItemKey = new NamespacedKey(plugin, "custom_item_id");
@@ -52,10 +52,10 @@ public class ItemAPI {
         pluginNamespace = plugin.getName().toLowerCase(java.util.Locale.ROOT);
     }
 
-    // ===== СОЗДАНИЕ ПРЕДМЕТОВ =====
+    // ===== ITEM CREATION =====
 
     /**
-     * Создаёт ItemStack из AbstractCustomItem.
+     * Creates an ItemStack from an AbstractCustomItem.
      */
     public static ItemStack createItem(AbstractCustomItem item) {
         ItemStack stack = new ItemStack(item.getMaterial(), item.getAmount());
@@ -63,10 +63,10 @@ public class ItemAPI {
 
         if (meta == null) return stack;
 
-        // Название
+        // Display name
         meta.setDisplayName(ColorUtils.colorize(item.getDisplayName()));
 
-        // Описание
+        // Description
         List<String> lore = item.getLore();
         if (!lore.isEmpty()) {
             List<String> coloredLore = new ArrayList<>();
@@ -76,13 +76,13 @@ public class ItemAPI {
             meta.setLore(coloredLore);
         }
 
-        // Неломаемость
+        // Unbreakable
         meta.setUnbreakable(item.isUnbreakable());
 
-        // Свечение
+        // Enchantment glint
         if (item.isGlowing()) {
-            // UNBREAKING не даёт бонуса. SHARPNESS добавил бы +1 к урону
-            // и ломал бы баланс предметов.
+            // UNBREAKING gives no bonus. SHARPNESS would add +1 damage
+            // and would break the item balance.
             meta.addEnchant(Enchantment.UNBREAKING, 1, true);
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
@@ -98,7 +98,7 @@ public class ItemAPI {
             meta.setCustomModelData(item.getCustomModelData());
         }
 
-        // Кастомный ID
+        // Custom ID
         meta.getPersistentDataContainer().set(customItemKey, PersistentDataType.STRING, item.getId());
 
         stack.setItemMeta(meta);
@@ -106,17 +106,17 @@ public class ItemAPI {
     }
 
     /**
-     * Создаёт предмет с атрибутами.
+     * Creates an item with attribute modifiers.
      */
     public static ItemStack createItem(AbstractCustomItem item, Map<Attribute, Double> attributes) {
         ItemStack stack = createItem(item);
         ItemMeta meta = stack.getItemMeta();
         if (meta != null && attributes != null && !attributes.isEmpty()) {
             for (Map.Entry<Attribute, Double> entry : attributes.entrySet()) {
-                // Ключ модификатора должен быть уникальным для предмета:
-                // addAttributeModifier отклоняет дубликаты ключа, а общий
-                // ключ на все предметы ронял бы создание второго предмета.
-                // Старый конструктор с UUID помечен как deprecated для удаления.
+                // The modifier key must be unique per item:
+                // addAttributeModifier rejects duplicate keys, and a shared
+                // key for all items would break the creation of the second item.
+                // The old constructor taking a UUID is deprecated and slated for removal.
                 meta.addAttributeModifier(entry.getKey(),
                     new AttributeModifier(modifierKey(item.getId(), entry.getKey()), entry.getValue(),
                         AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.ANY));
@@ -127,9 +127,9 @@ public class ItemAPI {
     }
 
     /**
-     * Ключ модификатора атрибута в namespace плагина.
-     * Символы вне [a-z0-9._-] заменяются на "_" — иначе NamespacedKey
-     * бросил бы IllegalArgumentException.
+     * Attribute modifier key inside the plugin namespace.
+     * Characters outside [a-z0-9._-] are replaced with "_" — otherwise NamespacedKey
+     * would throw an IllegalArgumentException.
      */
     private static org.bukkit.NamespacedKey modifierKey(String itemId, Attribute attribute) {
         org.bukkit.NamespacedKey attributeKey = attribute.getKey();
@@ -146,10 +146,10 @@ public class ItemAPI {
         return new org.bukkit.NamespacedKey(pluginNamespace, safe.toString());
     }
 
-    // ===== ПРОВЕРКИ =====
+    // ===== CHECKS =====
 
     /**
-     * Проверяет, является ли ItemStack кастомным предметом.
+     * Checks whether an ItemStack is a custom item.
      */
     public static boolean isCustomItem(ItemStack item) {
         if (item == null || item.getType() == Material.AIR) return false;
@@ -159,7 +159,7 @@ public class ItemAPI {
     }
 
     /**
-     * Получает ID кастомного предмета.
+     * Gets the ID of a custom item.
      */
     public static String getCustomItemId(ItemStack item) {
         if (!isCustomItem(item)) return null;
@@ -167,7 +167,7 @@ public class ItemAPI {
     }
 
     /**
-     * Проверяет, держит ли игрок предмет с указанным ID.
+     * Checks whether the player holds an item with the given ID.
      */
     public static boolean isHolding(Player player, String itemId) {
         ItemStack main = player.getInventory().getItemInMainHand();
@@ -177,62 +177,62 @@ public class ItemAPI {
     }
 
     /**
-     * Проверяет, экипирован ли предмет (в руке или броне).
+     * Checks whether an item is equipped (in hand or as armour).
      */
     public static boolean isEquipped(Player player, String itemId) {
-        // getContents() уже включает броню — отдельный проход не нужен.
+        // getContents() already includes armour — no separate pass is needed.
         for (ItemStack item : player.getInventory().getContents()) {
             if (isCustomItem(item) && itemId.equals(getCustomItemId(item))) return true;
         }
         return false;
     }
 
-    // ===== ЭФФЕКТЫ =====
+    // ===== EFFECTS =====
 
     /**
-     * Добавляет эффект зелья игроку.
+     * Adds a potion effect to the player.
      *
-     * @param player Игрок
-     * @param type Тип эффекта
-     * @param duration Длительность в секундах
-     * @param amplifier Уровень (1 = обычный, 2 = усиленный и т.д)
+     * @param player the player
+     * @param type the effect type
+     * @param duration duration in seconds
+     * @param amplifier the level (1 = normal, 2 = amplified, etc.)
      */
     public static void effect(Player player, PotionEffectType type, int duration, int amplifier) {
         player.addPotionEffect(new PotionEffect(type, duration * 20, amplifier - 1, false, false));
     }
 
     /**
-     * Добавляет эффект скорости.
+     * Adds the speed effect.
      */
     public static void speed(Player player, int duration, int level) {
         effect(player, PotionEffectType.SPEED, duration, level);
     }
 
     /**
-     * Добавляет эффект силы.
+     * Adds the strength effect.
      */
     public static void strength(Player player, int duration, int level) {
         effect(player, PotionEffectType.STRENGTH, duration, level);
     }
 
     /**
-     * Делает игрока невидимым.
+     * Makes the player invisible.
      */
     public static void vanish(Player player, int seconds) {
         effect(player, PotionEffectType.INVISIBILITY, seconds, 1);
     }
 
     /**
-     * Делает игрока светящимся.
+     * Makes the player glowing.
      */
     public static void glow(Player player, int seconds) {
         effect(player, PotionEffectType.GLOWING, seconds, 1);
     }
 
     /**
-     * Исцеляет игрока.
+     * Heals the player.
      *
-     * @param amount Количество сердец (1 сердце = 2 HP)
+     * @param amount amount of hearts (1 heart = 2 HP)
      */
     public static void heal(Player player, double amount) {
         if (player.getAttribute(Attribute.MAX_HEALTH) != null) {
@@ -242,14 +242,14 @@ public class ItemAPI {
     }
 
     /**
-     * Наносит урон игроку.
+     * Damages the player.
      */
     public static void damage(Player player, double amount) {
         player.damage(amount);
     }
 
     /**
-     * Наносит AoE урон по области.
+     * Deals AoE damage in an area.
      */
     public static void damageNearby(Player player, double amount, double radius) {
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(radius, radius, radius)) {
@@ -260,7 +260,7 @@ public class ItemAPI {
     }
 
     /**
-     * Исцеляет ближайших игроков.
+     * Heals the nearest players.
      */
     public static void healNearby(Player player, double amount, double radius) {
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(radius, radius, radius)) {
@@ -274,24 +274,24 @@ public class ItemAPI {
         }
     }
 
-    // ===== ЧАСТИЦЫ И ЗВУКИ =====
+    // ===== PARTICLES AND SOUNDS =====
 
     /**
-     * Спавнит частицы у игрока.
+     * Spawns particles at the player.
      */
     public static void particles(Player player, Particle particle, int count) {
         player.getWorld().spawnParticle(particle, player.getLocation().add(0, 1, 0), count);
     }
 
     /**
-     * Спавнит частицы в указанной локации.
+     * Spawns particles at the given location.
      */
     public static void particlesAt(Location loc, Particle particle, int count) {
         loc.getWorld().spawnParticle(particle, loc, count);
     }
 
     /**
-     * Спавнит частицы с кастомным offset.
+     * Spawns particles with a custom offset.
      */
     public static void particlesCustom(Player player, Particle particle, int count,
                                         double offsetX, double offsetY, double offsetZ) {
@@ -300,23 +300,23 @@ public class ItemAPI {
     }
 
     /**
-     * Воспроизводит звук для игрока.
+     * Plays a sound for the player.
      */
     public static void sound(Player player, Sound sound, float volume, float pitch) {
         player.playSound(player.getLocation(), sound, volume, pitch);
     }
 
     /**
-     * Воспроизводит звук в локации для всех рядом.
+     * Plays a sound at a location for everyone nearby.
      */
     public static void soundAt(Location loc, Sound sound, float volume, float pitch) {
         loc.getWorld().playSound(loc, sound, volume, pitch);
     }
 
-    // ===== СООБЩЕНИЯ =====
+    // ===== MESSAGES =====
 
     /**
-     * Отправляет сообщение игроку (с цветовыми кодами + PlaceholderAPI).
+     * Sends a message to the player (with colour codes + PlaceholderAPI).
      */
     public static void message(Player player, String msg) {
         if (msg != null && !msg.trim().isEmpty()) {
@@ -325,7 +325,7 @@ public class ItemAPI {
     }
 
     /**
-     * Отправляет заголовок (большой текст по центру) с PlaceholderAPI.
+     * Sends a title (large centred text) with PlaceholderAPI.
      */
     public static void title(Player player, String title, String subtitle) {
         String[] processed = ColorUtils.processTitle(player, title, subtitle);
@@ -333,7 +333,7 @@ public class ItemAPI {
     }
 
     /**
-     * Отправляет action bar (над хотбаром) с PlaceholderAPI.
+     * Sends an action bar message (above the hotbar) with PlaceholderAPI.
      */
     public static void actionbar(Player player, String text) {
         player.spigot().sendMessage(
@@ -343,7 +343,7 @@ public class ItemAPI {
     }
 
     /**
-     * Объявление всем игрокам (с PlaceholderAPI для каждого игрока).
+     * Broadcasts a message to all players (with PlaceholderAPI for each player).
      */
     public static void broadcast(String msg) {
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -351,17 +351,17 @@ public class ItemAPI {
         }
     }
 
-    // ===== ТЕЛЕПОРТАЦИЯ =====
+    // ===== TELEPORTATION =====
 
     /**
-     * Телепортирует игрока по координатам.
+     * Teleports the player to the given coordinates.
      */
     public static void teleport(Player player, double x, double y, double z) {
         player.teleport(new Location(player.getWorld(), x, y, z));
     }
 
     /**
-     * Телепортирует игрока относительно текущей позиции.
+     * Teleports the player relative to the current position.
      */
     public static void teleportRelative(Player player, double dx, double dy, double dz) {
         Location loc = player.getLocation();
@@ -369,7 +369,7 @@ public class ItemAPI {
     }
 
     /**
-     * Телепортирует к ближайшему игроку.
+     * Teleports the player to the nearest player.
      */
     public static void teleportToNearest(Player player, double maxRange) {
         Player nearest = null;
@@ -377,8 +377,8 @@ public class ItemAPI {
 
         for (Player other : Bukkit.getOnlinePlayers()) {
             if (other == player) continue;
-            // Расстояние между разными мирами не определено — Location.distance()
-            // бросает IllegalArgumentException. Сравниваем только свой мир.
+            // The distance between different worlds is undefined — Location.distance()
+            // throws an IllegalArgumentException. Only compare players in the same world.
             if (!other.getWorld().equals(player.getWorld())) continue;
             double dist = player.getLocation().distanceSquared(other.getLocation());
             if (dist < nearestDist && dist <= maxRange * maxRange) {
@@ -392,10 +392,10 @@ public class ItemAPI {
         }
     }
 
-    // ===== БОЕВЫЕ =====
+    // ===== COMBAT =====
 
     /**
-     * Удар молнией в месте, куда смотрит игрок.
+     * Strikes lightning where the player is looking.
      */
     public static void lightningForward(Player player, int distance) {
         Location eyeLoc = player.getEyeLocation();
@@ -405,22 +405,22 @@ public class ItemAPI {
     }
 
     /**
-     * Удар молнией в указанной локации.
+     * Strikes lightning at the given location.
      */
     public static void lightning(Location loc) {
         loc.getWorld().strikeLightning(loc);
     }
 
     /**
-     * Отбросить ближайших игроков.
+     * Knocks back the nearest players.
      */
     public static void knockbackNearby(Player player, double radius) {
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(radius, radius, radius)) {
             if (entity instanceof Player && entity != player) {
                 Vector dir = entity.getLocation().toVector()
                     .subtract(player.getLocation().toVector());
-                // Нулевой вектор после normalize() даёт NaN — скорость станет
-                // некорректной и игрок «залипнет». При нуле — просто подброс.
+                // A zero vector after normalize() produces NaN — the velocity becomes
+                // invalid and the player gets "stuck". On zero — simply launch upwards.
                 if (dir.lengthSquared() < 1.0E-6) {
                     entity.setVelocity(entity.getVelocity().add(new Vector(0, 0.5, 0)));
                 } else {
@@ -432,7 +432,7 @@ public class ItemAPI {
     }
 
     /**
-     * Подбросить ближайших игроков.
+     * Launches the nearest players upwards.
      */
     public static void launchNearby(Player player, double power, double radius) {
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(radius, radius, radius)) {
@@ -442,12 +442,12 @@ public class ItemAPI {
         }
     }
 
-    // ===== ПРЕДМЕТЫ =====
+    // ===== ITEMS =====
 
     /**
-     * Выдаёт предмет игроку.
+     * Gives an item to the player.
      *
-     * Если инвентарь полон — остаток выпадает на землю, а не пропадает.
+     * If the inventory is full, the remainder drops on the ground instead of vanishing.
      */
     public static void giveItem(Player player, Material material, int amount) {
         if (player == null || material == null || amount <= 0) return;
@@ -458,10 +458,10 @@ public class ItemAPI {
     }
 
     /**
-     * Забирает предмет у игрока.
+     * Removes an item from the player.
      *
-     * {@code Inventory#getContents()} возвращает копии стеков, поэтому
-     * изменения нужно записать обратно через {@code setContents}.
+     * {@code Inventory#getContents()} returns copies of the stacks, so the
+     * changes have to be written back with {@code setContents}.
      */
     public static boolean removeItem(Player player, Material material, int amount) {
         if (player == null || material == null || amount <= 0) return false;
@@ -485,30 +485,30 @@ public class ItemAPI {
     }
 
     /**
-     * Выдаёт опыт.
+     * Grants experience points.
      */
     public static void giveExp(Player player, int amount) {
         player.giveExp(amount);
     }
 
     /**
-     * Выдаёт уровни опыта.
+     * Grants experience levels.
      */
     public static void giveLevels(Player player, int amount) {
         player.giveExpLevels(amount);
     }
 
-    // ===== ОГОНЬ =====
+    // ===== FIRE =====
 
     /**
-     * Поджигает игрока.
+     * Sets the player on fire.
      */
     public static void setOnFire(Player player, int ticks) {
         player.setFireTicks(ticks);
     }
 
     /**
-     * Поджигает ближайших игроков.
+     * Sets the nearest players on fire.
      */
     public static void setNearbyOnFire(Player player, int ticks, double radius) {
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(radius, radius, radius)) {

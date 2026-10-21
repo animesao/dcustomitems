@@ -1,5 +1,5 @@
 # ============================================
-# СФЕРА ХАОСА - Случайные эффекты
+# CHAOS ORB - Random effects
 # ============================================
 
 artifact-chaos-orb:
@@ -10,7 +10,7 @@ artifact-chaos-orb:
 
   item:
     type: ENDER_EYE
-    title: '&5[🌀] &fСфера &5Хаоса'
+    title: '&5[🌀] &fOrb &5of Chaos'
     glowing: true
     unbreakable: true
     item-model: "chaos_orb"
@@ -21,13 +21,13 @@ artifact-chaos-orb:
   lore:
     - ''
     - ' &5━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Сфера хаотической энергии'
+    - ' &7Orb of chaotic energy'
     - ' &5━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eСкорость &5II'
+    - ' &e⚡ &fWhile in main hand:'
+    - ' &6┌ &eSpeed &5II'
     - ''
-    - '&5🌀 &fПКМ: Выпустить хаос!'
+    - '&5🌀 &fRight Click: Release chaos!'
     - ''
 
   effects:
@@ -53,7 +53,7 @@ artifact-chaos-orb:
       - 'particles:PORTAL:60'
       - 'particles:EXPLOSION_HUGE:8'
       - 'sound:ENTITY_ENDER_DRAGON_GROWL:1:1'
-      - 'title:&5🌀 &7ХАОС ВЫПУЩЕН!|&5Все враги в панике!:10:40:10'
+      - 'title:&5🌀 &7CHAOS RELEASED!|&5All enemies in panic!:10:40:10'
 
     on_click_left:
       - 'damage_nearby:15:6'

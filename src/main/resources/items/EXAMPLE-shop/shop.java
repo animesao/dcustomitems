@@ -3,15 +3,15 @@ import me.dcplugin.dcustomitems.Main;
 import org.bukkit.entity.Player;
 
 /**
- * 🛒 Модуль Магазина
+ * 🛒 Shop Module
  * 
- * Структура:
+ * Structure:
  * items/shop/
  * ├── config.yml
  * ├── items.yml
  * └── shop.java
  * 
- * Команда: /shop
+ * Command: /shop
  */
 public class shopModule extends Module {
 
@@ -21,24 +21,24 @@ public class shopModule extends Module {
 
     @Override
     protected void onEnable() {
-        // Логика при включении
-        plugin.getLogger().info("[Shop] Магазин включен!");
+        // Logic on enable
+        plugin.getLogger().info("[Shop] The shop is enabled!");
     }
 
     @Override
     protected void onDisable() {
-        // Логика при выключении
-        plugin.getLogger().info("[Shop] Магазин выключен!");
+        // Logic on disable
+        plugin.getLogger().info("[Shop] The shop is disabled!");
     }
 
     /**
-     * Открыть магазин игроку
+     * Open the shop for a player
      */
     public void openShop(Player player) {
-        // Создаём инвентарь
-        org.bukkit.inventory.Inventory menu = plugin.getServer().createInventory(null, 27, "§6Магазин");
+        // Create the inventory
+        org.bukkit.inventory.Inventory menu = plugin.getServer().createInventory(null, 27, "§6Shop");
         
-        // Заполняем фон
+        // Fill the background
         org.bukkit.inventory.ItemStack glass = new org.bukkit.inventory.ItemStack(org.bukkit.Material.GRAY_STAINED_GLASS_PANE);
         org.bukkit.inventory.meta.ItemMeta glassMeta = glass.getItemMeta();
         if (glassMeta != null) {
@@ -49,12 +49,12 @@ public class shopModule extends Module {
             menu.setItem(i, glass);
         }
         
-        // Устанавливаем предметы из items.yml
+        // Set the items from items.yml
         for (String itemId : getAllItemIds()) {
             java.util.Map<String, Object> itemData = getItem(itemId);
             org.bukkit.inventory.ItemStack item = createItemFromData(itemData);
             if (item != null) {
-                // Находим свободный слот
+                // Find a free slot
                 for (int i = 0; i < 27; i++) {
                     if (menu.getItem(i) == null || menu.getItem(i).getType() == org.bukkit.Material.GRAY_STAINED_GLASS_PANE) {
                         menu.setItem(i, item);

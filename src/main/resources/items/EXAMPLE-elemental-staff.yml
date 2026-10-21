@@ -1,5 +1,5 @@
 # ============================================
-# СТИХИЙНЫЙ ПОСОХ - Многоэлементное оружие
+# ELEMENTAL STAFF - Multi-element weapon
 # ============================================
 
 elemental-staff:
@@ -10,7 +10,7 @@ elemental-staff:
 
   item:
     type: BLAZE_ROD
-    title: '&6[🌟] &fСтихийный &6Посох'
+    title: '&6[🌟] &fElemental &6Staff'
     glowing: true
     unbreakable: true
     item-model: "elemental_staff"
@@ -22,15 +22,15 @@ elemental-staff:
   lore:
     - ''
     - ' &6━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Посох четырёх стихий'
+    - ' &7Staff of the four elements'
     - ' &6━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eСила &6III'
-    - ' &6└ &eСкорость &6II'
+    - ' &e⚡ &fWhile in main hand:'
+    - ' &6┌ &eStrength &6III'
+    - ' &6└ &eSpeed &6II'
     - ''
-    - '&c🔥 &fПКМ: Огненный шар'
-    - '&b❄ &fЛКМ: Ледяная буря'
+    - '&c🔥 &fRight Click: Fireball'
+    - '&b❄ &fLeft Click: Frost storm'
     - ''
 
   effects:
@@ -59,7 +59,7 @@ elemental-staff:
       - 'particles:FLAME:50'
       - 'particles:EXPLOSION_LARGE:10'
       - 'sound:ENTITY_GENERIC_EXPLODE:1:1'
-      - 'title:&c🔥 &7ОГНЕННЫЙ ШАР!|&cВсе враги горят!:10:30:10'
+      - 'title:&c🔥 &7FIREBALL!|&cAll enemies are burning!:10:30:10'
 
     on_click_left:
       - 'damage_nearby:12:6'
@@ -68,7 +68,7 @@ elemental-staff:
       - 'particles:BLOCK_CRACK:30'
       - 'sound:ENTITY_GENERIC_FREEZE:1:1'
       - 'knockback:4'
-      - 'title:&b❄ &7ЛЕДЯНАЯ БУРЯ!|&bВсе враги заморожены!:10:30:10'
+      - 'title:&b❄ &7FROST STORM!|&bAll enemies are frozen!:10:30:10'
 
     on_kill:
       - 'heal:20'

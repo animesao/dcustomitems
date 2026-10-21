@@ -1,18 +1,18 @@
 /**
  * ============================================================
- * ПРИМЕР: ТЁМНЫЙ КЛИНОК - Java предмет с кастомной моделью
+ * EXAMPLE: DARK BLADE - Java item with a custom model
  * ============================================================
  *
- * 📁 Структура файлов:
+ * 📁 File structure:
  *
  * plugins/DC-CustomItems/
  * └── items/
- *     └── dark-sword.java          ← этот файл
+ *     └── dark-sword.java          ← this file
  *
- * 🎮 Команды:
- *   /ci reload                     - перезагрузить предметы
- *   /api-item give dark_sword      - выдать предмет
- *   /api-item info dark_sword      - информация о предмете
+ * 🎮 Commands:
+ *   /ci reload                     - reload the items
+ *   /api-item give dark_sword      - give the item
+ *   /api-item info dark_sword      - information about the item
  *
  * ============================================================
  */
@@ -29,13 +29,13 @@ import org.bukkit.potion.PotionEffectType;
 
 public class DarkSword extends AbstractCustomItem {
 
-    // ===== ОСНОВНЫЕ СВОЙСТВА =====
+    // ===== MAIN PROPERTIES =====
 
     @Override
     public String getId() { return "dark_sword"; }
 
     @Override
-    public String getDisplayName() { return "&5Тёмный Клинок"; }
+    public String getDisplayName() { return "&5Dark Blade"; }
 
     @Override
     public Material getMaterial() { return Material.NETHERITE_SWORD; }
@@ -44,27 +44,27 @@ public class DarkSword extends AbstractCustomItem {
     public java.util.List<String> getLore() {
         return java.util.List.of(
             "",
-            " &7Тёмная энергия пульсирует в клинке",
+            " &7Dark energy pulses in the blade",
             "",
-            " &5ЛКМ: &7Тёмная волна (AoE урон)",
-            " &5ПКМ: &7Невидимость на 5 сек",
+            " &5Left Click: &7Dark wave (AoE damage)",
+            " &5Right Click: &7Invisibility for 5 sec",
             "",
-            " &5Урон: &c+12",
-            " &5Шанс вампиризма: &c30%"
+            " &5Damage: &c+12",
+            " &5Vampirism chance: &c30%"
         );
     }
 
     // ====================================================================
-    // 🎨 КАСТОМНАЯ МОДЕЛЬ - ВЫБЕРИ ОДИН ИЗ ВАРИАНТОВ:
+    // 🎨 CUSTOM MODEL - PICK ONE OF THE VARIANTS:
     // ====================================================================
     //
-    // ВАРИАНТ 1: item-model (Рекомендуется для 1.21.11+)
+    // VARIANT 1: item-model (recommended for 1.21.11+)
     // --------------------------------------------------------------------
-    // Использует компонент custom_model_data с strings
-    // Формат команды: /give @s minecraft:netherite_sword[minecraft:custom_model_data={strings:["dark_sword"]}]
+    // Uses the custom_model_data component with strings
+    // Command format: /give @s minecraft:netherite_sword[minecraft:custom_model_data={strings:["dark_sword"]}]
     //
-    // В Ресурс-паке файл: assets/minecraft/models/item/dark_sword.json
-    // Пример JSON:
+    // In the resource pack the file: assets/minecraft/models/item/dark_sword.json
+    // Example JSON:
     // {
     //   "parent": "minecraft:item/handheld",
     //   "textures": {
@@ -76,17 +76,17 @@ public class DarkSword extends AbstractCustomItem {
     public String getItemModel() { return "minecraft:item/smoke"; }
 
     //
-    // ВАРИАНТ 2: item-model с полным namespace
+    // VARIANT 2: item-model with a full namespace
     // --------------------------------------------------------------------
-    // Если модель в твоём ресурс-паке с уникальным namespace
-    // Формат: "namespace:path/to/model"
+    // If the model in your resource pack has a unique namespace
+    // Format: "namespace:path/to/model"
     //
-    // Примеры:
+    // Examples:
     //   "myplugin:item/dark_sword"     → assets/myplugin/models/item/dark_sword.json
     //   "minecraft:item/smoke"         → assets/minecraft/models/item/smoke.json
     //   "custom:weapons/sword"         → assets/custom/models/weapons/sword.json
     //
-    // Раскомментируй нужный вариант:
+    // Uncomment the variant you need:
     //
     // @Override
     // public String getItemModel() { return "minecraft:item/smoke"; }
@@ -95,19 +95,19 @@ public class DarkSword extends AbstractCustomItem {
     // public String getItemModel() { return "myplugin:item/dark_sword"; }
     //
     //
-    // ВАРИАНТ 3: custom-model-data (Legacy, для старых версий)
+    // VARIANT 3: custom-model-data (legacy, for older versions)
     // --------------------------------------------------------------------
-    // Использует числовое значение custom_model_data
-    // Формат команды: /give @s minecraft:netherite_sword{CustomModelData:10018}
+    // Uses the numeric custom_model_data value
+    // Command format: /give @s minecraft:netherite_sword{CustomModelData:10018}
     //
-    // Не рекомендуется для 1.21.11+, используй getItemModel()
+    // Not recommended for 1.21.11+, use getItemModel()
     //
     // @Override
     // public int getCustomModelData() { return 10018; }
     //
     // ====================================================================
 
-    // ===== ДОПОЛНИТЕЛЬНЫЕ СВОЙСТВА =====
+    // ===== ADDITIONAL PROPERTIES =====
 
     @Override
     public boolean isUnbreakable() { return true; }
@@ -121,37 +121,37 @@ public class DarkSword extends AbstractCustomItem {
     @Override
     public String getPermission() { return "items.dark_sword"; }
 
-    // ===== ТРИГГЕРЫ =====
+    // ===== TRIGGERS =====
 
     @Override
     public void onRightClick(PlayerInteractEvent event, Player player) {
-        // ПКМ - Невидимость на 5 сек
+        // Right Click - Invisibility for 5 sec
         ItemAPI.vanish(player, 5);
         ItemAPI.particles(player, Particle.SMOKE, 50);
         ItemAPI.sound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 0.5f);
-        ItemAPI.title(player, "&5ТЁМНАЯ ТЕНЬ", "&7Вы стали невидимы!");
+        ItemAPI.title(player, "&5DARK SHADOW", "&7You have become invisible!");
     }
 
     @Override
     public void onLeftClick(PlayerInteractEvent event, Player player) {
-        // ЛКМ - Тёмная волна (AoE урон)
+        // Left Click - Dark wave (AoE damage)
         ItemAPI.damageNearby(player, 8, 5);
         ItemAPI.particles(player, Particle.SMOKE, 100);
         ItemAPI.sound(player, Sound.ENTITY_ENDER_DRAGON_GROWL, 0.5f, 2f);
-        ItemAPI.title(player, "&5ТЁМНАЯ ВОЛНА", "");
+        ItemAPI.title(player, "&5DARK WAVE", "");
     }
 
     @Override
     public void onDamageDealt(EntityDamageByEntityEvent event, Player player) {
-        // +12 урона
+        // +12 damage
         event.setDamage(event.getDamage() + 12);
 
-        // 30% шанс вампиризма
+        // 30% vampirism chance
         if (Math.random() < 0.30) {
             ItemAPI.heal(player, 3);
             ItemAPI.particlesAt(event.getEntity().getLocation(), Particle.HEART, 10);
             ItemAPI.sound(player, Sound.ENTITY_PLAYER_BURP, 0.5f, 2f);
-            ItemAPI.message(player, "&5Вы吸收или жизнь!");
+            ItemAPI.message(player, "&5You absorbed life!");
         }
 
         ItemAPI.particlesAt(event.getEntity().getLocation(), Particle.SMOKE, 20);
@@ -159,24 +159,24 @@ public class DarkSword extends AbstractCustomItem {
 
     @Override
     public void onKill(Player killer, Player victim) {
-        // При убийстве - исцеление + сила
+        // On kill - healing + strength
         ItemAPI.heal(killer, 5);
         ItemAPI.effect(killer, PotionEffectType.STRENGTH, 15, 2);
         ItemAPI.particles(killer, Particle.SMOKE, 80);
         ItemAPI.sound(killer, Sound.ENTITY_WITHER_DEATH, 0.3f, 2f);
-        ItemAPI.title(killer, "&5УБИЙСТВО!", "&7+5 ❤ &5+Сила II");
+        ItemAPI.title(killer, "&5KILL!", "&7+5 ❤ &5+Strength II");
     }
 
     @Override
     public void onEquip(Player player) {
-        // При экипировке
+        // When equipped
         ItemAPI.effect(player, PotionEffectType.DARKNESS, 999, 1);
         ItemAPI.particles(player, Particle.SMOKE, 30);
     }
 
     @Override
     public void onUnequip(Player player) {
-        // При снятии
+        // When removed
         player.removePotionEffect(PotionEffectType.DARKNESS);
     }
 }

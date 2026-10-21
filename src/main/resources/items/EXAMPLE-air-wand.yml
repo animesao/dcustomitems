@@ -1,5 +1,5 @@
 # ============================================
-# ПАЛОЧКА ВОЗДУХА - Молния + Частицы
+# AIR WAND - Lightning + Particles
 # ============================================
 
 air-wand:
@@ -10,7 +10,7 @@ air-wand:
 
   item:
     type: BLAZE_ROD
-    title: '&b✨ &fПалочка Воздуха'
+    title: '&b✨ &fAir Wand'
     glowing: true
     unbreakable: true
     item-model: "air_wand"
@@ -18,14 +18,14 @@ air-wand:
   lore:
     - ''
     - ' &b━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Палочка стихии воздуха'
+    - ' &7Wand of the air element'
     - ' &b━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &b✨ &fПКМ: Волшебство воздуха'
-    - ' &7Спавнит частицы облака'
+    - ' &b✨ &fRight Click: Air magic'
+    - ' &7Spawns cloud particles'
     - ''
-    - ' &e⚡ &fЛКМ: Молния'
-    - ' &7Бьет молнией туда куда смотришь!'
+    - ' &e⚡ &fLeft Click: Lightning'
+    - ' &7Strikes lightning where you look!'
     - ''
 
   click-cooldown: 500

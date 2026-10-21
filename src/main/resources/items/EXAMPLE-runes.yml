@@ -1,12 +1,12 @@
 # ==========================================
-# РУНЫ - Магические обереги и шары
+# RUNES - Magical charms and orbs
 # ==========================================
 
 rune-1:
   item:
     type: PLAYER_HEAD
     texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmFlMTE5YTIzODJlZGE4NjRiMjQ0ZmE4YzUzYWMzZTU0NDE2MzEwM2VlNjY3OTVmMGNkNmM2NGY3YWJiOGNmMSJ9fX0=
-    title: '§6[🔥] §fРуна §bПрироды'
+    title: '§6[🔥] §fRune §bof Nature'
     glowing: true
     unbreakable: true
     attributes:
@@ -14,12 +14,12 @@ rune-1:
       GENERIC_MOVEMENT_SPEED: 0.2
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fСила &bII &7(&6∞&7)'
-    - ' &6└ &e⇄ &fСкорость &bII &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fStrength &bII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fSpeed &bII &7(&6∞&7)'
     - ''
-    - '&6┌ &fУникальный &dоберег &fнаделяющий вас'
-    - '&6└ &cМощью, &fпользуйтесь им в &cсражении!'
+    - '&6┌ &fA unique &dcharm &fthat endows you'
+    - '&6└ &cwith power, &fuse it in &ccombat!'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -32,16 +32,16 @@ rune-2:
   item:
     type: PLAYER_HEAD
     texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGZjNzk4NTM5NjA1MmZlYzVhMjIzZTY0N2UxNzlmZDQ4N2ZkNjhlMjQ0MTVlMTk2MjM1OWE0YTk2ZmJjZTFiNyJ9fX0=
-    title: '&6[🔥] &fРуна &cЗверя'
+    title: '&6[🔥] &fRune &cof the Beast'
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fСила &cII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСкорость &cII &7(&6∞&7)'
-    - ' &6└ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fStrength &cII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fSpeed &cII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fFire Resistance &7(&6∞&7)'
     - ''
-    - '&6┌ &fУникальный &dоберег &fнаделяющий вас'
-    - '&6└ &cМощью, &fпользуйтесь им в &cсражении!'
+    - '&6┌ &fA unique &dcharm &fthat endows you'
+    - '&6└ &cwith power, &fuse it in &ccombat!'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -55,17 +55,17 @@ rune-3:
   item:
     type: PLAYER_HEAD
     texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTQ5NzY1MDQ1N2M2OWNmZmNiY2Y2ODBlZWI2YTIzMWE2YWJlYjAwY2NhNWVhZGQ3YzFjNjg5MDBkNzgyZTNiOSJ9fX0=
-    title: '&6[🔥] &fРуна &eДуховности'
+    title: '&6[🔥] &fRune &eof Spirit'
   lore:
     - ''
-    - ' &7Когда в основной руке:'
-    - ' &6┌ &e⇄ &fСила &eII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСкорость &eI &7(&6∞&7)'
-    - ' &6├ &e⇄ &fРегенерация &eI &7(&6∞&7)'
-    - ' &6└ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ' &7When in main hand:'
+    - ' &6┌ &e⇄ &fStrength &eII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fSpeed &eI &7(&6∞&7)'
+    - ' &6├ &e⇄ &fRegeneration &eI &7(&6∞&7)'
+    - ' &6└ &e⇄ &fFire Resistance &7(&6∞&7)'
     - ''
-    - '&6┌ &fУникальный &dоберег &fнаделяющий вас'
-    - '&6└ &cМощью, &fпользуйтесь им в &cсражении!'
+    - '&6┌ &fA unique &dcharm &fthat endows you'
+    - '&6└ &cwith power, &fuse it in &ccombat!'
     - ''
   type: RUNE
   activation-slot: HAND
@@ -80,7 +80,7 @@ rune-4:
   item:
     type: PLAYER_HEAD
     texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDFlMTM5YzVkYjU0OGY5YTNhNGZlZmE1YWRhM2ZiN2M0ZTY2ODA1Y2ZmNGI2Zjg2ZGNiNDgwNjJkZGI5MWM4ZSJ9fX0=
-    title: '&6[🔥] &fРуна &6Бога'
+    title: '&6[🔥] &fRune &6of the God'
     attributes:
       GENERIC_ATTACK_DAMAGE:
         value: 3.0
@@ -90,14 +90,14 @@ rune-4:
         operation: ADD_NUMBER
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fСила &6II &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСкорость &6II &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСопротивление &6I &7(&6∞&7)'
-    - ' &6└ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fStrength &6II &7(&6∞&7)'
+    - ' &6├ &e⇄ &fSpeed &6II &7(&6∞&7)'
+    - ' &6├ &e⇄ &fResistance &6I &7(&6∞&7)'
+    - ' &6└ &e⇄ &fFire Resistance &7(&6∞&7)'
     - ''
-    - '&6┌ &fУникальный &dоберег &fнаделяющий вас'
-    - '&6└ &cМощью, &fпользуйтесь им в &cсражении!'
+    - '&6┌ &fA unique &dcharm &fthat endows you'
+    - '&6└ &cwith power, &fuse it in &ccombat!'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -112,22 +112,22 @@ rune-5:
   item:
     type: PLAYER_HEAD
     texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGZjNzk4NTM5NjA1MmZlYzVhMjIzZTY0N2UxNzlmZDQ4N2ZkNjhlMjQ0MTVlMTk2MjM1OWE0YTk2ZmJjZTFiNyJ9fX0=
-    title: '&6[🔥] &fРуна &4Покрошителя'
+    title: '&6[🔥] &fRune &4of the Crusher'
     attributes:
       GENERIC_ATTACK_DAMAGE: 5.0
       GENERIC_MAX_HEALTH: 4.0
       GENERIC_MOVEMENT_SPEED: 0.3
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fСила &4III &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСкорость &4I &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСопротивление &4I &7(&6∞&7)'
-    - ' &6├ &e⇄ &fРегенерация &4I &7(&6∞&7)'
-    - ' &6└ &e⇄ &fОгнестойкость &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fStrength &4III &7(&6∞&7)'
+    - ' &6├ &e⇄ &fSpeed &4I &7(&6∞&7)'
+    - ' &6├ &e⇄ &fResistance &4I &7(&6∞&7)'
+    - ' &6├ &e⇄ &fRegeneration &4I &7(&6∞&7)'
+    - ' &6└ &e⇄ &fFire Resistance &7(&6∞&7)'
     - ''
-    - '&6┌ &fУникальный &dоберег &fнаделяющий вас'
-    - '&6└ &cМощью, &fпользуйтесь им в &cсражении!'
+    - '&6┌ &fA unique &dcharm &fthat endows you'
+    - '&6└ &cwith power, &fuse it in &ccombat!'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -143,17 +143,17 @@ rune-fortune:
   item:
     type: PLAYER_HEAD
     texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmFlMTE5YTIzODJlZGE4NjRiMjQ0ZmE4YzUzYWMzZTU0NDE2MzEwM2VlNjY3OTVmMGNkNmM2NGY3YWJiOGNmMSJ9fX0=
-    title: '&6[⚡] &fШар &aФортуны'
+    title: '&6[⚡] &fOrb &aof Fortune'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7При применении во второй руке:'
-    - ' &6┌ &e⇄ &fДает эффект &aСкорость &fII'
-    - ' &6└ &e⇄ &fДает эффект &aОгнестойкость &fI'
+    - ' &7When applied in off hand:'
+    - ' &6┌ &e⇄ &fGrants &aSpeed &fII'
+    - ' &6└ &e⇄ &fGrants &aFire Resistance &fI'
     - ''
-    - '&a✦ &fМагический шар удачи'
-    - '&a✦ &fПриносящий везение'
+    - '&a✦ &fMagical orb of luck'
+    - '&a✦ &fBringing good fortune'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -166,19 +166,19 @@ rune-sorcerer:
   item:
     type: PLAYER_HEAD
     texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTQ5NzY1MDQ1N2M2OWNmZmNiY2Y2ODBlZWI2YTIzMWE2YWJlYjAwY2NhNWVhZGQ3YzFjNjg5MDBkNzgyZTNiOSJ9fX0=
-    title: '&6[⚡] &fШар &5Чародея'
+    title: '&6[⚡] &fOrb &5of the Sorcerer'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7При применении во второй руке:'
-    - ' &6┌ &e⇄ &fДает эффект &5Сила &fII'
-    - ' &6├ &e⇄ &fДает эффект &5Скорость &fI'
-    - ' &6├ &e⇄ &fДает эффект &5Огнестойкость &fI'
-    - ' &6└ &e⇄ &fДает эффект &5Прилив здоровья &fI'
+    - ' &7When applied in off hand:'
+    - ' &6┌ &e⇄ &fGrants &5Strength &fII'
+    - ' &6├ &e⇄ &fGrants &5Speed &fI'
+    - ' &6├ &e⇄ &fGrants &5Fire Resistance &fI'
+    - ' &6└ &e⇄ &fGrants &5Health Boost &fI'
     - ''
-    - '&5✦ &fМагический шар чародея'
-    - '&5✦ &fНаделяющий великой силой'
+    - '&5✦ &fMagical orb of the sorcerer'
+    - '&5✦ &fEndowing great power'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -193,18 +193,18 @@ rune-midas:
   item:
     type: PLAYER_HEAD
     texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDFlMTM5YzVkYjU0OGY5YTNhNGZlZmE1YWRhM2ZiN2M0ZTY2ODA1Y2ZmNGI2Zjg2ZGNiNDgwNjJkZGI5MWM4ZSJ9fX0=
-    title: '&6[⚡] &fШар &6Мидаса'
+    title: '&6[⚡] &fOrb &6of Midas'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7При применении во второй руке:'
-    - ' &6┌ &e⇄ &fДает эффект &6Сила &fII'
-    - ' &6├ &e⇄ &fДает эффект &6Скорость &fII'
-    - ' &6└ &e⇄ &fДает эффект &6Огнестойкость &fI'
+    - ' &7When applied in off hand:'
+    - ' &6┌ &e⇄ &fGrants &6Strength &fII'
+    - ' &6├ &e⇄ &fGrants &6Speed &fII'
+    - ' &6└ &e⇄ &fGrants &6Fire Resistance &fI'
     - ''
-    - '&6✦ &fЛегендарный шар царя Мидаса'
-    - '&6✦ &fПревращающий всё в золото'
+    - '&6✦ &fLegendary orb of King Midas'
+    - '&6✦ &fTurning everything into gold'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -218,19 +218,19 @@ rune-peace:
   item:
     type: PLAYER_HEAD
     texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjIxOTk5NDM3YjFkZTJjNDcyMGFhZDQzMmIyZWE1MzgyZTE1NDgyNzc1MjNmMjViMGY1NWMzOWEwMWMyYTljMCJ9fX0=
-    title: '&6[⚡] &fШар &bПокоя'
+    title: '&6[⚡] &fOrb &bof Peace'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7При применении во второй руке:'
-    - ' &6┌ &e⇄ &fДает эффект &bСила &fII'
-    - ' &6├ &e⇄ &fДает эффект &bСкорость &fII'
-    - ' &6├ &e⇄ &fДает эффект &bОгнестойкость &fI'
-    - ' &6└ &e⇄ &fДает эффект &bПрилив здоровья &fII'
+    - ' &7When applied in off hand:'
+    - ' &6┌ &e⇄ &fGrants &bStrength &fII'
+    - ' &6├ &e⇄ &fGrants &bSpeed &fII'
+    - ' &6├ &e⇄ &fGrants &bFire Resistance &fI'
+    - ' &6└ &e⇄ &fGrants &bHealth Boost &fII'
     - ''
-    - '&b✦ &fМистический шар покоя'
-    - '&b✦ &fДарующий гармонию и силу'
+    - '&b✦ &fMystic orb of peace'
+    - '&b✦ &fGranting harmony and power'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -245,18 +245,18 @@ rune-obstacle:
   item:
     type: PLAYER_HEAD
     texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmFlMTE5YTIzODJlZGE4NjRiMjQ0ZmE4YzUzYWMzZTU0NDE2MzEwM2VlNjY3OTVmMGNkNmM2NGY3YWJiOGNmMSJ9fX0=
-    title: '&6[⚡] &fШар &cПрепятствия'
+    title: '&6[⚡] &fOrb &cof the Obstacle'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7При применении во второй руке:'
-    - ' &6┌ &e⇄ &fДает эффект &cСила &fIII'
-    - ' &6├ &e⇄ &fДает эффект &cСкорость &fII'
-    - ' &6└ &e⇄ &fДает эффект &cОгнестойкость &fI'
+    - ' &7When applied in off hand:'
+    - ' &6┌ &e⇄ &fGrants &cStrength &fIII'
+    - ' &6├ &e⇄ &fGrants &cSpeed &fII'
+    - ' &6└ &e⇄ &fGrants &cFire Resistance &fI'
     - ''
-    - '&c✦ &fМогущественный шар препятствия'
-    - '&c✦ &fПреодолевающий любые преграды'
+    - '&c✦ &fMighty orb of the obstacle'
+    - '&c✦ &fOvercoming any barrier'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -270,19 +270,19 @@ rune-archangel:
   item:
     type: PLAYER_HEAD
     texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTQ5NzY1MDQ1N2M2OWNmZmNiY2Y2ODBlZWI2YTIzMWE2YWJlYjAwY2NhNWVhZGQ3YzFjNjg5MDBkNzgyZTNiOSJ9fX0=
-    title: '&6[⚡] &fШар &9Архангела'
+    title: '&6[⚡] &fOrb &9of the Archangel'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7При применении во второй руке:'
-    - ' &6┌ &e⇄ &fДает эффект &9Сила &fI'
-    - ' &6├ &e⇄ &fДает эффект &9Скорость &fII'
-    - ' &6├ &e⇄ &fДает эффект &9Огнестойкость &fI'
-    - ' &6└ &e⇄ &fДает эффект &9Регенерация &fI'
+    - ' &7When applied in off hand:'
+    - ' &6┌ &e⇄ &fGrants &9Strength &fI'
+    - ' &6├ &e⇄ &fGrants &9Speed &fII'
+    - ' &6├ &e⇄ &fGrants &9Fire Resistance &fI'
+    - ' &6└ &e⇄ &fGrants &9Regeneration &fI'
     - ''
-    - '&9✦ &fБожественный шар архангела'
-    - '&9✦ &fДарующий небесное благословение'
+    - '&9✦ &fDivine orb of the archangel'
+    - '&9✦ &fGranting heavenly blessing'
     - ''
   type: RUNE
   activation-slot: OFFHAND

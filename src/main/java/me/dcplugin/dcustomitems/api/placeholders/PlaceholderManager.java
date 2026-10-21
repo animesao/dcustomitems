@@ -12,20 +12,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
- * Менеджер плейсхолдеров
+ * Placeholder manager
  */
 public class PlaceholderManager {
 
     private final Main plugin;
 
-    // ConcurrentHashMap: карта читается при каждом запросе плейсхолдера
-    // (в т.ч. из потока PlaceholderAPI), а изменяется при reload.
+    // ConcurrentHashMap: the map is read on every placeholder request
+    // (including from the PlaceholderAPI thread) and modified on reload.
     private final Map<String, Function<Player, String>> placeholders = new ConcurrentHashMap<>();
     private final Map<String, String> staticPlaceholders = new ConcurrentHashMap<>();
 
-    // Плейсхолдеры из Java API (items/*.java).
-    // Держатся отдельно от встроенных: снятие с регистрации Java-плейсхолдера
-    // не должно удалять встроенный плейсхолдер с тем же именем.
+    // Placeholders from the Java API (items/*.java).
+    // They are kept apart from the built-in ones: unregistering a Java placeholder
+    // must not remove a built-in placeholder with the same name.
     private final Map<String, Function<Player, String>> customPlaceholders = new ConcurrentHashMap<>();
 
     private boolean placeholderApiEnabled = false;
@@ -37,7 +37,7 @@ public class PlaceholderManager {
         checkPlaceholderApi();
     }
 
-    // ===== РЕГИСТРАЦИЯ =====
+    // ===== REGISTRATION =====
 
     public void register(String identifier, Function<Player, String> resolver) {
         if (identifier == null || resolver == null) return;
@@ -65,7 +65,7 @@ public class PlaceholderManager {
     }
 
     /**
-     * Регистрация плейсхолдера из Java API (items/*.java).
+     * Registers a placeholder from the Java API (items/*.java).
      */
     public void registerCustom(String identifier, Function<Player, String> resolver) {
         if (identifier == null || resolver == null) return;
@@ -73,7 +73,7 @@ public class PlaceholderManager {
     }
 
     /**
-     * Снятие только Java API-плейсхолдера (встроенные не затрагиваются).
+     * Unregisters only the Java API placeholder (built-in ones are not affected).
      */
     public void unregisterCustom(String identifier) {
         if (identifier == null) return;
@@ -86,18 +86,18 @@ public class PlaceholderManager {
         customPlaceholders.clear();
     }
 
-    // ===== ЗАМЕНА =====
+    // ===== REPLACEMENT =====
 
     public String replace(String text, Player player) {
         if (text == null || player == null) return text;
 
-        // Сначала статические
+        // Static placeholders first
         for (Map.Entry<String, String> entry : staticPlaceholders.entrySet()) {
             text = text.replace("{" + entry.getKey() + "}", entry.getValue());
             text = text.replace("%" + entry.getKey() + "%", entry.getValue());
         }
 
-        // Затем динамические
+        // Then the dynamic ones
         for (Map.Entry<String, Function<Player, String>> entry : placeholders.entrySet()) {
             try {
                 String value = entry.getValue().apply(player);
@@ -123,7 +123,7 @@ public class PlaceholderManager {
         return text;
     }
 
-    // ===== ВСТРОЕННЫЕ ПЛЕЙСХОЛДЕРЫ =====
+    // ===== BUILT-IN PLACEHOLDERS =====
 
     private void registerDefaults() {
         register("player", (p) -> p.getName());
@@ -133,8 +133,8 @@ public class PlaceholderManager {
         register("max_health", (p) -> String.valueOf((int) maxHealth(p)));
         register("health_percent", (p) -> {
             double max = maxHealth(p);
-            // max может быть 0 (например, во время загрузки) — деление на ноль
-            // давало Infinity и ломало форматирование.
+            // max can be 0 (for example during loading) — dividing by zero
+            // produced Infinity and broke the formatting.
             if (max <= 0) return "0";
             return String.valueOf((int) ((p.getHealth() / max) * 100));
         });
@@ -157,9 +157,9 @@ public class PlaceholderManager {
     }
 
     /**
-     * Максимальное здоровье игрока (0, если атрибут недоступен).
-     * Раньше здесь был прямой вызов getAttribute(...).getValue() — атрибут
-     * мог быть null, и плейсхолдер ронял исключение.
+     * Maximum health of the player (0 if the attribute is unavailable).
+     * Previously this was a direct getAttribute(...).getValue() call — the attribute
+     * could be null, and the placeholder threw an exception.
      */
     private static double maxHealth(Player player) {
         if (player == null) return 0;
@@ -167,7 +167,7 @@ public class PlaceholderManager {
         return instance == null ? 0 : instance.getValue();
     }
 
-    // ===== RESOLVE (для PlaceholderAPI expansion) =====
+    // ===== RESOLVE (for the PlaceholderAPI expansion) =====
 
     /**
      * Resolve a placeholder value for a player.
@@ -178,7 +178,7 @@ public class PlaceholderManager {
         if (identifier == null) return null;
         String key = identifier.toLowerCase(java.util.Locale.ROOT);
 
-        // Java API-плейсхолдеры имеют приоритет над встроенными
+        // Java API placeholders take priority over the built-in ones
         Function<Player, String> custom = customPlaceholders.get(key);
         if (custom != null) {
             try {
@@ -206,7 +206,7 @@ public class PlaceholderManager {
         return null;
     }
 
-    // ===== ПРОВЕРКА PlaceholderAPI =====
+    // ===== PlaceholderAPI DETECTION =====
 
     private void checkPlaceholderApi() {
         try {
@@ -240,10 +240,10 @@ public class PlaceholderManager {
     }
 
     /**
-     * Снять расширение PlaceholderAPI (при отключении плагина).
+     * Unregisters the PlaceholderAPI expansion (on plugin shutdown).
      *
-     * Расширение объявляло persist() = true, поэтому оставалось зарегистрированным
-     * в PlaceholderAPI после выключения плагина и держало ссылку на старый
+     * The expansion declared persist() = true, so it stayed registered
+     * in PlaceholderAPI after the plugin was shut down and kept a reference to the old
      * classloader.
      */
     public void unregisterExpansion() {
@@ -258,7 +258,7 @@ public class PlaceholderManager {
         }
     }
 
-    // ===== ГЕТТЕРЫ =====
+    // ===== GETTERS =====
 
     public Set<String> getRegisteredPlaceholders() {
         Set<String> all = new HashSet<>(placeholders.keySet());

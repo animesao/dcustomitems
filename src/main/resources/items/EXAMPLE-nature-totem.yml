@@ -1,5 +1,5 @@
 # ============================================
-# ТОТЕМ ПРИРОДЫ - Силы природы
+# NATURE TOTEM - Powers of nature
 # ============================================
 
 nature-totem:
@@ -10,7 +10,7 @@ nature-totem:
 
   item:
     type: NETHERITE_SWORD
-    title: '&2[🌿] &fТотем &2Природы'
+    title: '&2[🌿] &fTotem &2of Nature'
     glowing: true
     unbreakable: true
     item-model: "nature_totem"
@@ -22,14 +22,14 @@ nature-totem:
   lore:
     - ''
     - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Тотем силы природы'
+    - ' &7Totem of the power of nature'
     - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eРегенерация &2III'
-    - ' &6└ &eСкорость &2II'
+    - ' &e⚡ &fWhile in main hand:'
+    - ' &6┌ &eRegeneration &2III'
+    - ' &6└ &eSpeed &2II'
     - ''
-    - '&2🌿 &fПКМ: Сила природы'
+    - '&2🌿 &fRight Click: Power of nature'
     - ''
 
   effects:
@@ -59,7 +59,7 @@ nature-totem:
       - 'particles:VILLAGER_HAPPY:40'
       - 'particles:HEART:30'
       - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
-      - 'title:&2🌿 &7СИЛА ПРИРОДЫ!|&aВосстановление + Абсорбция!:10:40:10'
+      - 'title:&2🌿 &7POWER OF NATURE!|&aRegeneration + Absorption!:10:40:10'
 
     on_click_left:
       - 'damage_nearby:10:4'

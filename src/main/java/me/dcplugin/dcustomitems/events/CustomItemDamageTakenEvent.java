@@ -8,11 +8,11 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 /**
- * Событие получения урона при экипированном/вооружённом кастомном предмете
- * (on_damage_taken / onDamageTaken). Стреляет ДО выполнения триггеров/хука.
+ * Event fired when the player takes damage while a custom item is equipped/held
+ * (on_damage_taken / onDamageTaken). Fired BEFORE the triggers/hook are executed.
  *
- * Если событие отменено — стандартные триггеры/хук не выполняются.
- * Для изменения урона используйте getBukkitEvent()/setDamage().
+ * If the event is cancelled the standard triggers/hook are not executed.
+ * Use getBukkitEvent()/setDamage() to modify the damage.
  */
 public class CustomItemDamageTakenEvent extends CustomItemEvent implements Cancellable {
 
@@ -21,29 +21,29 @@ public class CustomItemDamageTakenEvent extends CustomItemEvent implements Cance
     private final EntityDamageEvent bukkitEvent;
     private boolean cancelled;
 
-    /** Для YAML-предметов. */
+    /** For YAML items. */
     public CustomItemDamageTakenEvent(Player player, CustomItem customItem, EntityDamageEvent bukkitEvent) {
         super(player, customItem);
         this.bukkitEvent = bukkitEvent;
     }
 
-    /** Для Java API-предметов (AbstractCustomItem). */
+    /** For Java API items (AbstractCustomItem). */
     public CustomItemDamageTakenEvent(Player player, AbstractCustomItem javaItem, EntityDamageEvent bukkitEvent) {
         super(player, javaItem);
         this.bukkitEvent = bukkitEvent;
     }
 
-    /** Исходное Bukkit-событие (можно менять урон и т.д.). */
+    /** The original Bukkit event (damage and similar can be modified). */
     public EntityDamageEvent getBukkitEvent() {
         return bukkitEvent;
     }
 
-    /** Итоговый урон (шорткат). */
+    /** The resulting damage (shortcut). */
     public double getDamage() {
         return bukkitEvent.getDamage();
     }
 
-    /** Установить урон (шорткат). */
+    /** Set the damage (shortcut). */
     public void setDamage(double damage) {
         bukkitEvent.setDamage(damage);
     }

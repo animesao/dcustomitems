@@ -38,21 +38,22 @@ public class CustomItem {
     private final String deactivationMessage;
     private final String usesDepletedMessage;
 
-    // === Новые поля ===
-    private final long duration;                    // Время жизни предмета (секунды, -1 = бессрочно)
-    private final String maxDurationMessage;         // Сообщение при истечении времени
-    private final List<String> trailParticles;       // Частицы-следы при движении
-    private final int trailParticleInterval;         // Интервал спавна частиц (тики)
-    private final List<String> allowedWorlds;        // Разрешённые миры (пусто = все)
-    private final List<String> disabledWorlds;       // Запрещённые миры
-    private final String itemModelVariant;           // Вариант модели (для анимированных текстур)
-    private final Map<String, Object> recipes;        // Секция recipes из YAML (shaped/shapeless/furnace)
+    // === New fields ===
+    private final long duration;                    // Item lifetime (seconds, -1 = permanent)
+    private final String maxDurationMessage;         // The message when the lifetime expires
+    private final List<String> trailParticles;       // Trail particles while moving
+    private final int trailParticleInterval;         // Particle spawn interval (ticks)
+    private final List<String> allowedWorlds;        // Allowed worlds (empty = all)
+    private final List<String> disabledWorlds;       // Disabled worlds
+    private final String itemModelVariant;           // Model variant (for animated textures)
+    private final Map<String, Object> recipes;        // The recipes section from YAML (shaped/shapeless/furnace)
 
     private CustomItem(Builder b) {
         this.id = b.id;
         this.itemStack = b.itemStack;
-        // Тип и слот нормализуются в верхний регистр: конфиги писали
-        // "consumable"/"hand", а сравнения в коде шли с "CONSUMABLE"/"HAND".
+        // The type and the slot are normalized to upper case: the configs were written
+        // as "consumable"/"hand", while the comparisons in the code used
+        // "CONSUMABLE"/"HAND".
         this.type = b.type == null ? "RUNE" : b.type.toUpperCase(java.util.Locale.ROOT);
         this.activationSlot = b.activationSlot == null
                 ? "HAND"
@@ -90,9 +91,9 @@ public class CustomItem {
         this.recipes = b.recipes == null ? null : immutableMap(b.recipes);
     }
 
-    // Collections.copyOf/List.copyOf запрещают null-элементы, а в YAML
-    // значение может быть пустым. Поэтому используем обёртки, которые
-    // допускают null, но запрещают изменение.
+    // Collections.copyOf/List.copyOf forbid null elements, while in YAML
+    // a value can be empty. Therefore wrappers are used that allow null
+    // but forbid modification.
 
     private static List<String> immutableList(List<String> source) {
         if (source == null || source.isEmpty()) return List.of();
@@ -104,7 +105,7 @@ public class CustomItem {
         return java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(source));
     }
 
-    // ===== БUILDER =====
+    // ===== BUILDER =====
 
     public static Builder builder(String id, ItemStack itemStack) {
         return new Builder(id, itemStack);
@@ -142,11 +143,11 @@ public class CustomItem {
         private String deactivationMessage = null;
         private String usesDepletedMessage = null;
 
-        // Новые поля
-        private long duration = -1;                    // Время жизни (секунды, -1 = бессрочно)
+        // New fields
+        private long duration = -1;                    // Lifetime (seconds, -1 = permanent)
         private String maxDurationMessage = null;
         private List<String> trailParticles = new ArrayList<>();
-        private int trailParticleInterval = 5;         // Тики между спавном частиц
+        private int trailParticleInterval = 5;         // Ticks between particle spawns
         private List<String> allowedWorlds = new ArrayList<>();
         private List<String> disabledWorlds = new ArrayList<>();
         private String itemModelVariant = null;
@@ -195,7 +196,7 @@ public class CustomItem {
         }
     }
 
-    // ===== Геттеры =====
+    // ===== Getters =====
 
     public String getId() { return id; }
     public ItemStack getItemStack() { return itemStack; }
@@ -255,7 +256,7 @@ public class CustomItem {
     public boolean hasDeactivationMessage() { return deactivationMessage != null && !deactivationMessage.trim().isEmpty(); }
     public boolean hasUsesDepletedMessage() { return usesDepletedMessage != null && !usesDepletedMessage.trim().isEmpty(); }
 
-    // === Новые геттеры ===
+    // === New getters ===
     public long getDuration() { return duration; }
     public boolean hasDuration() { return duration > 0; }
     public String getMaxDurationMessage() { return maxDurationMessage; }
@@ -273,7 +274,7 @@ public class CustomItem {
     public boolean hasRecipes() { return recipes != null && !recipes.isEmpty(); }
 
     /**
-     * Проверяет, разрешён ли предмет в данном мире
+     * Checks whether the item is allowed in the given world
      */
     public boolean isAllowedInWorld(String worldName) {
         if (hasAllowedWorlds() && !allowedWorlds.contains(worldName)) return false;

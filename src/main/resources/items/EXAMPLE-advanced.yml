@@ -1,11 +1,11 @@
 # ==========================================
-# ПРОДВИНУТЫЕ ПРЕДМЕТЫ (атрибуты, частицы, звуки, триггеры)
+# ADVANCED ITEMS (attributes, particles, sounds, triggers)
 # ==========================================
 
 legendary-sword:
   item:
     type: DIAMOND_SWORD
-    title: '&6[⚔] &fЛегендарный Меч'
+    title: '&6[⚔] &fLegendary Sword'
     glowing: true
     unbreakable: true
     custom-model-data: 1001
@@ -15,13 +15,13 @@ legendary-sword:
       FIRE_ASPECT: 2
   lore:
     - ''
-    - ' &7Легендарный меч древних воинов'
-    - ' &7Когда в основной руке:'
-    - ' &6┌ &e⇄ &fСила &6III &7(&6∞&7)'
-    - ' &6└ &e⇄ &fСкорость &6II &7(&6∞&7)'
+    - ' &7Legendary sword of ancient warriors'
+    - ' &7While in main hand:'
+    - ' &6┌ &e⇄ &fStrength &6III &7(&6∞&7)'
+    - ' &6└ &e⇄ &fSpeed &6II &7(&6∞&7)'
     - ''
-    - '&6✦ &fНаносит &c4x &fурона'
-    - '&6✦ &fПри убийстве восстанавливает здоровье'
+    - '&6✦ &fDeals &c4x &fdamage'
+    - '&6✦ &fRestores health on kill'
     - ''
   type: TOOL
   activation-slot: HAND
@@ -42,23 +42,23 @@ legendary-sword:
   triggers:
     on_kill:
       - 'effect:REGENERATION:10:2'
-      - 'message:&6⚔ &fВраг повержен! Регенерация на 10 сек!'
+      - 'message:&6⚔ &fEnemy defeated! Regeneration for 10 sec!'
       - 'particle:VILLAGER_HAPPY:15'
 
 guardian-shield:
   item:
     type: SHIELD
-    title: '&b[🛡] &fЩит Стража'
+    title: '&b[🛡] &fGuardian Shield'
     glowing: true
     unbreakable: true
     custom-model-data: 2001
   lore:
     - ''
-    - ' &7Волшебный щит, защищающий владельца'
-    - ' &7При получении урона дает щит!'
+    - ' &7Magic shield that protects its owner'
+    - ' &7Grants resistance when taking damage!'
     - ''
-    - '&b✦ &fПри уроне: Сопротивление на 5 сек'
-    - '&b✦ &fПри прыжке: Ускорение на 3 сек'
+    - '&b✦ &fOn damage: Resistance for 5 sec'
+    - '&b✦ &fOn jump: Speed for 3 sec'
     - ''
   type: TOOL
   activation-slot: OFFHAND
@@ -85,17 +85,17 @@ guardian-shield:
 farmer-scissors:
   item:
     type: SHEARS
-    title: '&a[✂] &fНожницы Фермера'
+    title: '&a[✂] &fFarmer Shears'
     glowing: true
     unbreakable: true
     custom-model-data: 3001
   lore:
     - ''
-    - ' &7Волшебные ножницы для сбора урожая'
-    - ' &7Прыгай и собирай урожай быстрее!'
+    - ' &7Magic shears for harvesting crops'
+    - ' &7Jump around and harvest faster!'
     - ''
-    - '&a✦ &fПрыжок: Спешка III на 5 сек'
-    - '&a✦ &fУбийство: Насыщение на 10 сек'
+    - '&a✦ &fJump: Haste III for 5 sec'
+    - '&a✦ &fKill: Saturation for 10 sec'
     - ''
   type: TOOL
   activation-slot: HAND
@@ -110,25 +110,25 @@ farmer-scissors:
   triggers:
     on_jump:
       - 'effect:HASTE:5:2'
-      - 'message:&a🌿 Спешка включена!'
+      - 'message:&a🌿 Haste enabled!'
     on_kill:
       - 'effect:SATURATION:10:1'
-      - 'message:&a🍎 Насыщение активировано!'
+      - 'message:&a🍎 Saturation activated!'
 
 example-custom-messages:
   item:
     type: DIAMOND_SWORD
-    title: '&c[⚔] &fМеч с Сообщениями'
+    title: '&c[⚔] &fSword with Messages'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7Когда в основной руке:'
-    - ' &6┌ &e⇄ &fСила &cIII &7(&6∞&7)'
-    - ' &6└ &e⇄ &fСкорость &cII &7(&6∞&7)'
+    - ' &7While in main hand:'
+    - ' &6┌ &e⇄ &fStrength &cIII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fSpeed &cII &7(&6∞&7)'
     - ''
-    - '&7Использования: &b%uses%'
-    - '&7Кулдаун: &b%cooldown% сек.'
+    - '&7Uses: &b%uses%'
+    - '&7Cooldown: &b%cooldown% sec.'
     - ''
   type: TOOL
   activation-slot: HAND
@@ -138,9 +138,9 @@ example-custom-messages:
   effects:
     - 'INCREASE_DAMAGE:3'
     - 'SPEED:2'
-  equip-message: '&a⚔ Меч извлечен! Сила активирована!'
-  unequip-message: '&c⚔ Меч убран в ножны.'
-  cooldown-message: '&c⏳ Подождите {seconds} сек. перед следующим ударом!'
-  activation-message: '&a✨ Эффекты меча активированы!'
-  deactivation-message: '&c💤 Эффекты меча деактивированы.'
-  uses-depleted-message: '&c⚔ Меч сломался! Использования исчерпаны!'
+  equip-message: '&a⚔ Sword drawn! Strength activated!'
+  unequip-message: '&c⚔ Sword sheathed.'
+  cooldown-message: '&c⏳ Wait {seconds} sec. before the next strike!'
+  activation-message: '&a✨ Sword effects activated!'
+  deactivation-message: '&c💤 Sword effects deactivated.'
+  uses-depleted-message: '&c⚔ Sword broke! Uses depleted!'

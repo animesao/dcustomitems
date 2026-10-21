@@ -1,11 +1,11 @@
 # ==========================================
-# ТОТЕМЫ БЕССМЕРТИЯ С ЭФФЕКТАМИ И АТРИБУТАМИ
+# TOTEMS OF ULTYMORTALITY WITH EFFECTS AND ATTRIBUTES
 # ==========================================
 
 totem-fire:
   item:
     type: TOTEM_OF_UNDYING
-    title: '&c[🔥] &fТотем &cОгня'
+    title: '&c[🔥] &fTotem &cof Fire'
     glowing: true
     unbreakable: true
     attributes:
@@ -13,14 +13,14 @@ totem-fire:
       GENERIC_MOVEMENT_SPEED: 0.15
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fСила &cIII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСкорость &cII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fОгнестойкость &7(&6∞&7)'
-    - ' &6└ &e⇄ &fПоглощение урона &cI &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fStrength &cIII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fSpeed &cII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fFire Resistance &7(&6∞&7)'
+    - ' &6└ &e⇄ &fDamage Absorption &cI &7(&6∞&7)'
     - ''
-    - '&c🔥 &fМогущественный тотем огненной стихии'
-    - '&c🔥 &fЗащищает от смерти и дает силу пламени'
+    - '&c🔥 &fMighty totem of the fire element'
+    - '&c🔥 &fProtects from death and grants the power of flame'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -34,7 +34,7 @@ totem-fire:
 totem-water:
   item:
     type: TOTEM_OF_UNDYING
-    title: '&b[🌊] &fТотем &bВоды'
+    title: '&b[🌊] &fTotem &bof Water'
     glowing: true
     unbreakable: true
     attributes:
@@ -43,14 +43,14 @@ totem-water:
       GENERIC_OXYGEN_BONUS: 1.0
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fРегенерация &bII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fВодное дыхание &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСкорость плавания &bII &7(&6∞&7)'
-    - ' &6└ &e⇄ &fПрилив здоровья &bII &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fRegeneration &bII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fWater Breathing &7(&6∞&7)'
+    - ' &6├ &e⇄ &fSwim Speed &bII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fHealth Boost &bII &7(&6∞&7)'
     - ''
-    - '&b🌊 &fДревний тотем водной стихии'
-    - '&b🌊 &fДарует силу океанских глубин'
+    - '&b🌊 &fAncient totem of the water element'
+    - '&b🌊 &fGrants the power of the ocean depths'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -64,7 +64,7 @@ totem-water:
 totem-earth:
   item:
     type: TOTEM_OF_UNDYING
-    title: '&a[🌍] &fТотем &aЗемли'
+    title: '&a[🌍] &fTotem &aof Earth'
     glowing: true
     unbreakable: true
     attributes:
@@ -74,14 +74,14 @@ totem-earth:
       PLAYER_MINING_EFFICIENCY: 0.3
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fСопротивление &aII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСила &aII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСпешка &aII &7(&6∞&7)'
-    - ' &6└ &e⇄ &fПоглощение урона &aII &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fResistance &aII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fStrength &aII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fHaste &aII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fDamage Absorption &aII &7(&6∞&7)'
     - ''
-    - '&a🌍 &fМощный тотем земной стихии'
-    - '&a🌍 &fДает силу и защиту матери-земли'
+    - '&a🌍 &fPowerful totem of the earth element'
+    - '&a🌍 &fGrants the strength and protection of mother earth'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -95,7 +95,7 @@ totem-earth:
 totem-air:
   item:
     type: TOTEM_OF_UNDYING
-    title: '&f[💨] &fТотем &fВоздуха'
+    title: '&f[💨] &fTotem &fof Air'
     glowing: true
     unbreakable: true
     attributes:
@@ -105,14 +105,14 @@ totem-air:
       GENERIC_JUMP_STRENGTH: 0.5
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fСкорость &fIII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fПрыгучесть &fII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fМедленное падение &7(&6∞&7)'
-    - ' &6└ &e⇄ &fЛевитация &fI &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fSpeed &fIII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fJump Boost &fII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fSlow Falling &7(&6∞&7)'
+    - ' &6└ &e⇄ &fLevitation &fI &7(&6∞&7)'
     - ''
-    - '&f💨 &fЛегендарный тотем воздушной стихии'
-    - '&f💨 &fДарует свободу полета и скорость ветра'
+    - '&f💨 &fLegendary totem of the air element'
+    - '&f💨 &fGrants the freedom of flight and the speed of the wind'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -126,7 +126,7 @@ totem-air:
 totem-darkness:
   item:
     type: TOTEM_OF_UNDYING
-    title: '&8[🌑] &fТотем &8Тьмы'
+    title: '&8[🌑] &fTotem &8of Darkness'
     glowing: true
     unbreakable: true
     attributes:
@@ -135,14 +135,14 @@ totem-darkness:
       GENERIC_MOVEMENT_SPEED: 0.2
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fСила &8IV &7(&6∞&7)'
-    - ' &6├ &e⇄ &fНочное зрение &7(&6∞&7)'
-    - ' &6├ &e⇄ &fНевидимость &8I &7(&6∞&7)'
-    - ' &6└ &e⇄ &fСкорость &8II &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fStrength &8IV &7(&6∞&7)'
+    - ' &6├ &e⇄ &fNight Vision &7(&6∞&7)'
+    - ' &6├ &e⇄ &fInvisibility &8I &7(&6∞&7)'
+    - ' &6└ &e⇄ &fSpeed &8II &7(&6∞&7)'
     - ''
-    - '&8🌑 &fЗловещий тотем темных сил'
-    - '&8🌑 &fСкрывает в тенях и дает силу тьмы'
+    - '&8🌑 &fOminous totem of dark forces'
+    - '&8🌑 &fHides in the shadows and grants the power of darkness'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -156,7 +156,7 @@ totem-darkness:
 totem-light:
   item:
     type: TOTEM_OF_UNDYING
-    title: '&e[☀] &fТотем &eСвета'
+    title: '&e[☀] &fTotem &eof Light'
     glowing: true
     unbreakable: true
     attributes:
@@ -165,14 +165,14 @@ totem-light:
       GENERIC_LUCK: 2.0
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fРегенерация &eIII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fПрилив здоровья &eII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСияние &eI &7(&6∞&7)'
-    - ' &6└ &e⇄ &fУдача &eII &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fRegeneration &eIII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fHealth Boost &eII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fGlowing &eI &7(&6∞&7)'
+    - ' &6└ &e⇄ &fLuck &eII &7(&6∞&7)'
     - ''
-    - '&e☀ &fСвященный тотем божественного света'
-    - '&e☀ &fИсцеляет и благословляет своего носителя'
+    - '&e☀ &fSacred totem of divine light'
+    - '&e☀ &fHeals and blesses its bearer'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -186,7 +186,7 @@ totem-light:
 totem-ice:
   item:
     type: TOTEM_OF_UNDYING
-    title: '&b[❄] &fТотем &bЛьда'
+    title: '&b[❄] &fTotem &bof Ice'
     glowing: true
     unbreakable: true
     attributes:
@@ -195,14 +195,14 @@ totem-ice:
       GENERIC_MOVEMENT_SPEED: -0.05
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fСопротивление &bIII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fОгнестойкость &7(&6∞&7)'
-    - ' &6├ &e⇄ &fПоглощение урона &bIII &7(&6∞&7)'
-    - ' &6└ &e⇄ &fМедлительность &bI &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fResistance &bIII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fFire Resistance &7(&6∞&7)'
+    - ' &6├ &e⇄ &fDamage Absorption &bIII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fSlowness &bI &7(&6∞&7)'
     - ''
-    - '&b❄ &fЛедяной тотем вечной мерзлоты'
-    - '&b❄ &fЗамедляет, но дает непробиваемую защиту'
+    - '&b❄ &fIcy totem of the eternal frost'
+    - '&b❄ &fSlows you down but grants unbreakable protection'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -216,7 +216,7 @@ totem-ice:
 totem-thunder:
   item:
     type: TOTEM_OF_UNDYING
-    title: '&d[⚡] &fТотем &dГрозы'
+    title: '&d[⚡] &fTotem &dof Thunder'
     glowing: true
     unbreakable: true
     attributes:
@@ -225,14 +225,14 @@ totem-thunder:
       GENERIC_MOVEMENT_SPEED: 0.25
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fСила &dIII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСкорость &dIII &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСпешка &dII &7(&6∞&7)'
-    - ' &6└ &e⇄ &fСияние &dI &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fStrength &dIII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fSpeed &dIII &7(&6∞&7)'
+    - ' &6├ &e⇄ &fHaste &dII &7(&6∞&7)'
+    - ' &6└ &e⇄ &fGlowing &dI &7(&6∞&7)'
     - ''
-    - '&d⚡ &fГрозовой тотем небесной ярости'
-    - '&d⚡ &fНаделяет силой молний и скоростью грома'
+    - '&d⚡ &fStorm totem of heavenly fury'
+    - '&d⚡ &fEndows you with the power of lightning and the speed of thunder'
     - ''
   type: RUNE
   activation-slot: OFFHAND
@@ -246,7 +246,7 @@ totem-thunder:
 totem-nature:
   item:
     type: TOTEM_OF_UNDYING
-    title: '&2[🌿] &fТотем &2Природы'
+    title: '&2[🌿] &fTotem &2of Nature'
     glowing: true
     unbreakable: true
     attributes:
@@ -255,14 +255,14 @@ totem-nature:
       PLAYER_MINING_EFFICIENCY: 0.5
   lore:
     - ''
-    - ' &7Когда во второй руке:'
-    - ' &6┌ &e⇄ &fРегенерация &2II &7(&6∞&7)'
-    - ' &6├ &e⇄ &fПрилив здоровья &2III &7(&6∞&7)'
-    - ' &6├ &e⇄ &fСпешка &2III &7(&6∞&7)'
-    - ' &6└ &e⇄ &fНасыщение &2I &7(&6∞&7)'
+    - ' &7When in off hand:'
+    - ' &6┌ &e⇄ &fRegeneration &2II &7(&6∞&7)'
+    - ' &6├ &e⇄ &fHealth Boost &2III &7(&6∞&7)'
+    - ' &6├ &e⇄ &fHaste &2III &7(&6∞&7)'
+    - ' &6└ &e⇄ &fSaturation &2I &7(&6∞&7)'
     - ''
-    - '&2🌿 &fПриродный тотем живой силы'
-    - '&2🌿 &fДарует жизненную энергию и силу роста'
+    - '&2🌿 &fNatural totem of living power'
+    - '&2🌿 &fGrants life energy and the power of growth'
     - ''
   type: RUNE
   activation-slot: OFFHAND

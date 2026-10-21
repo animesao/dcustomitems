@@ -1,5 +1,5 @@
 # ============================================
-# ТАЛИСМАН ПРИРОДЫ - Одноразовый предмет
+# NATURE TALISMAN - Single-use item
 # ============================================
 
 nature-talisman:
@@ -10,7 +10,7 @@ nature-talisman:
 
   item:
     type: PAPER
-    title: '&a[🌿] &fТалисман &aПрироды'
+    title: '&a[🌿] &fNature &aTalisman'
     glowing: true
     unbreakable: false
     item-model: "nature_talisman"
@@ -19,14 +19,14 @@ nature-talisman:
   lore:
     - ''
     - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Древний талисман природы'
+    - ' &7Ancient talisman of nature'
     - ' &2━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &a🌿 &fПКМ: Активировать'
-    - ' &7Даёт регенерацию на 30 секунд'
+    - ' &a🌿 &fRight Click: Activate'
+    - ' &7Grants regeneration for 30 seconds'
     - ''
-    - ' &c⚠ Одноразовый предмет!'
-    - ' &7Осталось использований: &a%uses%'
+    - ' &c⚠ Single-use item!'
+    - ' &7Uses left: &a%uses%'
     - ''
 
   max-uses: 1

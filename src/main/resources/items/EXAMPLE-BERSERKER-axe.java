@@ -11,35 +11,35 @@ import org.bukkit.scheduler.*;
 import java.util.*;
 
 /**
- * 🔥 БЕРСЕРК ТОПОР - Механика Ярости
+ * 🔥 BERSERKER AXE - Rage mechanic
  * 
- * Чем меньше HP, тем ты СИЛЬНЕЕ!
+ * The less HP you have, the STRONGER you are!
  * 
- * Механика:
- * - 100-75% HP: x1.5 урона, Скорость I
- * - 75-50% HP: x2 урона, Скорость II
- * - 50-25% HP: x3 урона, Скорость III, Регенерация I
- * - 25-0% HP: x5 урона, Скорость IV, Регенерация II, Невидимость на 3 сек при ударе
+ * Mechanic:
+ * - 100-75% HP: x1.5 damage, Speed I
+ * - 75-50% HP: x2 damage, Speed II
+ * - 50-25% HP: x3 damage, Speed III, Regeneration I
+ * - 25-0% HP: x5 damage, Speed IV, Regeneration II, Invisibility for 3 sec on hit
  * 
- * При убийстве: +2 сердца на 10 сек
- * При смерти: Взрыв ярости (урон всем рядом)
- * ЛКМ: Крик Ярости (AoE урон + отбрасывание, кулдаун 5 сек)
+ * On kill: +2 hearts for 10 sec
+ * On death: Rage explosion (damage to everything nearby)
+ * Left Click: Rage Scream (AoE damage + knockback, 5 sec cooldown)
  */
 public class BerserkerAxe extends AbstractCustomItem {
 
-    // Хранилище данных для игроков
+    // Data storage for the players
     private final Map<UUID, Double> damageMultipliers = new HashMap<>();
     private final Map<UUID, Integer> rageLevels = new HashMap<>();
-    private final Map<UUID, Long> leftClickCooldowns = new HashMap<>(); // Кулдаун ЛКМ
-    private final Map<UUID, Integer> lastAppliedLevel = new HashMap<>(); // Последний применённый уровень
+    private final Map<UUID, Long> leftClickCooldowns = new HashMap<>(); // Left click cooldown
+    private final Map<UUID, Integer> lastAppliedLevel = new HashMap<>(); // Last applied level
     
-    private static final long LEFT_CLICK_COOLDOWN_MS = 5000; // 5 секунд кулдаун на ЛКМ
+    private static final long LEFT_CLICK_COOLDOWN_MS = 5000; // 5 second cooldown on left click
 
     @Override
     public String getId() { return "berserker_axe"; }
 
     @Override
-    public String getDisplayName() { return "&4&l🔥 Берсерк Топор"; }
+    public String getDisplayName() { return "&4&l🔥 Berserker Axe"; }
 
     @Override
     public Material getMaterial() { return Material.NETHERITE_AXE; }
@@ -48,17 +48,17 @@ public class BerserkerAxe extends AbstractCustomItem {
     public java.util.List<String> getLore() {
         return java.util.List.of(
             "",
-            " &7&o\"Чем меньше крови, тем сильнее клинок\"",
+            " &7&o\"The less blood, the sharper the blade\"",
             "",
-            " &4⚔ &fМеханика Ярости:",
-            " &7• 100-75% HP: &cx1.5 урона",
-            " &7• 75-50% HP: &cx2 урона",
-            " &7• 50-25% HP: &cx3 урона + регенерация",
-            " &7• 25-0% HP: &cx5 урона + невидимость!",
+            " &4⚔ &fRage mechanic:",
+            " &7• 100-75% HP: &cx1.5 damage",
+            " &7• 75-50% HP: &cx2 damage",
+            " &7• 50-25% HP: &cx3 damage + regeneration",
+            " &7• 25-0% HP: &cx5 damage + invisibility!",
             "",
-            " &c🔥 &fПри убийстве: +2 сердца",
-            " &4💀 &fПри смерти: ВЗРЫВ ЯРОСТИ!",
-            " &c⚡ &fЛКМ: Крик Ярости (5 сек кулдаун)",
+            " &c🔥 &fOn kill: +2 hearts",
+            " &4💀 &fOn death: RAGE EXPLOSION!",
+            " &c⚡ &fLeft Click: Rage Scream (5 sec cooldown)",
             ""
         );
     }
@@ -73,13 +73,13 @@ public class BerserkerAxe extends AbstractCustomItem {
     public boolean isGlowing() { return true; }
 
     @Override
-    public long getPeriodicInterval() { return 40; } // Каждые 2 секунды (меньше нагрузки)
+    public long getPeriodicInterval() { return 40; } // Every 2 seconds (less load)
 
     @Override
-    public long getClickCooldown() { return 1000; } // 1 секунда кулдаун между ударами
+    public long getClickCooldown() { return 1000; } // 1 second cooldown between hits
 
     /**
-     * Вызывается каждые 2 секунды - обновляем уровень ярости
+     * Called every 2 seconds - we update the rage level
      */
     @Override
     public void onPeriodic(Player player) {
@@ -87,7 +87,7 @@ public class BerserkerAxe extends AbstractCustomItem {
     }
 
     /**
-     * Обновляет уровень ярости на основе HP
+     * Updates the rage level based on HP
      */
     private void updateRageLevel(Player player) {
         double maxHealth = player.getAttribute(Attribute.MAX_HEALTH).getValue();
@@ -114,21 +114,21 @@ public class BerserkerAxe extends AbstractCustomItem {
         UUID uuid = player.getUniqueId();
         Integer oldLevel = rageLevels.getOrDefault(uuid, 0);
 
-        // Сохраняем уровень и множитель
+        // Store the level and the multiplier
         rageLevels.put(uuid, newLevel);
         damageMultipliers.put(uuid, newMultiplier);
 
-        // Показываем уведомление ТОЛЬКО при изменении уровня
+        // Show the notification ONLY when the level changes
         if (oldLevel != newLevel) {
             showRageChange(player, newLevel, newMultiplier);
-            // Применяем эффекты ТОЛЬКО при изменении уровня
+            // Apply the effects ONLY when the level changes
             applyRageEffects(player, newLevel);
             lastAppliedLevel.put(uuid, newLevel);
         }
     }
 
     /**
-     * Показывает уведомление об изменении ярости
+     * Shows the notification about the rage change
      */
     private void showRageChange(Player player, int level, double multiplier) {
         switch (level) {
@@ -138,8 +138,8 @@ public class BerserkerAxe extends AbstractCustomItem {
                 break;
             case 2:
                 player.sendTitle(
-                    ChatColor.DARK_RED + "⚡ ЯРОСТЬ I",
-                    ChatColor.GRAY + "x1.5 урона + Скорость",
+                    ChatColor.DARK_RED + "⚡ RAGE I",
+                    ChatColor.GRAY + "x1.5 damage + Speed",
                     5, 30, 10
                 );
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 0.7f, 1.5f);
@@ -147,8 +147,8 @@ public class BerserkerAxe extends AbstractCustomItem {
                 break;
             case 3:
                 player.sendTitle(
-                    ChatColor.RED + "🔥 ЯРОСТЬ II",
-                    ChatColor.GRAY + "x3 урона + Регенерация!",
+                    ChatColor.RED + "🔥 RAGE II",
+                    ChatColor.GRAY + "x3 damage + Regeneration!",
                     5, 40, 10
                 );
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1f, 1f);
@@ -157,8 +157,8 @@ public class BerserkerAxe extends AbstractCustomItem {
                 break;
             case 4:
                 player.sendTitle(
-                    ChatColor.DARK_RED + "" + ChatColor.BOLD + "💀 ЯРОСТЬ III",
-                    ChatColor.RED + "x5 урона + НЕВИДИМОСТЬ!",
+                    ChatColor.DARK_RED + "" + ChatColor.BOLD + "💀 RAGE III",
+                    ChatColor.RED + "x5 damage + INVISIBILITY!",
                     5, 60, 15
                 );
                 player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 1.5f);
@@ -171,10 +171,10 @@ public class BerserkerAxe extends AbstractCustomItem {
     }
 
     /**
-     * Применяет эффекты в зависимости от уровня ярости
+     * Applies the effects depending on the rage level
      */
     private void applyRageEffects(Player player, int level) {
-        // Убираем старые эффекты
+        // Remove the old effects
         player.removePotionEffect(PotionEffectType.SPEED);
         player.removePotionEffect(PotionEffectType.REGENERATION);
 
@@ -194,14 +194,14 @@ public class BerserkerAxe extends AbstractCustomItem {
     }
 
     /**
-     * При ударе - наносим ДОПОЛНИТЕЛЬНЫЙ урон на основе ярости
+     * On hit - we deal BONUS damage based on the rage
      */
     @Override
     public void onDamageDealt(EntityDamageByEntityEvent event, Player player) {
         UUID uuid = player.getUniqueId();
         double multiplier = damageMultipliers.getOrDefault(uuid, 1.0);
 
-        // Дополнительный урон
+        // Bonus damage
         double baseDamage = event.getDamage();
         double bonusDamage = baseDamage * (multiplier - 1.0);
         event.setDamage(baseDamage + bonusDamage);
@@ -214,7 +214,7 @@ public class BerserkerAxe extends AbstractCustomItem {
         if (target != null) {
             int level = rageLevels.getOrDefault(uuid, 1);
 
-            // Частицы при ударе
+            // Particles on hit
             switch (level) {
                 case 2:
                     target.getWorld().spawnParticle(Particle.SMOKE, target.getLocation().add(0, 1, 0), 15);
@@ -231,7 +231,7 @@ public class BerserkerAxe extends AbstractCustomItem {
                     target.getWorld().spawnParticle(Particle.EXPLOSION, target.getLocation().add(0, 1, 0), 1);
                     target.getWorld().playSound(target.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 0.8f, 1.5f);
                     
-                    // Невидимость при ударе (максимальная ярость)
+                    // Invisibility on hit (maximum rage)
                     player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 0, false, false));
                     player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 1, 0), 30);
                     break;
@@ -240,7 +240,7 @@ public class BerserkerAxe extends AbstractCustomItem {
     }
 
     /**
-     * При убийстве - исцеление
+     * On kill - healing
      */
     @Override
     public void onKill(Player killer, Player victim) {
@@ -253,13 +253,13 @@ public class BerserkerAxe extends AbstractCustomItem {
         killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
         killer.sendTitle(
             ChatColor.GREEN + "+2 ❤",
-            ChatColor.GRAY + "Кража здоровья!",
+            ChatColor.GRAY + "Health theft!",
             5, 30, 10
         );
     }
 
     /**
-     * При смерти - ВЗРЫВ ЯРОСТИ!
+     * On death - RAGE EXPLOSION!
      */
     @Override
     public void onDeath(Player player, PlayerDeathEvent event) {
@@ -272,7 +272,7 @@ public class BerserkerAxe extends AbstractCustomItem {
             0f, false, false
         );
 
-        // Визуальные эффекты
+        // Visual effects
         player.getWorld().spawnParticle(Particle.EXPLOSION_EMITTER, loc, 1);
         player.getWorld().spawnParticle(Particle.FLAME, loc, 150);
         player.getWorld().spawnParticle(Particle.LAVA, loc, 80);
@@ -280,7 +280,7 @@ public class BerserkerAxe extends AbstractCustomItem {
         player.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.5f);
         player.getWorld().playSound(loc, Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 0.5f);
 
-        // Урон всем в радиусе
+        // Damage to everything in the radius
         for (Entity entity : player.getNearbyEntities(explosionRadius, explosionRadius, explosionRadius)) {
             if (entity instanceof LivingEntity && entity != player) {
                 LivingEntity living = (LivingEntity) entity;
@@ -290,40 +290,40 @@ public class BerserkerAxe extends AbstractCustomItem {
             }
         }
 
-        // Сообщение
+        // Message
         for (Entity entity : player.getNearbyEntities(20, 20, 20)) {
             if (entity instanceof Player && entity != player) {
-                ((Player) entity).sendMessage(ChatColor.RED + "💀 " + ChatColor.DARK_RED + player.getName() + " взорвался в ярости!");
+                ((Player) entity).sendMessage(ChatColor.RED + "💀 " + ChatColor.DARK_RED + player.getName() + " exploded in rage!");
             }
         }
     }
 
     /**
-     * При ЛКМ - Крик Ярости (AoE урон + отбрасывание)
-     * Кулдаун: 5 секунд
+     * On Left Click - Rage Scream (AoE damage + knockback)
+     * Cooldown: 5 seconds
      */
     @Override
     public void onLeftClick(PlayerInteractEvent event, Player player) {
         UUID uuid = player.getUniqueId();
         long currentTime = System.currentTimeMillis();
         
-        // Проверяем кулдаун
+        // Check the cooldown
         Long lastClick = leftClickCooldowns.get(uuid);
         if (lastClick != null && (currentTime - lastClick) < LEFT_CLICK_COOLDOWN_MS) {
             long remaining = LEFT_CLICK_COOLDOWN_MS - (currentTime - lastClick);
             double secondsLeft = remaining / 1000.0;
             player.sendTitle(
                 "",
-                ChatColor.RED + "Кулдаун: " + String.format("%.1f", secondsLeft) + " сек",
+                ChatColor.RED + "Cooldown: " + String.format("%.1f", secondsLeft) + " sec",
                 0, 20, 0
             );
             return;
         }
         
-        // Устанавливаем кулдаун
+        // Set the cooldown
         leftClickCooldowns.put(uuid, currentTime);
         
-        // AoE урон всем в радиусе 5 блоков
+        // AoE damage to everything within 5 blocks
         double radius = 5.0;
         double damage = 8.0;
         int hitCount = 0;
@@ -335,7 +335,7 @@ public class BerserkerAxe extends AbstractCustomItem {
                 living.setFireTicks(40);
                 hitCount++;
 
-                // Отбрасывание
+                // Knockback
                 org.bukkit.util.Vector knockback = living.getLocation().toVector()
                     .subtract(player.getLocation().toVector())
                     .normalize()
@@ -345,15 +345,15 @@ public class BerserkerAxe extends AbstractCustomItem {
             }
         }
 
-        // Эффекты
+        // Effects
         player.getWorld().spawnParticle(Particle.FLAME, player.getLocation(), 80);
         player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 1, 0), 40);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_RAVAGER_ROAR, 1f, 1f);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 0.8f, 0.5f);
         
         player.sendTitle(
-            ChatColor.RED + "💀 КРИК ЯРОСТИ",
-            ChatColor.GRAY + "Урон по области! Попало: " + hitCount,
+            ChatColor.RED + "💀 RAGE SCREAM",
+            ChatColor.GRAY + "Area damage! Hit: " + hitCount,
             5, 30, 10
         );
     }

@@ -21,57 +21,57 @@ import java.io.File;
 import java.util.*;
 
 /**
- * 📦 Template Module — Шаблон модуля DC-CustomItems
+ * 📦 Template Module — a template of a DC-CustomItems module
  *
  * ==========================================
- * КАК СОЗДАТЬ СВОЙ МОДУЛЬ:
+ * HOW TO CREATE YOUR OWN MODULE:
  * ==========================================
  *
- * 1. Скопируйте папку _template/ → items/my-module/
- * 2. Переименуйте template.java → my-module.java
- * 3. В файле замените:
+ * 1. Copy the _template/ folder → items/my-module/
+ * 2. Rename template.java → my-module.java
+ * 3. In the file replace:
  *    - "templateModule" → "myModule"
- *    - "template" → "my-module" (везде где есть)
- * 4. Реализуйте нужную логику в onEnable/onDisable
- * 5. Выполните /ci reload
+ *    - "template" → "my-module" (everywhere it appears)
+ * 4. Implement the logic you need in onEnable/onDisable
+ * 5. Run /ci reload
  *
  * ==========================================
- * ДОСТУПНЫЕ ХУКИ:
+ * AVAILABLE HOOKS:
  * ==========================================
  *
- * - onEnable()     — вызывается при включении модуля
- * - onDisable()    — вызывается при выключении модуля
- * - config         — YamlConfiguration из config.yml
- * - itemsConfig    — YamlConfiguration из items.yml
- * - plugin         — главный класс плагина (Main)
- * - id             — ID модуля (имя папки)
- * - folder         — папка модуля
+ * - onEnable()     — called when the module is enabled
+ * - onDisable()    — called when the module is disabled
+ * - config         — YamlConfiguration from config.yml
+ * - itemsConfig    — YamlConfiguration from items.yml
+ * - plugin         — the plugin's main class (Main)
+ * - id             — the module ID (the folder name)
+ * - folder         — the module folder
  *
  * ==========================================
- * РЕГИСТРАЦИЯ КОМАНД:
+ * COMMAND REGISTRATION:
  * ==========================================
  *
- * Вариант 1: Через plugin.yml (рекомендуется)
+ * Option 1: Through plugin.yml (recommended)
  *   buy:
  *     description: Buy item
  *     usage: /buy <id>
  *     permission: mymodule.buy
  *
- * Вариант 2: Динамическая регистрация
+ * Option 2: Dynamic registration
  *   registerDynamicCommand("buy", this);
  *
  * ==========================================
- * РЕГИСТРАЦИЯ ПЛЕЙСХОЛДЕРОВ:
+ * PLACEHOLDER REGISTRATION:
  * ==========================================
  *
  * plugin.getPlaceholderManager().register("mymodule_stat", (player) -> {
  *     return "value";
  * });
  *
- * Доступно как: %dci_mymodule_stat%
+ * Available as: %dci_mymodule_stat%
  *
  * ==========================================
- * РЕГИСТРАЦИЯ СЛУШАТЕЛЕЙ:
+ * LISTENER REGISTRATION:
  * ==========================================
  *
  * plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -80,76 +80,76 @@ import java.util.*;
  */
 public class templateModule extends Module implements Listener, CommandExecutor, TabCompleter {
 
-    // ===== КОНСТРУКТОР (не трогать) =====
+    // ===== CONSTRUCTOR (do not touch) =====
 
     public templateModule(Main plugin, String id, File folder) {
         super(plugin, id, folder);
     }
 
-    // ===== ОСНОВНЫЕ ХУКИ МОДУЛЯ =====
+    // ===== MAIN MODULE HOOKS =====
 
     /**
-     * Вызывается при ВКЛЮЧЕНИИ модуля.
+     * Called when the module is ENABLED.
      *
-     * Здесь регистрируйте:
-     * - Команды
-     * - Слушатели событий
-     * - Плейсхолдеры
-     * - Таймеры/задачи
-     * - Загрузку данных
+     * Register here:
+     * - Commands
+     * - Event listeners
+     * - Placeholders
+     * - Timers/tasks
+     * - Data loading
      */
     @Override
     protected void onEnable() {
-        // Регистрируем команды (базовый класс сам удалит её при disable)
+        // Register the commands (the base class removes them on disable)
         registerDynamicCommand("mycommand", this, "template.mycommand");
 
-        // Регистрируем слушатель событий
+        // Register the event listener
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
-        // Регистрируем плейсхолдеры
+        // Register the placeholders
         registerPlaceholders();
 
-        // Логируем успешную загрузку
+        // Log the successful load
         String prefix = config.getString("settings.message-prefix", "&a[Module] &r");
         plugin.getLogger().info("[Template] Module enabled!");
     }
 
     /**
-     * Вызывается при ВЫКЛЮЧЕНИИ модуля.
+     * Called when the module is DISABLED.
      *
-     * Здесь очищайте:
-     * - Отменяйте таймеры
-     * - Сохраняйте данные
-     * - Закрывайте соединения
+     * Clean up here:
+     * - Cancel the timers
+     * - Save the data
+     * - Close the connections
      */
     @Override
     protected void onDisable() {
-        // Отменяем все listeners этого модуля
+        // Unregister all the listeners of this module
         org.bukkit.event.HandlerList.unregisterAll(this);
 
         plugin.getLogger().info("[Template] Module disabled!");
     }
 
-    // ===== РЕГИСТРАЦИЯ КОМАНД =====
+    // ===== COMMAND REGISTRATION =====
 
     /**
-     * Зарегистрировать команду.
+     * Register a command.
      *
-     * Способ 1: Добавить в plugin.yml (лучше):
+     * Way 1: Add it to plugin.yml (better):
      *   mycommand:
      *     description: My command
      *     usage: /mycommand <args>
      *     permission: template.mycommand
      *
-     * Способ 2: Динамическая регистрация (базовый класс):
+     * Way 2: Dynamic registration (the base class):
      *   registerDynamicCommand("mycommand", this, "template.mycommand");
-     * Команда автоматически удаляется при disable модуля.
+     * The command is removed automatically when the module is disabled.
      */
 
-    // ===== ОБРАБОТКА КОМАНД =====
+    // ===== COMMAND HANDLING =====
 
     /**
-     * Обработка команды /mycommand
+     * Handling of the /mycommand command
      */
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -165,22 +165,22 @@ public class templateModule extends Module implements Listener, CommandExecutor,
 
     private boolean handleMyCommand(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("Только для игроков!");
+            sender.sendMessage("Players only!");
             return true;
         }
 
         Player player = (Player) sender;
 
-        // Получаем префикс из конфига
+        // Get the prefix from the config
         String prefix = config.getString("settings.message-prefix", "&a[Module] &r");
 
         if (args.length == 0) {
-            player.sendMessage(colorize(prefix + "&7Использование: &e/mycommand <arg>"));
+            player.sendMessage(colorize(prefix + "&7Usage: &e/mycommand <arg>"));
             return true;
         }
 
-        // Ваша логика здесь
-        player.sendMessage(colorize(prefix + "&aВыполнили команду с аргументом: &e" + args[0]));
+        // Your logic goes here
+        player.sendMessage(colorize(prefix + "&aYou ran the command with the argument: &e" + args[0]));
         return true;
     }
 
@@ -191,70 +191,70 @@ public class templateModule extends Module implements Listener, CommandExecutor,
         List<String> completions = new ArrayList<>();
 
         if (args.length == 1) {
-            // Варианты для первого аргумента
+            // Options for the first argument
             completions.addAll(Arrays.asList("option1", "option2", "option3"));
         }
 
         return completions;
     }
 
-    // ===== СЛУШАТЕЛИ СОБЫТИЙ =====
+    // ===== EVENT LISTENERS =====
 
     /**
-     * Пример: при входе игрока на сервер
+     * Example: when a player joins the server
      */
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         String prefix = config.getString("settings.message-prefix", "&a[Module] &r");
 
-        // Ваша логика
-        // player.sendMessage(colorize(prefix + "Добро пожаловать!"));
+        // Your logic goes here
+        // player.sendMessage(colorize(prefix + "Welcome!"));
     }
 
     /**
-     * Пример: при выходе игрока
+     * Example: when a player leaves
      */
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        // Сохраняем данные, чистим кэш и т.д.
+        // Save the data, clear the cache, etc.
     }
 
-    // ===== ПЛЕЙСХОЛДЕРЫ =====
+    // ===== PLACEHOLDERS =====
 
     /**
-     * Регистрация плейсхолдеров модуля.
-     * Доступны как: %dci_<identifier>%
+     * Registration of the module placeholders.
+     * Available as: %dci_<identifier>%
      */
     private void registerPlaceholders() {
         PlaceholderManager pm = plugin.getPlaceholderManager();
         if (pm == null) return;
 
-        // Пример: %dci_mymodule_stat%
+        // Example: %dci_mymodule_stat%
         pm.register("mymodule_stat", (player) -> {
-            // Вернуть значение плейсхолдера
+            // Return the placeholder value
             return "42";
         });
 
-        // Пример: %dci_mymodule_balance%
+        // Example: %dci_mymodule_balance%
         pm.register("mymodule_balance", (player) -> {
-            // Запрос к БД, кэшу и т.д.
+            // A query to the database, the cache, etc.
             return "1000";
         });
     }
 
-    // ===== РАБОТА С ПРЕДМЕТАМИ =====
+    // ===== WORKING WITH ITEMS =====
 
     /**
-     * Пример: получить кастомный предмет по ID
+     * Example: get a custom item by ID
      */
     private CustomItem getCustomItem(String itemId) {
         return plugin.getItemHandler().getCustomItem(itemId);
     }
 
     /**
-     * Пример: выдать предмет игроку
+     * Example: give an item to a player
      */
     private void giveItem(Player player, String itemId, int amount) {
         CustomItem item = getCustomItem(itemId);
@@ -267,7 +267,7 @@ public class templateModule extends Module implements Listener, CommandExecutor,
     }
 
     /**
-     * Пример: проверить есть ли предмет у игрока
+     * Example: check whether the player has the item
      */
     private boolean hasItem(Player player, String itemId) {
         for (ItemStack item : player.getInventory().getContents()) {
@@ -279,7 +279,7 @@ public class templateModule extends Module implements Listener, CommandExecutor,
     }
 
     /**
-     * Пример: забрать предмет у игрока
+     * Example: take an item away from a player
      */
     private boolean removeItem(Player player, String itemId, int amount) {
         int remaining = amount;
@@ -294,41 +294,41 @@ public class templateModule extends Module implements Listener, CommandExecutor,
         return remaining == 0;
     }
 
-    // ===== РАБОТА С БАЗОЙ ДАННЫХ =====
+    // ===== WORKING WITH THE DATABASE =====
 
     /**
-     * Пример: запрос к БД
+     * Example: a database query
      */
     private void databaseExample() {
         if (plugin.getDatabaseManager() == null) return;
 
-        // Создать таблицу
+        // Create a table
         plugin.getDatabaseManager().execute(
             "CREATE TABLE IF NOT EXISTS my_data (uuid TEXT, key TEXT, value TEXT)"
         );
 
-        // Вставить данные
+        // Insert data
         plugin.getDatabaseManager().execute(
             "INSERT INTO my_data (uuid, key, value) VALUES (?, ?, ?)",
             "player-uuid", "mykey", "myvalue"
         );
 
-        // Получить данные
+        // Get the data
         String value = plugin.getDatabaseManager().queryString(
             "SELECT value FROM my_data WHERE uuid=? AND key=?",
             "player-uuid", "mykey"
         );
     }
 
-    // ===== GUI / МЕНЮ =====
+    // ===== GUI / MENU =====
 
     /**
-     * Пример: создать GUI-меню
+     * Example: create a GUI menu
      */
     private void openMenu(Player player) {
         Inventory menu = Bukkit.createInventory(null, 27, colorize("&6My Menu"));
 
-        // Заполняем фон
+        // Fill the background
         ItemStack glass = new ItemStack(org.bukkit.Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta glassMeta = glass.getItemMeta();
         if (glassMeta != null) {
@@ -339,7 +339,7 @@ public class templateModule extends Module implements Listener, CommandExecutor,
             menu.setItem(i, glass);
         }
 
-        // Добавляем предметы
+        // Add the items
         ItemStack diamond = new ItemStack(org.bukkit.Material.DIAMOND);
         ItemMeta diamondMeta = diamond.getItemMeta();
         if (diamondMeta != null) {
@@ -351,31 +351,31 @@ public class templateModule extends Module implements Listener, CommandExecutor,
         player.openInventory(menu);
     }
 
-    // ===== ТАЙМЕРЫ / ЗАДАЧИ =====
+    // ===== TIMERS / TASKS =====
 
     /**
-     * Пример: запустить повторяющуюся задачу
+     * Example: start a repeating task
      */
     private void startRepeatingTask() {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            // Выполняется каждые 20 тиков (1 секунда)
+            // Runs every 20 ticks (1 second)
             for (Player player : Bukkit.getOnlinePlayers()) {
-                // Ваша логика
+                // Your logic goes here
             }
         }, 0L, 20L); // delay=0, period=20
     }
 
     /**
-     * Пример: отложенная задача
+     * Example: a delayed task
      */
     private void scheduleDelayedTask(Player player) {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            // Выполнится через 100 тиков (5 секунд)
-            player.sendMessage(colorize("&a5 секунд прошло!"));
+            // Runs after 100 ticks (5 seconds)
+            player.sendMessage(colorize("&a5 seconds have passed!"));
         }, 100L);
     }
 
-    // ===== УТИЛИТЫ =====
+    // ===== UTILS =====
 
     private String colorize(String msg) {
         return msg == null ? "" : msg.replace("&", "§");

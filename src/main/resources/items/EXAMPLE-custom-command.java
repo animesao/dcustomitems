@@ -8,47 +8,47 @@ import org.bukkit.potion.*;
 import java.util.*;
 
 /**
- * 🔥 БЕРСЕРК КОМАНДА - Пример кастомной команды на Java
+ * 🔥 BERSERK COMMAND - Example of a custom command in Java
  * 
- * Команда /berserk:
- * - Включает/выключает режим берсерка
- * - Мало HP = больше урона
- * - Визуальные эффекты
- * - Автоматическое отключение при смерти
+ * The /berserk command:
+ * - Enables/disables the berserk mode
+ * - Low HP = more damage
+ * - Visual effects
+ * - Automatically disables on death
  * 
- * Использование:
- *   /berserk - Включить/выключить
- *   /berserk on - Включить
- *   /berserk off - Выключить
- *   /berserk status - Статус
+ * Usage:
+ *   /berserk - Enable/disable
+ *   /berserk on - Enable
+ *   /berserk off - Disable
+ *   /berserk status - Status
  */
 public class BerserkCommand extends CustomCommand {
 
-    // Хранилище активных берсерков
+    // Storage of the active berserkers
     private static final Set<UUID> activeBerserkers = new HashSet<>();
 
     public BerserkCommand() {
         super(
-            "berserk",                    // Имя команды
-            "Включить/выключить берсерк", // Описание
-            "/berserk [on|off|status]",   // Использование
-            "dci.command.berserk",        // Право
-            List.of("brk", "rage"),       // Алиасы
-            "&cУ вас нет прав на берсерк!" // Сообщение об ошибке
+            "berserk",                    // Command name
+            "Enable/disable berserk",     // Description
+            "/berserk [on|off|status]",   // Usage
+            "dci.command.berserk",        // Permission
+            List.of("brk", "rage"),       // Aliases
+            "&cYou do not have permission for berserk!" // Error message
         );
     }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
-            sendMessage(sender, "&cТолько для игроков!");
+            sendMessage(sender, "&cPlayers only!");
             return true;
         }
 
         Player player = (Player) sender;
         UUID uuid = player.getUniqueId();
 
-        // Определяем действие
+        // Determine the action
         String action = args.length > 0 ? args[0].toLowerCase() : "toggle";
 
         switch (action) {
@@ -79,73 +79,73 @@ public class BerserkCommand extends CustomCommand {
     }
 
     /**
-     * Включить берсерк
+     * Enable berserk
      */
     private void enableBerserk(Player player) {
         UUID uuid = player.getUniqueId();
 
         if (activeBerserkers.contains(uuid)) {
-            sendMessage(player, "&cВы уже в берсерке!");
+            sendMessage(player, "&cYou are already berserk!");
             return;
         }
 
         activeBerserkers.add(uuid);
 
-        // Эффекты
+        // Effects
         player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 999999, 1, false, false));
         player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 999999, 1, false, false));
         player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 999999, 0, false, false));
 
-        // Визуальные эффекты
+        // Visual effects
         player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 2, 0), 100);
         player.getWorld().spawnParticle(Particle.SMOKE_LARGE, player.getLocation().add(0, 1, 0), 50);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 1.5f);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 1f, 0.5f);
 
-        // Заголовок
+        // Title
         player.sendTitle(
-            ChatColor.DARK_RED + "" + ChatColor.BOLD + "🔥 БЕРСЕРК!",
-            ChatColor.RED + "Сила x2 | Скорость x2",
+            ChatColor.DARK_RED + "" + ChatColor.BOLD + "🔥 BERSERK!",
+            ChatColor.RED + "Strength x2 | Speed x2",
             10, 60, 20
         );
 
-        sendMessage(player, "&4Вы進入ли в режим БЕРСЕРКА! (+2 урона, +скорость)");
+        sendMessage(player, "&4You entered BERSERK mode! (+2 damage, +speed)");
     }
 
     /**
-     * Выключить берсерк
+     * Disable berserk
      */
     private void disableBerserk(Player player) {
         UUID uuid = player.getUniqueId();
 
         if (!activeBerserkers.contains(uuid)) {
-            sendMessage(player, "&cВы не в берсерке!");
+            sendMessage(player, "&cYou are not berserk!");
             return;
         }
 
         activeBerserkers.remove(uuid);
 
-        // Убираем эффекты
+        // Remove the effects
         player.removePotionEffect(PotionEffectType.STRENGTH);
         player.removePotionEffect(PotionEffectType.SPEED);
         player.removePotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
 
-        // Визуальные эффекты
+        // Visual effects
         player.getWorld().spawnParticle(Particle.SMOKE, player.getLocation().add(0, 2, 0), 30);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1f, 1f);
 
-        // Заголовок
+        // Title
         player.sendTitle(
-            ChatColor.GRAY + "Берсерк выключен",
+            ChatColor.GRAY + "Berserk disabled",
             "",
             5, 20, 5
         );
 
-        sendMessage(player, "&7Режим берсерка отключён.");
+        sendMessage(player, "&7Berserk mode has been disabled.");
     }
 
     /**
-     * Показать статус
+     * Show the status
      */
     private void showStatus(Player player) {
         UUID uuid = player.getUniqueId();
@@ -154,26 +154,26 @@ public class BerserkCommand extends CustomCommand {
         double maxHealth = player.getAttribute(Attribute.MAX_HEALTH).getValue();
         int healthPercent = (int) ((health / maxHealth) * 100);
 
-        sendMessage(player, "&6=== БЕРСЕРК ===");
-        sendMessage(player, "&7Статус: " + (isActive ? "&aАктивен" : "&cВыключен"));
+        sendMessage(player, "&6=== BERSERK ===");
+        sendMessage(player, "&7Status: " + (isActive ? "&aActive" : "&cDisabled"));
         sendMessage(player, "&7HP: &c" + (int) health + "/" + (int) maxHealth + " (" + healthPercent + "%)");
 
         if (isActive) {
             int bonusDamage = calculateBonusDamage(healthPercent);
-            sendMessage(player, "&7Бонус урона: &c+" + bonusDamage);
+            sendMessage(player, "&7Bonus damage: &c+" + bonusDamage);
         }
 
         sendMessage(player, "&6================");
     }
 
     /**
-     * Рассчитать бонус урона на основе HP
+     * Calculate the bonus damage based on HP
      */
     private int calculateBonusDamage(int healthPercent) {
         if (healthPercent > 75) return 1;
         if (healthPercent > 50) return 2;
         if (healthPercent > 25) return 4;
-        return 8; // Максимальный бонус при критическом HP
+        return 8; // Maximum bonus at critical HP
     }
 
     @Override
@@ -185,14 +185,14 @@ public class BerserkCommand extends CustomCommand {
     }
 
     /**
-     * Проверить активен ли берсерк у игрока
+     * Check whether berserk is active for a player
      */
     public static boolean isActive(Player player) {
         return activeBerserkers.contains(player.getUniqueId());
     }
 
     /**
-     * Получить бонус урона для игрока
+     * Get the bonus damage for a player
      */
     public static int getBonusDamage(Player player) {
         if (!isActive(player)) return 0;
@@ -207,11 +207,11 @@ public class BerserkCommand extends CustomCommand {
     }
 
     /**
-     * Очистить при отключении плагина
+     * Clear on plugin shutdown
      */
     @Override
     public void onUnregister() {
-        // Выключаем берсерк у всех
+        // Disable berserk for everyone
         for (UUID uuid : new HashSet<>(activeBerserkers)) {
             Player player = Bukkit.getPlayer(uuid);
             if (player != null && player.isOnline()) {

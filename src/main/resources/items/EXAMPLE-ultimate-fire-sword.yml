@@ -1,6 +1,6 @@
 # ============================================
-# ПРИМЕР: УЛЬТИМАТИВНЫЙ ОГНЕННЫЙ КЛИНОК
-# Демонстрация ВСЕХ возможностей плагина
+# EXAMPLE: ULTIMATE FIRE BLADE
+# Demonstration of ALL plugin features
 # ============================================
 
 ultimate-fire-sword:
@@ -11,7 +11,7 @@ ultimate-fire-sword:
 
   item:
     type: NETHERITE_SWORD
-    title: '&c&l🔥 Ультимативный Огненный Клинок'
+    title: '&c&l🔥 Ultimate Fire Blade'
     glowing: true
     unbreakable: true
     item-model: "ultimate_fire_sword"
@@ -25,18 +25,18 @@ ultimate-fire-sword:
   lore:
     - ''
     - ' &c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Легендарное оружие огненных стихий'
+    - ' &7Legendary weapon of the fire elements'
     - ' &c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eСила &cV'
-    - ' &6├ &eСкорость &cIII'
-    - ' &6├ &eРегенерация &cIII'
-    - ' &6└ &eСопротивление &cII'
+    - ' &e⚡ &fWhile in main hand:'
+    - ' &6┌ &eStrength &cV'
+    - ' &6├ &eSpeed &cIII'
+    - ' &6├ &eRegeneration &cIII'
+    - ' &6└ &eResistance &cII'
     - ''
-    - '&c🔥 &fПКМ: Огненный шторм!'
-    - '&c💥 &fЛКМ: AoE урон!'
-    - '&c❤ &fПри убийстве: Полное исцеление!'
+    - '&c🔥 &fRight Click: Fire storm!'
+    - '&c💥 &fLeft Click: AoE damage!'
+    - '&c❤ &fOn kill: Full healing!'
     - ''
 
   effects:
@@ -57,98 +57,98 @@ ultimate-fire-sword:
 
   triggers:
     on_equip:
-      # Кастомные частицы с offset
+      # Custom particles with offset
       - 'particles_custom:FLAME:100:0:1:0:2:2:2'
       - 'particles_custom:DRAGON_BREATH:50:0:2:0:1:1:1'
-      # Последовательность звуков
+      # Sound sequence
       - 'sound_sequence:ENTITY_BLAZE_AMBIENT:1:1;ENTITY_PLAYER_LEVELUP:0.5:2'
-      # Заголовок
-      - 'title:&c🔥 &lОГНЕННЫЙ КЛИНОК ИЗВЛЕЧЁН!|&7Стихия огня повинуется вам!:10:40:10'
+      # Title
+      - 'title:&c🔥 &lFIRE BLADE DRAWN!|&7The fire element obeys you!:10:40:10'
 
     on_unequip:
       - 'particles_custom:SMOKE:30:0:1:0:1:1:1'
       - 'sound:ENTITY_BLAZE_SHOOT:0.5:1.5'
 
     on_click_right:
-      # Последовательность заголовков (анимация)
-      - 'title_sequence:🔥 ПОДГОТОВКА!:::10:20:10;🔥 ОГОНЬ!:::10:30:10;🔥 ШТОРМ!:::10:40:10'
+      # Title sequence (animation)
+      - 'title_sequence:🔥 PREPARATION!:::10:20:10;🔥 FIRE!:::10:30:10;🔥 STORM!:::10:40:10'
       
-      # Кастомные частицы (огненное кольцо)
+      # Custom particles (fire ring)
       - 'particles_custom:FLAME:200:0:1:0:3:1:3'
       - 'particles_custom:DRAGON_BREATH:100:0:2:0:2:2:2'
       
-      # Кастомный урон (6x4x6 блоков)
+      # Custom damage (6x4x6 blocks)
       - 'damage_custom:30:6:4:6'
       
-      # Звуки с задержками
+      # Sounds with delays
       - 'sound_sequence:ENTITY_BLAZE_SHOOT:1:1;ENTITY_GENERIC_EXPLODE:1:0.8;ENTITY_ENDER_DRAGON_GROWL:1:1'
       
-      # Эффекты с задержками
+      # Effects with delays
       - 'effect_sequence:STRENGTH:15:5:0;SPEED:15:3:500;FIRE_RESISTANCE:15:1:1000'
       
-      # Кастомное исцеление для союзников
+      # Custom healing for allies
       - 'heal_custom:15:8:5:8:HEART'
 
     on_click_left:
-      # Кастомный урон
+      # Custom damage
       - 'damage_custom:20:5:3:5'
       
-      # Частицы взрыва
+      # Explosion particles
       - 'particles_custom:EXPLOSION_HUGE:10:0:1:0:2:2:2'
       - 'particles_custom:FLAME:150:0:1:0:3:2:3'
       
-      # Звук взрыва
+      # Explosion sound
       - 'sound:ENTITY_GENERIC_EXPLODE:1:0.8'
       
-      # Отброс
+      # Knockback
       - 'knockback:5'
 
     on_kill:
-      # Полное исцеление
+      # Full healing
       - 'heal:50'
       
-      # Эффекты исцеления
+      # Healing effects
       - 'effect_sequence:REGENERATION:20:4:0;STRENGTH:20:5:1000;SPEED:20:3:2000'
       
-      # Кастомные частицы исцеления
+      # Custom healing particles
       - 'particles_custom:HEART:100:0:2:0:2:2:2'
       - 'particles_custom:VILLAGER_HAPPY:50:0:3:0:1:1:1'
       
-      # Звук уровня
+      # Level-up sound
       - 'sound:ENTITY_PLAYER_LEVELUP:1:2'
       
-      # Фейерверк
+      # Firework
       - 'fireworks:1'
 
     on_damage_dealt:
-      # Кража здоровья
+      # Health theft
       - 'heal:8'
       
-      # Частицы крови
+      # Blood particles
       - 'particles_custom:DRAGON_BREATH:20:0:1:0:0.5:0.5:0.5'
       
-      # Звук вампира
+      # Vampire sound
       - 'sound:ENTITY_VAMPIRE_BITE:0.5:2'
 
     on_damage_taken:
-      # Сопротивление урону
+      # Damage resistance
       - 'effect:RESISTANCE:8:3'
       
-      # Частицы защиты
+      # Protection particles
       - 'particles_custom:ENCHANTMENT_TABLE:30:0:1:0:1:1:1'
 
     on_jump:
-      # Скорость при прыжке
+      # Speed on jump
       - 'effect:SPEED:5:3'
       
-      # Огненные следы
+      # Fiery trail
       - 'particles_custom:FLAME:20:0:-0.5:0:0.3:0.1:0.3'
 
     on_pickup:
-      # Приветствие
+      # Greeting
       - 'particles_custom:PORTAL:30:0:1:0:1:1:1'
       - 'sound:ENTITY_ENDERMAN_TELEPORT:0.5:1.2'
 
     on_drop:
-      # Прощание
+      # Farewell
       - 'particles_custom:SMOKE:20:0:1:0:0.5:0.5:0.5'

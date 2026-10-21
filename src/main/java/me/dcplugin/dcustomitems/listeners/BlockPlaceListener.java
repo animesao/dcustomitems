@@ -31,18 +31,18 @@ public class BlockPlaceListener implements Listener {
             return;
         }
 
-        // YAML-предмет
+        // YAML item
         CustomItem customItem = plugin.getItemHandler().getCustomItem(customItemId);
         if (customItem != null) {
             if (!customItem.isPlaceable()) {
                 event.setCancelled(true);
-                // Сообщение не выводится - просто блокируем размещение
+                // No message is shown - the placement is simply blocked
             }
             return;
         }
 
-        // Java API-предмет — раньше проверка placeable делалась только для
-        // YAML-предметов, и Java-предметы можно было ставить как блоки.
+        // Java API item — previously the placeable check was only done for
+        // YAML items, so Java items could be placed as blocks.
         if (plugin.getApiItemRegistry() == null) return;
         AbstractCustomItem javaItem = plugin.getApiItemRegistry().getItem(customItemId);
         if (javaItem != null && !javaItem.isPlaceable()) {

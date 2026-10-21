@@ -1,18 +1,18 @@
 # ==========================================
-# ОРУЖИЕ И ИНСТРУМЕНТЫ
+# WEAPONS AND TOOLS
 # ==========================================
 
 lightning-staff:
   item:
     type: STICK
-    title: '&6⚡ &fПосох Молнии'
+    title: '&6⚡ &fLightning Staff'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7Кликни ПКМ по блоку чтобы:'
-    - ' &6┌ &eУдарить молнию'
-    - ' &6└ &e(Перезарядка: 2 сек)'
+    - ' &7Right Click a block to:'
+    - ' &6┌ &eStrike with lightning'
+    - ' &6└ &e(Cooldown: 2 sec)'
     - ''
   type: TOOL
   activation-slot: HAND
@@ -23,17 +23,17 @@ lightning-staff:
       - 'lightning:1'
       - 'particle:FIREWORKS_SPARK:10'
       - 'sound:ENTITY_LIGHTNING_BOLT_THUNDER:1:1'
-      - 'message:&6⚡ &7Молния призвана!'
+      - 'message:&6⚡ &7Lightning summoned!'
     on_equip:
       - 'particle:PORTAL:10'
-      - 'message:&6⚡ &7Посох извлечен!'
+      - 'message:&6⚡ &7Staff drawn!'
     on_unequip:
-      - 'message:&6⚡ &7Посох убран.'
+      - 'message:&6⚡ &7Staff sheathed.'
 
 lightning-axe:
   item:
     type: DIAMOND_AXE
-    title: '&c⚡ &fТопор Грозы'
+    title: '&c⚡ &fStorm Axe'
     glowing: true
     unbreakable: true
     enchantments:
@@ -41,8 +41,8 @@ lightning-axe:
       DURABILITY: 3
   lore:
     - ''
-    - ' &7ПКМ - 2 молнии'
-    - ' &7ЛКМ - 3 молнии'
+    - ' &7Right Click - 2 lightning bolts'
+    - ' &7Left Click - 3 lightning bolts'
     - ''
   type: TOOL
   activation-slot: HAND
@@ -52,27 +52,27 @@ lightning-axe:
     on_click_right:
       - 'lightning:2'
       - 'particle:FIREWORKS_SPARK:15'
-      - 'message:&c⚡ &72 молнии!'
+      - 'message:&c⚡ &72 lightning bolts!'
     on_click_left:
       - 'lightning:3'
       - 'particle:EXPLOSION_HUGE:5'
-      - 'message:&c💥 &7Взрыв молний!'
+      - 'message:&c💥 &7Lightning explosion!'
     on_equip:
       - 'particle:FIREWORKS_SPARK:10'
-      - 'message:&c⚡ &7Топор извлечен!'
+      - 'message:&c⚡ &7Axe drawn!'
     on_unequip:
-      - 'message:&c⚡ &7Топор убран.'
+      - 'message:&c⚡ &7Axe sheathed.'
 
 magic-wand:
   item:
     type: BLAZE_ROD
-    title: '&5✨ &dВолшебная Палочка'
+    title: '&5✨ &dMagic Wand'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7ПКМ - Сила'
-    - ' &7ЛКМ - Спешка'
+    - ' &7Right Click - Strength'
+    - ' &7Left Click - Haste'
     - ''
   type: TOOL
   activation-slot: HAND
@@ -82,27 +82,27 @@ magic-wand:
     on_click_right:
       - 'effect:INCREASE_DAMAGE:10:2'
       - 'particle:ENCHANTMENT_TABLE:15'
-      - 'message:&d✨ Сила активирована!'
+      - 'message:&d✨ Strength activated!'
     on_click_left:
       - 'effect:SPEED:8:2'
       - 'particle:CRIT:10'
-      - 'message:&b⚡ Спешка активирована!'
+      - 'message:&b⚡ Haste activated!'
     on_equip:
       - 'particle:PORTAL:10'
-      - 'message:&5✨ &7Палочка извлечена!'
+      - 'message:&5✨ &7Wand drawn!'
     on_unequip:
-      - 'message:&5✨ &7Палочка убрана.'
+      - 'message:&5✨ &7Wand put away.'
 
 command-staff:
   item:
     type: STICK
-    title: '&9📜 &bПосох Команд'
+    title: '&9📜 &bCommand Staff'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7ПКМ - алмаз'
-    - ' &7Использования: &b%uses%'
+    - ' &7Right Click - a diamond'
+    - ' &7Uses: &b%uses%'
     - ''
   type: TOOL
   activation-slot: HAND
@@ -114,21 +114,21 @@ command-staff:
     on_click_right:
       - 'command:give %player% diamond 1'
       - 'particle:VILLAGER_HAPPY:10'
-      - 'message:&e+1 алмаз!'
+      - 'message:&e+1 diamond!'
     on_equip:
-      - 'message:&9📜 &7Посох извлечен!'
+      - 'message:&9📜 &7Staff drawn!'
     on_unequip:
-      - 'message:&9📜 &7Посох убран.'
+      - 'message:&9📜 &7Staff sheathed.'
 
 healing-staff:
   item:
     type: STICK
-    title: '&c❤ &fПосох Исцеления'
+    title: '&c❤ &fHealing Staff'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7ПКМ - исцеление'
+    - ' &7Right Click - healing'
     - ''
   type: TOOL
   activation-slot: HAND
@@ -140,23 +140,23 @@ healing-staff:
       - 'effect:ABSORPTION:15:2'
       - 'particle:HEART:20'
       - 'sound:ENTITY_PLAYER_LEVELUP:1:1'
-      - 'message:&c❤ Исцеление началось!'
+      - 'message:&c❤ Healing started!'
     on_equip:
-      - 'message:&c❤ &7Посох извлечен!'
+      - 'message:&c❤ &7Staff drawn!'
     on_unequip:
-      - 'message:&c❤ &7Посох убран.'
+      - 'message:&c❤ &7Staff sheathed.'
 
 energy-blast:
   item:
     type: DIAMOND_SWORD
-    title: '&e⚡ &fЭнергетический Взрыв'
+    title: '&e⚡ &fEnergy Blast'
     glowing: true
     unbreakable: true
     enchantments:
       SHARPNESS: 5
   lore:
     - ''
-    - ' &7ПКМ - взрыв'
+    - ' &7Right Click - explosion'
     - ''
   type: TOOL
   activation-slot: HAND
@@ -167,22 +167,22 @@ energy-blast:
       - 'lightning:2'
       - 'particle:FIREWORKS_SPARK:15'
       - 'sound:ENTITY_LIGHTNING_BOLT_IMPACT:1:0.8'
-      - 'message:&e⚡ &7Энергетический взрыв!'
+      - 'message:&e⚡ &7Energy blast!'
     on_equip:
-      - 'message:&e⚡ &7Меч извлечен!'
+      - 'message:&e⚡ &7Sword drawn!'
     on_unequip:
-      - 'message:&e⚡ &7Меч убран.'
+      - 'message:&e⚡ &7Sword sheathed.'
 
 magic-orb:
   item:
     type: AMETHYST_SHARD
-    title: '&d🔮 &dМагический Кристалл'
+    title: '&d🔮 &dMagic Crystal'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7ПКМ - невидимость'
-    - ' &7ЛКМ - сияние'
+    - ' &7Right Click - invisibility'
+    - ' &7Left Click - glowing'
     - ''
   type: TOOL
   activation-slot: HAND
@@ -192,27 +192,27 @@ magic-orb:
     on_click_right:
       - 'effect:INVISIBILITY:10:0'
       - 'particle:SPELL_WITCH:10'
-      - 'message:&d✨ Вы невидимы!'
+      - 'message:&d✨ You are invisible!'
     on_click_left:
       - 'effect:GLOWING:5:0'
       - 'particle:PORTAL:20'
       - 'sound:BLOCK_BEACON_ACTIVATE:1:1'
-      - 'message:&d⭐ Активирована магия!'
+      - 'message:&d⭐ Magic activated!'
     on_equip:
-      - 'message:&d🔮 &7Кристалл извлечен!'
+      - 'message:&d🔮 &7Crystal drawn!'
     on_unequip:
-      - 'message:&d🔮 &7Кристалл убран.'
+      - 'message:&d🔮 &7Crystal put away.'
 
 sound-staff:
   item:
     type: STICK
-    title: '&9🔊 &bПосох Звука'
+    title: '&9🔊 &bSound Staff'
     glowing: true
     unbreakable: true
   lore:
     - ''
-    - ' &7ПКМ - звук'
-    - ' &7ЛКМ - другой звук'
+    - ' &7Right Click - a sound'
+    - ' &7Left Click - another sound'
     - ''
   type: TOOL
   activation-slot: HAND
@@ -225,8 +225,8 @@ sound-staff:
     on_click_left:
       - 'sound:BLOCK_END_PORTAL_SPAWN:0.5:0.7'
       - 'particle:PORTAL:30'
-      - 'message:&9🌀 &7Портал!'
+      - 'message:&9🌀 &7Portal!'
     on_equip:
-      - 'message:&9🔊 &7Посох извлечен!'
+      - 'message:&9🔊 &7Staff drawn!'
     on_unequip:
-      - 'message:&9🔊 &7Посох убран.'
+      - 'message:&9🔊 &7Staff sheathed.'

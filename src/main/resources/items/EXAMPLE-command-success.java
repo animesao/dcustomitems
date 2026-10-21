@@ -3,54 +3,54 @@ import org.bukkit.entity.Player;
 import org.bukkit.command.*;
 
 /**
- * ✅ ПРИМЕР КОМАНДЫ (УСПЕШНАЯ)
+ * ✅ EXAMPLE OF A COMMAND (SUCCESSFUL)
  * 
- * Эта команда работает без ошибок!
+ * This command works without errors!
  * 
- * В консоли выведет зелёное сообщение:
+ * It will print a green message in the console:
  * [API] ✅ Command: /heal
  * 
- * Использование:
- * /heal [игрок]
+ * Usage:
+ * /heal [player]
  */
 public class EXAMPLEcommandSuccess extends CustomCommand {
 
     public EXAMPLEcommandSuccess() {
         super(
-            "heal",                          // Имя команды
-            "Исцелить себя или игрока",      // Описание
-            "/heal [игрок]",                 // Использование
-            "dci.command.heal",              // Право
-            "healme", "health"               // Алиасы
+            "heal",                          // Command name
+            "Heal yourself or a player",     // Description
+            "/heal [player]",                // Usage
+            "dci.command.heal",              // Permission
+            "healme", "health"               // Aliases
         );
     }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        // Проверка прав
+        // Permission check
         if (!hasPermission(sender)) {
             msg(sender, getPermissionMessage());
             return true;
         }
 
-        // Получаем цель
+        // Get the target
         Player target = getTarget(sender, args, 0);
         if (target == null) return false;
 
-        // Лечение
+        // Healing
         target.setHealth(target.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH).getValue());
         target.setFoodLevel(20);
 
-        // Эффекты
+        // Effects
         target.getWorld().spawnParticle(org.bukkit.Particle.HEART, target.getLocation().add(0, 2, 0), 20);
         target.playSound(target.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
 
-        // Сообщения
+        // Messages
         if (sender.equals(target)) {
-            msg(sender, "&aВы полностью исцелены!");
+            msg(sender, "&aYou have been fully healed!");
         } else {
-            msg(sender, "&aВы исцелили " + target.getName() + "!");
-            msg(target, "&aВас исцелили!");
+            msg(sender, "&aYou healed " + target.getName() + "!");
+            msg(target, "&aYou have been healed!");
         }
 
         return true;

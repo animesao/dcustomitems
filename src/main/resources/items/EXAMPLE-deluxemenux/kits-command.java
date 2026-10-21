@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Открывает меню наборов DeluxeMenuX.
+ * Opens the DeluxeMenuX kits menu.
  *
- * Команды:
+ * Commands:
  * /kits
  * /kits list
  */
@@ -19,7 +19,7 @@ public class kits_commandItem extends CustomCommand {
     public kits_commandItem() {
         super(
             "kits",
-            "Открыть меню наборов",
+            "Open the kits menu",
             "/kits",
             "deluxemenux.use",
             "kit"
@@ -29,19 +29,19 @@ public class kits_commandItem extends CustomCommand {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
-            msg(sender, "&cТолько для игроков!");
+            msg(sender, "&cPlayers only!");
             return true;
         }
 
         Main plugin = Main.getInstance();
         if (plugin == null || plugin.getModuleManager() == null) {
-            msg(sender, "&cМодуль DeluxeMenuX не загружен!");
+            msg(sender, "&cThe DeluxeMenuX module is not loaded!");
             return true;
         }
 
         Module module = plugin.getModuleManager().getModule("deluxemenux");
         if (!module.openMenu((Player) sender, "kits")) {
-            msg(sender, "&cМеню kits не найдено!");
+            msg(sender, "&cThe kits menu was not found!");
         }
         return true;
     }

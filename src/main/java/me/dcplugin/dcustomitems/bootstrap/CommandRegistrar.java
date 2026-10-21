@@ -13,8 +13,8 @@ import java.util.*;
 import java.util.logging.Level;
 
 /**
- * Регистрация/удаление динамических команд через рефлексию Bukkit CommandMap.
- * Вынесен из Main для разделения ответственности.
+ * Registration/removal of dynamic commands through the Bukkit CommandMap by
+ * reflection. Extracted from Main to separate responsibilities.
  */
 public class CommandRegistrar {
 
@@ -26,7 +26,7 @@ public class CommandRegistrar {
     }
 
     /**
-     * Зарегистрировать все команды из API реестра
+     * Register all commands from the API registry
      */
     @SuppressWarnings("unchecked")
     public void registerAll(ItemRegistry registry) {
@@ -49,7 +49,7 @@ public class CommandRegistrar {
     }
 
     /**
-     * Удалить все динамически зарегистрированные команды
+     * Remove all dynamically registered commands
      */
     @SuppressWarnings("unchecked")
     public void unregisterAll() {
@@ -60,7 +60,7 @@ public class CommandRegistrar {
             // Access knownCommands via reflection (Paper remaps field names)
             Map<String, Command> knownCommands = CommandMapAccessor.getKnownCommands(commandMap);
             if (knownCommands == null) {
-                plugin.getLogger().warning("[API] knownCommands недоступна — команды остаются в CommandMap");
+                plugin.getLogger().warning("[API] knownCommands is unavailable - commands stay in the CommandMap");
                 return;
             }
 

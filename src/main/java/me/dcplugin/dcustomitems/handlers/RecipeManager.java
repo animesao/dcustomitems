@@ -24,9 +24,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Менеджер крафт-рецептов кастомных предметов.
+ * Crafting recipe manager for custom items.
  *
- * Рецепты задаются в YAML-секции предмета:
+ * Recipes are defined in the YAML section of the item:
  * <pre>
  * my-item:
  *   item: ...
@@ -37,24 +37,24 @@ import java.util.Set;
  *           - "ABA"
  *           - " A "
  *         keys:
- *           A: DIAMOND            # материал
- *           B: my-other-item      # или ID другого кастомного предмета
+ *           A: DIAMOND            # material
+ *           B: my-other-item      # or the ID of another custom item
  *         amount: 1
  *     shapeless:
  *       - ingredients: [ DIAMOND, DIAMOND, STICK ]
  *     furnace:
  *       - ingredient: IRON_INGOT
  *         experience: 0.7
- *         cooking-time: 200       # тики
+ *         cooking-time: 200       # ticks
  * </pre>
  *
- * Рецепты автоматически удаляются и пересоздаются при /ci reload.
+ * Recipes are automatically removed and recreated on /ci reload.
  */
 public class RecipeManager {
 
     private final Main plugin;
     private final Set<NamespacedKey> registered = new HashSet<>();
-    // Ключи рецептов Java API-предметов (отдельно: регистрируются ItemRegistry)
+    // Recipe keys of Java API items (separate: registered by ItemRegistry)
     private final Set<NamespacedKey> javaKeys = new HashSet<>();
 
     public RecipeManager(Main plugin) {
@@ -62,21 +62,21 @@ public class RecipeManager {
     }
 
     /**
-     * Удалить все рецепты, добавленные этим менеджером (вызывается перед reload).
+     * Remove all recipes added by this manager (called before a reload).
      */
     public void clear() {
         for (NamespacedKey key : registered) {
             try {
                 plugin.getServer().removeRecipe(key);
             } catch (Exception ignored) {
-                // Сервер без removeRecipe (старый Paper) — рецепты исчезнут после рестарта
+                // Server without removeRecipe (old Paper) — the recipes will disappear after a restart
             }
         }
         registered.clear();
     }
 
     /**
-     * Зарегистрировать рецепты из секции "recipes" предмета (если они есть).
+     * Register the recipes from the "recipes" section of the item (if any).
      */
     public void register(CustomItem item) {
         if (item == null || !item.hasRecipes()) return;
@@ -91,10 +91,10 @@ public class RecipeManager {
         registerStonecutting(item, recipes, result);
     }
 
-    // ===== Java API-предметы (AbstractCustomItem.getRecipes()) =====
+    // ===== Java API items (AbstractCustomItem.getRecipes()) =====
 
     /**
-     * Удалить рецепты Java-предметов (вызывается перед их перерегистрацией).
+     * Remove the recipes of Java items (called before they are re-registered).
      */
     public void clearJava() {
         for (NamespacedKey key : javaKeys) {
@@ -106,8 +106,8 @@ public class RecipeManager {
     }
 
     /**
-     * Зарегистрировать рецепты, объявленные Java API-предметами через
-     * {@code getRecipes()} (RecipeDef). Вызывается ItemRegistry после загрузки.
+     * Register the recipes declared by Java API items through
+     * {@code getRecipes()} (RecipeDef). Called by ItemRegistry after loading.
      */
     public void registerJavaItems(Collection<AbstractCustomItem> items) {
         clearJava();
@@ -120,7 +120,7 @@ public class RecipeManager {
                 defs = item.getRecipes();
             } catch (Exception e) {
                 plugin.getLogger().log(java.util.logging.Level.WARNING,
-                        "[Recipes] Ошибка getRecipes() у '" + item.getId() + "': " + e.getMessage(), e);
+                        "[Recipes] Error in getRecipes() for '" + item.getId() + "': " + e.getMessage(), e);
                 continue;
             }
             if (defs == null || defs.isEmpty()) continue;
@@ -144,7 +144,7 @@ public class RecipeManager {
                 case SHAPED: {
                     List<String> pattern = def.getPattern();
                     if (pattern.isEmpty() || pattern.size() > 3) {
-                        plugin.getLogger().warning("[Recipes] '" + item.getId() + "': shaped-паттерн должен быть 1-3 строки");
+                        plugin.getLogger().warning("[Recipes] '" + item.getId() + "': the shaped pattern must be 1-3 rows");
                         return;
                     }
                     ShapedRecipe shaped = new ShapedRecipe(key, out);
@@ -156,7 +156,7 @@ public class RecipeManager {
                             RecipeChoice choice = choiceRaw == null ? null : resolveChoice(choiceRaw);
                             if (choice == null) {
                                 plugin.getLogger().warning("[Recipes] '" + item.getId()
-                                        + "': неизвестный ингредиент '" + choiceRaw + "' для ключа '" + c + "'");
+                                        + "': unknown ingredient '" + choiceRaw + "' for key '" + c + "'");
                                 return;
                             }
                             shaped.setIngredient(c, choice);
@@ -172,7 +172,7 @@ public class RecipeManager {
                         RecipeChoice choice = resolveChoice(ingredient);
                         if (choice == null) {
                             plugin.getLogger().warning("[Recipes] '" + item.getId()
-                                    + "': неизвестный ингредиент '" + ingredient + "'");
+                                    + "': unknown ingredient '" + ingredient + "'");
                             return;
                         }
                         shapeless.addIngredient(choice);
@@ -191,7 +191,7 @@ public class RecipeManager {
                 }
                 case SMITHING: {
                     if (def.getIngredients().size() < 3) {
-                        plugin.getLogger().warning("[Recipes] '" + item.getId() + "': smithing требует template+base+addition");
+                        plugin.getLogger().warning("[Recipes] '" + item.getId() + "': smithing requires template+base+addition");
                         return;
                     }
                     RecipeChoice template = resolveChoice(def.getIngredients().get(0));
@@ -203,7 +203,7 @@ public class RecipeManager {
                             new org.bukkit.inventory.SmithingTransformRecipe(key, out, template, base, addition);
                         addJava(key, smithing, item.getId());
                     } catch (Exception e) {
-                        plugin.getLogger().warning("[Recipes] smithing недоступен на этом ядре: " + e.getMessage());
+                        plugin.getLogger().warning("[Recipes] smithing is not available on this server core: " + e.getMessage());
                     }
                     break;
                 }
@@ -216,14 +216,14 @@ public class RecipeManager {
                             new org.bukkit.inventory.StonecuttingRecipe(key, out, choice);
                         addJava(key, stone, item.getId());
                     } catch (Exception e) {
-                        plugin.getLogger().warning("[Recipes] stonecutting недоступен на этом ядре: " + e.getMessage());
+                        plugin.getLogger().warning("[Recipes] stonecutting is not available on this server core: " + e.getMessage());
                     }
                     break;
                 }
             }
         } catch (Exception e) {
             plugin.getLogger().log(java.util.logging.Level.WARNING,
-                    "[Recipes] Ошибка java-рецепта '" + item.getId() + "' #" + index + ": " + e.getMessage(), e);
+                    "[Recipes] Error in java recipe '" + item.getId() + "' #" + index + ": " + e.getMessage(), e);
         }
     }
 
@@ -233,10 +233,10 @@ public class RecipeManager {
                 javaKeys.add(key);
                 return true;
             }
-            plugin.getLogger().warning("[Recipes] Не удалось добавить рецепт '" + key + "' (дубликат?)");
+            plugin.getLogger().warning("[Recipes] Could not add recipe '" + key + "' (duplicate?)");
         } catch (Exception e) {
             plugin.getLogger().log(java.util.logging.Level.WARNING,
-                    "[Recipes] Ошибка регистрации java-рецепта '" + itemId + "': " + e.getMessage(), e);
+                    "[Recipes] Error while registering java recipe '" + itemId + "': " + e.getMessage(), e);
         }
         return false;
     }
@@ -286,7 +286,7 @@ public class RecipeManager {
                         RecipeChoice choice = resolveChoice(choiceRaw);
                         if (choice == null) {
                             plugin.getLogger().warning("[Recipes] '" + item.getId()
-                                    + "': неизвестный ингредиент '" + choiceRaw + "' для ключа '" + c + "'");
+                                    + "': unknown ingredient '" + choiceRaw + "' for key '" + c + "'");
                             valid = false;
                             break;
                         }
@@ -296,11 +296,11 @@ public class RecipeManager {
                 }
 
                 if (valid && add(key, shaped, item)) {
-                    plugin.getLogger().info("[Recipes] '" + item.getId() + "': shaped рецепт #" + index);
+                    plugin.getLogger().info("[Recipes] '" + item.getId() + "': shaped recipe #" + index);
                 }
             } catch (Exception e) {
                 plugin.getLogger().log(java.util.logging.Level.WARNING,
-                        "[Recipes] Ошибка shaped-рецепта '" + item.getId() + "': " + e.getMessage(), e);
+                        "[Recipes] Error in shaped recipe '" + item.getId() + "': " + e.getMessage(), e);
             }
             index++;
         }
@@ -337,7 +337,7 @@ public class RecipeManager {
                     RecipeChoice choice = resolveChoice(ingredient);
                     if (choice == null) {
                         plugin.getLogger().warning("[Recipes] '" + item.getId()
-                                + "': неизвестный ингредиент '" + ingredient + "'");
+                                + "': unknown ingredient '" + ingredient + "'");
                         valid = false;
                         break;
                     }
@@ -345,11 +345,11 @@ public class RecipeManager {
                 }
 
                 if (valid && add(key, shapeless, item)) {
-                    plugin.getLogger().info("[Recipes] '" + item.getId() + "': shapeless рецепт #" + index);
+                    plugin.getLogger().info("[Recipes] '" + item.getId() + "': shapeless recipe #" + index);
                 }
             } catch (Exception e) {
                 plugin.getLogger().log(java.util.logging.Level.WARNING,
-                        "[Recipes] Ошибка shapeless-рецепта '" + item.getId() + "': " + e.getMessage(), e);
+                        "[Recipes] Error in shapeless recipe '" + item.getId() + "': " + e.getMessage(), e);
             }
             index++;
         }
@@ -378,7 +378,7 @@ public class RecipeManager {
             RecipeChoice choice = resolveChoice(ingredient);
             if (choice == null) {
                 plugin.getLogger().warning("[Recipes] '" + item.getId()
-                        + "': неизвестный ингредиент печи '" + ingredient + "'");
+                        + "': unknown furnace ingredient '" + ingredient + "'");
                 index++;
                 continue;
             }
@@ -391,11 +391,11 @@ public class RecipeManager {
 
                 FurnaceRecipe furnace = new FurnaceRecipe(key, out, choice, experience, cookingTime);
                 if (add(key, furnace, item)) {
-                    plugin.getLogger().info("[Recipes] '" + item.getId() + "': furnace рецепт #" + index);
+                    plugin.getLogger().info("[Recipes] '" + item.getId() + "': furnace recipe #" + index);
                 }
             } catch (Exception e) {
                 plugin.getLogger().log(java.util.logging.Level.WARNING,
-                        "[Recipes] Ошибка furnace-рецепта '" + item.getId() + "': " + e.getMessage(), e);
+                        "[Recipes] Error in furnace recipe '" + item.getId() + "': " + e.getMessage(), e);
             }
             index++;
         }
@@ -414,7 +414,7 @@ public class RecipeManager {
             RecipeChoice base = resolveChoice(asString(recipe.get("base")));
             RecipeChoice addition = resolveChoice(asString(recipe.get("addition")));
             if (template == null || base == null || addition == null) {
-                plugin.getLogger().warning("[Recipes] '" + item.getId() + "': smithing #%d — проверьте template/base/addition".formatted(index));
+                plugin.getLogger().warning("[Recipes] '" + item.getId() + "': smithing #%d - check template/base/addition".formatted(index));
                 index++; continue;
             }
             try {
@@ -423,9 +423,9 @@ public class RecipeManager {
                 out.setAmount(asInt(recipe.get("amount"), 1));
                 org.bukkit.inventory.SmithingTransformRecipe r =
                     new org.bukkit.inventory.SmithingTransformRecipe(key, out, template, base, addition);
-                if (add(key, r, item)) plugin.getLogger().info("[Recipes] '" + item.getId() + "': smithing рецепт #" + index);
+                if (add(key, r, item)) plugin.getLogger().info("[Recipes] '" + item.getId() + "': smithing recipe #" + index);
             } catch (Exception e) {
-                plugin.getLogger().log(java.util.logging.Level.WARNING, "[Recipes] Ошибка smithing-рецепта '" + item.getId() + "': " + e.getMessage(), e);
+                plugin.getLogger().log(java.util.logging.Level.WARNING, "[Recipes] Error in smithing recipe '" + item.getId() + "': " + e.getMessage(), e);
             }
             index++;
         }
@@ -440,7 +440,7 @@ public class RecipeManager {
             if (recipe == null) { index++; continue; }
             RecipeChoice choice = resolveChoice(asString(recipe.get("ingredient")));
             if (choice == null) {
-                plugin.getLogger().warning("[Recipes] '" + item.getId() + "': stonecutting #%d — неизвестный ingredient".formatted(index));
+                plugin.getLogger().warning("[Recipes] '" + item.getId() + "': stonecutting #%d - unknown ingredient".formatted(index));
                 index++; continue;
             }
             try {
@@ -448,9 +448,9 @@ public class RecipeManager {
                 ItemStack out = result.clone();
                 out.setAmount(asInt(recipe.get("amount"), 1));
                 org.bukkit.inventory.StonecuttingRecipe r = new org.bukkit.inventory.StonecuttingRecipe(key, out, choice);
-                if (add(key, r, item)) plugin.getLogger().info("[Recipes] '" + item.getId() + "': stonecutting рецепт #" + index);
+                if (add(key, r, item)) plugin.getLogger().info("[Recipes] '" + item.getId() + "': stonecutting recipe #" + index);
             } catch (Exception e) {
-                plugin.getLogger().log(java.util.logging.Level.WARNING, "[Recipes] Ошибка stonecutting-рецепта '" + item.getId() + "': " + e.getMessage(), e);
+                plugin.getLogger().log(java.util.logging.Level.WARNING, "[Recipes] Error in stonecutting recipe '" + item.getId() + "': " + e.getMessage(), e);
             }
             index++;
         }
@@ -462,10 +462,10 @@ public class RecipeManager {
                 registered.add(key);
                 return true;
             }
-            plugin.getLogger().warning("[Recipes] Не удалось добавить рецепт '" + key + "' (дубликат?)");
+            plugin.getLogger().warning("[Recipes] Could not add recipe '" + key + "' (duplicate?)");
         } catch (Exception e) {
             plugin.getLogger().log(java.util.logging.Level.WARNING,
-                    "[Recipes] Ошибка регистрации рецепта '" + item.getId() + "': " + e.getMessage(), e);
+                    "[Recipes] Error while registering recipe '" + item.getId() + "': " + e.getMessage(), e);
         }
         return false;
     }
@@ -475,8 +475,8 @@ public class RecipeManager {
     }
 
     /**
-     * Ингредиент: материал (DIAMOND) или ID кастомного предмета
-     * (vampire-blade) — YAML или Java API, оба распознаются.
+     * Ingredient: a material (DIAMOND) or the ID of a custom item
+     * (vampire-blade) — YAML or Java API, both are recognized.
      */
     private RecipeChoice resolveChoice(String raw) {
         if (raw == null || raw.isEmpty()) return null;
@@ -486,15 +486,15 @@ public class RecipeManager {
             return new RecipeChoice.MaterialChoice(material);
         }
 
-        // YAML-предмет
+        // YAML item
         CustomItem custom = plugin.getItemHandler().getCustomItem(raw.toLowerCase(Locale.ROOT));
         if (custom != null) {
             return exactChoice(custom.getItemStack());
         }
 
-        // Java API-предмет (AbstractCustomItem).
-        // Реестр может быть ещё не создан (например, YAML-предметы грузятся
-        // раньше реестра) — тогда ищем позже, на этапе регистрации рецептов.
+        // Java API item (AbstractCustomItem).
+        // The registry may not exist yet (e.g. the YAML items are loaded
+        // before the registry) — then it is looked up later, at the recipe registration stage.
         if (plugin.getApiItemRegistry() == null) {
             return null;
         }

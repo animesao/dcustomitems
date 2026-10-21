@@ -26,7 +26,7 @@ public class AttributeManager {
     }
 
     /**
-     * Применяет атрибуты от кастомного предмета к игроку
+     * Applies the attributes of a custom item to the player
      */
     public void applyAttributes(Player player, CustomItem item, String slotType) {
         if (item == null || item.getAttributes() == null || item.getAttributes().isEmpty()) {
@@ -39,12 +39,12 @@ public class AttributeManager {
         for (Map.Entry<String, Double> entry : item.getAttributes().entrySet()) {
             Attribute attribute = EnumCache.getAttribute(entry.getKey());
             if (attribute == null) {
-                plugin.getLogger().warning("Неизвестный атрибут: " + entry.getKey() + " для предмета: " + item.getId());
+                plugin.getLogger().warning("Unknown attribute: " + entry.getKey() + " for item: " + item.getId());
                 continue;
             }
             double value = entry.getValue();
 
-            // Создаем уникальный модификатор для этого предмета и слота
+            // Create a unique modifier for this item and slot
             String modifierName = "custom_" + item.getId() + "_" + slotType + "_" + attributeKey(attribute);
             AttributeModifier modifier = new AttributeModifier(
                     modifierKey(modifierName),
@@ -55,13 +55,13 @@ public class AttributeManager {
 
             AttributeInstance attributeInstance = player.getAttribute(attribute);
             if (attributeInstance != null) {
-                // Удаляем старый модификатор если есть
+                // Remove the old modifier if there is one
                 AttributeModifier oldModifier = appliedModifiers.get(attribute);
                 if (oldModifier != null) {
                     attributeInstance.removeModifier(oldModifier);
                 }
 
-                // Применяем новый модификатор
+                // Apply the new modifier
                 attributeInstance.addModifier(modifier);
                 appliedModifiers.put(attribute, modifier);
             }
@@ -69,7 +69,7 @@ public class AttributeManager {
     }
 
     /**
-     * Удаляет все атрибуты от кастомных предметов у игрока
+     * Removes all attributes of custom items from the player
      */
     public void removeAllAttributes(Player player) {
         if (player == null) return;
@@ -83,7 +83,7 @@ public class AttributeManager {
                     try {
                         attributeInstance.removeModifier(entry.getValue());
                     } catch (Exception ignored) {
-                        // Модификатор уже удален или не существует
+                        // The modifier was already removed or does not exist
                     }
                 }
             }
@@ -91,12 +91,12 @@ public class AttributeManager {
     }
 
     /**
-     * Применяет атрибуты из карты (для суммирования атрибутов от нескольких предметов)
+     * Applies the attributes from the map (to sum up the attributes of several items)
      */
     public void applyAttributesFromMap(Player player, Map<Attribute, Double> attributesMap) {
         UUID playerId = player.getUniqueId();
 
-        // Сначала удаляем все старые атрибуты
+        // First remove all old attributes
         removeAllAttributes(player);
 
         if (attributesMap == null || attributesMap.isEmpty()) {
@@ -110,7 +110,7 @@ public class AttributeManager {
             double value = entry.getValue();
 
             try {
-                // Стабильный модификатор (без timestamp для корректного удаления)
+                // Stable modifier (without a timestamp, for correct removal)
                 String modifierName = "custom_total_" + attributeKey(attribute);
                 AttributeModifier modifier = new AttributeModifier(
                         modifierKey(modifierName),
@@ -121,7 +121,7 @@ public class AttributeManager {
 
                 AttributeInstance attributeInstance = player.getAttribute(attribute);
                 if (attributeInstance != null) {
-                    // Удаляем старый модификатор если есть
+                    // Remove the old modifier if there is one
                     AttributeModifier oldModifier = appliedModifiers.get(attribute);
                     if (oldModifier != null) {
                         attributeInstance.removeModifier(oldModifier);
@@ -131,13 +131,13 @@ public class AttributeManager {
                 }
             } catch (Exception e) {
                 plugin.getLogger().log(java.util.logging.Level.WARNING,
-                    "Ошибка при применении атрибута " + attributeKey(attribute) + ": " + e.getMessage(), e);
+                    "Error while applying attribute " + attributeKey(attribute) + ": " + e.getMessage(), e);
             }
         }
     }
 
     /**
-     * Добавляет атрибуты предмета в карту для последующего суммирования
+     * Adds the item attributes to the map for the subsequent summation
      */
     public void addAttributesToMap(Map<Attribute, Double> attributesMap, CustomItem item) {
         if (item == null || item.getAttributes() == null || item.getAttributes().isEmpty()) {
@@ -147,27 +147,27 @@ public class AttributeManager {
         for (Map.Entry<String, Double> entry : item.getAttributes().entrySet()) {
             Attribute attribute = EnumCache.getAttribute(entry.getKey());
             if (attribute == null) {
-                plugin.getLogger().warning("Неизвестный атрибут: " + entry.getKey() + " для предмета: " + item.getId());
+                plugin.getLogger().warning("Unknown attribute: " + entry.getKey() + " for item: " + item.getId());
                 continue;
             }
-            // Суммируем атрибуты от разных предметов
+            // Sum up the attributes of different items
             attributesMap.merge(attribute, entry.getValue(), Double::sum);
         }
     }
 
     /**
-     * Очищает все данные при отключении плагина
+     * Clears all data on plugin disable
      */
     public void cleanup() {
         playerAppliedAttributes.clear();
     }
 
-    // ===== Хелперы =====
+    // ===== Helpers =====
 
     /**
-     * Ключ реестра атрибута (например {@code attack_damage}).
-     * Используется в имени модификатора — без него ключ был бы
-     * {@code minecraft:attack_damage}, т.е. в namespace ванильного Minecraft.
+     * The registry key of the attribute (for example {@code attack_damage}).
+     * It is used in the modifier name — without it the key would be
+     * {@code minecraft:attack_damage}, i.e. in the vanilla Minecraft namespace.
      */
     private static String attributeKey(Attribute attribute) {
         NamespacedKey key = attribute.getKey();
@@ -175,13 +175,13 @@ public class AttributeManager {
     }
 
     /**
-     * Строит NamespacedKey в namespace плагина.
+     * Builds a NamespacedKey in the plugin namespace.
      *
-     * {@code NamespacedKey.fromString} без префикса namespace возвращает
-     * ключ из namespace {@code minecraft} (или null при недопустимых
-     * символах) — а {@code new NamespacedKey(plugin, ...)} бросает
-     * IllegalArgumentException. Поэтому ключ нормализуется вручную:
-     * только {@code [a-z0-9._-]}.
+     * {@code NamespacedKey.fromString} without a namespace prefix returns a
+     * key from the {@code minecraft} namespace (or null for invalid
+     * characters) — while {@code new NamespacedKey(plugin, ...)} throws an
+     * IllegalArgumentException. Therefore the key is normalized manually:
+     * only {@code [a-z0-9._-]}.
      */
     private NamespacedKey modifierKey(String rawKey) {
         String sanitized = rawKey == null ? "attribute" : rawKey.toLowerCase(java.util.Locale.ROOT);

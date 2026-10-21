@@ -7,14 +7,15 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
 /**
- * Событие убийства игрока (on_kill / onKill) предметом в руке убийцы.
+ * Event fired when a player is killed (on_kill / onKill) by the item in the
+ * killer's hand.
  *
- * Работает для YAML-предметов (getCustomItem()) и Java API-предметов
- * (getJavaItem()). Стреляет ДО выполнения триггеров/хука.
+ * Works for YAML items (getCustomItem()) and Java API items
+ * (getJavaItem()). Fired BEFORE the triggers/hook are executed.
  *
- * Если событие отменено — стандартные триггеры/хук не выполняются.
- * Внимание: как и в текущем обработчике, улавливаются убийства ИГРОКОВ
- * (наниматель — PlayerDeathEvent), убийства мобов сюда не попадают.
+ * If the event is cancelled the standard triggers/hook are not executed.
+ * Note: just like in the current handler, only PLAYER kills are caught
+ * (the killer is a PlayerDeathEvent); mob kills do not reach this event.
  */
 public class CustomItemKillEvent extends CustomItemEvent implements Cancellable {
 
@@ -23,24 +24,24 @@ public class CustomItemKillEvent extends CustomItemEvent implements Cancellable 
     private final Player victim;
     private boolean cancelled;
 
-    /** Для YAML-предметов. */
+    /** For YAML items. */
     public CustomItemKillEvent(Player killer, CustomItem customItem, Player victim) {
         super(killer, customItem);
         this.victim = victim;
     }
 
-    /** Для Java API-предметов (AbstractCustomItem). */
+    /** For Java API items (AbstractCustomItem). */
     public CustomItemKillEvent(Player killer, AbstractCustomItem javaItem, Player victim) {
         super(killer, javaItem);
         this.victim = victim;
     }
 
-    /** Убитый игрок. */
+    /** The killed player. */
     public Player getVictim() {
         return victim;
     }
 
-    /** Убийца (совпадает с getPlayer()). */
+    /** The killer (same as getPlayer()). */
     public Player getKiller() {
         return getPlayer();
     }

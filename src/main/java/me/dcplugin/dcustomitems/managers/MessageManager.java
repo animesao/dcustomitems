@@ -11,26 +11,26 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * Менеджер сообщений плагина.
+ * Plugin message manager.
  *
- * Сообщения хранятся в {@link MessagesConfig} (их можно переопределить
- * из items/messages.java). Раньше параметр path в getMessage() полностью
- * игнорировался и всегда возвращался переданный default — теперь путь
- * действительно резолвится, а default остаётся запасным вариантом.
+ * The messages are stored in {@link MessagesConfig} (they can be overridden
+ * from items/messages.java). Previously the path parameter of getMessage() was
+ * completely ignored and the passed default was always returned — now the path
+ * is really resolved, and the default remains the fallback.
  */
 public class MessageManager {
 
     private final Main plugin;
 
-    /** Встроенные сообщения по путям, которые используются в коде плагина. */
+    /** The built-in messages for the paths used in the plugin code. */
     private static final Map<String, String> BUILT_IN_MESSAGES = Map.of(
-            "items.no-permission", "&cУ вас нет прав на использование этого предмета.",
-            "items.uses-depleted", "&cПредмет использован до конца и пропал!",
-            "plugin.update-available", "&e[CustomItems] &fДоступна новая версия: &b{version}",
-            "plugin.update-download", "&e[CustomItems] &fСкачать обновление на сайте плагина"
+            "items.no-permission", "&cYou don't have permission to use this item.",
+            "items.uses-depleted", "&cThe item was used up and is gone!",
+            "plugin.update-available", "&e[CustomItems] &fA new version is available: &b{version}",
+            "plugin.update-download", "&e[CustomItems] &fDownload the update from the plugin page"
     );
 
-    /** Соответствие путей сообщений полям MessagesConfig. */
+    /** The mapping of message paths to the MessagesConfig fields. */
     private static final Map<String, String> MESSAGES_CONFIG_ALIASES = Map.of(
             "plugin.no-permission", "NO_PERMISSION",
             "plugin.player-not-found", "PLAYER_NOT_FOUND",
@@ -49,10 +49,10 @@ public class MessageManager {
     }
 
     /**
-     * Сообщение по пути.
+     * The message for the given path.
      *
-     * @param path          путь сообщения (например "plugin.no-permission")
-     * @param defaultMessage значение по умолчанию, если путь не найден
+     * @param path          the message path (for example "plugin.no-permission")
+     * @param defaultMessage the default value if the path is not found
      */
     public String getMessage(String path, String defaultMessage) {
         String resolved = resolve(path);
@@ -61,7 +61,7 @@ public class MessageManager {
     }
 
     /**
-     * Сообщение по пути с подстановкой PlaceholderAPI для игрока.
+     * The message for the given path with PlaceholderAPI substitution for the player.
      */
     public String getMessage(String path, String defaultMessage, org.bukkit.entity.Player player) {
         String resolved = resolve(path);
@@ -74,7 +74,7 @@ public class MessageManager {
     }
 
     /**
-     * Разрешает путь в текст сообщения (null, если путь неизвестен).
+     * Resolves the path into the message text (null if the path is unknown).
      */
     private String resolve(String path) {
         if (path == null || path.isEmpty()) return null;
@@ -91,7 +91,7 @@ public class MessageManager {
     }
 
     /**
-     * Читает публичное статическое поле MessagesConfig по имени.
+     * Reads a public static field of MessagesConfig by name.
      */
     private String readMessagesConfigField(String fieldName) {
         try {

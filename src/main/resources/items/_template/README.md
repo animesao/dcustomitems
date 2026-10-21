@@ -1,41 +1,41 @@
 # 📦 Module Template
 
-Шаблон для создания модулей DC-CustomItems.
+A template for creating DC-CustomItems modules.
 
-## 🚀 Быстрый старт
+## 🚀 Quick start
 
-### 1. Скопируйте шаблон
+### 1. Copy the template
 
 ```bash
 cd plugins/DC-CustomItems/items/
 cp -r _template/ my-module/
 ```
 
-### 2. Переименуйте файл
+### 2. Rename the file
 
 ```bash
 cd my-module/
 mv template.java my-module.java
 ```
 
-### 3. Замените имена в файле
+### 3. Replace the names in the file
 
-Откройте `my-module.java` и замените:
+Open `my-module.java` and replace:
 
-| Было | Стало |
-|------|-------|
+| Was | Becomes |
+|------|--------|
 | `templateModule` | `myModule` |
 | `"template"` | `"my-module"` |
 | `"Template"` | `"My Module"` |
-| `mymodule_` | `mymodule_` (в плейсхолдерах) |
+| `mymodule_` | `mymodule_` (in the placeholders) |
 
-### 4. Настройте config.yml
+### 4. Set up config.yml
 
 ```yaml
 name: "My Module"
 version: "1.0"
 enabled: true
-description: "Мой первый модуль"
+description: "My first module"
 author: "YourName"
 
 commands:
@@ -46,7 +46,7 @@ permissions:
   - mymodule.admin
 ```
 
-### 5. Добавьте команду в plugin.yml (опционально)
+### 5. Add the command to plugin.yml (optional)
 
 ```yaml
 commands:
@@ -56,44 +56,44 @@ commands:
     permission: mymodule.use
 ```
 
-### 6. Перезагрузите
+### 6. Reload
 
 ```bash
 /ci reload
 ```
 
-## 📁 Структура модуля
+## 📁 Module structure
 
 ```
 items/my-module/
-├── config.yml        — Настройки
-├── my-module.java    — Основной класс
-├── items.yml         — Предметы (опционально)
-└── README.md         — Документация (опционально)
+├── config.yml        — Settings
+├── my-module.java    — Main class
+├── items.yml         — Items (optional)
+└── README.md         — Documentation (optional)
 ```
 
-## 🔧 Доступные хуки
+## 🔧 Available hooks
 
-### Основные
+### Main ones
 
-| Метод | Описание |
-|-------|----------|
-| `onEnable()` | Вызывается при включении модуля |
-| `onDisable()` | Вызывается при выключении модуля |
+| Method | Description |
+|-------|-------------|
+| `onEnable()` | Called when the module is enabled |
+| `onDisable()` | Called when the module is disabled |
 
-### Поля
+### Fields
 
-| Поле | Тип | Описание |
-|------|-----|----------|
-| `plugin` | `Main` | Главный класс плагина |
-| `id` | `String` | ID модуля (имя папки) |
-| `folder` | `File` | Папка модуля |
-| `config` | `YamlConfiguration` | Конфиг модуля |
-| `itemsConfig` | `YamlConfiguration` | Предметы модуля |
+| Field | Type | Description |
+|-------|-----|-------------|
+| `plugin` | `Main` | The plugin's main class |
+| `id` | `String` | The module ID (the folder name) |
+| `folder` | `File` | The module folder |
+| `config` | `YamlConfiguration` | The module config |
+| `itemsConfig` | `YamlConfiguration` | The module items |
 
-## 📝 Примеры
+## 📝 Examples
 
-### Регистрация команды
+### Command registration
 
 ```java
 @Override
@@ -103,12 +103,12 @@ protected void onEnable() {
 
 @Override
 public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-    sender.sendMessage("Привет!");
+    sender.sendMessage("Hello!");
     return true;
 }
 ```
 
-### Плейсхолдер
+### Placeholder
 
 ```java
 private void registerPlaceholders() {
@@ -118,7 +118,7 @@ private void registerPlaceholders() {
 }
 ```
 
-### Слушатель событий
+### Event listener
 
 ```java
 @Override
@@ -128,21 +128,21 @@ protected void onEnable() {
 
 @EventHandler
 public void onJoin(PlayerJoinEvent event) {
-    event.getPlayer().sendMessage("Привет!");
+    event.getPlayer().sendMessage("Hello!");
 }
 ```
 
-### GUI-меню
+### GUI menu
 
 ```java
 private void openMenu(Player player) {
-    Inventory menu = Bukkit.createInventory(null, 27, "§6Меню");
-    // ... заполнение меню
+    Inventory menu = Bukkit.createInventory(null, 27, "§6Menu");
+    // ... filling the menu
     player.openInventory(menu);
 }
 ```
 
-### Работа с БД
+### Working with the database
 
 ```java
 plugin.getDatabaseManager().execute(
@@ -150,22 +150,22 @@ plugin.getDatabaseManager().execute(
 );
 ```
 
-## 🗑️ Удаление модуля
+## 🗑️ Removing the module
 
-Просто удалите папку:
+Just delete the folder:
 
 ```bash
 rm -rf plugins/DC-CustomItems/items/my-module/
 /ci reload
 ```
 
-## 📚 Готовые модули
+## 📚 Ready-made modules
 
-В jar/repository модули лежат как образцы с префиксом `EXAMPLE-*` —
-скопируйте папку в `items/` и уберите префикс из имени:
+In the jar/repository the modules are stored as samples with the `EXAMPLE-*` prefix —
+copy the folder into `items/` and remove the prefix from the name:
 
-| Образец | Описание |
-|---------|----------|
-| `EXAMPLE-vault/` | 💰 Экономика (Vault) |
-| `EXAMPLE-deluxemenux/` | 🎨 GUI-меню |
-| `EXAMPLE-shop/` | 🛒 Магазин |
+| Sample | Description |
+|---------|-------------|
+| `EXAMPLE-vault/` | 💰 Economy (Vault) |
+| `EXAMPLE-deluxemenux/` | 🎨 GUI menus |
+| `EXAMPLE-shop/` | 🛒 Shop |

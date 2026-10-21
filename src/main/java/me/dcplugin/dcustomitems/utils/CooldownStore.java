@@ -7,11 +7,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Хранилище кулдаунов игроков (в памяти + на диск в YAML).
+ * Storage of the player cooldowns (in memory + on disk in YAML).
  *
- * Ключ хранится как список записей, а не как путь YAML: идентификаторы
- * предметов могут содержать точки ("my.item"), и путь "uuid.my.item"
- * создавал вложенные секции — после загрузки такие кулдауны терялись.
+ * The key is stored as a list of entries, not as a YAML path: item IDs can
+ * contain dots ("my.item"), and the path "uuid.my.item" created nested
+ * sections — such cooldowns were lost after loading.
  */
 public final class CooldownStore {
 
@@ -65,7 +65,7 @@ public final class CooldownStore {
             yml.set(LIST_PATH, entries);
             yml.save(file);
         } catch (Exception ignored) {
-            // Не срываем игровую логику из-за ошибки сохранения
+            // Do not break the game logic because of a save error
         }
     }
 
@@ -76,7 +76,7 @@ public final class CooldownStore {
                     org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(file);
             long now = System.currentTimeMillis();
 
-            // Новый формат: список записей
+            // New format: a list of entries
             for (Map<?, ?> entry : yml.getMapList(LIST_PATH)) {
                 Object player = entry.get("player");
                 Object item = entry.get("item");
@@ -89,10 +89,10 @@ public final class CooldownStore {
                 }
             }
 
-            // Старый формат: записи в корне YAML по пути "<uuid>.<itemId>".
-            // YAML всегда разворачивает такой путь во вложенные секции,
-            // поэтому собираем путь обратно: корневой ключ — uuid,
-            // вложенные секции — itemId (он может содержать точки).
+            // Old format: entries in the YAML root by the path "<uuid>.<itemId>".
+            // YAML always expands such a path into nested sections,
+            // so the path is reassembled: the root key is the uuid,
+            // the nested sections are the itemId (it may contain dots).
             for (String rootKey : yml.getKeys(false)) {
                 if (LIST_PATH.equals(rootKey)) continue;
                 Object value = yml.get(rootKey);
@@ -113,16 +113,16 @@ public final class CooldownStore {
                 }
             }
         } catch (Exception ignored) {
-            // Повреждённый файл не должен ломать запуск
+            // A corrupted file must not break the startup
         }
     }
 
     /**
-     * Рекурсивно собирает записи старого формата.
+     * Recursively collects the entries of the old format.
      *
-     * @param section  текущая секция YAML
-     * @param player   UUID игрока (корневой ключ)
-     * @param itemPath уже собранная часть пути itemId
+     * @param section  the current YAML section
+     * @param player   the player UUID (the root key)
+     * @param itemPath the already assembled part of the itemId path
      */
     private void collectLegacyEntries(org.bukkit.configuration.ConfigurationSection section,
                                       String player, String itemPath, long now) {

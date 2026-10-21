@@ -6,40 +6,40 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Плейсхолдер %combo% - счётчик комбо убийств
+ * %combo% placeholder - kill combo counter
  *
- * Форматы:
- *   %combo%            → "x5" (текущее комбо)
- *   %combo_multiplier% → "2.5x" (множитель урона)
- *   %combo_timer%      → "8" (секунды до сброса)
- *   %combo_max%        → "15" (максимальное комбо за сессию)
+ * Formats:
+ *   %combo%            → "x5" (current combo)
+ *   %combo_multiplier% → "2.5x" (damage multiplier)
+ *   %combo_timer%      → "8" (seconds until the reset)
+ *   %combo_max%        → "15" (maximum combo of the session)
  *
- * Комбо сбрасывается через 10 секунд без убийства.
- * Каждое убийство увеличивает комбо на 1.
- * Множитель урона = 1 + (combo * 0.1), максимум 3.0x
+ * The combo resets after 10 seconds without a kill.
+ * Every kill increases the combo by 1.
+ * Damage multiplier = 1 + (combo * 0.1), maximum 3.0x
  *
- * Положи этот файл в plugins/DC-CustomItems/items/
- * Сделай /ci reload
+ * Put this file in plugins/DC-CustomItems/items/
+ * Run /ci reload
  *
- * Примеры:
- *   Scoreboard: "&7Комбо: &c%combo% &7| &e%combo_multiplier%"
- *   ActionBar: "&cКомбо x%combo%! Множитель: %combo_multiplier%"
+ * Examples:
+ *   Scoreboard: "&7Combo: &c%combo% &7| &e%combo_multiplier%"
+ *   ActionBar: "&cCombo x%combo%! Multiplier: %combo_multiplier%"
  *
- * Для активации комбо-системы используй триггеры:
+ * To activate the combo system use triggers:
  *   triggers:
  *     on_kill:
  *       - 'combo_add:1'
- *       - 'message:&cКомбо x%combo%! &eМножитель: %combo_multiplier%'
+ *       - 'message:&cCombo x%combo%! &eMultiplier: %combo_multiplier%'
  */
 public class ComboPlaceholder extends CustomPlaceholder {
 
-    private static final long COMBO_TIMEOUT_MS = 10_000; // 10 секунд
+    private static final long COMBO_TIMEOUT_MS = 10_000; // 10 seconds
 
-    // Текущее комбо
+    // Current combo
     private static final Map<UUID, Integer> comboCount = new HashMap<>();
-    // Время последнего убийства
+    // Time of the last kill
     private static final Map<UUID, Long> lastKillTime = new HashMap<>();
-    // Максимальное комбо за сессию
+    // Maximum combo of the session
     private static final Map<UUID, Integer> maxCombo = new HashMap<>();
 
     public ComboPlaceholder() {
@@ -52,10 +52,10 @@ public class ComboPlaceholder extends CustomPlaceholder {
         return "x" + getCombo(player);
     }
 
-    // ===== Основные методы =====
+    // ===== Main methods =====
 
     /**
-     * Добавить комбо (вызывать при убийстве)
+     * Add a combo (call on kill)
      */
     public static void addCombo(Player player) {
         UUID uuid = player.getUniqueId();
@@ -63,7 +63,7 @@ public class ComboPlaceholder extends CustomPlaceholder {
         Long lastKill = lastKillTime.get(uuid);
 
         if (lastKill != null && (now - lastKill) > COMBO_TIMEOUT_MS) {
-            // Комбо истекло — начинаем заново
+            // The combo expired — start over
             comboCount.put(uuid, 1);
         } else {
             comboCount.merge(uuid, 1, Integer::sum);
@@ -71,7 +71,7 @@ public class ComboPlaceholder extends CustomPlaceholder {
 
         lastKillTime.put(uuid, now);
 
-        // Обновляем максимум
+        // Update the maximum
         int current = comboCount.getOrDefault(uuid, 0);
         int best = maxCombo.getOrDefault(uuid, 0);
         if (current > best) {
@@ -80,7 +80,7 @@ public class ComboPlaceholder extends CustomPlaceholder {
     }
 
     /**
-     * Сбросить комбо
+     * Reset the combo
      */
     public static void resetCombo(Player player) {
         comboCount.remove(player.getUniqueId());
@@ -88,7 +88,7 @@ public class ComboPlaceholder extends CustomPlaceholder {
     }
 
     /**
-     * Получить текущее комбо (с проверкой таймаута)
+     * Get the current combo (with a timeout check)
      */
     public static int getCombo(Player player) {
         UUID uuid = player.getUniqueId();
@@ -103,8 +103,8 @@ public class ComboPlaceholder extends CustomPlaceholder {
     }
 
     /**
-     * Получить множитель урона
-     * Формула: 1 + (combo * 0.1), максимум 3.0
+     * Get the damage multiplier
+     * Formula: 1 + (combo * 0.1), maximum 3.0
      */
     public static double getMultiplier(Player player) {
         int combo = getCombo(player);
@@ -112,7 +112,7 @@ public class ComboPlaceholder extends CustomPlaceholder {
     }
 
     /**
-     * Получить секунды до сброса комбо
+     * Get the seconds until the combo resets
      */
     public static int getTimerSeconds(Player player) {
         Long lastKill = lastKillTime.get(player.getUniqueId());
@@ -123,7 +123,7 @@ public class ComboPlaceholder extends CustomPlaceholder {
     }
 
     /**
-     * Получить максимальное комбо за сессию
+     * Get the maximum combo of the session
      */
     public static int getMaxCombo(Player player) {
         return maxCombo.getOrDefault(player.getUniqueId(), 0);

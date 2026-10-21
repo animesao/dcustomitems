@@ -3,60 +3,60 @@ import org.bukkit.entity.Player;
 import org.bukkit.command.*;
 
 /**
- * ❌ ПРИМЕР КОМАНДЫ С ОШИБКАМИ (для обучения)
+ * ❌ EXAMPLE OF A COMMAND WITH ERRORS (for learning)
  * 
- * Этот файл показывает ЧАСТЫЕ ОШИБКИ при создании команд.
+ * This file shows COMMON MISTAKES when creating commands.
  * 
- * В консоли выведет красное сообщение:
+ * It will print a red message in the console:
  * [API] ❌ EXAMPLE-command-error.java:XX - error message
  * 
- * Исправь ошибки чтобы команда заработала!
+ * Fix the errors to make the command work!
  */
 public class EXAMPLEcommandError extends CustomCommand {
 
-    // ❌ ОШИБКА 1: Неправильный конструктор
-    // Правильно: super("name", "desc", "/usage", "permission");
-    // Ошибка: super("name"); - не хватает параметров
+    // ❌ ERROR 1: Wrong constructor
+    // Correct: super("name", "desc", "/usage", "permission");
+    // Mistake: super("name"); - missing parameters
 
     public EXAMPLEcommandError() {
-        super("errorcmd", "Пример с ошибками", "/errorcmd", "dci.error");
+        super("errorcmd", "Example with errors", "/errorcmd", "dci.error");
     }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        // ❌ ОШИБКА 2: Использование methods которые не существуют
-        // sendTitle(player, "title"); - не существует такого метода
-        // Правильно: title(player, "title", "subtitle");
+        // ❌ ERROR 2: Using methods that do not exist
+        // sendTitle(player, "title"); - there is no such method
+        // Correct: title(player, "title", "subtitle");
 
         Player target = getTarget(sender, args, 0);
         if (target == null) return false;
 
-        // ❌ ОШИБКА 3: Неправильные импорты
-        // Particle.FLAME - может не существовать в старых версиях
-        // Правильно: использовать try-catch
+        // ❌ ERROR 3: Wrong imports
+        // Particle.FLAME - may not exist in older versions
+        // Correct: use try-catch
 
-        // ❌ ОШИБКА 4: Отсутствие проверок
-        // target.setHealth(100); - может вызвать ошибку если > maxHealth
+        // ❌ ERROR 4: Missing checks
+        // target.setHealth(100); - may cause an error if > maxHealth
 
-        // ❌ ОШИБКА 5: Медленные операции в main thread
-        // Thread.sleep(1000); - НИКОГДА не делай так!
-        // Правильно: использовать scheduler
+        // ❌ ERROR 5: Slow operations in the main thread
+        // Thread.sleep(1000); - NEVER do this!
+        // Correct: use the scheduler
 
-        // ❌ ОШИБКА 6: Неправильный return
-        // return; - не работает в void методе execute
-        // Правильно: return true;
+        // ❌ ERROR 6: Wrong return
+        // return; - does not work in the void execute method
+        // Correct: return true;
 
         return true;
     }
 }
 
 /**
- * КАК ИСПРАВИТЬ:
+ * HOW TO FIX:
  * 
- * 1. Убедись что все методы существуют
- * 2. Проверяй импорты
- * 3. Используй try-catch для опасных операций
- * 4. Проверяй границы (health, food, level)
- * 5. Не блокируй main thread
- * 6. Возвращай true/false правильно
+ * 1. Make sure all methods exist
+ * 2. Check the imports
+ * 3. Use try-catch for risky operations
+ * 4. Check the bounds (health, food, level)
+ * 5. Do not block the main thread
+ * 6. Return true/false correctly
  */

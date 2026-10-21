@@ -37,9 +37,9 @@ public class Main extends JavaPlugin {
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Error disabling plugin: " + e.getMessage(), e);
         } finally {
-            // Статическая ссылка на плагин удерживала старый classloader
-            // после выгрузки — из-за этого перезагруженные версии плагина
-            // не выгружались из памяти.
+            // The static reference to the plugin kept the old classloader alive
+            // after unloading, so reloaded plugin versions were never released
+            // from memory.
             if (instance == this) instance = null;
         }
     }

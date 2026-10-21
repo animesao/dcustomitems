@@ -1,5 +1,5 @@
 # ============================================
-# СВИТОК ТЕЛЕПОРТАЦИИ - Телепорт к рандом игроку
+# TELEPORT SCROLL - Teleport to a random player
 # ============================================
 
 teleport-scroll:
@@ -10,7 +10,7 @@ teleport-scroll:
 
   item:
     type: PAPER
-    title: '&b[🌀] &fСвиток &bТелепортации'
+    title: '&b[🌀] &fScroll &bof Teleportation'
     glowing: true
     unbreakable: false
     item-model: "teleport_scroll"
@@ -23,13 +23,13 @@ teleport-scroll:
   lore:
     - ''
     - ' &3━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Магический свиток телепортации'
+    - ' &7Magic scroll of teleportation'
     - ' &3━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &b🌀 &fПКМ: Телепортироваться'
-    - ' &7Телепортирует к случайному игроку'
+    - ' &b🌀 &fRight Click: Teleport'
+    - ' &7Teleports you to a random player'
     - ''
-    - ' &eОсталось использований: &b%uses% &7из &93'
+    - ' &eUses left: &b%uses% &7of &93'
     - ''
 
   max-uses: 3

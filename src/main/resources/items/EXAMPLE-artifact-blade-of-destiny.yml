@@ -1,5 +1,5 @@
 # ============================================
-# КЛИНОК СУДЬБЫ - Ультимативное оружие
+# BLADE OF DESTINY - Ultimate weapon
 # ============================================
 
 artifact-blade-of-destiny:
@@ -10,7 +10,7 @@ artifact-blade-of-destiny:
 
   item:
     type: NETHERITE_SWORD
-    title: '&6[⚔] &fКлинок &6Судьбы'
+    title: '&6[⚔] &fBlade &6of Destiny'
     glowing: true
     unbreakable: true
     item-model: "blade_of_destiny"
@@ -24,15 +24,15 @@ artifact-blade-of-destiny:
   lore:
     - ''
     - ' &6━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Ультимативное оружие'
+    - ' &7Ultimate weapon'
     - ' &6━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eСила &6V'
-    - ' &6├ &eСкорость &6III'
-    - ' &6└ &eРегенерация &6III'
+    - ' &e⚡ &fWhile in main hand:'
+    - ' &6┌ &eStrength &6V'
+    - ' &6├ &eSpeed &6III'
+    - ' &6└ &eRegeneration &6III'
     - ''
-    - '&6⚔ &fПКМ: УЛЬТИМАТИВНЫЙ УДАР!'
+    - '&6⚔ &fRight Click: ULTIMATE STRIKE!'
     - ''
 
   effects:
@@ -66,7 +66,7 @@ artifact-blade-of-destiny:
       - 'particles:FLAME:80'
       - 'particles:EXPLOSION_HUGE:10'
       - 'sound:ENTITY_ENDER_DRAGON_GROWL:1:1'
-      - 'title:&6⚔ &7УЛЬТИМАТИВНЫЙ УДАР!|&6Все враги уничтожены!:10:60:10'
+      - 'title:&6⚔ &7ULTIMATE STRIKE!|&6All enemies destroyed!:10:60:10'
 
     on_click_left:
       - 'damage_nearby:25:5'

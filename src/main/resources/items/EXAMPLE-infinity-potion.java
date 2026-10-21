@@ -7,10 +7,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
 /**
- * Пример бесконечного зелья на Java API.
+ * Example of an infinite potion on the Java API.
  * 
- * Расходуемый предмет, дающий мощные эффекты.
- * Использование: ПКМ с предметом в руке.
+ * A consumable item that grants powerful effects.
+ * Usage: Right Click while holding the item.
  */
 public class InfinityPotion extends AbstractCustomItem {
 
@@ -18,7 +18,7 @@ public class InfinityPotion extends AbstractCustomItem {
     public String getId() { return "infinity_potion"; }
 
     @Override
-    public String getDisplayName() { return "&b✨ Зелье Бесконечности"; }
+    public String getDisplayName() { return "&b✨ Potion of Infinity"; }
 
     @Override
     public Material getMaterial() { return Material.EXPERIENCE_BOTTLE; }
@@ -27,15 +27,15 @@ public class InfinityPotion extends AbstractCustomItem {
     public java.util.List<String> getLore() {
         return java.util.List.of(
             "",
-            " &7Зелье, созданное из звёздной пыли",
+            " &7Potion brewed from stardust",
             "",
-            " &bДействие:",
-            " &f• Скорость III на 30 сек",
-            " &f• Сила II на 30 сек",
-            " &f• Сопротивление II на 30 сек",
-            " &f• Полное исцеление",
+            " &bEffect:",
+            " &f• Speed III for 30 sec",
+            " &f• Strength II for 30 sec",
+            " &f• Resistance II for 30 sec",
+            " &f• Full healing",
             "",
-            " &c⚠ Одноразовое!"
+            " &c⚠ Single-use!"
         );
     }
 
@@ -44,21 +44,21 @@ public class InfinityPotion extends AbstractCustomItem {
 
     @Override
     public void onRightClick(org.bukkit.event.player.PlayerInteractEvent event, Player player) {
-        // Применяем мощные эффекты
-        ItemAPI.effect(player, PotionEffectType.SPEED, 30, 3);        // Скорость III
-        ItemAPI.effect(player, PotionEffectType.STRENGTH, 30, 2);     // Сила II
-        ItemAPI.effect(player, PotionEffectType.RESISTANCE, 30, 2);   // Сопротивление II
-        ItemAPI.effect(player, PotionEffectType.REGENERATION, 10, 2); // Регенерация II
+        // Apply the powerful effects
+        ItemAPI.effect(player, PotionEffectType.SPEED, 30, 3);        // Speed III
+        ItemAPI.effect(player, PotionEffectType.STRENGTH, 30, 2);     // Strength II
+        ItemAPI.effect(player, PotionEffectType.RESISTANCE, 30, 2);   // Resistance II
+        ItemAPI.effect(player, PotionEffectType.REGENERATION, 10, 2); // Regeneration II
         
-        // Полное исцеление
+        // Full healing
         ItemAPI.heal(player, 20);
         
-        // Эффекты
+        // Effects
         ItemAPI.particles(player, Particle.TOTEM_OF_UNDYING, 100);
         ItemAPI.sound(player, Sound.ENTITY_PLAYER_LEVELUP, 2f, 0.5f);
-        ItemAPI.title(player, "&b✨ БЕСКОНЕЧНОСТЬ!", "&7Все силы пробуждены!");
+        ItemAPI.title(player, "&b✨ INFINITY!", "&7All powers awakened!");
         
-        // Забираем предмет
+        // Take the item
         event.getItem().setAmount(event.getItem().getAmount() - 1);
     }
 }

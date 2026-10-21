@@ -1,5 +1,5 @@
 # ============================================
-# ТЕНЕВОЙ КЛИНОК - Легендарный меч теней
+# SHADOW BLADE - Legendary sword of shadows
 # ============================================
 
 shadow-blade:
@@ -10,7 +10,7 @@ shadow-blade:
 
   item:
     type: NETHERITE_SWORD
-    title: '&8[⚔] &7Тень &8Клинок'
+    title: '&8[⚔] &7Shadow &8Blade'
     glowing: true
     unbreakable: true
     item-model: "shadow_blade"
@@ -23,12 +23,12 @@ shadow-blade:
   lore:
     - ''
     - ' &8━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Легендарный клинок теней'
+    - ' &7Legendary blade of shadows'
     - ' &8━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eСила &8III'
-    - ' &6└ &eСкорость &8II'
+    - ' &e⚡ &fWhile in main hand:'
+    - ' &6┌ &eStrength &8III'
+    - ' &6└ &eSpeed &8II'
     - ''
 
   effects:
@@ -61,7 +61,7 @@ shadow-blade:
       - 'particles:SMOKE:30'
       - 'particles:ENCHANTMENT_TABLE:20'
       - 'sound:ENTITY_ENDER_DRAGON_GROWL:0.5:1.5'
-      - 'title:&8⚔ &7Активация теней!|&8Тени окружают вас!:10:40:10'
+      - 'title:&8⚔ &7SHADOW ACTIVATION!|&8Shadows surround you!:10:40:10'
 
     on_click_left:
       - 'lightning:2'

@@ -1,4 +1,4 @@
-title: "&6&lНаборы"
+title: "&6&lKits"
 size: 27
 open-sound: "UI_BUTTON_CLICK"
 close-sound: "UI_BUTTON_CLICK"
@@ -10,48 +10,48 @@ fill:
 items:
   11:
     material: "STONE_SWORD"
-    name: "&a&lСтартовый набор"
+    name: "&a&lStarter Kit"
     lore:
       - ""
-      - "&7Каменный меч, кирка и еда"
-      - "&7Получить стартовый комплект"
+      - "&7A stone sword, pickaxe and food"
+      - "&7Get the starter set"
       - ""
-      - "&eНажмите, чтобы получить"
+      - "&eClick to receive it"
     permission: "deluxemenux.kit.start"
     command: "give %player% stone_sword 1"
-    message: "&aСтартовый набор выдан!"
+    message: "&aStarter kit given!"
     sound: "ENTITY_PLAYER_LEVELUP"
 
   13:
     material: "IRON_CHESTPLATE"
-    name: "&b&lЖелезный набор"
+    name: "&b&lIron Kit"
     lore:
       - ""
-      - "&7Железная броня и инструменты"
+      - "&7Iron armor and tools"
       - ""
-      - "&eНажмите, чтобы получить"
+      - "&eClick to receive it"
     permission: "deluxemenux.kit.iron"
     command: "give %player% iron_chestplate 1"
-    message: "&bЖелезный набор выдан!"
+    message: "&bIron kit given!"
     sound: "ENTITY_PLAYER_LEVELUP"
 
   15:
     material: "DIAMOND"
-    name: "&b&lАлмазный набор"
+    name: "&b&lDiamond Kit"
     lore:
       - ""
-      - "&7Премиальный алмазный набор"
+      - "&7Premium diamond kit"
       - ""
-      - "&eНажмите, чтобы получить"
+      - "&eClick to receive it"
     permission: "deluxemenux.kit.diamond"
     command: "give %player% diamond 3"
-    message: "&bАлмазный набор выдан!"
+    message: "&bDiamond kit given!"
     sound: "ENTITY_PLAYER_LEVELUP"
 
   22:
     material: "BARRIER"
-    name: "&cЗакрыть"
+    name: "&cClose"
     lore:
-      - "&7Закрыть меню наборов"
+      - "&7Close the kits menu"
     close: true
     sound: "UI_BUTTON_CLICK"

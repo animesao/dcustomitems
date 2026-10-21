@@ -7,10 +7,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
 /**
- * Пример королевского шлема (броня) на Java API.
+ * Example of a royal helmet (armor) on the Java API.
  * 
- * При экипировке даёт эффекты защиты.
- * В бою отражает урон.
+ * Grants defensive effects when equipped.
+ * Reflects damage in combat.
  */
 public class RoyalHelmet extends AbstractCustomItem {
 
@@ -18,7 +18,7 @@ public class RoyalHelmet extends AbstractCustomItem {
     public String getId() { return "royal_helmet"; }
 
     @Override
-    public String getDisplayName() { return "&6👑 Королевский Шлем"; }
+    public String getDisplayName() { return "&6👑 Royal Helmet"; }
 
     @Override
     public Material getMaterial() { return Material.NETHERITE_HELMET; }
@@ -27,10 +27,10 @@ public class RoyalHelmet extends AbstractCustomItem {
     public java.util.List<String> getLore() {
         return java.util.List.of(
             "",
-            " &7Шлем древних королей",
+            " &7Helmet of ancient kings",
             "",
-            " &6Пассивно: &fСопротивление I",
-            " &6При ударе: &fОтражение урона",
+            " &6Passive: &fResistance I",
+            " &6On hit: &fDamage reflection",
             ""
         );
     }
@@ -52,9 +52,9 @@ public class RoyalHelmet extends AbstractCustomItem {
 
     @Override
     public java.util.List<me.dcplugin.dcustomitems.api.RecipeDef> getRecipes() {
-        // Рецепт попадает и в обычный верстак, и в GUI-крафт (/craft).
-        // Ингредиенты: материал (NETHERITE_INGOT) или ID другого кастомного
-        // предмета — YAML или Java (например "vampire-blade").
+        // The recipe works both in the regular crafting table and in the GUI craft (/craft).
+        // Ingredients: a material (NETHERITE_INGOT) or the ID of another custom
+        // item — YAML or Java (for example "vampire-blade").
         java.util.Map<Character, String> keys = new java.util.HashMap<>();
         keys.put('N', "NETHERITE_INGOT");
         return java.util.List.of(
@@ -64,11 +64,11 @@ public class RoyalHelmet extends AbstractCustomItem {
     }
 
     @Override
-    public long getPeriodicInterval() { return 60; } // Каждые 3 секунды
+    public long getPeriodicInterval() { return 60; } // Every 3 seconds
 
     @Override
     public void onPeriodic(Player player) {
-        // Пассивный эффект сопротивления
+        // Passive resistance effect
         ItemAPI.effect(player, PotionEffectType.RESISTANCE, 5, 1);
         ItemAPI.particles(player, Particle.ENCHANT, 5);
     }
@@ -78,7 +78,7 @@ public class RoyalHelmet extends AbstractCustomItem {
         ItemAPI.effect(player, PotionEffectType.RESISTANCE, 999, 1);
         ItemAPI.sound(player, Sound.ITEM_ARMOR_EQUIP_NETHERITE, 1f, 1f);
         ItemAPI.particles(player, Particle.TOTEM_OF_UNDYING, 30);
-        ItemAPI.title(player, "&6👑 КОРОЛЕВСКИЙ ШЛЕМ", "&7Сила королей с тобой!");
+        ItemAPI.title(player, "&6👑 ROYAL HELMET", "&7The power of kings is with you!");
     }
 
     @Override
@@ -89,14 +89,14 @@ public class RoyalHelmet extends AbstractCustomItem {
 
     @Override
     public void onDamageTaken(org.bukkit.event.entity.EntityDamageEvent event, Player player) {
-        // Отражаем 30% урона
+        // Reflect 30% of the damage
         double reflected = event.getDamage() * 0.3;
         event.setDamage(event.getDamage() * 0.7);
         
         if (event.getDamageSource().getCausingEntity() instanceof Player) {
             Player attacker = (Player) event.getDamageSource().getCausingEntity();
             attacker.damage(reflected);
-            ItemAPI.message(attacker, "&6👑 Урон отражён!");
+            ItemAPI.message(attacker, "&6👑 Damage reflected!");
         }
         
         ItemAPI.particlesAt(player.getLocation(), Particle.TOTEM_OF_UNDYING, 20);

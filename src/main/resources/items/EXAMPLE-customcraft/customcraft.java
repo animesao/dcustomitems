@@ -34,22 +34,22 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * 🛠 CustomCraft — кастомный крафт через GUI.
+ * 🛠 CustomCraft — custom crafting through a GUI.
  *
- * Берёт рецепты из YAML-секции `recipes` всех кастомных предметов
- * (shaped / shapeless) и даёт игроку виртуальный верстак.
+ * Takes the recipes from the `recipes` YAML section of all custom items
+ * (shaped / shapeless) and gives the player a virtual crafting table.
  *
- * Идентичность предметов — по PDC (PersistentDataContainer / NBT):
- *  - кастомные предметы матчатся по их ID (dcustomitems:<id>), а не по названию;
- *  - ингредиенты других плагинов матчатся по материалу, их NBT не изменяется;
- *  - готовый предмет проходит инициализацию ItemHandler
- *    (uses, duration, lore) — стабильный результат.
+ * Item identity is based on PDC (PersistentDataContainer / NBT):
+ *  - custom items are matched by their ID (dcustomitems:<id>), not by name;
+ *  - ingredients from other plugins are matched by material, their NBT is not changed;
+ *  - the finished item goes through ItemHandler initialization
+ *    (uses, duration, lore) — a stable result.
  *
- * Модульность: удали папку items/customcraft/ — /craft исчезнет.
+ * Modularity: delete the items/customcraft/ folder — /craft disappears.
  */
 public class customcraftModule extends Module implements Listener, CommandExecutor, TabCompleter {
 
-    // Настройки
+    // Settings
     private String commandName = "craft";
     private String commandPermission = "dci.craft";
     private String guiTitle = "§8⚒ CustomCraft";
@@ -72,19 +72,19 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         reloadRecipes();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         registerDynamicCommand(commandName, this, commandPermission);
-        plugin.getLogger().info("[CustomCraft] GUI-крафт включён. Рецептов: " + recipes.size());
+        plugin.getLogger().info("[CustomCraft] GUI crafting enabled. Recipes: " + recipes.size());
     }
 
     @Override
     protected void onDisable() {
         HandlerList.unregisterAll(this);
-        // Возвращаем предметы из открытых окон
+        // Return the items from the open windows
         for (CraftView view : new ArrayList<>(openViews.values())) {
             returnItems(view);
         }
         openViews.clear();
         recipes.clear();
-        plugin.getLogger().info("[CustomCraft] Модуль выключен");
+        plugin.getLogger().info("[CustomCraft] Module disabled");
     }
 
     private void loadSettings() {
@@ -99,9 +99,9 @@ public class customcraftModule extends Module implements Listener, CommandExecut
     }
 
     /**
-     * Пересобрать рецепты из всех кастомных предметов (YAML + Java API,
-     * включая самого себя как ингредиент). Вызывается при /ci reload
-     * через перезапуск модуля.
+     * Rebuild the recipes from all the custom items (YAML + Java API,
+     * including itself as an ingredient). Called on /ci reload
+     * through a module restart.
      */
     private void reloadRecipes() {
         recipes.clear();
@@ -119,7 +119,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
                     if (recipe != null) recipes.add(recipe);
                 }
             } catch (Exception e) {
-                plugin.getLogger().warning("[CustomCraft] Ошибка рецептов Java-предмета '"
+                plugin.getLogger().warning("[CustomCraft] Error in the recipes of the Java item '"
                         + javaItem.getId() + "': " + e.getMessage());
             }
         }
@@ -144,7 +144,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
                 if (recipe != null) recipes.add(recipe);
             }
         }
-        // furnace-рецепты работают в обычной печи (RecipeManager), в сетке GUI не нужны
+        // furnace recipes work in a normal furnace (RecipeManager), they are not needed in the GUI grid
     }
 
     // ===== COMMAND =====
@@ -152,12 +152,12 @@ public class customcraftModule extends Module implements Listener, CommandExecut
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(colorize("&cТолько для игроков!"));
+            sender.sendMessage(colorize("&cPlayers only!"));
             return true;
         }
         Player player = (Player) sender;
         if (recipes.isEmpty()) {
-            player.sendMessage(colorize(config.getString("messages.no-recipes", "&cУ вас нет доступных рецептов.")));
+            player.sendMessage(colorize(config.getString("messages.no-recipes", "&cYou have no available recipes.")));
             return true;
         }
         openCraftGui(player);
@@ -190,7 +190,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         }
     }
 
-    /** Слоты сетки 3x3 в 27-слотовом сундуке: (строка*3) + колонка по горизонтали */
+    /** The slots of the 3x3 grid in the 27-slot chest: (row*3) + column horizontally */
     private boolean isGridSlot(int slot) {
         int row = slot / 9;
         int col = slot % 9;
@@ -217,7 +217,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         return openViews.get(holder.playerId);
     }
 
-    /** Собрать 3x3 массив из предметов сетки окна. */
+    /** Build a 3x3 array from the grid items of the window. */
     private ItemStack[][] readGrid(Inventory inv) {
         ItemStack[][] grid = new ItemStack[3][3];
         for (int row = 0; row < 3; row++) {
@@ -236,12 +236,12 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         }
     }
 
-    /** Обновить слот результата по текущей сетке. */
+    /** Update the result slot based on the current grid. */
     private void updateResult(CraftView view) {
         ItemStack[][] grid = readGrid(view.inventory);
         view.current = null;
 
-        // Результат прошлого предпросмотра убираем (он виртуальный)
+        // Remove the result of the previous preview (it is virtual)
         view.inventory.setItem(resultSlot, null);
 
         if (isEmptyGrid(grid)) return;
@@ -249,7 +249,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         for (CraftRecipe recipe : recipes) {
             if (recipe.matches(grid)) {
                 ItemStack result = recipe.buildResult();
-                if (result == null) continue; // исходный предмет удалён из реестра
+                if (result == null) continue; // the source item was removed from the registry
                 view.inventory.setItem(resultSlot, result);
                 view.current = recipe;
                 return;
@@ -266,7 +266,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         return true;
     }
 
-    /** Забрать ингредиенты по рецепту и выдать результат на курсор. */
+    /** Take the ingredients according to the recipe and give the result to the cursor. */
     private void doCraft(CraftView view, Player player) {
         CraftRecipe recipe = view.current;
         if (recipe == null) return;
@@ -274,26 +274,26 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         ItemStack resultPreview = view.inventory.getItem(resultSlot);
         if (resultPreview == null) return;
 
-        // Bukkit-событие: сторонние плагины могут отменить крафт
-        // или заменить выдаваемый предмет (getResult/setResult)
+        // Bukkit event: third-party plugins can cancel the craft
+        // or replace the item being given (getResult/setResult)
         me.dcplugin.dcustomitems.events.CustomItemCraftEvent craftEvent =
                 recipe.javaItem != null
                         ? new me.dcplugin.dcustomitems.events.CustomItemCraftEvent(player, recipe.javaItem, resultPreview.clone())
                         : new me.dcplugin.dcustomitems.events.CustomItemCraftEvent(player, recipe.item, resultPreview.clone());
         plugin.getServer().getPluginManager().callEvent(craftEvent);
-        if (craftEvent.isCancelled()) return; // ингредиенты остаются в сетке
+        if (craftEvent.isCancelled()) return; // the ingredients stay in the grid
         ItemStack result = craftEvent.getResult();
 
         ItemStack cursor = player.getItemOnCursor();
         if (cursor != null && cursor.getType() != Material.AIR) {
             if (!cursor.isSimilar(result) || cursor.getAmount() + result.getAmount() > cursor.getMaxStackSize()) {
-                player.sendMessage(colorize("&cОсвободите курсор!"));
+                player.sendMessage(colorize("&cFree up your cursor!"));
                 return;
             }
         }
 
         ItemStack[][] grid = readGrid(view.inventory);
-        // Пытаемся потребить ингредиенты (должно совпадать, т.к. рецепт найден)
+        // We try to consume the ingredients (it must match, since the recipe was found)
         if (!recipe.consume(grid)) {
             view.inventory.setItem(resultSlot, null);
             view.current = null;
@@ -309,7 +309,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         }
 
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
-        player.sendMessage(colorize(config.getString("messages.crafted", "&aПредмет скрафчен!")));
+        player.sendMessage(colorize(config.getString("messages.crafted", "&aItem crafted!")));
         updateResult(view);
     }
 
@@ -341,14 +341,14 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         if (view == null) return;
 
         Player player = (Player) event.getWhoClicked();
-        event.setCancelled(true); // полный ручной контроль (курсором)
+        event.setCancelled(true); // full manual control (by cursor)
 
         int rawSlot = event.getRawSlot();
         int topSize = event.getView().getTopInventory().getSize();
         if (rawSlot < 0) return;
 
         if (rawSlot < topSize) {
-            // Клик по верхнему окну: сетка или результат
+            // Click on the top window: the grid or the result
             if (isGridSlot(rawSlot)) {
                 handleSlotSwap(view.inventory, rawSlot);
                 updateResult(view);
@@ -358,7 +358,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
             return;
         }
 
-        // Клик по нижнему (инвентарю игрока): берём/кладём предметы курсором
+        // Click on the bottom (the player's inventory): we take/place items with the cursor
         int rel = rawSlot - topSize;
         if (rel >= 0 && rel < event.getView().getBottomInventory().getSize()) {
             handleSlotSwap(event.getView().getBottomInventory(), rel);
@@ -382,7 +382,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         if (returnOnClose) {
             returnItems(view);
         } else {
-            // Всё равно чистим виртуальный результат
+            // We still clear the virtual result
             view.inventory.setItem(resultSlot, null);
         }
     }
@@ -394,8 +394,8 @@ public class customcraftModule extends Module implements Listener, CommandExecut
     }
 
     /**
-     * Универсальный обмен курсором: взять / положить / сложить / поменять.
-     * Работает и для сетки (верхнее окно), и для инвентаря игрока (нижнее).
+     * Universal cursor swap: take / place / stack / exchange.
+     * Works for the grid (top window) and for the player's inventory (bottom).
      */
     private void handleSlotSwap(Inventory inv, int slot) {
         Player player = playerOf(inv);
@@ -409,17 +409,17 @@ public class customcraftModule extends Module implements Listener, CommandExecut
                 player.setItemOnCursor(null);
             }
         } else if (cursor == null || cursor.getType() == Material.AIR) {
-            // Забираем предмет на курсор
+            // Take the item onto the cursor
             inv.setItem(slot, null);
             player.setItemOnCursor(slotItem);
         } else if (cursor.isSimilar(slotItem)
                 && cursor.getAmount() + slotItem.getAmount() <= cursor.getMaxStackSize()) {
-            // Складываем стаки
+            // Stack the stacks
             inv.setItem(slot, null);
             cursor.setAmount(cursor.getAmount() + slotItem.getAmount());
             player.setItemOnCursor(cursor);
         } else {
-            // Обмен местами
+            // Swap the places
             inv.setItem(slot, cursor.clone());
             player.setItemOnCursor(slotItem);
         }
@@ -429,7 +429,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         if (inv.getHolder() instanceof CraftHolder) {
             return Bukkit.getPlayer(((CraftHolder) inv.getHolder()).playerId);
         }
-        // Нижний инвентарь игрока: holder — сам Player
+        // The player's bottom inventory: the holder is the Player itself
         org.bukkit.inventory.InventoryHolder holder = inv.getHolder();
         if (holder instanceof Player) return (Player) holder;
         return null;
@@ -450,18 +450,18 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         return msg == null ? "" : msg.replace("&", "§");
     }
 
-    // ===== МОДЕЛЬ РЕЦЕПТА =====
+    // ===== RECIPE MODEL =====
 
     static final class CraftRecipe {
         final Main plugin;
-        final CustomItem item;              // null для Java API-предметов
-        final AbstractCustomItem javaItem;  // null для YAML-предметов
+        final CustomItem item;              // null for Java API items
+        final AbstractCustomItem javaItem;  // null for YAML items
         final int amount;
         final boolean shaped;
-        // shaped: 3x3 матрица символов (' ' = пусто)
+        // shaped: 3x3 character matrix (' ' = empty)
         final char[][] matrix;
         final Map<Character, String> keyMap;
-        // shapeless: мультимножество ингредиентов (identity -> count)
+        // shapeless: a multiset of ingredients (identity -> count)
         final Map<String, Integer> ingredients;
 
         private CraftRecipe(Main plugin, CustomItem item, AbstractCustomItem javaItem, int amount,
@@ -478,9 +478,9 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         }
 
         /**
-         * Результат крафта: стабильный ItemStack исходного предмета
+         * The crafting result: a stable ItemStack of the source item
          * (YAML: uses + acquired-time; Java API: createItemStack).
-         * null, если предмет исчез из реестра после /ci reload.
+         * null, if the item disappeared from the registry after /ci reload.
          */
         ItemStack buildResult() {
             if (javaItem != null) {
@@ -492,7 +492,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
             if (item == null || plugin.getItemHandler().getCustomItem(item.getId()) == null) return null;
             ItemStack result = item.getItemStack().clone();
             result.setAmount(Math.max(1, amount));
-            // Стабильная инициализация: uses + время приобретения (duration)
+            // Stable initialization: uses + acquisition time (duration)
             plugin.getItemHandler().updateItemWithUses(result);
             plugin.getItemHandler().ensureAcquiredTime(result);
             return result;
@@ -511,7 +511,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
             int width = pattern.get(0).length();
             if (width < 1 || width > 3) return null;
             for (String row : pattern) {
-                if (row.length() != width) return null; // все строки одной длины
+                if (row.length() != width) return null; // all rows of the same length
             }
 
             Map<Character, String> keyMap = new HashMap<>();
@@ -521,7 +521,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
                 keyMap.put(k.charAt(0), String.valueOf(entry.getValue()));
             }
 
-            // Нормализуем в 3x3 (выравнивание по левому верхнему углу)
+            // Normalize to 3x3 (aligned to the top-left corner)
             char[][] matrix = new char[3][3];
             for (int r = 0; r < 3; r++) {
                 for (int c = 0; c < 3; c++) {
@@ -533,7 +533,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
                     char ch = pattern.get(r).charAt(c);
                     matrix[r][c] = ch;
                     if (ch != ' ' && !keyMap.containsKey(ch)) {
-                        return null; // ключ без ингредиента
+                        return null; // a key without an ingredient
                     }
                 }
             }
@@ -557,8 +557,8 @@ public class customcraftModule extends Module implements Listener, CommandExecut
         }
 
         /**
-         * Java API-рецепт (RecipeDef из getRecipes()). Furnace в сетке GUI
-         * не нужен — он работает в обычной печи через RecipeManager.
+         * Java API recipe (RecipeDef from getRecipes()). A furnace is not
+         * needed in the GUI grid — it works in a normal furnace via RecipeManager.
          */
         static CraftRecipe parseJava(Main plugin, AbstractCustomItem javaItem, RecipeDef def) {
             if (def == null) return null;
@@ -569,7 +569,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
                 int width = pattern.get(0).length();
                 if (width < 1 || width > 3) return null;
                 for (String row : pattern) {
-                    if (row.length() != width) return null; // все строки одной длины
+                    if (row.length() != width) return null; // all rows of the same length
                 }
 
                 Map<Character, String> keyMap = new HashMap<>();
@@ -578,7 +578,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
                     keyMap.put(entry.getKey(), entry.getValue());
                 }
 
-                // Нормализуем в 3x3 (выравнивание по левому верхнему углу)
+                // Normalize to 3x3 (aligned to the top-left corner)
                 char[][] matrix = new char[3][3];
                 for (int r = 0; r < 3; r++) {
                     for (int c = 0; c < 3; c++) {
@@ -590,7 +590,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
                         char ch = pattern.get(r).charAt(c);
                         matrix[r][c] = ch;
                         if (ch != ' ' && !keyMap.containsKey(ch)) {
-                            return null; // ключ без ингредиента
+                            return null; // a key without an ingredient
                         }
                     }
                 }
@@ -652,7 +652,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
             return true;
         }
 
-        /** Потребить ингредиенты. Возвращает false, если сетка больше не совпадает. */
+        /** Consume the ingredients. Returns false if the grid no longer matches. */
         boolean consume(ItemStack[][] grid) {
             if (shaped) {
                 for (int r = 0; r < 3; r++) {
@@ -666,7 +666,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
                 return true;
             }
 
-            // shapeless: списываем по одному, пока не покроем все требования
+            // shapeless: we write off one by one until all the requirements are covered
             Map<String, Integer> remaining = new HashMap<>(ingredients);
             for (int r = 0; r < 3; r++) {
                 for (int c = 0; c < 3; c++) {
@@ -695,7 +695,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
             }
         }
 
-        /** Совпадает ли стак с ингредиентом. */
+        /** Whether the stack matches the ingredient. */
         private boolean matchesIngredient(String raw, ItemStack stack) {
             if (raw == null || stack == null) return false;
             String identity = identityOfRaw(raw);
@@ -703,13 +703,13 @@ public class customcraftModule extends Module implements Listener, CommandExecut
                 Material material = EnumCache.getMaterial(raw);
                 return material != null && stack.getType() == material;
             }
-            // кастомный предмет: сравниваем PDC-идентичность (dcustomitems:<id>)
-            // регистронезависимо — и YAML, и Java API-предметы матчатся по ID
+            // custom item: we compare the PDC identity (dcustomitems:<id>)
+            // case-insensitive — both YAML and Java API items are matched by ID
             String customId = plugin.getItemHandler().getCustomItemId(stack);
             return customId != null && identity.substring("custom:".length()).equalsIgnoreCase(customId);
         }
 
-        /** Идентичность сырого ингредиента: material:X или custom:<id>. */
+        /** Identity of a raw ingredient: material:X or custom:<id>. */
         private String identityOfRaw(String raw) {
             if (raw == null) return "";
             Material material = EnumCache.getMaterial(raw);
@@ -717,7 +717,7 @@ public class customcraftModule extends Module implements Listener, CommandExecut
             return "custom:" + raw.toLowerCase();
         }
 
-        /** Идентичность стака по его реальному содержимому. */
+        /** Identity of a stack based on its real content. */
         private String ingredientIdentityOf(ItemStack stack) {
             String customId = plugin.getItemHandler().getCustomItemId(stack);
             if (customId != null) return "custom:" + customId;

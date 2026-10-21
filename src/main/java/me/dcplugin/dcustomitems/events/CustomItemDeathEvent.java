@@ -8,13 +8,13 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 /**
- * Событие смерти игрока с кастомным предметом (on_death / onDeath).
+ * Event fired when a player with a custom item dies (on_death / onDeath).
  *
- * Работает для YAML-предметов (getCustomItem()) и Java API-предметов
- * (getJavaItem()). Стреляет ДО выполнения триггеров/хука.
+ * Works for YAML items (getCustomItem()) and Java API items
+ * (getJavaItem()). Fired BEFORE the triggers/hook are executed.
  *
- * Если событие отменено — стандартные триггеры/хук не выполняются
- * (сама смерть Bukkit не отменяется).
+ * If the event is cancelled the standard triggers/hook are not executed
+ * (the Bukkit death itself is not cancelled).
  */
 public class CustomItemDeathEvent extends CustomItemEvent implements Cancellable {
 
@@ -23,24 +23,24 @@ public class CustomItemDeathEvent extends CustomItemEvent implements Cancellable
     private final PlayerDeathEvent deathEvent;
     private boolean cancelled;
 
-    /** Для YAML-предметов. */
+    /** For YAML items. */
     public CustomItemDeathEvent(Player player, CustomItem customItem, PlayerDeathEvent deathEvent) {
         super(player, customItem);
         this.deathEvent = deathEvent;
     }
 
-    /** Для Java API-предметов (AbstractCustomItem). */
+    /** For Java API items (AbstractCustomItem). */
     public CustomItemDeathEvent(Player player, AbstractCustomItem javaItem, PlayerDeathEvent deathEvent) {
         super(player, javaItem);
         this.deathEvent = deathEvent;
     }
 
-    /** Умерший игрок (совпадает с getPlayer()). */
+    /** The dead player (same as getPlayer()). */
     public Player getVictim() {
         return getPlayer();
     }
 
-    /** Исходное Bukkit-событие смерти. */
+    /** The original Bukkit death event. */
     public PlayerDeathEvent getDeathEvent() {
         return deathEvent;
     }

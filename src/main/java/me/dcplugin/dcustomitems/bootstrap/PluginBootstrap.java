@@ -20,8 +20,8 @@ import org.bukkit.Bukkit;
 import java.util.logging.Level;
 
 /**
- * Централизованная инициализация всех компонентов плагина.
- * Вызывается из Main.onEnable() и Main.onDisable().
+ * Centralized initialization of all plugin components.
+ * Called from Main.onEnable() and Main.onDisable().
  */
 public class PluginBootstrap {
 
@@ -57,83 +57,83 @@ public class PluginBootstrap {
     }
 
     /**
-     * Полная инициализация плагина
+     * Full plugin initialization
      */
     public void enable() {
         plugin.getLogger().info("CustomItems starting...");
 
         plugin.saveDefaultConfig();
 
-        // Образцы EXAMPLE-*: копируются из jar в items/ только если включены
-        // опцией extract-default-modules (по умолчанию false — без спама).
-        // Так вся функциональность (предметы, команды, модули) остаётся файлами,
-        // которые администратор может удалить или изменить.
+        // EXAMPLE-* samples: copied from the jar into items/ only when enabled
+        // via the extract-default-modules option (false by default — no spam).
+        // This way all functionality (items, commands, modules) stays as files
+        // that the administrator can delete or modify.
         DefaultContentExtractor.extract(plugin);
 
-        // Миграция конфига и создание messages.java
+        // Config migration and creation of messages.java
         configMigrator.createDefaultMessagesFile();
         configMigrator.checkConfigMigration();
 
-        // Логирование в файл (по желанию)
+        // File logging (optional)
         initFileLogging();
 
-        // Инициализация менеджеров
+        // Manager initialization
         initManagers();
 
-        // Плейсхолдеры создаются ДО загрузки Java API: при старте
-        // ItemRegistry.loadAll() регистрирует Java-плейсхолдеры — без
-        // менеджера они бы не появились до первого /ci reload.
+        // Placeholders are created BEFORE the Java API is loaded: on startup
+        // ItemRegistry.loadAll() registers the Java placeholders — without
+        // the manager they would not appear until the first /ci reload.
         initPlaceholders();
 
-        // Инициализация API
+        // API initialization
         ItemAPI.init(plugin);
         apiItemRegistry = new ItemRegistry(plugin);
         moduleManager = new ModuleManager(plugin);
 
-        // Java API грузим первыми: YAML-рецепты могут ссылаться на
-        // Java-предметы как на ингредиенты, а реестр должен к этому моменту
-        // уже существовать (раньше он был null — это давало NPE).
+        // The Java API is loaded first: YAML recipes may reference
+        // Java items as ingredients, and the registry must already exist
+        // by that moment (it used to be null — that caused an NPE).
         apiItemRegistry.loadAll();
 
-        // Загрузка YAML-предметов (и их рецептов)
+        // Loading of YAML items (and their recipes)
         itemHandler.loadCustomItems();
 
-        // Рецепты Java-предметов перерегистрируем после загрузки YAML:
-        // Java-рецепт может использовать YAML-предмет как ингредиент.
+        // The recipes of Java items are re-registered after the YAML load:
+        // a Java recipe may use a YAML item as an ingredient.
         apiItemRegistry.registerJavaRecipes();
 
         moduleManager.loadAll();
 
-        // Регистрация команд (с задержкой 1 тик)
+        // Command registration (delayed by 1 tick)
         registerBukkitCommand();
 
-        // Регистрация событий
+        // Event registration
         registerEvents();
 
-        // База данных
+        // Database
         initDatabase();
 
-        // Глобальный таск проверки экипировки
+        // Global equipped-items check task
         equippedItemsChecker = new EquippedItemsChecker(plugin);
         equippedItemsChecker.start();
 
-        // Динамические команды из API
+        // Dynamic commands from the API
         commandRegistrar.registerAll(apiItemRegistry);
 
-        // Проверка обновлений
+        // Update check
         checkUpdates();
 
         logStartupInfo();
     }
 
     /**
-     * Корректное отключение плагина
+     * Clean plugin shutdown
      */
     public void disable() {
         plugin.getLogger().info("CustomItems disabling...");
 
-        // Снимаем эффекты с игроков: после отключения плагина они иначе
-        // висели бы до конца своей длительности (60 с).
+        // Remove effects from players: after the plugin is disabled they would
+        // otherwise linger until their duration expires (60 s).
         if (effectManager != null) {
             for (org.bukkit.entity.Player player : plugin.getServer().getOnlinePlayers()) {
                 effectManager.stopPeriodicEffects(player);
@@ -211,10 +211,10 @@ public class PluginBootstrap {
     }
 
     /**
-     * Логирование плагина в plugins/DC-CustomItems/logs/latest.log.
+     * Plugin logging into plugins/DC-CustomItems/logs/latest.log.
      *
-     * Выключено по умолчанию (file-logging: false) — иначе сообщения
-     * плагина пропали бы из консоли сервера.
+     * Disabled by default (file-logging: false) — otherwise the plugin
+     * messages would disappear from the server console.
      */
     private void initFileLogging() {
         if (!plugin.getConfig().getBoolean("file-logging", false)) return;

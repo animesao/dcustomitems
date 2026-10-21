@@ -21,8 +21,8 @@ public class UpdateChecker {
     private final String githubApiUrl;
     private final String githubReleasesUrl;
 
-    // Пишется из async-потока, читается из основного — volatile обязателен,
-    // иначе значение могло остаться «старым» из-за кэша процессора.
+    // Written from the async thread, read from the main thread — volatile is
+    // mandatory, otherwise the value could stay "stale" due to the CPU cache.
     private volatile String latestVersion;
     private volatile boolean updateAvailable;
 
@@ -63,26 +63,26 @@ public class UpdateChecker {
 
                         if (compareVersions(latestVersion, currentVersion) > 0) {
                             updateAvailable = true;
-                            consumer.accept("§aНайдено обновление! §7Текущая: §e" + currentVersion + " §7→ Новая: §a" + latestVersion);
-                            consumer.accept("§7Скачать: §b" + githubReleasesUrl);
+                            consumer.accept("§aUpdate found! §7Current: §e" + currentVersion + " §7-> New: §a" + latestVersion);
+                            consumer.accept("§7Download: §b" + githubReleasesUrl);
                         } else {
-                            consumer.accept("§aВы используете последнюю версию! §7(" + currentVersion + ")");
+                            consumer.accept("§aYou are using the latest version! §7(" + currentVersion + ")");
                         }
                     } else {
-                        consumer.accept("§cНе удалось найти информацию о версии");
+                        consumer.accept("§cCould not find version information");
                     }
                 } else if (responseCode == 404) {
-                    consumer.accept("§cРелизы не найдены. Проверьте: §b" + githubReleasesUrl);
+                    consumer.accept("§cNo releases found. Check: §b" + githubReleasesUrl);
                 } else {
-                    consumer.accept("§cНе удалось проверить обновления (код: " + responseCode + ")");
+                    consumer.accept("§cCould not check for updates (code: " + responseCode + ")");
                 }
             } catch (Exception e) {
-                consumer.accept("§cОшибка при проверке обновлений: " + e.getMessage());
-                consumer.accept("§7Проверьте обновления вручную: §b" + githubReleasesUrl);
+                consumer.accept("§cError while checking for updates: " + e.getMessage());
+                consumer.accept("§7Check for updates manually: §b" + githubReleasesUrl);
                 plugin.getLogger().log(java.util.logging.Level.WARNING, "Update check error: " + e.getMessage(), e);
             } finally {
-                // Соединение закрывалось только в happy-path — при ошибке
-                // оставался занятый сокет.
+                // The connection was only closed on the happy path — on an error
+                // a busy socket was left behind.
                 if (connection != null) {
                     connection.disconnect();
                 }
@@ -91,7 +91,7 @@ public class UpdateChecker {
     }
 
     /**
-     * Читает ответ, ограничивая размер (защита от «раздутого» ответа).
+     * Reads the response, limiting its size (protection against a "bloated" response).
      */
     private static String readResponse(HttpURLConnection connection) throws java.io.IOException {
         StringBuilder response = new StringBuilder();
@@ -122,8 +122,8 @@ public class UpdateChecker {
      * Compare two version strings (e.g., "1.320.203" vs "1.320.202")
      * Returns: > 0 if v1 > v2, < 0 if v1 < v2, 0 if equal
      *
-     * Нечисловые части (например "1.2.3-beta") не роняли проверку:
-     * NumberFormatException прерывал всю проверку обновлений.
+     * Non-numeric parts (for example "1.2.3-beta") did not break the check:
+     * the NumberFormatException aborted the whole update check.
      */
     private int compareVersions(String v1, String v2) {
         String[] parts1 = splitVersion(v1);
@@ -145,7 +145,7 @@ public class UpdateChecker {
 
     private String[] splitVersion(String version) {
         if (version == null) return new String[0];
-        // Отбрасываем суффиксы сборки: "1.2.3-beta" -> "1.2.3"
+        // Discard the build suffixes: "1.2.3-beta" -> "1.2.3"
         String cleaned = version.trim();
         int dash = cleaned.indexOf('-');
         if (dash > 0) cleaned = cleaned.substring(0, dash);
@@ -172,10 +172,10 @@ public class UpdateChecker {
         if (player == null) return;
         if (updateAvailable && player.hasPermission("customitems.update")) {
             player.sendMessage("§8§m                                                    ");
-            player.sendMessage("§6§lDC-CustomItems §7- §aДоступно обновление!");
-            player.sendMessage("§7Текущая версия: §e" + plugin.getDescription().getVersion());
-            player.sendMessage("§7Новая версия: §a" + latestVersion);
-            player.sendMessage("§7Скачать: §b" + githubReleasesUrl);
+            player.sendMessage("§6§lDC-CustomItems §7- §aUpdate available!");
+            player.sendMessage("§7Current version: §e" + plugin.getDescription().getVersion());
+            player.sendMessage("§7New version: §a" + latestVersion);
+            player.sendMessage("§7Download: §b" + githubReleasesUrl);
             player.sendMessage("§8§m                                                    ");
         }
     }

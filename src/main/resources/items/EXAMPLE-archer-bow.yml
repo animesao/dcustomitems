@@ -1,5 +1,5 @@
 # ============================================
-# ЛУК ЛУЧНИКА - Специальные стрелы
+# ARCHER BOW - Special arrows
 # ============================================
 
 archer-bow:
@@ -10,7 +10,7 @@ archer-bow:
 
   item:
     type: BOW
-    title: '&e[🏹] &fЛук &eЛучника'
+    title: '&e[🏹] &fArcher &eBow'
     glowing: true
     unbreakable: true
     item-model: "archer_bow"
@@ -24,14 +24,14 @@ archer-bow:
   lore:
     - ''
     - ' &e━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Легендарный лук лучника'
+    - ' &7Legendary bow of the archer'
     - ' &e━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eСкорость &eII'
-    - ' &6└ &eСпешка &eI'
+    - ' &e⚡ &fWhile in main hand:'
+    - ' &6┌ &eSpeed &eII'
+    - ' &6└ &eHaste &eI'
     - ''
-    - '&c🔥 &fЛКМ: Огненная стрела'
+    - '&c🔥 &fLeft Click: Flaming arrow'
     - ''
 
   effects:

@@ -6,23 +6,23 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Плейсхолдер %balance% - баланс виртуальной валюты
+ * %balance% placeholder - virtual currency balance
  *
- * Форматы:
- *   %balance%          → "1,250" (с разделителем тысяч)
- *   %balance_raw%      → "1250" (без разделителя)
- *   %balance_short%    → "1.2K" (сокращённый формат)
- *   %balance_formatted%→ "$1,250" (с символом валюты)
+ * Formats:
+ *   %balance%          → "1,250" (with a thousands separator)
+ *   %balance_raw%      → "1250" (without the separator)
+ *   %balance_short%    → "1.2K" (short format)
+ *   %balance_formatted%→ "$1,250" (with the currency symbol)
  *
- * Положи этот файл в plugins/DC-CustomItems/items/
- * Сделай /ci reload
+ * Put this file in plugins/DC-CustomItems/items/
+ * Run /ci reload
  *
- * Примеры:
- *   "Ваш баланс: %balance% монет"
+ * Examples:
+ *   "Your balance: %balance% coins"
  *   Tablist: "&6$%balance%"
- *   Scoreboard: "&7Баланс: &e%balance_formatted%"
+ *   Scoreboard: "&7Balance: &e%balance_formatted%"
  *
- * Для создания монет используй команду:
+ * To create coins use the command:
  *   /api-item give balance-item <player>
  */
 public class BalancePlaceholder extends CustomPlaceholder {
@@ -40,7 +40,7 @@ public class BalancePlaceholder extends CustomPlaceholder {
         return String.format("%,.0f", balance);
     }
 
-    // ===== Основные методы =====
+    // ===== Main methods =====
 
     public static double getBalance(Player player) {
         return balances.getOrDefault(player.getUniqueId(), 0.0);
@@ -65,7 +65,7 @@ public class BalancePlaceholder extends CustomPlaceholder {
         return getBalance(player) >= amount;
     }
 
-    // ===== Форматирование =====
+    // ===== Formatting =====
 
     /** "1,250" */
     public static String format(double amount) {

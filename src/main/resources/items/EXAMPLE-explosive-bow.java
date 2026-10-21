@@ -18,7 +18,7 @@ public class ExplosiveBow extends AbstractCustomItem {
     public String getId() { return "explosive_bow"; }
 
     @Override
-    public String getDisplayName() { return "&c🏹 &fВзрывной Лук"; }
+    public String getDisplayName() { return "&c🏹 &fExplosive Bow"; }
 
     @Override
     public Material getMaterial() { return Material.BOW; }
@@ -27,13 +27,13 @@ public class ExplosiveBow extends AbstractCustomItem {
     public List<String> getLore() {
         return List.of(
             "",
-            " &7Стреляет взрывными стрелами",
-            " &7Каждая стрела вызывает взрыв",
+            " &7Shoots explosive arrows",
+            " &7Every arrow causes an explosion",
             "",
-            " &c✦ &fУрон: x2",
-            " &e✦ &fВзрыв: 3 блока",
+            " &c✦ &fDamage: x2",
+            " &e✦ &fExplosion: 3 blocks",
             "",
-            " &7ПКМ - зарядить мощность"
+            " &7Right Click - charge up the power"
         );
     }
 
@@ -48,23 +48,23 @@ public class ExplosiveBow extends AbstractCustomItem {
 
     @Override
     public void onBowShoot(EntityShootBowEvent event, Player player, Arrow arrow) {
-        // Пометить стрелу как взрывную
+        // Mark the arrow as explosive
         arrow.setMetadata("explosive", new FixedMetadataValue(getPlugin(), true));
         arrow.setMetadata("power", new FixedMetadataValue(getPlugin(), 2));
 
-        // Эффекты
+        // Effects
         ItemAPI.particles(player, Particle.FLAME, 30);
         ItemAPI.sound(player, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 1f);
-        ItemAPI.message(player, "&c🏹 &7Взрывная стрела выпущена!");
+        ItemAPI.message(player, "&c🏹 &7Explosive arrow released!");
     }
 
     @Override
     public void onRightClick(PlayerInteractEvent event, Player player) {
-        // Зарядить мощность
+        // Charge up the power
         ItemAPI.effect(player, org.bukkit.potion.PotionEffectType.STRENGTH, 10, 1);
         ItemAPI.particles(player, Particle.CRIT, 50);
         ItemAPI.sound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
-        ItemAPI.title(player, "&c🔥 &fМОЩНОСТЬ!", "&7Стрелы станут сильнее!");
+        ItemAPI.title(player, "&c🔥 &fPOWER!", "&7Arrows will become stronger!");
     }
 
     private me.dcplugin.dcustomitems.Main getPlugin() {

@@ -1,5 +1,5 @@
 # ============================================
-# СВИТОК ОПЫТА - Даёт опыт и уровни
+# XP SCROLL - Grants experience and levels
 # ============================================
 
 xp-scroll:
@@ -10,7 +10,7 @@ xp-scroll:
 
   item:
     type: PAPER
-    title: '&a[📜] &fСвиток &aОпыта'
+    title: '&a[📜] &fScroll &aof Experience'
     glowing: true
     unbreakable: false
     item-model: "xp_scroll"
@@ -23,13 +23,13 @@ xp-scroll:
   lore:
     - ''
     - ' &a━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Древний свиток знаний'
+    - ' &7Ancient scroll of knowledge'
     - ' &a━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &a📜 &fПКМ: Прочитать'
-    - ' &7Даёт 500 опыта и 5 уровней'
+    - ' &a📜 &fRight Click: Read'
+    - ' &7Grants 500 experience and 5 levels'
     - ''
-    - ' &c⚠ Одноразовый предмет!'
+    - ' &c⚠ Single-use item!'
     - ''
 
   max-uses: 1

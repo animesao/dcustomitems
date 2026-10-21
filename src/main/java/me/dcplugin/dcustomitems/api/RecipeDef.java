@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Декларация крафт-рецепта для Java-предметов (AbstractCustomItem).
+ * Declaration of a crafting recipe for Java items (AbstractCustomItem).
  *
- * <p>Разработчик возвращает список таких рецептов из {@code getRecipes()}:
+ * <p>Developers return a list of such recipes from {@code getRecipes()}:
  * <pre>
  * {@literal @}Override
  * public List&lt;RecipeDef&gt; getRecipes() {
@@ -22,11 +22,11 @@ import java.util.Map;
  * }
  * </pre>
  *
- * <p>Ингредиенты задаются так же, как в YAML: имя материала
- * ({@code DIAMOND}) или ID другого кастомного предмета
- * ({@code vampire-blade}) — YAML или Java, оба распознаются.
- * Рецепты попадают и в обычный верстак (RecipeManager), и в GUI-крафт
- * модуля {@code customcraft} (/craft).
+ * <p>Ingredients are specified just like in YAML: a material name
+ * ({@code DIAMOND}) or the ID of another custom item
+ * ({@code vampire-blade}) — YAML or Java, both are recognised.
+ * Recipes end up both in the regular crafting table (RecipeManager) and in the GUI
+ * crafting module {@code customcraft} (/craft).
  */
 public final class RecipeDef {
 
@@ -38,7 +38,7 @@ public final class RecipeDef {
     private final List<String> ingredients;          // shapeless / furnace
     private final int amount;
     private final float experience;                  // furnace
-    private final int cookingTime;                   // furnace (тики)
+    private final int cookingTime;                   // furnace (ticks)
 
     private RecipeDef(Type type, List<String> pattern, Map<Character, String> keys,
                       List<String> ingredients, int amount, float experience, int cookingTime) {
@@ -110,16 +110,16 @@ public final class RecipeDef {
     public Map<Character, String> getKeys() { return keys; }
     public List<String> getIngredients() { return ingredients; }
 
-    /** Количество выдаваемых предметов (по умолчанию 1). */
+    /** Number of items produced (1 by default). */
     public int getAmount() { return amount; }
 
-    /** Опыт за переплавку (furnace). */
+    /** Smelting experience (furnace). */
     public float getExperience() { return experience; }
 
-    /** Время переплавки в тиках (furnace, по умолчанию 200). */
+    /** Smelting time in ticks (furnace, 200 by default). */
     public int getCookingTime() { return cookingTime; }
 
-    /** Строковое представление для логов/отладки. */
+    /** String representation for logs/debugging. */
     public String describe() {
         switch (type) {
             case SHAPED:
@@ -135,10 +135,10 @@ public final class RecipeDef {
         }
     }
 
-    // Вспомогательный builder-стиль для наглядности примеров
+    // Optional builder-style helper for clearer examples
     public static Builder builder(Type type) { return new Builder(type); }
 
-    /** Пошаговый builder (опционально, для любителей цепочек). */
+    /** Step-by-step builder (optional, for those who like chaining). */
     public static final class Builder {
         private final Type type;
         private final List<String> pattern = new ArrayList<>();

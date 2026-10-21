@@ -4,9 +4,9 @@ import me.dcplugin.dcustomitems.Main;
 import org.bukkit.entity.Player;
 
 /**
- * Базовый класс для создания кастомных плейсхолдеров
+ * Base class for creating custom placeholders
  * 
- * Пример:
+ * Example:
  * <pre>
  * public class KillsPlaceholder extends CustomPlaceholder {
  *     
@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
  *     
  *     @Override
  *     public String getValue(Player player) {
- *         // Получить данные из базы данных
+ *         // Get the data from the database
  *         DatabaseManager db = getPlugin().getDatabaseManager();
  *         return String.valueOf(db.queryInt(
  *             "SELECT kills FROM stats WHERE uuid=?", 
@@ -26,8 +26,8 @@ import org.bukkit.entity.Player;
  * }
  * </pre>
  * 
- * Использование в любом тексте:
- * "Убийств: %kills%"
+ * Usage in any text:
+ * "Kills: %kills%"
  */
 public abstract class CustomPlaceholder {
 
@@ -41,7 +41,7 @@ public abstract class CustomPlaceholder {
     }
 
     /**
-     * Установить плагин (вызывается автоматически)
+     * Sets the plugin (called automatically)
      */
     public void setPlugin(Main plugin) {
         this.plugin = plugin;
@@ -51,29 +51,29 @@ public abstract class CustomPlaceholder {
         return plugin;
     }
 
-    // ===== ОБЯЗАТЕЛЬНЫЙ МЕТОД =====
+    // ===== REQUIRED METHOD =====
 
     /**
-     * Получить значение плейсхолдера
+     * Gets the placeholder value
      * 
-     * @param player Игрок (может быть null для глобальных плейсхолдеров)
-     * @return Значение для замены
+     * @param player the player (may be null for global placeholders)
+     * @return the value to substitute
      */
     public abstract String getValue(Player player);
 
-    // ===== ОПЦИОНАЛЬНЫЕ МЕТОДЫ =====
+    // ===== OPTIONAL METHODS =====
 
     /**
-     * Вызывается при регистрации
+     * Called on registration
      */
     public void onRegister() {}
 
     /**
-     * Вызывается при отключении
+     * Called on unregistration
      */
     public void onUnregister() {}
 
-    // ===== ГЕТТЕРЫ/СЕТТЕРЫ =====
+    // ===== GETTERS/SETTERS =====
 
     public String getIdentifier() { return identifier; }
     public void setIdentifier(String identifier) { this.identifier = identifier.toLowerCase(); }

@@ -5,16 +5,16 @@ name: "DeluxeMenuX"
 version: "1.0"
 author: "DC-CustomItems"
 
-# Основные настройки
+# Main settings
 settings:
-  # Язык сообщений
-  language: "ru"
-  # Включить звуки
+  # Message language
+  language: "en"
+  # Enable sounds
   sounds: true
-  # Включить анимации
+  # Enable animations
   animations: true
 
-# Команды модуля
+# Module commands
 commands:
   - menu
   - deluxemenu
@@ -22,7 +22,7 @@ commands:
   - kit
   - shop
 
-# Права
+# Permissions
 permissions:
   - deluxemenux.use
   - deluxemenux.admin

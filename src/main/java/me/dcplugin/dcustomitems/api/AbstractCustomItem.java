@@ -17,12 +17,12 @@ import java.util.List;
 
 
 /**
- * Абстрактный базовый класс для создания кастомных предметов на Java.
+ * Abstract base class for creating custom items in Java.
  *
- * Разработчики должны наследовать этот класс и переопределять нужные методы.
- * Каждый предмет должен иметь аннотацию @ItemInfo или переопределять getId().
+ * Developers should extend this class and override the methods they need.
+ * Every item must carry the @ItemInfo annotation or override getId().
  *
- * Пример:
+ * Example:
  * <pre>
  * public class FireSword extends AbstractCustomItem {
  *
@@ -30,7 +30,7 @@ import java.util.List;
  *     public String getId() { return "fire_sword"; }
  *
  *     @Override
- *     public String getDisplayName() { return "&cОгненный Меч"; }
+ *     public String getDisplayName() { return "&cFlaming Sword"; }
  *
  *     @Override
  *     public Material getMaterial() { return Material.NETHERITE_SWORD; }
@@ -46,155 +46,155 @@ import java.util.List;
  */
 public abstract class AbstractCustomItem {
 
-    // ===== ОСНОВНЫЕ СВОЙСТВА =====
+    // ===== MAIN PROPERTIES =====
 
     /**
-     * Уникальный ID предмета (используется в командах и конфигах).
+     * Unique item ID (used in commands and configs).
      */
     public abstract String getId();
 
     /**
-     * Отображаемое название предмета (поддерживает цветовые коды &).
+     * Display name of the item (supports colour codes &).
      */
     public abstract String getDisplayName();
 
     /**
-     * Материал предмета (например, Material.DIAMOND_SWORD).
+     * Material of the item (for example, Material.DIAMOND_SWORD).
      */
     public abstract Material getMaterial();
 
     /**
-     * Описание предмета (lore). Пустой список = без описания.
+     * Item description (lore). An empty list means no description.
      */
     public List<String> getLore() {
         return List.of();
     }
 
     /**
-     * Количество предмета.
+     * Stack size of the item.
      */
     public int getAmount() {
         return 1;
     }
 
     /**
-     * Кастомная модель (item-model для 1.21.11).
+     * Custom model (item-model for 1.21.11).
      */
     public String getItemModel() {
         return null;
     }
 
     /**
-     * CustomModelData (legacy, для старых версий).
+     * CustomModelData (legacy, for older versions).
      */
     public int getCustomModelData() {
         return -1;
     }
 
     /**
-     * Неломаемость.
+     * Whether the item is unbreakable.
      */
     public boolean isUnbreakable() {
         return false;
     }
 
     /**
-     * Свечение чар.
+     * Enchantment glint.
      */
     public boolean isGlowing() {
         return false;
     }
 
     /**
-     * Кулдаун кликов в миллисекундах.
+     * Click cooldown in milliseconds.
      */
     public long getClickCooldown() {
         return 0;
     }
 
     /**
-     * Разрешение для использования (null = без ограничений).
-     * Проверяется при кликах (ЛКМ/ПКМ) — как у YAML-предметов.
+     * Permission required to use the item (null = no restriction).
+     * Checked on clicks (left/right click) — same as for YAML items.
      */
     public String getPermission() {
         return null;
     }
 
     /**
-     * Можно ли положить предмет.
+     * Whether the item can be placed in the world.
      */
     public boolean isPlaceable() {
         return false;
     }
 
     /**
-     * Тип предмета (RUNE, TOOL, ARMOR, CONSUMABLE).
+     * Item type (RUNE, TOOL, ARMOR, CONSUMABLE).
      */
     public String getType() {
         return "TOOL";
     }
 
     /**
-     * Слот активации (HAND, OFFHAND, HEAD, CHEST, LEGS, FEET).
+     * Activation slot (HAND, OFFHAND, HEAD, CHEST, LEGS, FEET).
      */
     public String getActivationSlot() {
         return "HAND";
     }
 
-    // ===== МЕХАНИКИ, КАК У YAML-ПРЕДМЕТОВ =====
+    // ===== MECHANICS, SAME AS FOR YAML ITEMS =====
 
     /**
-     * Максимум использований предмета. 0 = безлимит.
-     * Счётчик хранится в PDC (как у YAML-предметов) и списывается при кликах.
-     * Когда использования заканчиваются — оставшийся стек удаляется.
+     * Maximum number of uses of the item. 0 = unlimited.
+     * The counter is stored in the PDC (as for YAML items) and is consumed on click.
+     * Once the uses run out, the remaining stack is removed.
      */
     public int getMaxUses() {
         return 0;
     }
 
     /**
-     * Время жизни предмета в секундах с момента выдачи. 0 = вечный.
-     * Проверяется глобальным чекером: по истечении предмет исчезает.
+     * Item lifetime in seconds, counted from the moment it is given. 0 = permanent.
+     * Checked by the global checker: once it expires, the item disappears.
      */
     public long getDuration() {
         return 0;
     }
 
     /**
-     * Разрешён ли предмет в мире. Глобальный чекер удаляет предметы
-     * в запрещённых мирах (как у YAML-предметов).
+     * Whether the item is allowed in a world. The global checker removes items
+     * in forbidden worlds (same as for YAML items).
      */
     public boolean isAllowedInWorld(String worldName) {
         return true;
     }
 
     /**
-     * Сообщение при исчерпании использований (null = стандартное).
+     * Message shown when the uses are depleted (null = default).
      */
     public String getUsesDepletedMessage() {
         return null;
     }
 
     /**
-     * Сообщение при истечении срока жизни (null = стандартное).
+     * Message shown when the lifetime expires (null = default).
      */
     public String getDurationExpiredMessage() {
         return null;
     }
 
     /**
-     * Сообщение при запрете предмета в мире (null = стандартное).
+     * Message shown when the item is blocked in a world (null = default).
      */
     public String getWorldBlockedMessage() {
         return null;
     }
 
     /**
-     * Крафт-рецепты этого предмета (shaped / shapeless / furnace).
+     * Crafting recipes of this item (shaped / shapeless / furnace).
      *
-     * Рецепты попадают и в обычный верстак, и в GUI-крафт (/craft).
-     * Ингредиенты: имя материала ("DIAMOND") или ID другого кастомного
-     * предмета ("vampire-blade") — YAML или Java, оба распознаются.
+     * Recipes are registered in the regular crafting table and in the GUI crafting menu (/craft).
+     * Ingredients: a material name ("DIAMOND") or the ID of another custom
+     * item ("vampire-blade") — YAML or Java, both are recognised.
      *
      * <pre>
      * {@literal @}Override
@@ -208,117 +208,117 @@ public abstract class AbstractCustomItem {
         return List.of();
     }
 
-    // ===== ДЕЙСТВИЯ =====
+    // ===== ACTIONS =====
 
     /**
-     * Вызывается при ЛКМ (правая кнопка) с предметом.
+     * Called when the item is used with a right click (right mouse button).
      */
     public void onRightClick(PlayerInteractEvent event, Player player) {}
 
     /**
-     * Вызывается при ПКМ (левая кнопка) с предметом.
+     * Called when the item is used with a left click (left mouse button).
      */
     public void onLeftClick(PlayerInteractEvent event, Player player) {}
 
     /**
-     * Вызывается при экипировке предмета.
+     * Called when the item is equipped.
      */
     public void onEquip(Player player) {}
 
     /**
-     * Вызывается при снятии предмета.
+     * Called when the item is unequipped.
      */
     public void onUnequip(Player player) {}
 
     /**
-     * Вызывается при убийстве моба/игрока с предметом.
+     * Called when a mob/player is killed with the item.
      */
     public void onKill(Player killer, Player victim) {}
 
     /**
-     * Вызывается при смерти игрока с этим предметом.
+     * Called when the player dies while holding this item.
      */
     public void onDeath(Player player, PlayerDeathEvent event) {}
 
     /**
-     * Вызывается при получении урона (с предметом в руке/броне).
+     * Called when the player takes damage (with the item in hand or on armour).
      */
     public void onDamageTaken(EntityDamageEvent event, Player player) {}
 
     /**
-     * Вызывается при нанесении урона (с предметом в руке).
+     * Called when the player deals damage (with the item in hand).
      */
     public void onDamageDealt(EntityDamageByEntityEvent event, Player player) {}
 
     /**
-     * Вызывается при прыжке (с предметом в руке).
+     * Called when the player jumps (with the item in hand).
      */
     public void onJump(Player player) {}
 
     /**
-     * Вызывается при движении (с предметом в руке).
+     * Called when the player moves (with the item in hand).
      */
     public void onMove(PlayerMoveEvent event, Player player) {}
 
     /**
-     * Вызывается при выпадении предмета.
+     * Called when the item is dropped.
      */
     public void onDrop(Player player, PlayerDropItemEvent event) {}
 
     /**
-     * Вызывается при подборе предмета.
+     * Called when the item is picked up.
      */
     public void onPickup(Player player) {}
 
     /**
-     * Вызывается при ломании блока с предметом.
+     * Called when a block is broken with the item.
      */
     public void onBlockBreak(Player player, BlockBreakEvent event) {}
 
     /**
-     * Вызывается при смене слота (с предметом в руке).
+     * Called when the hotbar slot changes (with the item in hand).
      */
     public void onSlotChange(PlayerItemHeldEvent event, Player player) {}
 
     /**
-     * Вызывается при свопе рук (F).
+     * Called when the hands are swapped (F key).
      */
     public void onSwapHand(PlayerSwapHandItemsEvent event, Player player) {}
 
-    // ===== ПЕРИОДИЧЕСКИЕ ЭФФЕКТЫ =====
+    // ===== PERIODIC EFFECTS =====
 
     /**
-     * Интервал периодических эффектов в тиках (20 тиков = 1 сек).
-     * Возвращает 0 если не нужны периодические эффекты.
+     * Interval of the periodic effects in ticks (20 ticks = 1 second).
+     * Return 0 if no periodic effects are needed.
      */
     public long getPeriodicInterval() {
         return 0;
     }
 
     /**
-     * Вызывается периодически (каждые getPeriodicInterval() тиков).
-     * Используйте для эффектов экипировки (броня и т.д).
+     * Called periodically (every getPeriodicInterval() ticks).
+     * Use it for equipment effects (armour, etc.).
      */
     public void onPeriodic(Player player) {}
 
-    // ===== УТИЛИТЫ =====
+    // ===== UTILITIES =====
 
     /**
-     * Создаёт ItemStack из параметров этого предмета.
+     * Creates an ItemStack from the properties of this item.
      */
     public ItemStack createItemStack() {
         return ItemAPI.createItem(this);
     }
 
     /**
-     * Проверяет, держит ли игрок этот предмет в руке.
+     * Checks whether the player is holding this item.
      */
     public boolean isHeldBy(Player player) {
         return ItemAPI.isHolding(player, getId());
     }
 
     /**
-     * Проверяет, экипирован ли этот предмет игроком.
+     * Checks whether this item is equipped by the player.
      */
     public boolean isEquippedBy(Player player) {
         return ItemAPI.isEquipped(player, getId());

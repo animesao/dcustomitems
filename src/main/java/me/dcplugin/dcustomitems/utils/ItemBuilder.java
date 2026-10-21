@@ -23,8 +23,8 @@ import java.util.UUID;
 public class ItemBuilder {
 
     /**
-     * Fallback-namespace, если билдер создан без ссылки на плагин.
-     * Значение по умолчанию совпадает с namespace текущего plugin.yml
+     * Fallback namespace, used when the builder is created without a reference to the plugin.
+     * The default value matches the namespace of the current plugin.yml
      * ("DC-CustomItems" -> "dc-customitems").
      */
     private static final String FALLBACK_NAMESPACE = "dc-customitems";
@@ -101,8 +101,8 @@ public class ItemBuilder {
 
     public ItemBuilder setGlowing(boolean glowing) {
         if (glowing && itemMeta != null) {
-            // UNBREAKING не даёт бонуса — в отличие от SHARPNESS, который
-            // добавлял бы +1 к урону.
+            // UNBREAKING gives no bonus — unlike SHARPNESS, which
+            // would add +1 to the damage.
             itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
             itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
@@ -130,22 +130,22 @@ public class ItemBuilder {
             profile.getTextures().setSkin(new URL(textureUrl));
             skullMeta.setOwnerProfile(profile);
         } catch (Exception e) {
-            // Ставим владельца-заглушку: предмет остаётся валидным голова,
-            // просто без текстуры.
+            // Set a placeholder owner: the item stays a valid head,
+            // just without a texture.
             try {
                 skullMeta.setOwner("CustomHead");
             } catch (Exception ignored) {
-                // Совсем крайний случай — оставляем мета без владельца
+                // The very last resort — leave the meta without an owner
             }
         }
         return this;
     }
 
     /**
-     * Приводит описание текстуры к URL.
+     * Converts the texture description into a URL.
      *
-     * Поддерживаются: прямой http(s)-URL, base64 от JSON-текстуры
-     * и «чистый» хеш (превращается в textures.minecraft.net URL).
+     * Supported: a direct http(s) URL, base64 of a JSON texture
+     * and a "plain" hash (it is turned into a textures.minecraft.net URL).
      */
     private static String resolveTextureUrl(String texture) {
         String value = texture.trim();
@@ -159,14 +159,14 @@ public class ItemBuilder {
                 String json = new String(decoded, StandardCharsets.UTF_8);
                 int index = json.indexOf("\"url\":\"");
                 if (index >= 0) {
-                    // Значение начинается сразу после закрывающей кавычки:
-                    // "\"url\":\"" — это 7 символов.
+                    // The value starts right after the closing quote:
+                    // "\"url\":\"" — that is 7 characters.
                     String url = json.substring(index + 7);
                     int end = url.indexOf('"');
                     if (end > 0) return url.substring(0, end);
                 }
             } catch (Exception ignored) {
-                // Не base64 — трактуем как хеш
+                // Not base64 — treat it as a hash
             }
         }
         return "http://textures.minecraft.net/texture/" + value;
@@ -200,7 +200,7 @@ public class ItemBuilder {
             );
             itemMeta.addAttributeModifier(attribute, modifier);
         } catch (IllegalArgumentException ignored) {
-            // Некорректное имя атрибута — пропускаем
+            // Invalid attribute name — skip it
         }
         return this;
     }
@@ -213,11 +213,11 @@ public class ItemBuilder {
     }
 
     /**
-     * Ключ модификатора атрибута в namespace плагина.
+     * The attribute modifier key in the plugin namespace.
      *
-     * {@code NamespacedKey.fromString} без namespace вернул бы ключ из
-     * namespace {@code minecraft} — поэтому строим ключ вручную,
-     * нормализуя символы до {@code [a-z0-9._-]}.
+     * {@code NamespacedKey.fromString} without a namespace would return a key
+     * from the {@code minecraft} namespace — so the key is built manually,
+     * normalizing the characters to {@code [a-z0-9._-]}.
      */
     private NamespacedKey attributeKey(Attribute attribute) {
         NamespacedKey key = attribute.getKey();

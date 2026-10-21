@@ -9,20 +9,20 @@ import org.bukkit.entity.Player;
 import java.util.List;
 
 /**
- * Общие визуальные эффекты (частицы и звуки) для кастомных предметов.
- * Раньше логика дублировалась в PlayerListener и EquippedItemsChecker.
+ * Shared visual effects (particles and sounds) for custom items.
+ * Previously the logic was duplicated in PlayerListener and EquippedItemsChecker.
  */
 public final class ItemFX {
 
     private ItemFX() {}
 
     /**
-     * Спавнит частицы и звуки при экипировке/снятии предмета.
+     * Spawns the particles and sounds on equipping/unequipping an item.
      *
-     * @param plugin   экземпляр плагина (для логов)
-     * @param player   игрок
-     * @param item     предмет
-     * @param isEquip  true = экипировка (equip-*), false = снятие (unequip-*)
+     * @param plugin   the plugin instance (for the logs)
+     * @param player   the player
+     * @param item     the item
+     * @param isEquip  true = equip (equip-*), false = unequip (unequip-*)
      */
     public static void spawnEquipEffects(Main plugin, Player player, CustomItem item, boolean isEquip) {
         List<String> particles = isEquip ? item.getEquipParticles() : item.getUnequipParticles();
@@ -36,7 +36,7 @@ public final class ItemFX {
                 int count = parts.length > 1 ? Integer.parseInt(parts[1]) : 10;
                 player.getWorld().spawnParticle(particle, player.getLocation().add(0, 1, 0), count);
             } catch (Exception e) {
-                plugin.getLogger().warning("Ошибка при спавне частиц: " + particleStr);
+                plugin.getLogger().warning("Error while spawning particles: " + particleStr);
             }
         }
 
@@ -49,7 +49,7 @@ public final class ItemFX {
                 float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
                 player.playSound(player.getLocation(), sound, volume, pitch);
             } catch (Exception e) {
-                plugin.getLogger().warning("Ошибка при воспроизведении звука: " + soundStr);
+                plugin.getLogger().warning("Error while playing sound: " + soundStr);
             }
         }
     }

@@ -8,8 +8,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 /**
- * Управление счётчиком использований кастомных предметов.
- * Использует PersistentDataContainer для хранения данных.
+ * Management of the use counter of custom items.
+ * Uses the PersistentDataContainer to store the data.
  */
 public class UsesManager {
 
@@ -20,9 +20,9 @@ public class UsesManager {
     }
 
     /**
-     * Получить текущее кол-во использований предмета
+     * Get the current number of uses of the item
      *
-     * @return кол-во использований или -1 если не установлено
+     * @return the number of uses, or -1 if not set
      */
     public int getUses(ItemStack itemStack) {
         if (itemStack == null || !itemStack.hasItemMeta()) return -1;
@@ -35,7 +35,7 @@ public class UsesManager {
     }
 
     /**
-     * Установить кол-во использований
+     * Set the number of uses
      */
     public void setUses(ItemStack itemStack, int uses) {
         if (itemStack == null || !itemStack.hasItemMeta()) return;
@@ -48,9 +48,9 @@ public class UsesManager {
     }
 
     /**
-     * Уменьшить кол-во использований на 1
+     * Decrease the number of uses by 1
      *
-     * @return новое кол-во использований
+     * @return the new number of uses
      */
     public int decrementUses(ItemStack itemStack, CustomItem customItem) {
         if (itemStack == null || itemStack.getType() == Material.AIR) return -1;
@@ -67,17 +67,17 @@ public class UsesManager {
     }
 
     /**
-     * Проверить, есть ли использования у предмета
+     * Check whether the item still has uses left
      */
     public boolean hasUsesRemaining(ItemStack itemStack, CustomItem customItem) {
         if (!customItem.hasMaxUses()) return true;
         int uses = getUses(itemStack);
-        if (uses == -1) return true; // Не установлено = бесконечно
+        if (uses == -1) return true; // Not set = infinite
         return uses > 0;
     }
 
     /**
-     * Инициализировать Uses для нового предмета (установить maxUses если не установлено)
+     * Initialize the uses for a new item (set maxUses if not set)
      */
     public void initializeUses(ItemStack itemStack, CustomItem customItem) {
         if (!customItem.hasMaxUses()) return;

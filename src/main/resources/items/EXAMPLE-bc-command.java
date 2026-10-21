@@ -8,22 +8,22 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 📢 Команда /bc - Объявление серверу
+ * 📢 /bc command - Server announcement
  * 
- * Использование:
- *   /bc <текст>      - отправить объявление всем
- *   /bc -t <текст>   - отправить title всем
- *   /bc -a <текст>   - отправить actionbar всем
+ * Usage:
+ *   /bc <text>      - send an announcement to everyone
+ *   /bc -t <text>   - send a title to everyone
+ *   /bc -a <text>   - send an actionbar to everyone
  * 
- * Право: dci.command.bc
+ * Permission: dci.command.bc
  */
 public class bc_commandItem extends CustomCommand {
 
     public bc_commandItem() {
         super(
             "bc",
-            "Объявление серверу",
-            "/bc <текст>",
+            "Server announcement",
+            "/bc <text>",
             "dci.command.bc"
         );
     }
@@ -31,8 +31,8 @@ public class bc_commandItem extends CustomCommand {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (args.length == 0) {
-            msg(sender, "&cИспользование: /bc <текст>");
-            msg(sender, "&7Флаги: &e-t &7(title), &e-a &7(actionbar)");
+            msg(sender, "&cUsage: /bc <text>");
+            msg(sender, "&7Flags: &e-t &7(title), &e-a &7(actionbar)");
             return true;
         }
 
@@ -40,7 +40,7 @@ public class bc_commandItem extends CustomCommand {
         String messageStart = args[0];
         int startIndex = 0;
 
-        // Проверяем флаги
+        // Check the flags
         if (messageStart.equals("-t") && args.length > 1) {
             type = "title";
             startIndex = 1;
@@ -49,7 +49,7 @@ public class bc_commandItem extends CustomCommand {
             startIndex = 1;
         }
 
-        // Собираем сообщение
+        // Build the message
         StringBuilder messageBuilder = new StringBuilder();
         for (int i = startIndex; i < args.length; i++) {
             if (i > startIndex) messageBuilder.append(" ");
@@ -58,29 +58,29 @@ public class bc_commandItem extends CustomCommand {
         String message = messageBuilder.toString();
 
         if (message.isEmpty()) {
-            msg(sender, "&cУкажите текст сообщения!");
+            msg(sender, "&cPlease specify the message text!");
             return true;
         }
 
-        // Цветовые коды
+        // Color codes
         String coloredMessage = colorize(message);
-        String prefix = "&8[&6Объявление&8] &r";
+        String prefix = "&8[&6Announcement&8] &r";
 
-        // Получаем имя отправителя
-        String senderName = sender instanceof Player ? sender.getName() : "Консоль";
+        // Get the sender's name
+        String senderName = sender instanceof Player ? sender.getName() : "Console";
 
         switch (type) {
             case "title":
-                // Title объявление
+                // Title announcement
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    player.sendTitle(coloredMessage, prefix + "&7от " + senderName, 10, 60, 20);
+                    player.sendTitle(coloredMessage, prefix + "&7from " + senderName, 10, 60, 20);
                     player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
                 }
-                msg(sender, "&a✅ Title объявление отправлено!");
+                msg(sender, "&a✅ Title announcement sent!");
                 break;
 
             case "actionbar":
-                // Actionbar объявление
+                // Actionbar announcement
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     player.spigot().sendMessage(
                         net.md_5.bungee.api.ChatMessageType.ACTION_BAR,
@@ -88,17 +88,17 @@ public class bc_commandItem extends CustomCommand {
                     );
                     player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.5f);
                 }
-                msg(sender, "&a✅ Actionbar объявление отправлено!");
+                msg(sender, "&a✅ Actionbar announcement sent!");
                 break;
 
             default:
-                // Обычное чат-объявление
-                String fullMessage = prefix + coloredMessage + " &7(от " + senderName + ")";
+                // Regular chat announcement
+                String fullMessage = prefix + coloredMessage + " &7(from " + senderName + ")";
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     player.sendMessage(colorize(fullMessage));
                     player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
                 }
-                msg(sender, "&a✅ Объявление отправлено!");
+                msg(sender, "&a✅ Announcement sent!");
                 break;
         }
 

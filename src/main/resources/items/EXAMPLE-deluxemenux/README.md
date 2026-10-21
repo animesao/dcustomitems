@@ -1,115 +1,115 @@
 # 🎨 DeluxeMenuX - Advanced Menu System
 
-Полноценная система меню для Minecraft сервера.
+A complete menu system for a Minecraft server.
 
-> 📦 Эта папка — образец модуля (`EXAMPLE-*`). Чтобы включить модуль:
-> скопируй её в `items/` и убери префикс `EXAMPLE-` из имени папки
-> (`EXAMPLE-deluxemenux/` → `deluxemenux/`), затем `/ci reload`.
-> Пока папка называется `EXAMPLE-*`, она не загружается.
+> 📦 This folder is a module sample (`EXAMPLE-*`). To enable the module:
+> copy it into `items/` and remove the `EXAMPLE-` prefix from the folder name
+> (`EXAMPLE-deluxemenux/` → `deluxemenux/`), then `/ci reload`.
+> As long as the folder is named `EXAMPLE-*` it is not loaded.
 
-## 📁 Структура модуля
+## 📁 Module structure
 
 ```
-items/deluxemenux/   (после включения EXAMPLE-deluxemenux/ -> deluxemenux/)
-├── config.yml          # Настройки модуля
-├── deluxemenux.java    # Основной класс
-├── menu-command.java   # Команда /menu
-├── kits-command.java   # Команда /kits
-├── shop-command.java   # Команда /shop
-├── README.md           # Документация
-└── menus/              # Папка с меню
-    ├── shop.yml        # Меню магазина, открывается через /shop
-    ├── kits.yml        # Меню наборов, открывается через /kits
-    ├── main.yml        # Главное меню
+items/deluxemenux/   (after enabling EXAMPLE-deluxemenux/ -> deluxemenux/)
+├── config.yml          # Module settings
+├── deluxemenux.java    # Main class
+├── menu-command.java   # The /menu command
+├── kits-command.java   # The /kits command
+├── shop-command.java   # The /shop command
+├── README.md           # Documentation
+└── menus/              # The folder with the menus
+    ├── shop.yml        # The shop menu, opened via /shop
+    ├── kits.yml        # The kits menu, opened via /kits
+    ├── main.yml        # The main menu
     └── ...
 ```
 
-## 🚀 Быстрый старт
+## 🚀 Quick start
 
-### 1. Создай меню
+### 1. Create a menu
 
-Создай файл `menus/my-menu.yml`:
+Create the file `menus/my-menu.yml`:
 
 ```yaml
-title: "&6Моё Меню"
+title: "&6My Menu"
 size: 27
 open-sound: "UI_BUTTON_CLICK"
 close-sound: "UI_BUTTON_CLICK"
 
-# Фон (заполнение пустых слотов)
+# Background (fills the empty slots)
 fill:
   material: GRAY_STAINED_GLASS_PANE
   name: " "
 
-# Предметы
+# Items
 items:
-  # Слот 13 (центр)
+  # Slot 13 (the center)
   13:
     material: DIAMOND
-    name: "&bАлмаз"
+    name: "&bDiamond"
     lore:
       - ""
-      - "&7Нажмите чтобы получить"
+      - "&7Click to receive it"
       - ""
     command: "give %player% diamond 1"
-    message: "&aВы получили алмаз!"
+    message: "&aYou received a diamond!"
     sound: "ENTITY_PLAYER_LEVELUP"
     close: false
 ```
 
-### 2. Открой меню
+### 2. Open the menu
 
 ```
 /menu my-menu
 ```
 
-## 📋 Формат YAML
+## 📋 YAML format
 
-### Основные настройки
+### Main settings
 
 ```yaml
-title: "&6Заголовок"    # Заголовок меню (с цветами)
-size: 27                # Размер (9, 18, 27, 36, 45, 54)
-open-sound: "UI_BUTTON_CLICK"  # Звук открытия
-close-sound: "UI_BUTTON_CLICK" # Звук закрытия
+title: "&6Header"    # The menu title (with colors)
+size: 27                # Size (9, 18, 27, 36, 45, 54)
+open-sound: "UI_BUTTON_CLICK"  # The open sound
+close-sound: "UI_BUTTON_CLICK" # The close sound
 ```
 
-### Фон (fill)
+### Background (fill)
 
 ```yaml
 fill:
   material: GRAY_STAINED_GLASS_PANE
   name: " "
   lore:
-    - "&7Описание"
+    - "&7Description"
 ```
 
-### Предметы (items)
+### Items (items)
 
 ```yaml
 items:
-  # Номер слота
+  # The slot number
   13:
-    material: DIAMOND           # Материал
-    name: "&bНазвание"         # Название (с цветами)
-    lore:                       # Описание
-      - "&7Строка 1"
-      - "&7Строка 2"
-    amount: 1                   # Количество
-    data: 0                     # Data value (для старых версий)
-    command: "give %player% diamond 1"  # Команда
-    message: "&aСообщение"     # Сообщение игроку
-    permission: "my.permission" # Права
-    sound: "ENTITY_PLAYER_LEVELUP"  # Звук
-    close: false                # Закрыть меню после клика
+    material: DIAMOND           # Material
+    name: "&bName"         # Name (with colors)
+    lore:                       # Description
+      - "&7Line 1"
+      - "&7Line 2"
+    amount: 1                   # Amount
+    data: 0                     # Data value (for older versions)
+    command: "give %player% diamond 1"  # Command
+    message: "&aMessage"     # Message to the player
+    permission: "my.permission" # Permissions
+    sound: "ENTITY_PLAYER_LEVELUP"  # Sound
+    close: false                # Close the menu after the click
 ```
 
-## 🎯 Примеры меню
+## 🎯 Menu examples
 
-### Магазин
+### Shop
 
 ```yaml
-title: "&6🛒 Магазин"
+title: "&6🛒 Shop"
 size: 45
 open-sound: "UI_BUTTON_CLICK"
 
@@ -118,65 +118,65 @@ fill:
   name: " "
 
 items:
-  # Заголовок
+  # Header
   4:
     material: PLAYER_HEAD
-    name: "&6&lМагазин"
+    name: "&6&lShop"
     lore:
       - ""
-      - "&7Выберите товар"
+      - "&7Choose a product"
       - ""
 
-  # Товары
+  # Products
   19:
     material: DIAMOND
-    name: "&bАлмаз"
+    name: "&bDiamond"
     lore:
       - ""
-      - "&7Цена: &a100$"
+      - "&7Price: &a100$"
       - ""
     command: "give %player% diamond 1"
-    message: "&aВы купили алмаз!"
+    message: "&aYou bought a diamond!"
     sound: "ENTITY_PLAYER_LEVELUP"
 
   22:
     material: EMERALD
-    name: "&aИзумруд"
+    name: "&aEmerald"
     lore:
       - ""
-      - "&7Цена: &a150$"
+      - "&7Price: &a150$"
       - ""
     command: "give %player% emerald 1"
-    message: "&aВы купили изумруд!"
+    message: "&aYou bought an emerald!"
     sound: "ENTITY_PLAYER_LEVELUP"
 
   25:
     material: GOLD_INGOT
-    name: "&6Золото"
+    name: "&6Gold"
     lore:
       - ""
-      - "&7Цена: &a50$"
+      - "&7Price: &a50$"
       - ""
     command: "give %player% gold_ingot 1"
-    message: "&aВы купили золото!"
+    message: "&aYou bought gold!"
     sound: "ENTITY_PLAYER_LEVELUP"
 
-  # Закрыть
+  # Close
   40:
     material: BARRIER
-    name: "&cЗакрыть"
+    name: "&cClose"
     lore:
       - ""
-      - "&7Закрыть меню"
+      - "&7Close the menu"
       - ""
     close: true
     sound: "UI_BUTTON_CLICK"
 ```
 
-### Навигация между меню
+### Navigation between menus
 
 ```yaml
-title: "&6Главное Меню"
+title: "&6Main Menu"
 size: 27
 
 fill:
@@ -186,124 +186,124 @@ fill:
 items:
   11:
     material: EMERALD_BLOCK
-    name: "&a&lМагазин"
+    name: "&a&lShop"
     lore:
       - ""
-      - "&7Открыть магазин"
+      - "&7Open the shop"
       - ""
     command: "menu shop"
     sound: "UI_BUTTON_CLICK"
 
   13:
     material: CHEST
-    name: "&b&lИнвентарь"
+    name: "&b&lInventory"
     lore:
       - ""
-      - "&7Управление"
+      - "&7Management"
       - ""
     command: "ci list"
     sound: "UI_BUTTON_CLICK"
 
   15:
     material: COMMAND_BLOCK
-    name: "&e&lКоманды"
+    name: "&e&lCommands"
     lore:
       - ""
-      - "&7Список команд"
+      - "&7A list of the commands"
       - ""
     command: "help"
     sound: "UI_BUTTON_CLICK"
 ```
 
-## 🎮 Команды
+## 🎮 Commands
 
-| Команда | Описание |
-|---------|----------|
-| `/menu` | Открыть главное меню |
-| `/menu <id>` | Открыть меню по ID |
-| `/menu list` | Список всех меню |
-| `/menu reload` | Перезагрузить меню |
-| `/kits` | Открыть меню наборов `menus/kits.yml` |
-| `/kit` | Алиас команды `/kits` |
-| `/shop` | Открыть магазин `menus/shop.yml` |
+| Command | Description |
+|---------|-------------|
+| `/menu` | Open the main menu |
+| `/menu <id>` | Open a menu by ID |
+| `/menu list` | A list of all the menus |
+| `/menu reload` | Reload the menus |
+| `/kits` | Open the kits menu `menus/kits.yml` |
+| `/kit` | An alias of the `/kits` command |
+| `/shop` | Open the shop `menus/shop.yml` |
 
-Права:
+Permissions:
 
 ```text
-deluxemenux.use       # /menu, /kits и /shop
+deluxemenux.use       # /menu, /kits and /shop
 deluxemenux.admin     # /menu reload
-deluxemenux.kit.start # стартовый набор
-deluxemenux.kit.iron  # железный набор
+deluxemenux.kit.start # the starter kit
+deluxemenux.kit.iron  # the iron kit
 deluxemenux.kit.diamond
 deluxemenux.shop.diamond
 deluxemenux.shop.emerald
 deluxemenux.shop.gold
 ```
 
-Файлы `kits.yml` и `shop.yml` создаются автоматически только при их отсутствии. Если ты изменишь YAML, `/ci reload` не перезапишет его.
+The `kits.yml` and `shop.yml` files are created automatically only when they are missing. If you change the YAML, `/ci reload` will not overwrite it.
 
-## 🔧 Плейсхолдеры
+## 🔧 Placeholders
 
-| Плейсхолдер | Описание |
-|-------------|----------|
-| `%player%` | Имя игрока |
-| `%player_name%` | Имя игрока |
-| `%health%` | Здоровье |
-| `%food%` | Еда |
-| `%level%` | Уровень |
+| Placeholder | Description |
+|-------------|-------------|
+| `%player%` | The player's name |
+| `%player_name%` | The player's name |
+| `%health%` | Health |
+| `%food%` | Food |
+| `%level%` | Level |
 
-## 📝 Примеры команд
+## 📝 Command examples
 
 ```yaml
-# Выдать предмет
+# Give an item
 command: "give %player% diamond 1"
 
-# Телепортация
+# Teleportation
 command: "tp %player% 100 64 100"
 
-# Эффект
+# Effect
 command: "effect give %player% speed 30 1"
 
-# Открыть другое меню
+# Open another menu
 command: "menu shop"
 
-# Оповещение
-command: "bc %player% купил алмаз!"
+# Announcement
+command: "bc %player% bought a diamond!"
 
-# Переключение полёта
+# Toggle flight
 command: "fly %player%"
 ```
 
-## 🎨 Цветовые коды
+## 🎨 Color codes
 
-| Код | Цвет |
+| Code | Color |
 |-----|------|
-| `&0` | Чёрный |
-| `&1` | Тёмно-синий |
-| `&2` | Тёмно-зелёный |
-| `&3` | Тёмно-бирюзовый |
-| `&4` | Тёмно-красный |
-| `&5` | Фиолетовый |
-| `&6` | Золотой |
-| `&7` | Серый |
-| `&8` | Тёмно-серый |
-| `&9` | Синий |
-| `&a` | Зелёный |
-| `&b` | Бирюзовый |
-| `&c` | Красный |
-| `&d` | Розовый |
-| `&e` | Жёлтый |
-| `&f` | Белый |
-| `&l` | Жирный |
-| `&o` | Курсив |
-| `&n` | Подчёркнутый |
-| `&k` | Обfuscated |
-| `&r` | Сброс |
+| `&0` | Black |
+| `&1` | Dark Blue |
+| `&2` | Dark Green |
+| `&3` | Dark Aqua |
+| `&4` | Dark Red |
+| `&5` | Purple |
+| `&6` | Gold |
+| `&7` | Gray |
+| `&8` | Dark Gray |
+| `&9` | Blue |
+| `&a` | Green |
+| `&b` | Aqua |
+| `&c` | Red |
+| `&d` | Pink |
+| `&e` | Yellow |
+| `&f` | White |
+| `&l` | Bold |
+| `&o` | Italic |
+| `&n` | Underlined |
+| `&k` | Obfuscated |
+| `&r` | Reset |
 
-## ⚡ Советы
+## ⚡ Tips
 
-1. **Размер меню**: Используй 9, 18, 27, 36, 45 или 54
-2. **Слоты**: Нумеруются с 0 (левый верх) до size-1 (правый низ)
-3. **Команды**: Используй `%player%` для подстановки имени
-4. **Звуки**: Полный список: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
-5. **Материалы**: Полный список: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
+1. **Menu size**: Use 9, 18, 27, 36, 45 or 54
+2. **Slots**: They are numbered from 0 (top-left) to size-1 (bottom-right)
+3. **Commands**: Use `%player%` to substitute the name
+4. **Sounds**: The full list: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
+5. **Materials**: The full list: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html

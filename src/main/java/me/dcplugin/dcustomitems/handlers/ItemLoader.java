@@ -20,8 +20,8 @@ import java.io.File;
 import java.util.*;
 
 /**
- * Загрузка кастомных предметов из config.yml и items/ папки.
- * Вынесен из CustomItemHandler для разделения ответственности.
+ * Loading of custom items from config.yml and the items/ folder.
+ * Extracted from CustomItemHandler to separate responsibilities.
  */
 public class ItemLoader {
 
@@ -29,7 +29,7 @@ public class ItemLoader {
     private final NamespacedKey customItemKey;
     private final NamespacedKey itemModelKey;
 
-    // Валидные значения
+    // Valid values
     private static final List<String> VALID_TYPES = List.of("RUNE", "TOOL", "ARMOR", "CONSUMABLE");
     private static final List<String> VALID_SLOTS = List.of("HAND", "OFFHAND", "HEAD", "CHEST", "LEGS", "FEET");
 
@@ -40,7 +40,7 @@ public class ItemLoader {
     }
 
     /**
-     * Загрузить все предметы из config.yml и items/ папки
+     * Load all items from config.yml and the items/ folder
      */
     public Map<String, CustomItem> loadAll() {
         Map<String, CustomItem> items = new HashMap<>();
@@ -75,7 +75,7 @@ public class ItemLoader {
                 }
             } catch (Exception e) {
                 plugin.getLogger().log(java.util.logging.Level.SEVERE,
-                        "Ошибка при загрузке предмета " + itemId + ": " + e.getMessage(), e);
+                        "Error while loading item " + itemId + ": " + e.getMessage(), e);
             }
         }
     }
@@ -86,15 +86,15 @@ public class ItemLoader {
         File itemsFolder = new File(plugin.getDataFolder(), "items");
         if (!itemsFolder.exists()) {
             itemsFolder.mkdirs();
-            plugin.getLogger().info("Создана папка items/ для кастомных предметов");
+            plugin.getLogger().info("Created the items/ folder for custom items");
             return;
         }
 
         File[] files = itemsFolder.listFiles((dir, name) ->
                 (name.endsWith(".yml") || name.endsWith(".yaml")) && !name.startsWith("EXAMPLE-"));
         if (files == null || files.length == 0) {
-            plugin.getLogger().info("Активных .yml предметов нет. В items/ лежат только образцы "
-                    + "EXAMPLE-* — уберите префикс EXAMPLE- из имени файла, чтобы включить.");
+            plugin.getLogger().info("No active .yml items. items/ only contains samples "
+                    + "EXAMPLE-* - remove the EXAMPLE- prefix from the file name to enable them.");
             return;
         }
 
@@ -107,16 +107,16 @@ public class ItemLoader {
                         CustomItem item = parseCustomItem(itemId, fileConfig.getConfigurationSection(itemId));
                         if (item != null) {
                             items.put(itemId, item);
-                            plugin.getLogger().fine("[items] Загружен предмет '" + itemId + "' из " + file.getName());
+                            plugin.getLogger().fine("[items] Loaded item '" + itemId + "' from " + file.getName());
                         }
                     } catch (Exception e) {
                         plugin.getLogger().log(java.util.logging.Level.SEVERE,
-                                "Ошибка при загрузке предмета " + itemId + " из " + file.getName() + ": " + e.getMessage(), e);
+                                "Error while loading item " + itemId + " from " + file.getName() + ": " + e.getMessage(), e);
                     }
                 }
             } catch (Exception e) {
                 plugin.getLogger().log(java.util.logging.Level.SEVERE,
-                        "Ошибка при чтении файла " + file.getName() + ": " + e.getMessage(), e);
+                        "Error while reading file " + file.getName() + ": " + e.getMessage(), e);
             }
         }
     }
@@ -124,7 +124,7 @@ public class ItemLoader {
     // ===== Parsing a single item =====
 
     /**
-     * Парсинг одной секции YAML в CustomItem объект
+     * Parsing of a single YAML section into a CustomItem object
      */
     public CustomItem parseCustomItem(String itemId, ConfigurationSection section) {
         if (section == null || "set-bonuses".equals(itemId)) return null;
@@ -140,7 +140,7 @@ public class ItemLoader {
             // === Item section ===
             ConfigurationSection itemSection = section.getConfigurationSection("item");
             if (itemSection == null) {
-                plugin.getLogger().warning("Секция 'item' не найдена для предмета: " + itemId);
+                plugin.getLogger().warning("Section 'item' not found for item: " + itemId);
                 return null;
             }
 
@@ -193,7 +193,7 @@ public class ItemLoader {
             String armorSetId = itemSection.getString("armor-set", null);
             boolean hasSetBonus = itemSection.getBoolean("has-set-bonus", false);
             if (armorSetId != null) {
-                plugin.getLogger().fine("[LOAD] Предмет '" + itemId + "': armor-set=" + armorSetId);
+                plugin.getLogger().fine("[LOAD] Item '" + itemId + "': armor-set=" + armorSetId);
             }
 
             // === Actions ===
@@ -248,7 +248,7 @@ public class ItemLoader {
 
             // === Build CustomItem ===
             if (section.contains("buy-price") || section.contains("sell-price")) {
-                plugin.getLogger().warning("[LOAD] '" + itemId + "': buy-price/sell-price удалены в 1.328 — ключ игнорируется.");
+                plugin.getLogger().warning("[LOAD] '" + itemId + "': buy-price/sell-price were removed in 1.328 - the key is ignored.");
             }
             CustomItem customItem = CustomItem.builder(itemId, itemStack)
                     .type(type)
@@ -294,7 +294,7 @@ public class ItemLoader {
 
         } catch (Exception e) {
             plugin.getLogger().log(java.util.logging.Level.SEVERE,
-                    "Ошибка при создании предмета " + itemId + ": " + e.getMessage(), e);
+                    "Error while creating item " + itemId + ": " + e.getMessage(), e);
             return null;
         }
     }
@@ -305,7 +305,7 @@ public class ItemLoader {
         String materialName = itemSection.getString("type", "STONE");
         Material material = EnumCache.getMaterial(materialName);
         if (material == null || EnumCache.isAir(material)) {
-            plugin.getLogger().warning((material == null ? "Неизвестный" : "Недопустимый (AIR)") + " материал: " + materialName + " для предмета: " + itemId);
+            plugin.getLogger().warning((material == null ? "Unknown" : "Invalid (AIR)") + " material: " + materialName + " for item: " + itemId);
             return null;
         }
 
@@ -331,7 +331,7 @@ public class ItemLoader {
                     Enchantment ench = EnumCache.getEnchantment(enchName);
                     if (ench != null) builder.addEnchantment(ench, enchSection.getInt(enchName));
                 } catch (Exception e) {
-                    plugin.getLogger().warning("Неизвестное зачарование: " + enchName);
+                    plugin.getLogger().warning("Unknown enchantment: " + enchName);
                     // Enchantment not found — already logged by EnumCache
                 }
             }
@@ -343,7 +343,7 @@ public class ItemLoader {
             if (flag != null) {
                 builder.addItemFlags(flag);
             } else {
-                plugin.getLogger().warning("Неизвестный флаг предмета: " + flagName);
+                plugin.getLogger().warning("Unknown item flag: " + flagName);
             }
         }
 
@@ -371,17 +371,17 @@ public class ItemLoader {
             CustomModelDataComponent cmdComponent = meta.getCustomModelDataComponent();
             List<String> strings = new ArrayList<>();
             if (hasModel) strings.add(itemModel);
-            // item-model-variant добавляется как дополнительная строка
+            // item-model-variant is added as an additional string
             if (hasVariant) strings.add(itemModelVariant);
             cmdComponent.setStrings(strings);
             meta.setCustomModelDataComponent(cmdComponent);
             if (hasModel) {
                 meta.getPersistentDataContainer().set(itemModelKey, PersistentDataType.STRING, itemModel);
             }
-            plugin.getLogger().fine("[LOAD] Применён custom_model_data strings: " + strings + " для " + itemId);
+            plugin.getLogger().fine("[LOAD] Applied custom_model_data strings: " + strings + " for " + itemId);
         } else if (customModelData > 0) {
             meta.setCustomModelData(customModelData);
-            plugin.getLogger().fine("[LOAD] Применён custom_model_data: " + customModelData + " для " + itemId);
+            plugin.getLogger().fine("[LOAD] Applied custom_model_data: " + customModelData + " for " + itemId);
         }
 
         itemStack.setItemMeta(meta);
@@ -411,7 +411,7 @@ public class ItemLoader {
 
     private List<String> loadTriggerActions(ConfigurationSection section) {
         if (section.contains("trigger-actions")) {
-            plugin.getLogger().severe("[LOAD] 'trigger-actions' удалён в 1.328 — используйте секцию 'triggers:'. Ключ проигнорирован.");
+            plugin.getLogger().severe("[LOAD] 'trigger-actions' was removed in 1.328 - use the 'triggers:' section instead. The key is ignored.");
         }
 
         // New format: triggers: { on_click_left: ['particles:FLAME:10'] }
@@ -429,8 +429,8 @@ public class ItemLoader {
     // ===== Plain value conversion (recipes) =====
 
     /**
-     * Переводит секцию конфига в обычные Map/List, чтобы модель предмета
-     * не зависела от Bukkit ConfigurationSection.
+     * Converts a config section into plain Map/List so that the item model
+     * does not depend on the Bukkit ConfigurationSection.
      */
     private Map<String, Object> toPlainMap(ConfigurationSection section) {
         Map<String, Object> map = new LinkedHashMap<>();
@@ -457,7 +457,7 @@ public class ItemLoader {
     private String validateType(String type, String itemId) {
         String normalized = type == null ? "" : type.toUpperCase(java.util.Locale.ROOT);
         if (!VALID_TYPES.contains(normalized)) {
-            plugin.getLogger().warning("Недопустимый тип предмета: " + type + " для предмета: " + itemId);
+            plugin.getLogger().warning("Invalid item type: " + type + " for item: " + itemId);
             return "RUNE";
         }
         return normalized;
@@ -466,7 +466,7 @@ public class ItemLoader {
     private String validateSlot(String slot, String itemId) {
         String normalized = slot == null ? "" : slot.toUpperCase(java.util.Locale.ROOT);
         if (!VALID_SLOTS.contains(normalized)) {
-            plugin.getLogger().warning("Недопустимый слот активации: " + slot + " для предмета: " + itemId);
+            plugin.getLogger().warning("Invalid activation slot: " + slot + " for item: " + itemId);
             return "HAND";
         }
         return normalized;

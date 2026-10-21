@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 
 /**
- * Базовый класс для создания кастомных команд
+ * Base class for creating custom commands
  */
 public abstract class CustomCommand {
 
@@ -20,7 +20,7 @@ public abstract class CustomCommand {
     private Main plugin;
 
     protected CustomCommand() {
-        this.permissionMessage = "\u00a7c\u0423 \u0432\u0430\u0441 \u043d\u0435\u0442 \u043f\u0440\u0430\u0432!";
+        this.permissionMessage = "\u00a7cYou don't have permission!";
     }
 
     protected CustomCommand(String name, String description, String usage, String permission) {
@@ -61,13 +61,13 @@ public abstract class CustomCommand {
         if (args.length > index) {
             Player target = sender.getServer().getPlayer(args[index]);
             if (target == null) {
-                msg(sender, "\u00a7c\u0418\u0433\u0440\u043e\u043a " + args[index] + " \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d!");
+                msg(sender, "\u00a7cPlayer " + args[index] + " not found!");
                 return null;
             }
             return target;
         }
         if (sender instanceof Player) return (Player) sender;
-        msg(sender, "\u00a7c\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0438\u0433\u0440\u043e\u043a\u0430: " + usage);
+        msg(sender, "\u00a7cSpecify a player: " + usage);
         return null;
     }
 

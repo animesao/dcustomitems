@@ -16,7 +16,7 @@ public class HealingFood extends AbstractCustomItem {
     public String getId() { return "healing_food"; }
 
     @Override
-    public String getDisplayName() { return "&a🍎 &fВолшебное Яблоко"; }
+    public String getDisplayName() { return "&a🍎 &fMagic Apple"; }
 
     @Override
     public Material getMaterial() { return Material.GOLDEN_APPLE; }
@@ -25,14 +25,14 @@ public class HealingFood extends AbstractCustomItem {
     public List<String> getLore() {
         return List.of(
             "",
-            " &7Восстанавливает здоровье и",
-            " &7даёт мощные эффекты",
+            " &7Restores health and",
+            " &7grants powerful effects",
             "",
-            " &7ПКМ - съесть",
+            " &7Right Click - eat",
             "",
-            " &a✦ &fИсцеление: +8 сердец",
-            " &b✦ &fСкорость II: 30 сек",
-            " &e✦ &fСопротивление I: 30 сек"
+            " &a✦ &fHealing: +8 hearts",
+            " &b✦ &fSpeed II: 30 sec",
+            " &e✦ &fResistance I: 30 sec"
         );
     }
 
@@ -47,21 +47,21 @@ public class HealingFood extends AbstractCustomItem {
 
     @Override
     public void onRightClick(PlayerInteractEvent event, Player player) {
-        // Исцеление
-        ItemAPI.heal(player, 16); // +8 сердец
+        // Healing
+        ItemAPI.heal(player, 16); // +8 hearts
 
-        // Эффекты
+        // Effects
         ItemAPI.effect(player, PotionEffectType.SPEED, 30, 1);
         ItemAPI.effect(player, PotionEffectType.DAMAGE_RESISTANCE, 30, 0);
 
-        // Эффекты
+        // Effects
         ItemAPI.particles(player, Particle.HEART, 30);
         ItemAPI.sound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
 
-        // Заголовок
-        ItemAPI.title(player, "&a🍎 &fВолшебное Яблоко", "&7Здоровье восстановлено!");
+        // Title
+        ItemAPI.title(player, "&a🍎 &fMagic Apple", "&7Health restored!");
 
-        // Убрать предмет из руки
+        // Remove the item from the hand
         player.getInventory().getItemInMainHand().setAmount(0);
     }
 }

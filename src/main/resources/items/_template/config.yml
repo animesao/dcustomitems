@@ -2,63 +2,63 @@
 # 📦 Module Template
 # ==========================================
 #
-# Это шаблон для создания нового модуля DC-CustomItems.
+# This is a template for creating a new DC-CustomItems module.
 #
-# Как использовать:
-#   1. Скопируйте папку _template/ в items/my-module/
-#   2. Переименуйте template.java → my-module.java
-#   3. Внутри файла замените все "template" на "my-module"
-#   4. Измените config.yml под свои нужды
-#   5. Выполните /ci reload
+# How to use it:
+#   1. Copy the _template/ folder into items/my-module/
+#   2. Rename template.java → my-module.java
+#   3. Inside the file replace all "template" with "my-module"
+#   4. Change config.yml to fit your needs
+#   5. Run /ci reload
 #
-# Структура модуля:
+# Module structure:
 #   items/my-module/
-#   ├── config.yml        — Настройки (этот файл)
-#   ├── my-module.java    — Основной класс модуля
-#   ├── items.yml         — Предметы модуля (опционально)
-#   └── README.md         — Документация (опционально)
+#   ├── config.yml        — Settings (this file)
+#   ├── my-module.java    — The main module class
+#   ├── items.yml         — Module items (optional)
+#   └── README.md         — Documentation (optional)
 #
 # ==========================================
 
-# Название модуля (отображается в логах)
+# Module name (shown in the logs)
 name: "My Module"
 
-# Версия модуля
+# Module version
 version: "1.0"
 
-# Включить/выключить модуль (false = модуль не загружается)
+# Enable/disable the module (false = the module is not loaded)
 enabled: true
 
-# Описание модуля
-description: "Описание что делает этот модуль"
+# Module description
+description: "Description of what this module does"
 
-# Автор модуля
+# Module author
 author: "YourName"
 
 # ==========================================
-# КОМАНДЫ
+# COMMANDS
 # ==========================================
-# Список команд, которые регистрирует модуль.
-# Команды автоматически регистрируются при загрузке модуля.
+# A list of the commands the module registers.
+# The commands are registered automatically when the module is loaded.
 #
-# Формат:
+# Format:
 #   commands:
 #     - command1
 #     - command2
 #
-# После регистрации доступно:
+# After registration the following is available:
 #   /command1 <args>
 #   /command2 <args>
 #
 commands: []
 
 # ==========================================
-# ПРАВА
+# PERMISSIONS
 # ==========================================
-# Список прав, используемых модулем.
-# Формат: <permission>.<action>
+# A list of the permissions used by the module.
+# Format: <permission>.<action>
 #
-# Пример:
+# Example:
 #   permissions:
 #     - mymodule.use
 #     - mymodule.admin
@@ -66,19 +66,19 @@ commands: []
 permissions: []
 
 # ==========================================
-# НАСТРОЙКИ (пример)
+# SETTINGS (example)
 # ==========================================
-# Здесь можно добавить любые настройки модуля.
-# Доступны через config.getString(), config.getInt(), и т.д.
+# You can add any module settings here.
+# They are available via config.getString(), config.getInt(), etc.
 #
-# Пример:
+# Example:
 # settings:
 #   enabled: true
 #   max-items: 10
 #   price-multiplier: 1.5
 #   message-prefix: "&a[MyModule] &r"
 #
-# Использование в коде:
+# Usage in code:
 #   String prefix = config.getString("settings.message-prefix", "&a[Module] &r");
 #   int maxItems = config.getInt("settings.max-items", 10);
 #
@@ -87,9 +87,9 @@ settings:
   message-prefix: "&a[MyModule] &r"
 
 # ==========================================
-# КОНФИГУРАЦИЯ МЕНЮ (опционально)
+# MENU CONFIGURATION (optional)
 # ==========================================
-# Если модуль предоставляет GUI-меню.
+# If the module provides a GUI menu.
 #
 # menu:
 #   title: "&6My Menu"

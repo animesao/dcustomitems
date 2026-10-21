@@ -30,15 +30,16 @@ public class PlayerListener implements Listener {
 
     private final Main plugin;
 
-    // Время последнего обработанного клика (для отсечения дублей
-    // "рука + вторая рука" за один тик).
-    // WeakHashMap здесь был ошибкой: UUID мог быть собран GC, и защита
-    // от двойного срабатывания исчезала. Убираем запись явно при выходе.
+    // Time of the last processed click (to filter out duplicates of
+    // "hand + off hand" within a single tick).
+    // A WeakHashMap was a mistake here: the UUID could be garbage collected,
+    // and the protection against double triggering would disappear. The entry
+    // is removed explicitly on quit.
     private final Map<UUID, Long> lastProcessedClick = new HashMap<>();
 
-    // Кулдаун клика по предмету: playerId -> itemId -> время последнего клика.
-    // Раньше ключом был только playerId, поэтому кулдаун одного предмета
-    // блокировал другой предмет с другим кулдауном.
+    // Click cooldown per item: playerId -> itemId -> time of the last click.
+    // Previously the key was only playerId, so the cooldown of one item
+    // blocked another item with a different cooldown.
     private final Map<UUID, Map<String, Long>> playerCooldowns = new HashMap<>();
 
     private static final long MIN_CLICK_DELAY = 200L;
@@ -48,7 +49,7 @@ public class PlayerListener implements Listener {
     }
 
     /**
-     * Получить глобальный checker (ленивая инициализация)
+     * Get the global checker (lazy initialization)
      */
     private EquippedItemsChecker getChecker() {
         return plugin.getEquippedItemsChecker();
@@ -57,13 +58,13 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         org.bukkit.entity.Player player = event.getPlayer();
-        // Глобальный таск обработает на следующем тике
+        // The global task will handle it on the next tick
         getChecker().markForRecalculation(player);
 
         if ((player.isOp() || player.hasPermission("customitems.admin") || player.hasPermission("*")) && plugin.getConfig().getBoolean("update-available", false)) {
             String latest = plugin.getConfig().getString("latest-version", "unknown");
-            player.sendMessage(plugin.getMessageManager().getMessage("plugin.update-available", "&e[CustomItems] &fДоступна новая версия: &b{version}").replace("{version}", latest));
-            player.sendMessage(plugin.getMessageManager().getMessage("plugin.update-download", "&e[CustomItems] &fСкачать обновление на сайте плагина"));
+            player.sendMessage(plugin.getMessageManager().getMessage("plugin.update-available", "&e[CustomItems] &fA new version is available: &b{version}").replace("{version}", latest));
+            player.sendMessage(plugin.getMessageManager().getMessage("plugin.update-download", "&e[CustomItems] &fDownload the update from the plugin page"));
         }
     }
 
@@ -93,11 +94,11 @@ public class PlayerListener implements Listener {
         CustomItem customItem = plugin.getItemHandler().getCustomItem(customItemId);
         if (customItem == null) return;
 
-        // Право на использование предмета
+        // Permission to use the item
         if (customItem.hasPermission() && !player.hasPermission(customItem.getPermission())) {
             event.setCancelled(true);
             player.sendMessage(plugin.getMessageManager().getMessage("items.no-permission",
-                "&cУ вас нет прав на использование этого предмета."));
+                "&cYou don't have permission to use this item."));
             return;
         }
 
@@ -169,7 +170,7 @@ public class PlayerListener implements Listener {
                 event.setCancelled(true);
                 String msg = customItem.hasUsesDepletedMessage()
                     ? ColorUtils.processMessage(player, customItem.getUsesDepletedMessage())
-                    : plugin.getMessageManager().getMessage("items.uses-depleted", "&cПредмет использован до конца и пропал!");
+                    : plugin.getMessageManager().getMessage("items.uses-depleted", "&cThe item was used up and is gone!");
                 player.sendMessage(msg);
                 return;
             }
@@ -184,8 +185,8 @@ public class PlayerListener implements Listener {
 
             int newUses = plugin.getItemHandler().getItemUses(actualItem);
             if (newUses <= 0) {
-                // Последнее использование: эффект расходника всё равно
-                // применяется — раньше предмет исчезал до применения эффекта.
+                // Last use: the consumable effect is applied anyway —
+                // previously the item disappeared before the effect was applied.
                 if (consumable) {
                     plugin.getEffectManager().applyEffects(player, customItem);
                 }
@@ -197,13 +198,13 @@ public class PlayerListener implements Listener {
 
                 String msg = customItem.hasUsesDepletedMessage()
                     ? ColorUtils.processMessage(player, customItem.getUsesDepletedMessage())
-                    : plugin.getMessageManager().getMessage("items.uses-depleted", "&cПредмет использован до конца и пропал!");
+                    : plugin.getMessageManager().getMessage("items.uses-depleted", "&cThe item was used up and is gone!");
                 player.sendMessage(msg);
                 return;
             }
         }
 
-        // Событие использования — сторонние плагины могут отменить клик целиком
+        // Use event — third-party plugins can cancel the click entirely
         me.dcplugin.dcustomitems.events.CustomItemUseEvent useEvent = new me.dcplugin.dcustomitems.events.CustomItemUseEvent(
                 player, customItem,
                 isRightClick
@@ -222,7 +223,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        // Все действия выполняет единый ActionParser
+        // All actions are executed by the single ActionParser
         if (actions != null && !actions.isEmpty()) {
             for (String actionStr : actions) {
                 ActionParser.execute(player, actionStr);
@@ -250,7 +251,7 @@ public class PlayerListener implements Listener {
         }
     }
 
-    // ===== Хелперы кулдаунов =====
+    // ===== Cooldown helpers =====
 
     private Long getCooldownTime(UUID playerId, String itemId) {
         Map<String, Long> items = playerCooldowns.get(playerId);
@@ -262,11 +263,11 @@ public class PlayerListener implements Listener {
     }
 
     /**
-     * Уменьшает количество предмета на 1 в нужной руке.
+     * Decreases the item amount by 1 in the correct hand.
      *
-     * Раньше здесь был {@code actualItem.setAmount(amount - 1)}: при amount = 1
-     * в слот попадал стак с amount = 0, который занимал слот и не
-     * подбирался авто-подбором. Теперь слот освобождается явно.
+     * Previously this was {@code actualItem.setAmount(amount - 1)}: with amount = 1
+     * a stack with amount = 0 ended up in the slot, which occupied the slot and
+     * was not picked up by the auto-pickup. Now the slot is cleared explicitly.
      */
     private void consumeOne(ItemStack actualItem, EquipmentSlot hand, Player player) {
         if (actualItem == null) return;
@@ -331,20 +332,20 @@ public class PlayerListener implements Listener {
         if (itemId != null) {
             CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
             if (customItem != null) {
-                // Устанавливаем время приобретения для duration-товаров
+                // Set the acquisition time for duration items
                 plugin.getItemHandler().ensureAcquiredTime(pickedItem);
 
-                // Проверяем ограничения по миру
+                // Check the world restrictions
                 if (!customItem.isAllowedInWorld(player.getWorld().getName())) {
                     event.setCancelled(true);
                     player.sendMessage(me.dcplugin.dcustomitems.utils.ColorUtils.processMessage(player,
-                        "&cПредмет " + customItem.getId() + " запрещён в этом мире!"));
+                        "&cItem " + customItem.getId() + " is banned in this world!"));
                     return;
                 }
 
                 ItemFX.spawnEquipEffects(plugin, player, customItem, true);
             } else if (plugin.getApiItemRegistry() != null) {
-                // Java API-предмет: тоже проверяем мир и ставим время приобретения
+                // Java API item: the world is checked as well and the acquisition time is set
                 me.dcplugin.dcustomitems.api.AbstractCustomItem javaItem =
                         plugin.getApiItemRegistry().getItem(itemId);
                 if (javaItem != null) {
@@ -354,7 +355,7 @@ public class PlayerListener implements Listener {
                         player.sendMessage(me.dcplugin.dcustomitems.utils.ColorUtils.processMessage(player,
                             javaItem.getWorldBlockedMessage() != null
                                     ? javaItem.getWorldBlockedMessage()
-                                    : "&cПредмет " + itemId + " запрещён в этом мире!"));
+                                    : "&cItem " + itemId + " is banned in this world!"));
                         return;
                     }
                 }

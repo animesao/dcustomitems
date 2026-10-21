@@ -15,20 +15,20 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Менеджер кастомных предметов.
- * Делегирует загрузку в ItemLoader, lore в LoreManager, uses в UsesManager.
+ * Custom item manager.
+ * Delegates loading to ItemLoader, lore to LoreManager, uses to UsesManager.
  */
 public class CustomItemHandler {
 
     private final Main plugin;
 
     /**
-     * Загруженные предметы.
+     * The loaded items.
      *
-     * volatile + атомарная замена карты: перезагрузка подменяет карту целиком,
-     * а читатели (в т.ч. поток PlaceholderAPI) видят либо старую, либо новую —
-     * никогда частично заполненную. ConcurrentHashMap внутри даёт
-     * «слабо согласованный» обход без ConcurrentModificationException.
+     * volatile + atomic map replacement: a reload swaps the whole map,
+     * and readers (including the PlaceholderAPI thread) see either the old
+     * or the new one — never a partially filled one. The ConcurrentHashMap
+     * inside gives a "weakly consistent" iteration without ConcurrentModificationException.
      */
     private volatile Map<String, CustomItem> customItems = new ConcurrentHashMap<>();
 
@@ -60,14 +60,14 @@ public class CustomItemHandler {
     // ===== Loading =====
 
     public void loadCustomItems() {
-        // Загружаем в новую карту и подменяем атомарно: читатели никогда не
-        // увидят полупустой набор предметов.
+        // Load into a new map and swap it atomically: readers never see
+        // a half-empty set of items.
         Map<String, CustomItem> loaded = new ConcurrentHashMap<>(itemLoader.loadAll());
 
         recipeManager.clear();
 
-        // Регистрируем крафт-рецепты после полной загрузки предметов:
-        // ингредиенты могут ссылаться на другие кастомные предметы.
+        // Register the crafting recipes after all items are loaded:
+        // the ingredients may reference other custom items.
         for (CustomItem item : loaded.values()) {
             if (item.hasRecipes()) {
                 recipeManager.register(item);
@@ -76,7 +76,7 @@ public class CustomItemHandler {
 
         customItems = loaded;
 
-        plugin.getLogger().info("Загружено " + customItems.size() + " кастомных предметов");
+        plugin.getLogger().info("Loaded " + customItems.size() + " custom items");
     }
 
     public void reloadItems() {
@@ -84,7 +84,7 @@ public class CustomItemHandler {
     }
 
     /**
-     * Менеджер крафт-рецептов (recipes секция в YAML предмета).
+     * The crafting recipe manager (the recipes section of a YAML item).
      */
     public RecipeManager getRecipeManager() {
         return recipeManager;
@@ -104,22 +104,22 @@ public class CustomItemHandler {
     }
 
     /**
-     * Все загруженные YAML-предметы (только для чтения).
+     * All loaded YAML items (read-only).
      *
-     * Раньше здесь возвращалась копия карты — она создавалась на каждый
-     * вызов, а метод дёргался из плейсхолдеров PlaceholderAPI и из
-     * /ci validate. Теперь это живое read-only-представление.
+     * Previously a copy of the map was returned here — it was created on every
+     * call, and the method was invoked from the PlaceholderAPI placeholders
+     * and from /ci validate. Now this is a live read-only view.
      *
-     * Карта подменяется целиком при reload (атомарно), а внутри —
-     * ConcurrentHashMap, поэтому обход из другого потока (PlaceholderAPI)
-     * безопасен и не бросает ConcurrentModificationException.
+     * The map is replaced as a whole on reload (atomically), and inside it is
+     * a ConcurrentHashMap, so iteration from another thread (PlaceholderAPI)
+     * is safe and does not throw ConcurrentModificationException.
      */
     public Map<String, CustomItem> getAllCustomItems() {
         return Collections.unmodifiableMap(customItems);
     }
 
     /**
-     * Количество загруженных YAML-предметов (без копирования карты).
+     * The number of loaded YAML items (without copying the map).
      */
     public int getCustomItemCount() {
         return customItems.size();
@@ -132,7 +132,7 @@ public class CustomItemHandler {
     // ===== Lore =====
 
     /**
-     * Обновить lore предмета с подстановкой %cooldown% и %uses%
+     * Update the item lore with the %cooldown% and %uses% placeholders
      */
     public ItemStack updateItemWithCooldown(ItemStack itemStack, long lastClickTime, long cooldownMs) {
         String customItemId = getCustomItemId(itemStack);
@@ -152,7 +152,7 @@ public class CustomItemHandler {
     }
 
     /**
-     * Обновить lore предмета с подстановкой %uses%
+     * Update the item lore with the %uses% placeholder
      */
     public ItemStack updateItemWithUses(ItemStack itemStack) {
         String customItemId = getCustomItemId(itemStack);
@@ -191,26 +191,26 @@ public class CustomItemHandler {
         usesManager.setUses(itemStack, uses);
     }
 
-    // ===== Uses без YAML-модели (для Java API-предметов) =====
+    // ===== Uses without a YAML model (for Java API items) =====
 
     /**
-     * Сырой счётчик использований из PDC (-1, если не установлен).
-     * Не зависит от YAML-модели — работает и для AbstractCustomItem.
+     * The raw use counter from the PDC (-1 if not set).
+     * Does not depend on the YAML model — it also works for AbstractCustomItem.
      */
     public int getStoredUses(ItemStack itemStack) {
         return usesManager.getUses(itemStack);
     }
 
     /**
-     * Записать счётчик использований в PDC (для Java API-предметов).
+     * Write the use counter into the PDC (for Java API items).
      */
     public void setStoredUses(ItemStack itemStack, int uses) {
         usesManager.setUses(itemStack, uses);
     }
 
     /**
-     * Уменьшить счётчик использований на 1 без привязки к YAML-модели.
-     * Возвращает новое значение (или -1, если счётчик не был установлен).
+     * Decrease the use counter by 1 without relying on the YAML model.
+     * Returns the new value (or -1 if the counter was not set).
      */
     public int decrementStoredUses(ItemStack itemStack) {
         if (itemStack == null || itemStack.getType() == Material.AIR) return -1;
@@ -237,7 +237,7 @@ public class CustomItemHandler {
     // ===== Duration =====
 
     /**
-     * Установить время приобретения предмета (если ещё не установлено)
+     * Set the acquisition time of the item (if not set yet)
      */
     public void ensureAcquiredTime(ItemStack itemStack) {
         if (itemStack == null || !itemStack.hasItemMeta()) return;
@@ -250,7 +250,7 @@ public class CustomItemHandler {
     }
 
     /**
-     * Получить оставшееся время жизни предмета (в секундах). -1 = бессрочно.
+     * Get the remaining lifetime of the item (in seconds). -1 = permanent.
      */
     public long getRemainingDuration(ItemStack itemStack) {
         if (itemStack == null || !itemStack.hasItemMeta()) return -1;
@@ -269,7 +269,7 @@ public class CustomItemHandler {
     }
 
     /**
-     * Проверить, истёк ли срок жизни предмета
+     * Check whether the item lifetime has expired
      */
     public boolean isExpired(ItemStack itemStack) {
         return getRemainingDuration(itemStack) == 0;

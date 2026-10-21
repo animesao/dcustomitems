@@ -1,5 +1,5 @@
 # ============================================
-# ЗОЛОТОЕ ЯБЛОКО - Даёт множество эффектов
+# GOLDEN APPLE - Grants many effects
 # ============================================
 
 golden-apple:
@@ -10,7 +10,7 @@ golden-apple:
 
   item:
     type: GOLDEN_APPLE
-    title: '&6[✨] &fЗолотое &6Яблоко'
+    title: '&6[✨] &fGolden &6Apple'
     glowing: true
     unbreakable: false
     item-model: "golden_apple"
@@ -19,14 +19,14 @@ golden-apple:
   lore:
     - ''
     - ' &6━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Яблоко из чистого золота'
+    - ' &7Apple made of pure gold'
     - ' &6━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &6✨ &fПКМ: Съесть'
-    - ' &7Восстанавливает 8 HP'
-    - ' &7Даёт Regeneration, Absorption, Resistance'
+    - ' &6✨ &fRight Click: Eat'
+    - ' &7Restores 8 HP'
+    - ' &7Grants Regeneration, Absorption, Resistance'
     - ''
-    - ' &eОсталось кусочков: &6%uses% &7из &42'
+    - ' &ePieces left: &6%uses% &7of &42'
     - ''
 
   max-uses: 2

@@ -15,21 +15,21 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Централизованное кэширование Bukkit enum lookup'ов.
+ * Centralized caching of the Bukkit enum lookups.
  *
- * Material.valueOf(), Particle.valueOf(), Sound.valueOf() и т.д. используют
- * рефлексию/реестры — кэширование убирает этот оверхед при повторных вызовах.
+ * Material.valueOf(), Particle.valueOf(), Sound.valueOf() and so on use
+ * reflection/registries — caching removes this overhead on repeated calls.
  *
- * Все карты — ConcurrentHashMap: кэш читается из основного потока сервера,
- * но lookup'ы могут прилететь и из async-пула (БД, апдейт-чекер).
- * ConcurrentHashMap не допускает null-значений, поэтому "не найдено"
- * кэшируется через Sentinel.
+ * All maps are ConcurrentHashMap: the cache is read from the server main
+ * thread, but the lookups may also arrive from the async pool (DB, update
+ * checker). ConcurrentHashMap does not allow null values, so "not found"
+ * is cached via a sentinel.
  */
 public final class EnumCache {
 
     private EnumCache() {} // utility class
 
-    /** Маркер "значение не найдено" — ConcurrentHashMap не хранит null. */
+    /** The "value not found" marker — ConcurrentHashMap does not store null. */
     private static final Object NULL = new Object();
 
     // ===== Material =====
@@ -37,18 +37,18 @@ public final class EnumCache {
     private static final Map<String, Object> MATERIAL_CACHE = new ConcurrentHashMap<>();
 
     /**
-     * Получить Material по имени (безопасно, кэшировано)
+     * Get the Material by name (safe, cached)
      *
-     * @return Material или null если не найден
+     * @return the Material, or null if not found
      */
     public static Material getMaterial(String name) {
         if (name == null || name.isEmpty()) return null;
-        // Убираем namespace prefix: minecraft:diamond_sword -> DIAMOND_SWORD
+        // Remove the namespace prefix: minecraft:diamond_sword -> DIAMOND_SWORD
         String clean = name;
         if (clean.contains(":")) {
             clean = clean.substring(clean.indexOf(':') + 1);
         }
-        // Заменяем дефисы на подчёркивания: diamond-sword -> DIAMOND_SWORD
+        // Replace the hyphens with underscores: diamond-sword -> DIAMOND_SWORD
         clean = clean.replace('-', '_');
         String key = clean.toUpperCase(Locale.ROOT);
         Object cached = MATERIAL_CACHE.computeIfAbsent(key, k -> {
@@ -62,7 +62,7 @@ public final class EnumCache {
     }
 
     /**
-     * Проверить, является ли материал AIR
+     * Check whether the material is AIR
      */
     public static boolean isAir(Material material) {
         return material == null || material.isAir();
@@ -90,9 +90,10 @@ public final class EnumCache {
     private static final Map<String, Object> SOUND_CACHE = new ConcurrentHashMap<>();
 
     /**
-     * Sound-константы помечены как deprecated в Paper 1.21+, но Registry-ключи
-     * у звуков другие ("entity.item_break" вместо "ENTITY_ITEM_BREAK"), поэтому
-     * valueOf с фолбэком на поле константы остаётся самым надёжным способом.
+     * The sound constants are marked as deprecated in Paper 1.21+, but the registry
+     * keys of the sounds are different ("entity.item_break" instead of
+     * "ENTITY_ITEM_BREAK"), so valueOf with a fallback to the constant field
+     * remains the most reliable approach.
      */
     @SuppressWarnings({"deprecation", "removal"})
     public static Sound getSound(String name) {
@@ -113,9 +114,9 @@ public final class EnumCache {
     private static final Map<String, Object> EFFECT_CACHE = new ConcurrentHashMap<>();
 
     /**
-     * Ленивая инициализация алиасов: статические ссылки на PotionEffectType
-     * требуют инициализированного Bukkit и ломали бы загрузку класса
-     * в чистом окружении (юнит-тесты без сервера).
+     * Lazy initialization of the aliases: static references to PotionEffectType
+     * require an initialized Bukkit and would break the class loading
+     * in a clean environment (unit tests without a server).
      */
     private static void ensureEffectAliases() {
         if (!EFFECT_CACHE.isEmpty()) return;
@@ -132,7 +133,7 @@ public final class EnumCache {
         if (cached == NULL) return null;
         if (cached != null) return (PotionEffectType) cached;
 
-        // Попытка через Bukkit API
+        // Attempt via the Bukkit API
         PotionEffectType effectType = PotionEffectType.getByName(key);
         if (effectType != null) {
             EFFECT_CACHE.put(key, effectType);
@@ -158,7 +159,7 @@ public final class EnumCache {
         try {
             ench = Enchantment.getByKey(NamespacedKey.minecraft(key));
         } catch (Exception ignored) {
-            // Неизвестное зачарование — возвращаем null
+            // Unknown enchantment — return null
         }
         ENCHANTMENT_CACHE.put(key, ench == null ? NULL : ench);
         return ench;
@@ -186,15 +187,15 @@ public final class EnumCache {
     private static final Map<String, Object> ATTRIBUTE_CACHE = new ConcurrentHashMap<>();
 
     /**
-     * Резолвит атрибут по имени.
+     * Resolves the attribute by name.
      *
-     * Paper 1.21.3+ больше не знает legacy-имён вида {@code GENERIC_ATTACK_DAMAGE}:
-     * {@code Attribute.valueOf} ищет ключ в реестре и бросает
-     * IllegalArgumentException. Здесь поддерживаются и legacy-имена
-     * (GENERIC_/PLAYER_/ZOMBIE_ префиксы), и современные (attack_damage),
-     * и регистровые ключи.
+     * Paper 1.21.3+ no longer knows the legacy names like {@code GENERIC_ATTACK_DAMAGE}:
+     * {@code Attribute.valueOf} looks the key up in the registry and throws an
+     * IllegalArgumentException. Both the legacy names
+     * (the GENERIC_/PLAYER_/ZOMBIE_ prefixes) and the modern ones (attack_damage)
+     * are supported here, as well as the registry keys.
      *
-     * @return Attribute или null, если атрибут неизвестен
+     * @return the Attribute, or null if the attribute is unknown
      */
     @SuppressWarnings({"deprecation", "removal"})
     public static Attribute getAttribute(String name) {
@@ -212,11 +213,11 @@ public final class EnumCache {
 
     @SuppressWarnings({"deprecation", "removal"})
     private static Attribute resolveAttribute(String upperKey) {
-        // 1) Прямое имя (современный вид: ATTACK_DAMAGE / attack_damage)
+        // 1) The direct name (the modern form: ATTACK_DAMAGE / attack_damage)
         Attribute direct = valueOfAttribute(upperKey);
         if (direct != null) return direct;
 
-        // 2) Legacy-префиксы: GENERIC_MAX_HEALTH -> MAX_HEALTH
+        // 2) Legacy prefixes: GENERIC_MAX_HEALTH -> MAX_HEALTH
         for (String prefix : LEGACY_ATTRIBUTE_PREFIXES) {
             if (upperKey.startsWith(prefix) && upperKey.length() > prefix.length()) {
                 Attribute stripped = valueOfAttribute(upperKey.substring(prefix.length()));
@@ -224,7 +225,7 @@ public final class EnumCache {
             }
         }
 
-        // 3) Сопоставление с ключом реестра (minecraft:attack_damage)
+        // 3) Match against the registry key (minecraft:attack_damage)
         String registryKey = upperKey.toLowerCase(Locale.ROOT);
         for (Attribute attribute : allAttributes()) {
             NamespacedKey key = attribute.getKey();
@@ -244,16 +245,17 @@ public final class EnumCache {
         try {
             return Attribute.valueOf(upperKey);
         } catch (Exception | LinkageError e) {
-            // Неизвестное имя атрибута. LinkageError — потому что без сервера
-            // статический инициализатор Attribute падает с
+            // Unknown attribute name. LinkageError — because without a server
+            // the static initializer of Attribute fails with
             // ExceptionInInitializerError.
             return null;
         }
     }
 
     /**
-     * Все атрибуты реестра. В окружении без сервера (юнит-тесты) реестр
-     * недоступен — возвращаем пустой массив, а не падаем.
+     * All attributes of the registry. In an environment without a server (unit
+     * tests) the registry is unavailable — an empty array is returned instead
+     * of crashing.
      */
     @SuppressWarnings({"deprecation", "removal"})
     private static Attribute[] allAttributes() {
@@ -264,15 +266,15 @@ public final class EnumCache {
         }
     }
 
-    // ===== Хелперы =====
+    // ===== Helpers =====
 
-    /** Нормализация имени enum-константы: uppercase + дефисы → подчёркивания. */
+    /** Normalization of the enum constant name: uppercase + hyphens -> underscores. */
     private static String normalize(String name) {
         return name.trim().toUpperCase(Locale.ROOT).replace('-', '_');
     }
 
     /**
-     * Размеры кэшей (для отладки/логирования)
+     * The cache sizes (for debugging/logging)
      */
     public static Map<String, Integer> getCacheStats() {
         Map<String, Integer> stats = new HashMap<>();

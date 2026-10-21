@@ -19,7 +19,7 @@ public class AncientShield extends AbstractCustomItem {
     public String getId() { return "ancient_shield"; }
 
     @Override
-    public String getDisplayName() { return "&6🛡 &fДревний Щит"; }
+    public String getDisplayName() { return "&6🛡 &fAncient Shield"; }
 
     @Override
     public Material getMaterial() { return Material.SHIELD; }
@@ -28,14 +28,14 @@ public class AncientShield extends AbstractCustomItem {
     public List<String> getLore() {
         return List.of(
             "",
-            " &7Мощный щит древних воинов",
-            " &7Увеличивает максимальное здоровье",
+            " &7Powerful shield of ancient warriors",
+            " &7Increases maximum health",
             "",
-            " &6✦ &fЗдоровье: +4 сердца",
-            " &e✦ &fСопротивление I",
+            " &6✦ &fHealth: +4 hearts",
+            " &e✦ &fResistance I",
             "",
-            " &7ЛКМ - активировать барьер",
-            " &7ПКМ - восстановление"
+            " &7Left Click - activate the barrier",
+            " &7Right Click - regeneration"
         );
     }
 
@@ -50,57 +50,57 @@ public class AncientShield extends AbstractCustomItem {
 
     @Override
     public void onEquip(Player player) {
-        // Увеличить максимальное здоровье ( NamespacedKey способ)
+        // Increase maximum health ( NamespacedKey method)
         if (player.getAttribute(Attribute.MAX_HEALTH) != null) {
             NamespacedKey key = new NamespacedKey("dcustomitems", "ancient_shield_health");
             AttributeModifier modifier = new AttributeModifier(
                 key,
-                8, // +4 сердца = +8 HP
+                8, // +4 hearts = +8 HP
                 AttributeModifier.Operation.ADD_NUMBER,
                 EquipmentSlotGroup.OFFHAND
             );
             player.getAttribute(Attribute.MAX_HEALTH).addTransientModifier(modifier);
         }
 
-        // Дать сопротивление
+        // Grant resistance
         ItemAPI.effect(player, PotionEffectType.RESISTANCE, 999999, 0);
 
-        ItemAPI.message(player, "&6🛡 &fДревний Щит активирован!");
+        ItemAPI.message(player, "&6🛡 &fAncient Shield activated!");
         ItemAPI.sound(player, Sound.ITEM_ARMOR_EQUIP_NETHERITE, 1f, 1f);
     }
 
     @Override
     public void onUnequip(Player player) {
-        // Убрать увеличение здоровья
+        // Remove the health increase
         if (player.getAttribute(Attribute.MAX_HEALTH) != null) {
             player.getAttribute(Attribute.MAX_HEALTH).getModifiers().stream()
                 .filter(m -> m.getKey() != null && m.getKey().getKey().equals("ancient_shield_health"))
                 .forEach(player.getAttribute(Attribute.MAX_HEALTH)::removeModifier);
         }
 
-        // Убрать сопротивление
+        // Remove resistance
         player.removePotionEffect(PotionEffectType.RESISTANCE);
 
-        ItemAPI.message(player, "&6🛡 &fДревний Щит деактивирован.");
+        ItemAPI.message(player, "&6🛡 &fAncient Shield deactivated.");
         ItemAPI.sound(player, Sound.ITEM_ARMOR_EQUIP_NETHERITE, 1f, 0.5f);
     }
 
     @Override
     public void onLeftClick(PlayerInteractEvent event, Player player) {
-        // Активация барьера
+        // Barrier activation
         ItemAPI.effect(player, PotionEffectType.RESISTANCE, 5, 1);
         ItemAPI.particles(player, Particle.ENCHANTED_HIT, 50);
         ItemAPI.sound(player, Sound.ITEM_SHIELD_BLOCK, 1f, 1.5f);
-        ItemAPI.title(player, "&6🛡 &fБАРЬЕР!", "&7Сопротивление II на 5 сек!");
+        ItemAPI.title(player, "&6🛡 &fBARRIER!", "&7Resistance II for 5 sec!");
     }
 
     @Override
     public void onRightClick(PlayerInteractEvent event, Player player) {
-        // Восстановление
-        ItemAPI.heal(player, 8); // +4 сердца
+        // Regeneration
+        ItemAPI.heal(player, 8); // +4 hearts
         ItemAPI.effect(player, PotionEffectType.REGENERATION, 5, 1);
         ItemAPI.particles(player, Particle.HEART, 30);
         ItemAPI.sound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
-        ItemAPI.title(player, "&a❤ &fВОССТАНОВЛЕНИЕ!", "+8 HP");
+        ItemAPI.title(player, "&a❤ &fREGENERATION!", "+8 HP");
     }
 }

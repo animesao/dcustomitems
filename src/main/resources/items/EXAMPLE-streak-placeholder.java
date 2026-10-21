@@ -8,28 +8,28 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Плейсхолдер %streak% - серия ежедневных входов
+ * %streak% placeholder - daily login streak
  *
- * Форматы:
- *   %streak%           → "5" (количество дней подряд)
- *   %streak_best%      → "12" (лучшая серия)
- *   %streak_status%    → "🔥 Активна" / "❌ Прервана"
+ * Formats:
+ *   %streak%           → "5" (number of days in a row)
+ *   %streak_best%      → "12" (best streak)
+ *   %streak_status%    → "🔥 Active" / "❌ Broken"
  *
- * Положи этот файл в plugins/DC-CustomItems/items/
- * Сделай /ci reload
+ * Put this file in plugins/DC-CustomItems/items/
+ * Run /ci reload
  *
- * Примеры:
- *   "Серия входов: %streak% дней подряд"
- *   "Лучшая серия: %streak_best%"
- *   Scoreboard: "&7Серия: &e%streak% &7дней &c%streak_status%"
+ * Examples:
+ *   "Login streak: %streak% days in a row"
+ *   "Best streak: %streak_best%"
+ *   Scoreboard: "&7Streak: &e%streak% &7days &c%streak_status%"
  */
 public class StreakPlaceholder extends CustomPlaceholder {
 
-    // Текущая серия
+    // Current streak
     private static final Map<UUID, Integer> currentStreak = new HashMap<>();
-    // Лучшая серия
+    // Best streak
     private static final Map<UUID, Integer> bestStreak = new HashMap<>();
-    // Дата последнего входа
+    // Date of the last login
     private static final Map<UUID, LocalDate> lastJoinDate = new HashMap<>();
 
     public StreakPlaceholder() {
@@ -43,7 +43,7 @@ public class StreakPlaceholder extends CustomPlaceholder {
     }
 
     /**
-     * Вызывать при входе игрока на сервер
+     * Call when a player joins the server
      */
     public static void onJoin(Player player) {
         UUID uuid = player.getUniqueId();
@@ -51,23 +51,23 @@ public class StreakPlaceholder extends CustomPlaceholder {
         LocalDate lastJoin = lastJoinDate.get(uuid);
 
         if (lastJoin == null) {
-            // Первый вход — начинаем серию
+            // First login — start the streak
             currentStreak.put(uuid, 1);
         } else {
             long daysBetween = ChronoUnit.DAYS.between(lastJoin, today);
             if (daysBetween == 1) {
-                // Вход на следующий день — продолжаем серию
+                // Login on the next day — continue the streak
                 currentStreak.merge(uuid, 1, Integer::sum);
             } else if (daysBetween > 1) {
-                // Пропустил день — сбрасываем серию
+                // Missed a day — reset the streak
                 currentStreak.put(uuid, 1);
             }
-            // daysBetween == 0 — уже входил сегодня, не меняем
+            // daysBetween == 0 — already logged in today, no change
         }
 
         lastJoinDate.put(uuid, today);
 
-        // Обновляем лучшую серию
+        // Update the best streak
         int current = currentStreak.getOrDefault(uuid, 0);
         int best = bestStreak.getOrDefault(uuid, 0);
         if (current > best) {
@@ -85,9 +85,9 @@ public class StreakPlaceholder extends CustomPlaceholder {
 
     public static String getStatus(Player player) {
         int streak = getCurrentStreak(player);
-        if (streak >= 7) return "🔥 Огненная серия!";
-        if (streak >= 3) return "🔥 Активна";
-        if (streak >= 1) return "✅ Начата";
-        return "❌ Прервана";
+        if (streak >= 7) return "🔥 Fiery streak!";
+        if (streak >= 3) return "🔥 Active";
+        if (streak >= 1) return "✅ Started";
+        return "❌ Broken";
     }
 }

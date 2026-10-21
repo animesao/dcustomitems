@@ -1,4 +1,4 @@
-title: "&6&lМагазин"
+title: "&6&lShop"
 size: 27
 open-sound: "UI_BUTTON_CLICK"
 close-sound: "UI_BUTTON_CLICK"
@@ -10,50 +10,50 @@ fill:
 items:
   10:
     material: "DIAMOND"
-    name: "&bАлмаз"
+    name: "&bDiamond"
     lore:
       - ""
-      - "&7Купить 1 алмаз"
-      - "&7Цена: &e100 монет"
+      - "&7Buy 1 diamond"
+      - "&7Price: &e100 coins"
       - ""
-      - "&eНажмите, чтобы купить"
+      - "&eClick to buy it"
     permission: "deluxemenux.shop.diamond"
     command: "give %player% diamond 1"
-    message: "&aВы купили алмаз!"
+    message: "&aYou bought a diamond!"
     sound: "ENTITY_PLAYER_LEVELUP"
 
   13:
     material: "EMERALD"
-    name: "&aИзумруд"
+    name: "&aEmerald"
     lore:
       - ""
-      - "&7Купить 1 изумруд"
-      - "&7Цена: &e250 монет"
+      - "&7Buy 1 emerald"
+      - "&7Price: &e250 coins"
       - ""
-      - "&eНажмите, чтобы купить"
+      - "&eClick to buy it"
     permission: "deluxemenux.shop.emerald"
     command: "give %player% emerald 1"
-    message: "&aВы купили изумруд!"
+    message: "&aYou bought an emerald!"
     sound: "ENTITY_PLAYER_LEVELUP"
 
   16:
     material: "GOLD_INGOT"
-    name: "&6Золотой слиток"
+    name: "&6Gold Ingot"
     lore:
       - ""
-      - "&7Купить 1 золотой слиток"
-      - "&7Цена: &e150 монет"
+      - "&7Buy 1 gold ingot"
+      - "&7Price: &e150 coins"
       - ""
-      - "&eНажмите, чтобы купить"
+      - "&eClick to buy it"
     permission: "deluxemenux.shop.gold"
     command: "give %player% gold_ingot 1"
-    message: "&aВы купили золото!"
+    message: "&aYou bought gold!"
     sound: "ENTITY_PLAYER_LEVELUP"
 
   22:
     material: "BARRIER"
-    name: "&cЗакрыть"
+    name: "&cClose"
     lore:
-      - "&7Закрыть магазин"
+      - "&7Close the shop"
     close: true
     sound: "UI_BUTTON_CLICK"

@@ -12,12 +12,12 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.inventory.ItemStack;
 
 /**
- * Дублирует CustomItemCraftEvent в ОБЫЧНЫЙ верстак.
+ * Duplicates CustomItemCraftEvent for the VANILLA crafting table.
  *
- * GUI-крафт (/craft, модуль customcraft) стреляет событие сам; здесь
- * ловится крафт в ванильном столе/инвентарном крафте. Отмена
- * CustomItemCraftEvent отменяет и CraftItemEvent — результат не забирается,
- * ингредиенты остаются.
+ * The GUI crafting (/craft, customcraft module) fires the event itself; here
+ * crafting in the vanilla table/inventory grid is caught. Cancelling
+ * CustomItemCraftEvent also cancels the CraftItemEvent — the result is not
+ * taken and the ingredients stay.
  */
 public class CraftItemListener implements Listener {
 
@@ -38,7 +38,7 @@ public class CraftItemListener implements Listener {
         String itemId = plugin.getItemHandler().getCustomItemId(result);
         if (itemId == null) return;
 
-        // Ингредиенты могут давать результат с количеством > 1 — инициализируем копию как есть
+        // The ingredients may yield a result with an amount > 1 — initialize the copy as is
         CustomItemCraftEvent craftEvent;
         CustomItem yamlItem = plugin.getItemHandler().getCustomItem(itemId);
         if (yamlItem != null) {

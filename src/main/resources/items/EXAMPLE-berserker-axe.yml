@@ -1,5 +1,5 @@
 # ============================================
-# ТОПОР БЕРСЕРКА - Режим ярости
+# BERSERKER AXE - Berserk Fury mode
 # ============================================
 
 berserker-axe:
@@ -10,7 +10,7 @@ berserker-axe:
 
   item:
     type: NETHERITE_AXE
-    title: '&4[💀] &fТопор &4Берсерка'
+    title: '&4[💀] &fBerserker &4Axe'
     glowing: true
     unbreakable: true
     item-model: "berserker_axe"
@@ -22,14 +22,14 @@ berserker-axe:
   lore:
     - ''
     - ' &4━━━━━━━━━━━━━━━━━━━━━━━━'
-    - ' &7Оружие берсерка'
+    - ' &7Weapon of a berserker'
     - ' &4━━━━━━━━━━━━━━━━━━━━━━━━'
     - ''
-    - ' &e⚡ &fКогда в основной руке:'
-    - ' &6┌ &eСила &4IV'
-    - ' &6└ &eСкорость &4II'
+    - ' &e⚡ &fWhile in main hand:'
+    - ' &6┌ &eStrength &4IV'
+    - ' &6└ &eSpeed &4II'
     - ''
-    - '&4💀 &fПКМ: Ярость берсерка!'
+    - '&4💀 &fRight Click: Berserk fury!'
     - ''
 
   effects:
@@ -58,7 +58,7 @@ berserker-axe:
       - 'damage:10'
       - 'particles:DRAGON_BREATH:60'
       - 'sound:ENTITY_ENDER_DRAGON_GROWL:1:1'
-      - 'title:&4💀 &7ЯРОСТЬ БЕРСЕРКА!|&4Сила IV на 10 сек!:10:40:10'
+      - 'title:&4💀 &7BERSERK FURY!|&4Strength IV for 10 sec!:10:40:10'
 
     on_click_left:
       - 'damage_nearby:25:4'

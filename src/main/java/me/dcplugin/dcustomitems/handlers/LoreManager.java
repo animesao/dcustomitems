@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Управление шаблонами lore для предметов:
- * подстановка %cooldown% и %uses% в лор предмета.
+ * Management of lore templates for items:
+ * substitution of %cooldown% and %uses% in the item lore.
  */
 public class LoreManager {
 
@@ -22,12 +22,12 @@ public class LoreManager {
     }
 
     /**
-     * Обновить lore предмета с подстановкой %cooldown% и %uses%
+     * Update the item lore with the %cooldown% and %uses% placeholders
      *
-     * @param itemStack    предмет
-     * @param customItem   кастомный предмет
-     * @param cooldownStr  строка кулдауна (напр. "3.5")
-     * @param uses         текущее кол-во использований
+     * @param itemStack    the item
+     * @param customItem   the custom item
+     * @param cooldownStr  the cooldown string (e.g. "3.5")
+     * @param uses         the current number of uses
      */
     public ItemStack applyLoreTemplate(ItemStack itemStack, CustomItem customItem, String cooldownStr, int uses) {
         List<String> loreTemplate = customItem.getLoreTemplate();
@@ -52,17 +52,17 @@ public class LoreManager {
     }
 
     /**
-     * Обновить lore с кулдауном (uses не меняется)
+     * Update the lore with the cooldown (uses stays unchanged)
      */
     public ItemStack applyCooldownLore(ItemStack itemStack, CustomItem customItem, long remainingMs) {
         double seconds = remainingMs / 1000.0;
         String cooldownStr = String.format("%.1f", seconds);
 
-        // Получаем текущие uses из меты предмета (если есть).
-        // Ключ обязан совпадать с тем, которым пишет UsesManager
-        // (new NamespacedKey(plugin, "item_uses")): namespace, указанный
-        // вручную, не совпадал с namespace плагина, и %uses% всегда
-        // показывал максимум вместо остатка.
+        // Get the current uses from the item meta (if present).
+        // The key must match the one used by UsesManager
+        // (new NamespacedKey(plugin, "item_uses")): a manually specified
+        // namespace did not match the plugin namespace, and %uses% always
+        // showed the maximum instead of the remaining count.
         int uses = -1;
         if (customItem.hasMaxUses()) {
             ItemMeta meta = itemStack.getItemMeta();
@@ -78,7 +78,7 @@ public class LoreManager {
     }
 
     /**
-     * Обновить lore с количеством использований (cooldown = 0.0)
+     * Update the lore with the number of uses (cooldown = 0.0)
      */
     public ItemStack applyUsesLore(ItemStack itemStack, CustomItem customItem, int uses) {
         return applyLoreTemplate(itemStack, customItem, "0.0", uses);
