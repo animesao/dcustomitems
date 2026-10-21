@@ -17,7 +17,8 @@
 # This executes arbitrary code: anyone who can write a file into items/
 # gains control over the server. It is convenient on an admin server;
 # turn it off if untrusted people can write to the plugin folder.
-# With false all .java files in items/ are ignored (YAML items still work).
+# With false all .java files AND .jar files in items/ are ignored
+# (YAML items still work).
 java-compilation: true
 
 # Debug logging (turn off in production)

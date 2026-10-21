@@ -148,11 +148,16 @@ public abstract class Module {
             org.bukkit.command.Command command = new org.bukkit.command.Command(name.toLowerCase()) {
                 @Override
                 public boolean execute(org.bukkit.command.CommandSender sender, String label, String[] args) {
+                    // Проверка права обязательна: SimpleCommandMap.dispatch()
+                    // права не проверяет (это делает только PluginCommand),
+                    // а мы регистрируем «сырую» команду.
+                    if (!testPermission(sender)) return true;
                     return executor.onCommand(sender, this, label, args);
                 }
 
                 @Override
                 public java.util.List<String> tabComplete(org.bukkit.command.CommandSender sender, String alias, String[] args) {
+                    if (!testPermission(sender)) return java.util.Collections.emptyList();
                     if (executor instanceof org.bukkit.command.TabCompleter) {
                         return ((org.bukkit.command.TabCompleter) executor).onTabComplete(sender, this, alias, args);
                     }

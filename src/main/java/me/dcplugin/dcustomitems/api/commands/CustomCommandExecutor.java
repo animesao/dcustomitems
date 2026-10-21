@@ -51,10 +51,11 @@ public class CustomCommandExecutor implements CommandExecutor, TabCompleter {
             return cmd.execute(sender, args);
         } catch (Exception e) {
             Main plugin = Main.getInstance();
+            // Игроку — обобщённый текст: сырое e.getMessage() может содержать
+            // SQL-запрос, путь к файлу или внутренние детали. Подробности — в лог.
             sender.sendMessage(plugin == null
-                    ? "§cError executing command: " + e.getMessage()
-                    : plugin.getMessageManager().getMessage("commands.error", "&cError executing command: {error}")
-                            .replace("{error}", String.valueOf(e.getMessage())));
+                    ? "§cError executing command."
+                    : plugin.getMessageManager().getMessage("commands.error", "&cError executing command."));
             if (plugin != null) {
                 plugin.getLogger().log(Level.WARNING,
                     "Error executing command " + label + ": " + e.getMessage(), e);

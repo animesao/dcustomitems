@@ -65,8 +65,12 @@ public class EquippedItemsChecker extends BukkitRunnable {
     // PDC is not read for an empty result.
     private boolean trailItemsPresent = false;
 
+    /** Cached key: NamespacedKey validates and lowercases on every call. */
+    private final org.bukkit.NamespacedKey acquiredTimeKey;
+
     public EquippedItemsChecker(Main plugin) {
         this.plugin = plugin;
+        this.acquiredTimeKey = new org.bukkit.NamespacedKey(plugin, "acquired_time");
     }
 
     /**
@@ -77,12 +81,27 @@ public class EquippedItemsChecker extends BukkitRunnable {
     }
 
     /**
+     * Drops the cached equipment state.
+     *
+     * <p>Must be called after a reload: the equipment hash is built from the
+     * item IDs, so after the YAML definitions change the hash stays the same
+     * and the new effects/attributes would never be applied.
+     */
+    public void invalidateAll() {
+        lastEquipmentHash.clear();
+        slotCache.clear();
+        previousActiveItems.clear();
+    }
+
+    /**
      * Mark a player for recalculation (called from events)
      */
     public void markForRecalculation(Player player) {
         if (player == null) return;
-        // Just reset lastRecalcTime so that the next tick handles it
-        lastRecalcTime.put(player.getUniqueId(), 0L);
+        // The 150 ms gate is deliberately NOT reset here: the equipment hash
+        // detects any change by itself, and resetting the timer made every
+        // inventory event re-read the PDC of all six slots on the next tick
+        // (3x the work). Changes are still noticed within 150 ms.
     }
 
     @Override
@@ -109,18 +128,21 @@ public class EquippedItemsChecker extends BukkitRunnable {
             SlotSnapshot snapshot = refreshSlots(player, playerId, now);
             if (snapshot == null) continue;
 
-            String currentHash = buildEquipmentHash(snapshot.ids);
+            // The hash is built together with the snapshot: the slots only
+            // change when the snapshot is refreshed, so rebuilding the hash
+            // every tick was pure waste (20 StringBuilders per second and
+            // player).
             String lastHash = lastEquipmentHash.get(playerId);
 
             // Nothing changed — skip
-            if (Objects.equals(currentHash, lastHash)) {
+            if (Objects.equals(snapshot.hash, lastHash)) {
                 continue;
             }
 
             // Recalculate
             processingPlayers.add(playerId);
             try {
-                lastEquipmentHash.put(playerId, currentHash);
+                lastEquipmentHash.put(playerId, snapshot.hash);
                 recalculateEquipment(player, playerId, snapshot.ids);
             } catch (Exception e) {
                 plugin.getLogger().log(java.util.logging.Level.WARNING,
@@ -197,9 +219,12 @@ public class EquippedItemsChecker extends BukkitRunnable {
      */
     private static final class SlotSnapshot {
         private final String[] ids;
+        /** Hash of the IDs — built once, together with the snapshot. */
+        private final String hash;
 
         private SlotSnapshot(String[] ids) {
             this.ids = ids;
+            this.hash = buildHash(ids);
         }
     }
 
@@ -207,8 +232,8 @@ public class EquippedItemsChecker extends BukkitRunnable {
      * Returns the current snapshot of the player's slots, refreshing it no more
      * often than once every RECALC_COOLDOWN_MS.
      *
-     * markForRecalculation() resets lastRecalcTime — the next tick re-reads
-     * the slots immediately.
+     * Any change is detected by the hash inside the snapshot, so
+     * markForRecalculation() does not have to break the 150 ms gate.
      */
     private SlotSnapshot refreshSlots(Player player, UUID playerId, long now) {
         SlotSnapshot cached = slotCache.get(playerId);
@@ -265,10 +290,10 @@ public class EquippedItemsChecker extends BukkitRunnable {
         Set<String> currentActiveItemIds = new HashSet<>();
 
         // Check the hands and the armor (the IDs are already read — no repeated PDC reads)
-        checkSlot(slotIds[SLOT_HAND], "HAND", totalEffects, totalAttributes, currentActiveItemIds, activeSets);
-        checkSlot(slotIds[SLOT_OFFHAND], "OFFHAND", totalEffects, totalAttributes, currentActiveItemIds, activeSets);
+        checkSlot(player, slotIds[SLOT_HAND], "HAND", totalEffects, totalAttributes, currentActiveItemIds, activeSets);
+        checkSlot(player, slotIds[SLOT_OFFHAND], "OFFHAND", totalEffects, totalAttributes, currentActiveItemIds, activeSets);
         for (int i = 0; i < ARMOR_SLOTS.length; i++) {
-            checkSlot(slotIds[SLOT_FEET + i], ARMOR_SLOTS[i], totalEffects, totalAttributes, currentActiveItemIds, activeSets);
+            checkSlot(player, slotIds[SLOT_FEET + i], ARMOR_SLOTS[i], totalEffects, totalAttributes, currentActiveItemIds, activeSets);
         }
 
         // Set bonuses
@@ -358,7 +383,7 @@ public class EquippedItemsChecker extends BukkitRunnable {
         previousActiveItems.put(playerId, currentActiveItemIds);
     }
 
-    private void checkSlot(String itemId, String slotType,
+    private void checkSlot(Player player, String itemId, String slotType,
                            Map<PotionEffectType, Integer> totalEffects,
                            Map<org.bukkit.attribute.Attribute, Double> totalAttributes,
                            Set<String> currentActiveItemIds,
@@ -375,6 +400,13 @@ public class EquippedItemsChecker extends BukkitRunnable {
             return;
         }
 
+        // The item's own permission gates its passive bonuses too — otherwise
+        // a player without the right would still get the effects, attributes
+        // and triggers of an item he picked up.
+        if (!customItem.isUsableBy(player)) {
+            return;
+        }
+
         if (slotType.equalsIgnoreCase(customItem.getActivationSlot())) {
             plugin.getEffectManager().addEffectsToMap(totalEffects, customItem);
             plugin.getAttributeManager().addAttributesToMap(totalAttributes, customItem);
@@ -385,7 +417,7 @@ public class EquippedItemsChecker extends BukkitRunnable {
         }
     }
 
-    private String buildEquipmentHash(String[] slotIds) {
+    private static String buildHash(String[] slotIds) {
         StringBuilder hash = new StringBuilder(128);
         hash.append("MAIN:").append(slotIds[SLOT_HAND]).append(';');
         hash.append("OFF:").append(slotIds[SLOT_OFFHAND]).append(';');
@@ -509,8 +541,13 @@ public class EquippedItemsChecker extends BukkitRunnable {
             if (customItem != null) {
                 if (!customItem.hasDuration()) continue;
 
-                // Ensure acquired time is set
-                plugin.getItemHandler().ensureAcquiredTime(item);
+                // Убеждаемся, что время получения записано.
+                // getContents() отдаёт КОПИИ стеков, поэтому запись
+                // acquired_time в копию без setContents() терялась — и
+                // предмет с duration: никогда не истекал.
+                if (plugin.getItemHandler().ensureAcquiredTime(item)) {
+                    changed = true;
+                }
 
                 if (plugin.getItemHandler().isExpired(item)) {
                     contents[i] = null;
@@ -539,7 +576,9 @@ public class EquippedItemsChecker extends BukkitRunnable {
             AbstractCustomItem javaItem = plugin.getApiItemRegistry().getItem(itemId);
             if (javaItem == null || javaItem.getDuration() <= 0) continue;
 
-            plugin.getItemHandler().ensureAcquiredTime(item);
+            if (plugin.getItemHandler().ensureAcquiredTime(item)) {
+                changed = true;
+            }
             Long acquired = getAcquiredTime(item);
             // The acquisition time is unknown — the item is not considered expired.
             // Previously getDuration() was substituted here, which made the item
@@ -621,8 +660,7 @@ public class EquippedItemsChecker extends BukkitRunnable {
         if (item == null || !item.hasItemMeta()) return null;
         org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
         if (meta == null) return null;
-        return meta.getPersistentDataContainer().get(
-                new org.bukkit.NamespacedKey(plugin, "acquired_time"),
+        return meta.getPersistentDataContainer().get(acquiredTimeKey,
                 org.bukkit.persistence.PersistentDataType.LONG);
     }
 

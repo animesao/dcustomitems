@@ -661,6 +661,11 @@ public class ActionParser {
 
     /**
      * Breaks the block the player is looking at. Format: break[:MATERIAL]
+     *
+     * <p>The block is broken through a real {@link org.bukkit.event.block.BlockBreakEvent},
+     * so region protection plugins (WorldGuard, GriefPrevention, Lands) can
+     * cancel it. Calling {@code block.breakNaturally()} directly would break
+     * protected blocks without any plugin noticing.
      */
     private static void executeBreak(Player player, String value) {
         Block block = player.getTargetBlockExact(5);
@@ -671,6 +676,12 @@ public class ActionParser {
             Material wanted = EnumCache.getMaterial(parts[0]);
             if (wanted != null && block.getType() != wanted) return;
         }
+
+        org.bukkit.event.block.BlockBreakEvent event =
+                new org.bukkit.event.block.BlockBreakEvent(block, player);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) return;
+
         block.breakNaturally();
     }
 

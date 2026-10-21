@@ -86,7 +86,7 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
             return value;
         }
 
-        String id = identifier.toLowerCase();
+        String id = identifier.toLowerCase(java.util.Locale.ROOT);
 
         // Plugin-specific static placeholders
         switch (id) {
@@ -104,7 +104,7 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
                     : "0";
             case "placeholder_count":
                 return plugin.getPlaceholderManager() != null
-                    ? String.valueOf(plugin.getPlaceholderManager().getRegisteredPlaceholders().size())
+                    ? String.valueOf(plugin.getPlaceholderManager().getRegisteredPlaceholderCount())
                     : "0";
             case "module_count":
                 return plugin.getModuleManager() != null
@@ -117,7 +117,7 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
             case "active_effects":
                 return getActiveEffects(player);
             case "active_effects_count":
-                return String.valueOf(plugin.getEffectManager().getAppliedEffects(player).size());
+                return String.valueOf(plugin.getEffectManager().getAppliedEffectCount(player));
         }
 
         // Dynamic item-specific placeholders

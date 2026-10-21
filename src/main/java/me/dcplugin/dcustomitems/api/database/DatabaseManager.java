@@ -168,15 +168,24 @@ public class DatabaseManager {
     /**
      * Wrapper that serialises access to the shared SQLite connection.
      *
-     * Exceptions are propagated as they are: the reflective wrapper would otherwise
+     * <p>Exceptions are propagated as they are: the reflective wrapper would otherwise
      * turn an SQLException into an InvocationTargetException, and the calling
      * code with {@code catch (SQLException)} would stop catching database errors.
+     *
+     * <p>{@code close()} is a no-op here: this is the <b>shared</b> connection,
+     * and the usual {@code try (Connection c = db.getConnection())} pattern would
+     * close it for the whole plugin. MySQL returns a pooled connection — that
+     * one has to be closed.
      */
     private Connection synchronizedConnection(Connection delegate) {
         return (Connection) java.lang.reflect.Proxy.newProxyInstance(
                 delegate.getClass().getClassLoader(),
                 new Class<?>[]{Connection.class},
                 (proxy, method, args) -> {
+                    if ("close".equals(method.getName())) {
+                        // The shared connection lives until disconnect()
+                        return null;
+                    }
                     synchronized (sqliteLock) {
                         try {
                             return method.invoke(delegate, args);

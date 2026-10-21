@@ -17,8 +17,12 @@ public class LoreManager {
 
     private final Main plugin;
 
+    /** Cached key: NamespacedKey validates and lowercases on every call. */
+    private final org.bukkit.NamespacedKey itemUsesKey;
+
     public LoreManager(Main plugin) {
         this.plugin = plugin;
+        this.itemUsesKey = new org.bukkit.NamespacedKey(plugin, "item_uses");
     }
 
     /**
@@ -68,7 +72,7 @@ public class LoreManager {
             ItemMeta meta = itemStack.getItemMeta();
             if (meta != null) {
                 Integer storedUses = meta.getPersistentDataContainer().get(
-                        new org.bukkit.NamespacedKey(plugin, "item_uses"),
+                        itemUsesKey,
                         org.bukkit.persistence.PersistentDataType.INTEGER);
                 uses = storedUses != null ? storedUses : customItem.getMaxUses();
             }

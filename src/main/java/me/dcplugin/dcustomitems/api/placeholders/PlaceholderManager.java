@@ -260,6 +260,13 @@ public class PlaceholderManager {
 
     // ===== GETTERS =====
 
+    /**
+     * Number of registered placeholders (no set copy).
+     */
+    public int getRegisteredPlaceholderCount() {
+        return placeholders.size() + staticPlaceholders.size() + customPlaceholders.size();
+    }
+
     public Set<String> getRegisteredPlaceholders() {
         Set<String> all = new HashSet<>(placeholders.keySet());
         all.addAll(staticPlaceholders.keySet());

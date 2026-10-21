@@ -217,6 +217,19 @@ public class CustomItem {
     public boolean hasCustomModelData() { return customModelData > 0; }
     public String getPermission() { return permission; }
     public boolean hasPermission() { return permission != null && !permission.isEmpty(); }
+
+    /**
+     * May the given player use this item?
+     *
+     * <p>Used for every path that gives the item its power: clicking,
+     * wearing it (effects, attributes) and triggers. Before, the permission
+     * was only checked on click, so a player without the right could still
+     * benefit from the item's passive bonuses and triggers.
+     */
+    public boolean isUsableBy(org.bukkit.entity.Player player) {
+        if (!hasPermission()) return true;
+        return player != null && player.hasPermission(permission);
+    }
     public List<String> getEquipParticles() { return equipParticles; }
     public List<String> getEquipSounds() { return equipSounds; }
     public List<String> getUnequipParticles() { return unequipParticles; }
@@ -231,8 +244,9 @@ public class CustomItem {
     public String getUsesDepletedMessage() { return usesDepletedMessage; }
 
     public Map<PotionEffectType, Integer> getParsedEffects() {
-        Map<PotionEffectType, Integer> copy = parsedEffects;
-        return copy == null ? null : Map.copyOf(copy);
+        // The field is already immutable (setParsedEffects stores Map.copyOf),
+        // so copying it again only allocated garbage in the hot path.
+        return parsedEffects;
     }
     public synchronized void setParsedEffects(Map<PotionEffectType, Integer> parsedEffects) {
         this.parsedEffects = parsedEffects == null ? null : Map.copyOf(parsedEffects);

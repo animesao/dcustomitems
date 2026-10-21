@@ -225,6 +225,10 @@ public class TriggerListener implements Listener {
         CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
         if (customItem == null || !customItem.hasTriggerActions()) return;
 
+        // The item's own permission gates its triggers too — otherwise a
+        // player without the right would still trigger them (on_kill, on_pickup…).
+        if (!customItem.isUsableBy(player)) return;
+
         // Bukkit event for third-party plugins: cancelling skips the triggers
         if (gate != null && !gate.check(player, customItem)) return;
 

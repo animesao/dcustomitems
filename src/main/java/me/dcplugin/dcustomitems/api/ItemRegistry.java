@@ -23,6 +23,8 @@ import java.util.jar.JarFile;
 public class ItemRegistry {
 
     private final Main plugin;
+    // ConcurrentHashMap: getItem() вызывается из потока PlaceholderAPI,
+    // а главный поток пересобирает карту при /ci reload.
     private final Map<String, AbstractCustomItem> registeredItems;
     private final Map<String, CustomCommand> registeredCommands;
     private final Map<String, CustomPlaceholder> registeredPlaceholders;
@@ -42,10 +44,10 @@ public class ItemRegistry {
 
     public ItemRegistry(Main plugin) {
         this.plugin = plugin;
-        this.registeredItems = new LinkedHashMap<>();
-        this.registeredCommands = new LinkedHashMap<>();
-        this.registeredPlaceholders = new LinkedHashMap<>();
-        this.registeredModules = new LinkedHashMap<>();
+        this.registeredItems = new java.util.concurrent.ConcurrentHashMap<>();
+        this.registeredCommands = new java.util.concurrent.ConcurrentHashMap<>();
+        this.registeredPlaceholders = new java.util.concurrent.ConcurrentHashMap<>();
+        this.registeredModules = new java.util.concurrent.ConcurrentHashMap<>();
         this.compiler = new JavaItemCompiler(plugin);
         this.reloadExecutor = Executors.newSingleThreadExecutor(runnable -> {
             Thread thread = new Thread(runnable, "DC-CustomItems-Reload");
@@ -233,6 +235,12 @@ public class ItemRegistry {
 
         registerCustomCommandsAndPlaceholders();
         plugin.registerCustomCommands();
+
+        // The item definitions changed — the cached equipment state is stale
+        // (the hash is built from item IDs, which did not change).
+        if (plugin.getEquippedItemsChecker() != null) {
+            plugin.getEquippedItemsChecker().invalidateAll();
+        }
         if (plugin.getModuleManager() != null) {
             plugin.getModuleManager().loadAll();
         }
@@ -341,7 +349,20 @@ public class ItemRegistry {
         }
     }
 
+    /**
+     * Loads .jar files from the items/ folder.
+     *
+     * <p>Loading a jar means running its classes in the server JVM, so it is
+     * controlled by the same {@code java-compilation} switch as the .java
+     * files. Otherwise {@code java-compilation: false} — the mitigation
+     * promised in SECURITY.md — would leave the RCE path open.
+     */
     private void loadJarFiles(File itemsDir) {
+        if (!plugin.getConfig().getBoolean("java-compilation", true)) {
+            plugin.getLogger().info("[API] Runtime Java loading disabled (java-compilation: false)"
+                    + " - .jar files in items/ are skipped.");
+            return;
+        }
         File[] jars = itemsDir.listFiles((d, n) -> n.endsWith(".jar"));
         if (jars != null) for (File jar : jars) loadFromJar(jar);
     }

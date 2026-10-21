@@ -28,6 +28,8 @@ public class EffectManager {
     private final Main plugin;
 
     // Track which effects were applied to each player (for removal)
+    // ConcurrentHashMap: главный поток пишет сюда, а поток PlaceholderAPI
+    // читает (getAppliedEffects) — обычный HashMap давал гонку.
     private final Map<UUID, Map<PotionEffectType, Integer>> playerAppliedEffects;
 
     // Effect duration: 60 seconds (in ticks)
@@ -42,7 +44,7 @@ public class EffectManager {
 
     public EffectManager(Main plugin) {
         this.plugin = plugin;
-        this.playerAppliedEffects = new HashMap<>();
+        this.playerAppliedEffects = new java.util.concurrent.ConcurrentHashMap<>();
     }
 
     // ===== Parsing =====
@@ -227,6 +229,15 @@ public class EffectManager {
      * A copy is returned: the external code must not change the internal state
      * (otherwise it gets out of sync with removeAllEffectsFromPlayer).
      */
+    /**
+     * Number of effects applied to the player (no map copy).
+     */
+    public int getAppliedEffectCount(Player player) {
+        if (player == null) return 0;
+        Map<PotionEffectType, Integer> effects = playerAppliedEffects.get(player.getUniqueId());
+        return effects == null ? 0 : effects.size();
+    }
+
     public Map<PotionEffectType, Integer> getAppliedEffects(Player player) {
         if (player == null) return new HashMap<>();
         Map<PotionEffectType, Integer> effects = playerAppliedEffects.get(player.getUniqueId());

@@ -162,8 +162,13 @@ public class ItemAPI {
      * Gets the ID of a custom item.
      */
     public static String getCustomItemId(ItemStack item) {
-        if (!isCustomItem(item)) return null;
-        return item.getItemMeta().getPersistentDataContainer().get(customItemKey, PersistentDataType.STRING);
+        if (item == null || !item.hasItemMeta()) return null;
+        if (customItemKey == null) return null;
+        // One metadata read instead of two: isCustomItem() read the metadata
+        // and then it was read again for the value.
+        org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+        if (meta == null) return null;
+        return meta.getPersistentDataContainer().get(customItemKey, PersistentDataType.STRING);
     }
 
     /**

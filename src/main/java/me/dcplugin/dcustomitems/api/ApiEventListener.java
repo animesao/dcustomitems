@@ -27,8 +27,8 @@ public class ApiEventListener implements Listener {
 
     private final Main plugin;
     private final ItemRegistry registry;
-    private final Map<UUID, Long> lastClicks = new HashMap<>();
-    private static final long CLICK_DELAY = 200L;
+    // Cooldown per player AND item: one item's cooldown must not block another
+    private final Map<UUID, Map<String, Long>> lastClicks = new HashMap<>();
 
     public ApiEventListener(Main plugin, ItemRegistry registry) {
         this.plugin = plugin;
@@ -64,11 +64,15 @@ public class ApiEventListener implements Listener {
         // Cooldown
         long cooldown = customItem.getClickCooldown();
         if (cooldown > 0) {
-            Long lastClick = lastClicks.get(player.getUniqueId());
-            if (lastClick != null && (System.currentTimeMillis() - lastClick) < cooldown) {
+            UUID playerId = player.getUniqueId();
+            long now = System.currentTimeMillis();
+            Long lastClick = lastClicks
+                    .computeIfAbsent(playerId, k -> new HashMap<>())
+                    .get(customItem.getId());
+            if (lastClick != null && (now - lastClick) < cooldown) {
                 return;
             }
-            lastClicks.put(player.getUniqueId(), System.currentTimeMillis());
+            lastClicks.computeIfAbsent(playerId, k -> new HashMap<>()).put(customItem.getId(), now);
         }
 
         // Use limit (getMaxUses()), same as for YAML items
@@ -255,11 +259,20 @@ public class ApiEventListener implements Listener {
             return;
         }
 
+        // No Java items at all — the whole handler would be pure overhead.
+        // This is the hot path of the plugin: without this check a server
+        // without the Java API paid ~8 ItemMeta clones per move event.
+        if (registry.getItemCount() == 0) {
+            return;
+        }
+
         Player player = event.getPlayer();
         ItemStack item = findCustomItem(player);
         if (item == null) return;
 
-        String id = ItemAPI.getCustomItemId(item);
+        // One PDC read instead of two (ItemAPI.getCustomItemId reads the
+        // metadata twice: once in isCustomItem and once for the value).
+        String id = plugin.getItemHandler().getCustomItemId(item);
         if (id == null) return;
 
         AbstractCustomItem customItem = registry.getItem(id);
@@ -330,19 +343,22 @@ public class ApiEventListener implements Listener {
 
     /**
      * Finds a custom item in the player's hands or armour.
+     *
+     * <p>Uses the handler's lookup (one metadata read per slot) instead of
+     * {@code ItemAPI.isCustomItem}, which reads the metadata twice.
      */
     private ItemStack findCustomItem(Player player) {
         // Main hand
         ItemStack main = player.getInventory().getItemInMainHand();
-        if (ItemAPI.isCustomItem(main)) return main;
+        if (plugin.getItemHandler().getCustomItemId(main) != null) return main;
 
         // Off hand
         ItemStack off = player.getInventory().getItemInOffHand();
-        if (ItemAPI.isCustomItem(off)) return off;
+        if (plugin.getItemHandler().getCustomItemId(off) != null) return off;
 
         // Armour
         for (ItemStack armor : player.getInventory().getArmorContents()) {
-            if (ItemAPI.isCustomItem(armor)) return armor;
+            if (plugin.getItemHandler().getCustomItemId(armor) != null) return armor;
         }
 
         return null;

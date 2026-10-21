@@ -237,16 +237,20 @@ public class CustomItemHandler {
     // ===== Duration =====
 
     /**
-     * Set the acquisition time of the item (if not set yet)
+     * Set the acquisition time of the item (if not set yet).
+     *
+     * @return true if the item was changed
      */
-    public void ensureAcquiredTime(ItemStack itemStack) {
-        if (itemStack == null || !itemStack.hasItemMeta()) return;
+    public boolean ensureAcquiredTime(ItemStack itemStack) {
+        if (itemStack == null || !itemStack.hasItemMeta()) return false;
         ItemMeta meta = itemStack.getItemMeta();
-        if (meta == null) return;
-        if (!meta.getPersistentDataContainer().has(acquiredTimeKey, PersistentDataType.LONG)) {
-            meta.getPersistentDataContainer().set(acquiredTimeKey, PersistentDataType.LONG, System.currentTimeMillis());
-            itemStack.setItemMeta(meta);
+        if (meta == null) return false;
+        if (meta.getPersistentDataContainer().has(acquiredTimeKey, PersistentDataType.LONG)) {
+            return false;
         }
+        meta.getPersistentDataContainer().set(acquiredTimeKey, PersistentDataType.LONG, System.currentTimeMillis());
+        itemStack.setItemMeta(meta);
+        return true;
     }
 
     /**

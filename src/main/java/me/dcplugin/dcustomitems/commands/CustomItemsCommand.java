@@ -65,6 +65,11 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
             // Reload the YAML items
             plugin.getItemHandler().reloadItems();
 
+            // The item definitions changed — the equipment cache is stale
+            if (plugin.getEquippedItemsChecker() != null) {
+                plugin.getEquippedItemsChecker().invalidateAll();
+            }
+
             // Reload the set bonuses
             plugin.getArmorSetManager().reload();
 
