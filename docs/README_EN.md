@@ -22,7 +22,7 @@ If YAML and Java are new to you, read these guides in order:
 8. [Performance and troubleshooting](TROUBLESHOOTING_EN.md)
 9. [Resource packs and models](RESOURCE_PACK_EN.md)
 
-Working examples live in `src/main/resources/items/` in the repository. Files starting with `EXAMPLE-` are copied into `items/` on the first run but are never loaded on their own — to enable an example, remove the `EXAMPLE-` prefix from the file/folder name and run `/ci reload`. The `EXAMPLES/` and `_template/` folders are jar-only references and must be copied manually.
+Working examples live in `samples/` in the repository. Nothing is copied on install — a fresh install contains exactly one file: `items/messages.java`. To enable an example, copy the file or folder you need from `samples/` into `items/` and remove the `EXAMPLE-` prefix from its name, then run `/ci reload`.
 
 ---
 
@@ -408,7 +408,7 @@ All actions listed above, including the extended ones, work in YAML (both `trigg
 
 Commands in user YAML can be dangerous. Do not let ordinary players edit these files.
 
-See [README-ACTIONS.md](../src/main/resources/items/README-ACTIONS.md) for an additional action reference. It documents legacy and extended formats; if anything conflicts, follow the current handler and test the action on a private server.
+See [README-ACTIONS.md](../samples/EXAMPLE-README-ACTIONS.md) for an additional action reference. It documents legacy and extended formats; if anything conflicts, follow the current handler and test the action on a private server.
 
 ---
 
@@ -485,7 +485,7 @@ my-crafted-sword:
         cooking-time: 200
 ```
 
-Each list (`shaped`, `shapeless`, `furnace`) accepts several recipes. See also `src/main/resources/items/EXAMPLE-crafting.yml`.
+Each list (`shaped`, `shapeless`, `furnace`) accepts several recipes. See also `samples/EXAMPLE-crafting.yml`.
 
 Recipes can also be crafted in a **GUI workbench**: the `items/EXAMPLE-customcraft/` sample module adds `/craft` and a 3×3 window with a result preview. To enable it, copy the folder into `items/` and remove the `EXAMPLE-` prefix (`EXAMPLE-customcraft/` → `customcraft/`). Ingredients match by PDC/NBT: custom items by their id (an item can even be its own ingredient), other plugins' items by material without touching their data. The crafted result is fully initialized (uses/duration). Delete the `customcraft/` folder to remove the command.
 

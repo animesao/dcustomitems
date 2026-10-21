@@ -159,7 +159,7 @@ db.queryIntAsync("SELECT uses FROM promo_codes WHERE code = ?", code)
 Готовый пример находится в JAR-проекте:
 
 ```text
-src/main/resources/items/EXAMPLE-promo-code.java
+samples/EXAMPLE-promo-code.java
 ```
 
 Скопируйте его на сервер без префикса `EXAMPLE-`:

@@ -5,21 +5,8 @@
 # All items live in separate files in the items/ folder.
 # Each item (or group of items) is a separate file (.yml / .java).
 #
-# The jar only ships samples with the EXAMPLE-* prefix:
-#   items/
-#   ├── EXAMPLE-runes.yml          — Runes and orbs
-#   ├── EXAMPLE-armor.yml          — Armor (sets)
-#   ├── EXAMPLE-tools.yml          — Weapons and tools
-#   ├── EXAMPLE-totems.yml         — Totems of immortality
-#   ├── EXAMPLE-vampire-blade.yml  — Custom swords
-#   ├── EXAMPLE-give-command.java  — /give command
-#   ├── EXAMPLE-vault/             — Economy module
-#   ├── EXAMPLE-shop/              — Shop module
-#   └── ...
-#
-# By default the samples are NOT copied into items/ (extract-default-modules: false).
-# The loaders ignore them: to enable a sample, copy it from the jar
-# without the EXAMPLE- prefix in the name and run /ci reload.
+# A fresh install contains exactly one file: items/messages.java.
+# The examples are kept in the repository (samples/), not in the plugin.
 #
 # ==========================================
 
@@ -46,23 +33,25 @@ backup:
   keep: 5
 
 # ==========================================
-# EXAMPLE-* SAMPLES
+# CONTENT
 # ==========================================
-# By default the EXAMPLE-* samples are NOT copied into the items/ folder -
-# the folder stays empty, no file spam. They are reference material inside
-# the jar: the compiler and the loaders ignore them.
+# The plugin installs exactly ONE file: plugins/DC-CustomItems/items/messages.java
+# (all plugin messages, editable by you).
 #
-# To add your own content to the server, create files in items/:
+# Everything else is optional and created by you:
 #   - .yml  - items (delete a file = the item is gone)
 #   - .java - commands and Java items (delete a file = the command is gone)
 #   - folders - modules (delete a folder = the module is disabled)
 #
-# A sample is enabled by copying it from the jar/repository without the prefix:
-# EXAMPLE-runes.yml -> runes.yml, EXAMPLE-vault/ -> vault/.
+# Ready-made examples are NOT installed and are not shipped inside the jar.
+# They live in the repository (samples/) — copy the file or folder you need
+# into items/ and remove the EXAMPLE- prefix from its name, then run
+# /ci reload.
 #
-# Enable this only if you want the samples to be copied automatically
-# on start (only missing files are copied, nothing is overwritten).
-extract-default-modules: false
+#   EXAMPLE-runes.yml -> runes.yml
+#   EXAMPLE-vault/    -> vault/
+#
+# ==========================================
 
 # ==========================================
 # DATABASE

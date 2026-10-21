@@ -159,7 +159,7 @@ Available async methods:
 The ready-made example is:
 
 ```text
-src/main/resources/items/EXAMPLE-promo-code.java
+samples/EXAMPLE-promo-code.java
 ```
 
 Copy it to the server without the `EXAMPLE-` prefix:

@@ -93,8 +93,8 @@ public class ItemLoader {
         File[] files = itemsFolder.listFiles((dir, name) ->
                 (name.endsWith(".yml") || name.endsWith(".yaml")) && !name.startsWith("EXAMPLE-"));
         if (files == null || files.length == 0) {
-            plugin.getLogger().info("No active .yml items. items/ only contains samples "
-                    + "EXAMPLE-* - remove the EXAMPLE- prefix from the file name to enable them.");
+            plugin.getLogger().info("No .yml items in items/ yet. "
+                    + "Copy an example from the repository (samples/) into items/ and run /ci reload.");
             return;
         }
 

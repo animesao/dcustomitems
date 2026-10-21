@@ -138,7 +138,7 @@ curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/do
 3. Перезапусти сервер
 4. Настрой `plugins/DC-CustomItems/config.yml`
 
-> 🧩 При первом запуске плагин копирует из jar в `plugins/DC-CustomItems/items/` только **образцы `EXAMPLE-*`** (только отсутствующие файлы, твои настройки не трогаются). Они не загружаются сами по себе: включи образец, убрав префикс `EXAMPLE-` из имени файла/папки (`EXAMPLE-give-command.java` → `give-command.java`, `EXAMPLE-vault/` → `vault/`). Контент можно отключить, удалив файл/папку в `items/`; отключить автокопирование образцов: `extract-default-modules: false` в config.yml.
+> 🧩 При установке плагин создаёт **ровно один файл** — `plugins/DC-CustomItems/items/messages.java` (все сообщения плагина, их можно менять). Больше ничего не копируется: примеры лежат в репозитории ([`samples/`](samples/)), а не внутри jar. Включи нужный пример: скопируй файл/папку из `samples/` в `items/` и убери префикс `EXAMPLE-` из имени (`EXAMPLE-give-command.java` → `give-command.java`, `EXAMPLE-vault/` → `vault/`), затем `/ci reload`. Контент отключается удалением файла/папки из `items/`.
 
 > ⚠️ О безопасности Java API: плагин компилирует `.java`-файлы из `items/` прямо
 > на сервере — это выполнение произвольного кода. Если доступ к файлам плагина
@@ -665,7 +665,6 @@ DC-CustomItems/
 | `debug-mode` | `false` | Подробное логирование |
 | `file-logging` | `false` | Логи плагина в `plugins/DC-CustomItems/logs/latest.log` вместо консоли |
 | `backup.on-reload` / `backup.keep` | `true` / `5` | Бэкап `items/` перед `/ci reload` |
-| `extract-default-modules` | `false` | Автокопирование образцов `EXAMPLE-*` в `items/` |
 
 ---
 

@@ -64,13 +64,9 @@ public class PluginBootstrap {
 
         plugin.saveDefaultConfig();
 
-        // EXAMPLE-* samples: copied from the jar into items/ only when enabled
-        // via the extract-default-modules option (false by default — no spam).
-        // This way all functionality (items, commands, modules) stays as files
-        // that the administrator can delete or modify.
-        DefaultContentExtractor.extract(plugin);
-
-        // Config migration and creation of messages.java
+        // The plugin ships a single file: items/messages.java.
+        // All the examples live in the repository (samples/) and are never
+        // installed automatically — a fresh install stays empty and clean.
         configMigrator.createDefaultMessagesFile();
         configMigrator.checkConfigMigration();
 
