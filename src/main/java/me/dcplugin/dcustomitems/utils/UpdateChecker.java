@@ -171,13 +171,26 @@ public class UpdateChecker {
     public void notifyPlayer(Player player) {
         if (player == null) return;
         if (updateAvailable && player.hasPermission("customitems.update")) {
-            player.sendMessage("§8§m                                                    ");
-            player.sendMessage("§6§lDC-CustomItems §7- §aUpdate available!");
-            player.sendMessage("§7Current version: §e" + plugin.getDescription().getVersion());
-            player.sendMessage("§7New version: §a" + latestVersion);
-            player.sendMessage("§7Download: §b" + githubReleasesUrl);
-            player.sendMessage("§8§m                                                    ");
+            player.sendMessage(message("update.header", "&8&m                                                    "));
+            player.sendMessage(message("update.title", "&6&lDC-CustomItems &7- &aUpdate available!"));
+            player.sendMessage(message("update.current-version", "&7Current version: &e{version}")
+                    .replace("{version}", plugin.getDescription().getVersion()));
+            player.sendMessage(message("update.new-version", "&7New version: &a{version}")
+                    .replace("{version}", String.valueOf(latestVersion)));
+            player.sendMessage(message("update.download", "&7Download: &b{url}")
+                    .replace("{url}", githubReleasesUrl));
+            player.sendMessage(message("update.header", "&8&m                                                    "));
         }
+    }
+
+    /**
+     * Resolves a message from the central message system
+     * (overridable in items/messages.java).
+     */
+    private String message(String path, String defaultMessage) {
+        Main plugin = Main.getInstance();
+        if (plugin == null || plugin.getMessageManager() == null) return defaultMessage;
+        return plugin.getMessageManager().getMessage(path, defaultMessage);
     }
 
     public boolean isUpdateAvailable() {

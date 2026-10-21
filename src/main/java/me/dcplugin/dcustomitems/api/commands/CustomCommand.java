@@ -20,7 +20,7 @@ public abstract class CustomCommand {
     private Main plugin;
 
     protected CustomCommand() {
-        this.permissionMessage = "\u00a7cYou don't have permission!";
+        // null = use the central message from items/messages.java
     }
 
     protected CustomCommand(String name, String description, String usage, String permission) {
@@ -54,20 +54,41 @@ public abstract class CustomCommand {
         return sender.hasPermission(permission);
     }
 
-    public String getPermissionMessage() { return permissionMessage; }
+    public String getPermissionMessage() {
+        if (permissionMessage != null) return permissionMessage;
+        return message("commands.no-permission", "&cYou don't have permission!");
+    }
     public void setPermissionMessage(String msg) { this.permissionMessage = msg; }
+
+    /**
+     * Resolves a message from the central message system.
+     *
+     * <p>Every message a command shows can be overridden in
+     * {@code items/messages.java} — under the path passed here. A command
+     * may also plug in its own texts with
+     * {@link me.dcplugin.dcustomitems.managers.MessageManager#registerMessage}.
+     *
+     * @param path          message path (for example "commands.no-permission")
+     * @param defaultMessage fallback when the path is unknown
+     */
+    protected String message(String path, String defaultMessage) {
+        if (plugin == null) return defaultMessage;
+        return plugin.getMessageManager().getMessage(path, defaultMessage);
+    }
 
     protected Player getTarget(CommandSender sender, String[] args, int index) {
         if (args.length > index) {
             Player target = sender.getServer().getPlayer(args[index]);
             if (target == null) {
-                msg(sender, "\u00a7cPlayer " + args[index] + " not found!");
+                msg(sender, message("commands.player-not-found", "&cPlayer {player} not found!")
+                        .replace("{player}", args[index]));
                 return null;
             }
             return target;
         }
         if (sender instanceof Player) return (Player) sender;
-        msg(sender, "\u00a7cSpecify a player: " + usage);
+        msg(sender, message("commands.specify-player", "&cSpecify a player: {usage}")
+                .replace("{usage}", usage == null ? "" : usage));
         return null;
     }
 

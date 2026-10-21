@@ -8,64 +8,74 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Plugin message manager.
+ * Manager of the plugin messages.
  *
- * The messages are stored in {@link MessagesConfig} (they can be overridden
- * from items/messages.java). Previously the path parameter of getMessage() was
- * completely ignored and the passed default was always returned — now the path
- * is really resolved, and the default remains the fallback.
+ * <p>Every player-facing text of the plugin goes through this manager, so
+ * an administrator can override all of them in {@code items/messages.java}.
+ *
+ * <p>Modules and third-party plugins can plug their own texts into the same
+ * system:
+ * <pre>{@code
+ * plugin.getMessageManager().registerMessage("vault.no-money", "&cNot enough money!");
+ * String text = plugin.getMessageManager().getMessage("vault.no-money", "&cNot enough money!");
+ * }</pre>
  */
 public class MessageManager {
 
     private final Main plugin;
 
-    /** The built-in messages for the paths used in the plugin code. */
-    private static final Map<String, String> BUILT_IN_MESSAGES = Map.of(
-            "items.no-permission", "&cYou don't have permission to use this item.",
-            "items.uses-depleted", "&cThe item was used up and is gone!",
-            "plugin.update-available", "&e[CustomItems] &fA new version is available: &b{version}",
-            "plugin.update-download", "&e[CustomItems] &fDownload the update from the plugin page"
-    );
-
-    /** The mapping of message paths to the MessagesConfig fields. */
-    private static final Map<String, String> MESSAGES_CONFIG_ALIASES = Map.of(
-            "plugin.no-permission", "NO_PERMISSION",
-            "plugin.player-not-found", "PLAYER_NOT_FOUND",
-            "plugin.item-not-found", "ITEM_NOT_FOUND",
-            "plugin.unknown-command", "UNKNOWN_COMMAND",
-            "plugin.only-for-players", "ONLY_FOR_PLAYERS"
-    );
+    /** Messages registered at runtime (modules, third-party plugins). */
+    private final Map<String, String> registeredMessages = new ConcurrentHashMap<>();
 
     public MessageManager(Main plugin) {
         this.plugin = plugin;
-        // No longer loading messages.yml - use MessagesConfig.java instead
     }
 
     public void reloadMessages() {
-        // Messages are now managed via MessagesConfig.java in items/
+        // Messages are managed via MessagesConfig and items/messages.java
     }
 
     /**
-     * The message for the given path.
+     * Message by path.
      *
-     * @param path          the message path (for example "plugin.no-permission")
-     * @param defaultMessage the default value if the path is not found
+     * <p>Priority: admin override (items/messages.java) → module registration
+     * → built-in message → the fallback passed by the caller.
+     *
+     * @param path          message path (for example "items.world-blocked")
+     * @param defaultMessage fallback used when the path is unknown
      */
     public String getMessage(String path, String defaultMessage) {
-        String resolved = resolve(path);
-        if (resolved != null) return ColorUtils.colorize(resolved);
+        String admin = MessagesConfig.getCustom(path);
+        if (admin != null) return ColorUtils.colorize(admin);
+
+        String registered = registeredMessages.get(path);
+        if (registered != null) return ColorUtils.colorize(registered);
+
+        String builtIn = MessagesConfig.getBuiltIn(path);
+        if (builtIn != null) return ColorUtils.colorize(builtIn);
+
         return ColorUtils.colorize(defaultMessage);
     }
 
     /**
-     * The message for the given path with PlaceholderAPI substitution for the player.
+     * Message by path with PlaceholderAPI substitutions for a player.
      */
     public String getMessage(String path, String defaultMessage, org.bukkit.entity.Player player) {
-        String resolved = resolve(path);
-        if (resolved != null) return ColorUtils.processMessage(player, resolved);
+        String admin = MessagesConfig.getCustom(path);
+        if (admin != null) return ColorUtils.processMessage(player, admin);
+
+        String registered = registeredMessages.get(path);
+        if (registered != null) return ColorUtils.processMessage(player, registered);
+
+        String builtIn = MessagesConfig.getBuiltIn(path);
+        if (builtIn != null) return ColorUtils.processMessage(player, builtIn);
+
         return ColorUtils.processMessage(player, defaultMessage);
     }
 
@@ -74,33 +84,32 @@ public class MessageManager {
     }
 
     /**
-     * Resolves the path into the message text (null if the path is unknown).
+     * Registers a message under an arbitrary path.
+     *
+     * <p>Intended for modules and third-party plugins that want their texts
+     * to be overridable from {@code items/messages.java}.
      */
-    private String resolve(String path) {
-        if (path == null || path.isEmpty()) return null;
-
-        String builtIn = BUILT_IN_MESSAGES.get(path);
-        if (builtIn != null) return builtIn;
-
-        String alias = MESSAGES_CONFIG_ALIASES.get(path);
-        if (alias != null) {
-            String value = readMessagesConfigField(alias);
-            if (value != null && !value.isEmpty()) return value;
+    public void registerMessage(String path, String value) {
+        if (path == null || path.isEmpty()) return;
+        if (value == null) {
+            registeredMessages.remove(path);
+            return;
         }
-        return null;
+        registeredMessages.put(path, value);
     }
 
     /**
-     * Reads a public static field of MessagesConfig by name.
+     * Removes a runtime-registered message.
      */
-    private String readMessagesConfigField(String fieldName) {
-        try {
-            java.lang.reflect.Field field = MessagesConfig.class.getField(fieldName);
-            Object value = field.get(null);
-            return value instanceof String string ? string : null;
-        } catch (Exception e) {
-            return null;
-        }
+    public void unregisterMessage(String path) {
+        if (path != null) registeredMessages.remove(path);
+    }
+
+    /**
+     * All runtime-registered messages (read-only).
+     */
+    public Map<String, String> getRegisteredMessages() {
+        return Collections.unmodifiableMap(registeredMessages);
     }
 
     public void saveMessages() {

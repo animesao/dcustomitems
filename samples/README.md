@@ -41,3 +41,31 @@ Files and folders that still carry it are ignored by the loaders.
   The plugin already creates a working `items/messages.java` for you.
 - A sample can depend on another one (for example a recipe that uses a
   custom item). Copy both files.
+
+## Messages
+
+`items/messages.java` is the single place where the texts the player sees
+are defined — the plugin creates it on install and you edit it directly.
+
+A module plugs its own texts into the same system:
+
+```java
+@Override
+protected void onEnable() {
+    registerMessage("my-module.no-money", "&cNot enough money!");
+}
+
+void onBuy(Player player) {
+    player.sendMessage(getMessage("my-module.no-money", "&cNot enough money!"));
+}
+```
+
+An administrator then overrides it in `items/messages.java`:
+
+```java
+MessagesConfig.set("my-module.no-money", "&aПока не хватает монет!");
+```
+
+Priority: override from `items/messages.java` → the module's own text →
+the plugin's built-in message → the fallback default.
+

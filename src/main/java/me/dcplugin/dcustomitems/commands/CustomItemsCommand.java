@@ -38,9 +38,9 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
 
         sender.sendMessage(MessagesConfig.colorize(MessagesConfig.CI_HEADER));
         sender.sendMessage(MessagesConfig.colorize(MessagesConfig.CI_HELP_RELOAD));
-        sender.sendMessage(MessagesConfig.colorize("&7/ci validate &8- validate YAML recipes"));
-        sender.sendMessage(MessagesConfig.colorize("&7/ci debug <id> &8- dump item + PDC"));
-        sender.sendMessage(MessagesConfig.colorize("&7/ci backup &8- back up items/"));
+        sender.sendMessage(msg("ci.help.validate", "&7/ci validate &8- validate YAML recipes"));
+        sender.sendMessage(msg("ci.help.debug", "&7/ci debug <id> &8- dump item + PDC"));
+        sender.sendMessage(msg("ci.help.backup", "&7/ci backup &8- back up items/"));
         return true;
     }
 
@@ -97,8 +97,8 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
             // Reload the modules
             if (plugin.getModuleManager() != null) {
                 plugin.getModuleManager().reloadAll();
-                sender.sendMessage(MessagesConfig.colorize(
-                    "&7Modules: &e" + plugin.getModuleManager().getModuleCount()));
+                sender.sendMessage(msg("ci.modules", "&7Modules: &e{count}")
+                    .replace("{count}", String.valueOf(plugin.getModuleManager().getModuleCount())));
             }
 
             // EnumCache statistics (for debugging)
@@ -121,6 +121,13 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    /**
+     * Resolves a message from the central message system
+     * (overridable in items/messages.java).
+     */
+    private String msg(String path, String defaultMessage) {
+        return plugin.getMessageManager().getMessage(path, defaultMessage);
+    }
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
@@ -185,7 +192,10 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
                 }
             }
         }
-        sender.sendMessage(MessagesConfig.colorize(problems == 0 ? "&aValidation OK: no problems found." : "&eValidation: problems found: " + problems));
+        sender.sendMessage(problems == 0
+                ? msg("ci.validation.ok", "&aValidation OK: no problems found.")
+                : msg("ci.validation.problems", "&eValidation: problems found: {count}")
+                        .replace("{count}", String.valueOf(problems)));
         return true;
     }
 
@@ -195,13 +205,14 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
             return false;
         }
         if (args.length < 2) {
-            sender.sendMessage(MessagesConfig.colorize("&cUsage: /ci debug <id>"));
+            sender.sendMessage(msg("ci.debug.usage", "&cUsage: /ci debug <id>"));
             return false;
         }
         String id = args[1].toLowerCase();
         var item = plugin.getItemHandler().getCustomItem(id);
         if (item == null) {
-            sender.sendMessage(MessagesConfig.colorize("&cItem not found: " + args[1]));
+            sender.sendMessage(msg("ci.debug.item-not-found", "&cItem not found: {item}")
+                .replace("{item}", args[1]));
             return false;
         }
         sender.sendMessage(MessagesConfig.colorize("&6" + item.getId() + " &8type=" + item.getType() + " slot=" + item.getActivationSlot()));
@@ -223,9 +234,11 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
         try {
             int keep = plugin.getConfig().getInt("backup.keep", 5);
             var dest = me.dcplugin.dcustomitems.utils.BackupManager.backup(plugin.getDataFolder(), keep);
-            sender.sendMessage(MessagesConfig.colorize("&aBackup created: &e" + dest.getFileName()));
+            sender.sendMessage(msg("ci.backup.created", "&aBackup created: &e{file}")
+                .replace("{file}", String.valueOf(dest.getFileName())));
         } catch (Exception e) {
-            sender.sendMessage(MessagesConfig.colorize("&cBackup failed: " + e.getMessage()));
+            sender.sendMessage(msg("ci.backup.failed", "&cBackup failed: {error}")
+                .replace("{error}", String.valueOf(e.getMessage())));
         }
         return true;
     }

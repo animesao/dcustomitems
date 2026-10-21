@@ -522,7 +522,8 @@ public class EquippedItemsChecker extends BukkitRunnable {
                         if (!msg.trim().isEmpty()) player.sendMessage(msg);
                     } else {
                         player.sendMessage(ColorUtils.processMessage(player,
-                            "&cItem " + customItem.getId() + " has expired!"));
+                            plugin.getMessageManager().getMessage("items.expired", "&cItem {item} has expired!")
+                                .replace("{item}", customItem.getId())));
                     }
 
                     // Play sound and particles
@@ -552,7 +553,8 @@ public class EquippedItemsChecker extends BukkitRunnable {
                 player.sendMessage(ColorUtils.processMessage(player,
                     javaItem.getDurationExpiredMessage() != null
                             ? javaItem.getDurationExpiredMessage()
-                            : "&cItem " + itemId + " has expired!"));
+                            : plugin.getMessageManager().getMessage("items.expired", "&cItem {item} has expired!")
+                        .replace("{item}", itemId)));
                 player.getWorld().spawnParticle(org.bukkit.Particle.SMOKE, player.getLocation().add(0, 1, 0), 20);
                 player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
             }
@@ -587,7 +589,8 @@ public class EquippedItemsChecker extends BukkitRunnable {
                     contents[i] = null;
                     changed = true;
                     player.sendMessage(ColorUtils.processMessage(player,
-                        "&cItem " + customItem.getId() + " is banned in this world!"));
+                        plugin.getMessageManager().getMessage("items.world-blocked", "&cItem {item} is banned in this world!")
+                            .replace("{item}", customItem.getId())));
                 }
                 continue;
             }
@@ -600,7 +603,8 @@ public class EquippedItemsChecker extends BukkitRunnable {
                 player.sendMessage(ColorUtils.processMessage(player,
                     javaItem.getWorldBlockedMessage() != null
                             ? javaItem.getWorldBlockedMessage()
-                            : "&cItem " + itemId + " is banned in this world!"));
+                            : plugin.getMessageManager().getMessage("items.world-blocked", "&cItem {item} is banned in this world!")
+                        .replace("{item}", itemId)));
             }
         }
 

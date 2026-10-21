@@ -205,6 +205,45 @@ public abstract class Module {
 
     // ===== UTILITIES =====
 
+    // ===== MESSAGES =====
+
+    /**
+     * Resolves a message from the central message system.
+     *
+     * <p>Every message a module shows can be overridden in
+     * {@code items/messages.java} — under the path you pass here.
+     *
+     * <pre>{@code
+     * // in the module
+     * registerMessage("vault.no-money", "&cNot enough money!");
+     * player.sendMessage(getMessage("vault.no-money", "&cNot enough money!"));
+     * }</pre>
+     *
+     * @param path          message path (for example "vault.no-money")
+     * @param defaultMessage fallback when the path is unknown
+     */
+    protected String getMessage(String path, String defaultMessage) {
+        return plugin.getMessageManager().getMessage(path, defaultMessage);
+    }
+
+    /**
+     * Registers a message of this module under an arbitrary path, so that it
+     * can be overridden from {@code items/messages.java}.
+     *
+     * @param path  message path (for example "vault.no-money")
+     * @param value default text
+     */
+    protected void registerMessage(String path, String value) {
+        plugin.getMessageManager().registerMessage(path, value);
+    }
+
+    /**
+     * Removes a message registered by {@link #registerMessage(String, String)}.
+     */
+    protected void unregisterMessage(String path) {
+        plugin.getMessageManager().unregisterMessage(path);
+    }
+
     /**
      * Gets a value from config.yml
      */

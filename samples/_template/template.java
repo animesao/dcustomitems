@@ -109,6 +109,12 @@ public class templateModule extends Module implements Listener, CommandExecutor,
         // Register the placeholders
         registerPlaceholders();
 
+        // Register the module's own texts in the central message system.
+        // An administrator overrides them in items/messages.java:
+        //   MessagesConfig.set("template.some-text", "...");
+        registerMessage("template.some-text", "&aHello from the template module!");
+        registerMessage("template.no-permission", "&cYou are not allowed to use this!");
+
         // Log the successful load
         String prefix = config.getString("settings.message-prefix", "&a[Module] &r");
         plugin.getLogger().info("[Template] Module enabled!");

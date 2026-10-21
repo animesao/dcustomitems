@@ -777,7 +777,9 @@ int kills = db.queryInt("SELECT kills FROM player_stats WHERE uuid = ?", uuid);
 
 ## 16. Сообщения
 
-Стандартные строки находятся в `MessagesConfig.java` внутри JAR. При первом запуске плагин создаёт `items/messages.java` — рабочую копию стандартных сообщений, которую можно править без пересборки.
+**Все тексты, которые видит игрок, живут в одном месте — `items/messages.java`.** Это единственный файл, который плагин создаёт при установке.
+
+Стандартные значения лежат в `MessagesConfig.java` внутри JAR. При первом запуске плагин создаёт `items/messages.java` — рабочую копию, которую можно править без пересборки.
 
 **`items/messages.java` — рабочий конфиг сообщений.** Плагин компилирует его вместе с остальными Java-файлами и вызывает статический `load()` при старте и при каждом `/ci reload` — изменения вступают в силу без пересборки JAR.
 
@@ -787,11 +789,43 @@ int kills = db.queryInt("SELECT kills FROM player_stats WHERE uuid = ?", uuid);
 
 ```java
 MessagesConfig.PREFIX = "&8[&bМой сервер&8] &r";
-MessagesConfig.CI_GIVE_SELF = MessagesConfig.PREFIX + "&aПолучено: &e{item}";
+MessagesConfig.ITEM_EXPIRED = "&cПредмет {item} вышел из строя!";
 MessagesConfig.NO_PERMISSION = MessagesConfig.PREFIX + "&cНедостаточно прав.";
 ```
 
 Используйте только поля, которые существуют в текущем `MessagesConfig`. Каждый `public static String` из файла можно переопределить внутри `load()`. Если поле удалено в новой версии плагина — компиляция сообщит об этом в консоли (и файл просто не применится, останутся стандартные сообщения).
+
+### Свои тексты по любому пути
+
+Кроме стандартных полей можно завести **собственные ключи** — их читает и ваш модуль, и админ может переопределить их в том же файле:
+
+```java
+MessagesConfig.set("my-module.no-money", "&cНе хватает монет!");
+MessagesConfig.set("my-module.purchased", "&aКуплено: {item} за {count} монет!");
+```
+
+### Как модуль подключается к общей системе
+
+Модуль (папка в `items/`) регистрирует свои тексты и читает их по пути:
+
+```java
+@Override
+protected void onEnable() {
+    registerMessage("my-module.no-money", "&cNot enough money!");
+}
+
+void onBuy(Player player) {
+    player.sendMessage(getMessage("my-module.no-money", "&cNot enough money!"));
+}
+```
+
+Приоритет: переопределение из `items/messages.java` → текст модуля → стандартное сообщение плагина → запасной вариант по умолчанию.
+
+То же самое доступно из обычной команды (`extends CustomCommand`):
+
+```java
+protected String message(String path, String defaultMessage) { ... }
+```
 
 ---
 

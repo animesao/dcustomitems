@@ -270,6 +270,9 @@ public class ItemRegistry {
         try {
             Class<?> clazz = compiler.loadClass("items.messagesItem");
             if (clazz == null) return; // no file — the built-in MessagesConfig is used
+            // Сбрасываем предыдущие переопределения: строка, удалённая из
+            // items/messages.java, не должна оставаться в силе.
+            me.dcplugin.dcustomitems.api.config.MessagesConfig.clearCustom();
             clazz.getMethod("load").invoke(null);
             plugin.getLogger().info("[Messages] items/messages.java applied (runtime load())");
         } catch (java.lang.reflect.InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {

@@ -33,7 +33,11 @@ public class CustomCommandExecutor implements CommandExecutor, TabCompleter {
         }
 
         if (cmd == null) {
-            sender.sendMessage("§cCommand not found: " + label);
+            Main plugin = Main.getInstance();
+            sender.sendMessage(plugin == null
+                    ? "§cCommand not found: " + label
+                    : plugin.getMessageManager().getMessage("commands.not-found", "&cCommand not found: {label}")
+                            .replace("{label}", label));
             return true;
         }
 
@@ -46,8 +50,11 @@ public class CustomCommandExecutor implements CommandExecutor, TabCompleter {
         try {
             return cmd.execute(sender, args);
         } catch (Exception e) {
-            sender.sendMessage("§cError executing command: " + e.getMessage());
             Main plugin = Main.getInstance();
+            sender.sendMessage(plugin == null
+                    ? "§cError executing command: " + e.getMessage()
+                    : plugin.getMessageManager().getMessage("commands.error", "&cError executing command: {error}")
+                            .replace("{error}", String.valueOf(e.getMessage())));
             if (plugin != null) {
                 plugin.getLogger().log(Level.WARNING,
                     "Error executing command " + label + ": " + e.getMessage(), e);

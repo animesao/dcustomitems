@@ -778,6 +778,8 @@ Do not run heavy SQL every tick and never delete `data.db` without a backup.
 
 ## 16. Messages
 
+**Every text the player sees lives in one place — `items/messages.java`.** It is the only file the plugin creates on install.
+
 Default message fields live in `MessagesConfig.java` inside the JAR. On first start, the plugin creates `items/messages.java` as a working copy of the standard messages.
 
 **`items/messages.java` is a working message config.** The plugin compiles it together with the other Java files and calls its static `load()` on startup and on every `/ci reload` — changes take effect without rebuilding the JAR.
@@ -788,11 +790,43 @@ Example (roughly what the generated file looks like):
 
 ```java
 MessagesConfig.PREFIX = "&8[&bMy server&8] &r";
-MessagesConfig.CI_GIVE_SELF = MessagesConfig.PREFIX + "&aReceived: &e{item}";
+MessagesConfig.ITEM_EXPIRED = "&cItem {item} has expired!";
 MessagesConfig.NO_PERMISSION = MessagesConfig.PREFIX + "&cYou do not have permission.";
 ```
 
 Only use fields that exist in the current `MessagesConfig`. Every `public static String` can be overridden inside `load()`. If a field was removed in a newer plugin version, the compiler reports it in the console and the file is simply not applied (built-in messages stay).
+
+### Your own texts under any path
+
+Besides the standard fields you can define **your own keys** — your module reads them by path and the administrator overrides them in the same file:
+
+```java
+MessagesConfig.set("my-module.no-money", "&cNot enough money!");
+MessagesConfig.set("my-module.purchased", "&aBought {item} for {count} coins!");
+```
+
+### How a module plugs into the system
+
+A module (a folder in `items/`) registers its texts and reads them by path:
+
+```java
+@Override
+protected void onEnable() {
+    registerMessage("my-module.no-money", "&cNot enough money!");
+}
+
+void onBuy(Player player) {
+    player.sendMessage(getMessage("my-module.no-money", "&cNot enough money!"));
+}
+```
+
+Priority: override from `items/messages.java` → the module's own text → the plugin's built-in message → the fallback passed by the caller.
+
+The same is available to a plain command (`extends CustomCommand`):
+
+```java
+protected String message(String path, String defaultMessage) { ... }
+```
 
 ---
 

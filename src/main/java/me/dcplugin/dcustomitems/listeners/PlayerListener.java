@@ -339,7 +339,8 @@ public class PlayerListener implements Listener {
                 if (!customItem.isAllowedInWorld(player.getWorld().getName())) {
                     event.setCancelled(true);
                     player.sendMessage(me.dcplugin.dcustomitems.utils.ColorUtils.processMessage(player,
-                        "&cItem " + customItem.getId() + " is banned in this world!"));
+                        plugin.getMessageManager().getMessage("items.world-blocked", "&cItem {item} is banned in this world!")
+                            .replace("{item}", customItem.getId())));
                     return;
                 }
 
@@ -355,7 +356,9 @@ public class PlayerListener implements Listener {
                         player.sendMessage(me.dcplugin.dcustomitems.utils.ColorUtils.processMessage(player,
                             javaItem.getWorldBlockedMessage() != null
                                     ? javaItem.getWorldBlockedMessage()
-                                    : "&cItem " + itemId + " is banned in this world!"));
+                                    : plugin.getMessageManager().getMessage("items.world-blocked",
+                                            "&cItem {item} is banned in this world!")
+                                            .replace("{item}", itemId)));
                         return;
                     }
                 }
