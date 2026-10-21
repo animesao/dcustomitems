@@ -7,6 +7,102 @@
 
 ---
 
+## v1.335.0
+
+### 🔒 Security
+
+Full security review of the plugin (attack-surface mapping, input-to-sink
+tracing, authorization, concurrency, data exposure, dependencies).
+
+- **Module commands did not check their permission at all.**
+  `registerDynamicCommand(name, executor, permission)` only *set* the
+  permission — `Command.setPermission()` just fills a field, and
+  `SimpleCommandMap.dispatch()` never calls `testPermission()` (only
+  `PluginCommand` does, and the plugin registers a raw `Command`).
+  **Any player could run every module command**, including the admin ones
+  from the samples: `/eco give|take|set|reset <player> <amount>` gave full
+  control over the economy. The permission is now checked before the
+  executor runs, and tab-completion respects it too.
+- **`java-compilation: false` did not stop `.jar` files from being loaded.**
+  A jar in `items/` was loaded and its classes instantiated — the same
+  arbitrary-code-execution path the flag is supposed to close. Jar loading
+  is now behind the same switch, so the mitigation promised in `SECURITY.md`
+  actually works.
+- **An item's `permission:` was only checked on click.** A player without
+  the right still got the item's passive effects, attributes, armour-set
+  bonus and every trigger (`on_kill`, `on_pickup`, …). The permission now
+  gates all of those paths as well.
+- **The `break:` action bypassed region protection.** It called
+  `block.breakNaturally()` directly, which never fires `BlockBreakEvent` —
+  WorldGuard, GriefPrevention and Lands never saw the block being broken.
+  The action now goes through a real `BlockBreakEvent` and respects its
+  cancellation.
+- **Raw exception messages were sent to players** (a failed custom command
+  could leak SQL text or a file path). Players now get a generic message;
+  the details stay in the log.
+
+### 🧯 Concurrency (PlaceholderAPI runs on its own thread)
+
+- `EffectManager.playerAppliedEffects` and `ItemRegistry.registeredItems`
+  were plain `HashMap`/`LinkedHashMap` written by the main thread and read
+  by the PlaceholderAPI thread — a data race that can corrupt the hash
+  table and hang the request thread. Both are `ConcurrentHashMap` now.
+
+### 🐛 Correctness
+
+- **Effects and attributes were not re-applied after `/ci reload`.** The
+  equipment hash is built from item IDs, and the IDs did not change after a
+  reload — so editing an item's `effects:` or `attributes:` had no effect
+  until the player took the item off and put it back on. The cache is now
+  invalidated on reload.
+- **Items with `duration:` never expired.** The acquisition time was written
+  into a *copy* of the item stack (`Inventory#getContents()` returns
+  copies), so the timestamp was lost every second and the item was never
+  considered expired. The stack is now written back.
+- **The SQLite connection proxy closed the shared connection.**
+  `try (Connection c = db.getConnection())` closed the one shared
+  connection for the whole plugin; every later query failed with
+  "SQLite is not connected". `close()` is a no-op for SQLite now (MySQL
+  still returns a pooled connection that has to be closed).
+- The Java API item cooldown was shared by all items of a player; it is
+  per item now, like the YAML path.
+- `toLowerCase()` without `Locale.ROOT` in the placeholder expansion broke
+  every ID in a Turkish locale.
+
+### ⚡ Performance
+
+- **The equipment check re-read the PDC of all six slots on every tick**
+  whenever inventory events kept firing (auto-clickers, an open chest):
+  `markForRecalculation` reset the 150 ms gate. The gate is no longer reset
+  — the hash detects changes on its own, so a change is still noticed
+  within 150 ms at a third of the cost.
+- **The equipment hash was rebuilt every tick** for every player (20
+  `StringBuilder`s per second each) although the slots only change every
+  150 ms. It is now built together with the slot snapshot.
+- **`ApiEventListener.onPlayerMove` was the most expensive line in the
+  plugin**: 8 metadata clones per move event (~160/s per player) even when
+  no Java item existed. It now exits immediately when the Java API is
+  empty and reads the metadata once instead of twice.
+- `CustomItem.getParsedEffects()` copied an already immutable map on every
+  call (up to 12 copies per equipment recalculation).
+- The placeholder expansion no longer copies the whole placeholder set or
+  the whole effect map just to call `.size()`.
+
+### 📖 Documentation
+
+- `SECURITY.md` and `wiki/15-permissions.md` now describe the real
+  semantics of `permission:` (it gates clicking, wearing and triggers) and
+  the `java-compilation` switch (it covers `.jar` files too).
+
+### ⚠️ Update notes
+
+- If you distribute items to players, add `permission:` to them — without
+  it every holder gets the effects and triggers.
+- If you have a module whose command should work without permissions,
+  pass `null` as the permission explicitly.
+
+---
+
 ## v1.334.0
 
 ### 📖 Wiki
