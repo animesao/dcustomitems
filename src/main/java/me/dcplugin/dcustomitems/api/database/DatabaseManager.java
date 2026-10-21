@@ -68,13 +68,30 @@ public class DatabaseManager {
             String envPassword = System.getenv("DCI_MYSQL_PASSWORD");
             if (envPassword != null && !envPassword.isBlank()) password = envPassword;
             boolean ssl = plugin.getConfig().getBoolean("database.mysql.use-ssl", false);
+            boolean verifyCert = plugin.getConfig().getBoolean("database.mysql.verify-server-certificate", false);
             int poolSize = Math.max(1, plugin.getConfig().getInt("database.mysql.pool-size", 5));
             long timeout = Math.max(1000L, plugin.getConfig().getLong("database.mysql.connection-timeout-ms", 5000L));
 
+            // sslMode:
+            //   VERIFY_IDENTITY — шифрование + проверка сертификата и имени хоста
+            //   REQUIRED       — шифрование без проверки сертификата (MITM возможен)
+            //   DISABLED       — без шифрования
+            String sslMode;
+            if (!ssl) {
+                sslMode = "DISABLED";
+                plugin.getLogger().warning("[DB] MySQL: TLS выключен (database.mysql.use-ssl: false) — "
+                        + "пароль и игровые данные передаются открытым текстом.");
+            } else if (verifyCert) {
+                sslMode = "VERIFY_IDENTITY";
+            } else {
+                sslMode = "REQUIRED";
+                plugin.getLogger().warning("[DB] MySQL: TLS включён, но сертификат сервера НЕ проверяется — "
+                        + "включи database.mysql.verify-server-certificate: true, чтобы закрыть MITM.");
+            }
+
             HikariConfig hikari = new HikariConfig();
             hikari.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database
-                + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&sslMode="
-                + (ssl ? "REQUIRED" : "DISABLED"));
+                + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&sslMode=" + sslMode);
             hikari.setUsername(username);
             hikari.setPassword(password);
             hikari.setMaximumPoolSize(poolSize);

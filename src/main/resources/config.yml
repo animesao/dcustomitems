@@ -67,8 +67,15 @@ database:
     port: 3306
     database: dcustomitems
     username: dcustomitems
+    # The password is stored in plain text here. Override it with the
+    # DCI_MYSQL_PASSWORD environment variable on a shared server.
     password: 'change-me'
+    # TLS. With false the password and the game data travel in plain text.
     use-ssl: false
+    # Verify the server certificate (and hostname) when TLS is on.
+    # With use-ssl: true and this off the connection is encrypted, but
+    # the certificate is not checked - a MITM stays possible.
+    verify-server-certificate: false
     pool-size: 5
     connection-timeout-ms: 5000
     leak-detection-ms: 0

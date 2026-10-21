@@ -105,12 +105,23 @@ database:
 | `database.mysql.username` | строка | `dcustomitems` | Логин пользователя MySQL |
 | `database.mysql.password` | строка | `'change-me'` | Пароль пользователя. **Замените** на свой |
 | `database.mysql.use-ssl` | булево | `false` | Шифровать соединение. Для удалённой базы — `true` |
+| `database.mysql.verify-server-certificate` | булево | `false` | Проверять сертификат сервера MySQL (и имя хоста). Включай вместе с `use-ssl: true` |
 | `database.mysql.pool-size` | число | `5` | Размер пула соединений (сколько соединений держим открытыми) |
 | `database.mysql.connection-timeout-ms` | число | `5000` | Сколько миллисекунд ждать соединения, прежде чем признать ошибку |
 | `database.mysql.leak-detection-ms` | число | `0` | Через сколько мс «зависшего» соединения писать предупреждение. `0` — выключено |
 
-Пример полной настройки:
+> **Шифрование и проверка сертификата.** `use-ssl: true` включает TLS, но сам
+> по себе сертификат сервера **не проверяется** — шифрование есть, а
+> подмену сервера (MITM) поймать нечем. Для этого нужен
+> `verify-server-certificate: true` (тогда используется `sslMode=VERIFY_IDENTITY`
+> — проверяются и сертификат, и имя хоста).
+>
+> При `use-ssl: false` пароль и игровые данные передаются **открытым текстом** —
+> плагин пишет об этом предупреждение в лог при подключении.
+> Пароль можно не хранить в `config.yml`, а задать переменной окружения
+> `DCI_MYSQL_PASSWORD`.
 
+Пример полной настройки:
 ```yaml
 database:
   type: mysql
@@ -120,7 +131,8 @@ database:
     database: dcustomitems
     username: dcustomitems
     password: 'change-me'
-    use-ssl: false
+    use-ssl: true
+    verify-server-certificate: true
     pool-size: 5
     connection-timeout-ms: 5000
     leak-detection-ms: 0
