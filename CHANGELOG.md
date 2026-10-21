@@ -7,6 +7,35 @@
 
 ---
 
+## v1.331.0
+
+### 🌍 English by default
+
+The plugin now ships with **English** as the default language instead of Russian.
+
+- **All player-facing messages** are English: `MessagesConfig`, the built-in
+  message fallbacks (`items.no-permission`, `items.uses-depleted`,
+  `plugin.update-*`), inline messages in the listeners and the equipment
+  checker, `/ci` command output, the update-checker messages and the
+  `CustomCommand` base-class messages.
+- **`items/messages.java`**, generated on first start, is now English.
+  Existing servers keep their own file, so nothing changes for them.
+- **All log output** is English (compiler, recipe loader, item loader,
+  extractor, command registrar, module manager).
+- **`config.yml`** comments are English.
+- **All samples in `items/`** (`EXAMPLE-*.yml`, `EXAMPLE-*.java`, module
+  folders, `_template/`, `EXAMPLES/`) are English: item names, lore,
+  messages and documentation.
+- **All source comments and javadoc** are English.
+
+### ⚠️ Update notes
+
+- No configuration keys were renamed and no behaviour changed — only text.
+- Servers that want Russian back can simply edit `items/messages.java` or
+  set the `MessagesConfig.*` fields again.
+
+---
+
 ## v1.330.0
 
 ### 💥 Исправлено
