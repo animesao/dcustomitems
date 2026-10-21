@@ -7,6 +7,44 @@
 
 ---
 
+## v1.334.0
+
+### 📖 Wiki
+
+A complete A-to-Z guide for beginners now lives in the `wiki/` folder of the
+repository — 19 pages, ~8300 lines, everything in Russian.
+
+- **Start here:** `wiki/README.md` (index), `wiki/01-Установка.md`,
+  `wiki/02-Как-это-работает.md`
+- **What you can build:** YAML items, Java items, all 54 actions, all 12
+  triggers, all five recipe types, custom commands, placeholders, modules,
+  the central message system, the database API and the events for
+  third-party plugins
+- **Reference:** the full `config.yml`, every permission node, a copy-paste
+  example for every feature, a troubleshooting guide and a complete Java API
+  reference
+- All cross-links and table-of-contents anchors were verified; the pages are
+  valid UTF-8 without BOM.
+
+### 🐛 Fixed
+
+- **`armor-set`, `has-set-bonus` and `attributes` were ignored** for every
+  YAML item that declared them at the top level — which is how all the
+  samples and the README do it. The loader only looked inside the `item:`
+  section, so **no armor set and no attribute bonus from a YAML item ever
+  worked**. Both places are now supported, the top level takes priority.
+- `samples/EXAMPLE-messages.java` did not compile (it referenced about fifty
+  fields that do not exist in `MessagesConfig`), so copying it to
+  `items/messages.java` never applied the messages.
+
+### ⚠️ Update notes
+
+- If you use `armor-set` or `attributes` in a YAML item **inside** the `item:`
+  section, nothing changes. If you declared them at the top level, they
+  start working after this update — check that the bonus is what you want.
+
+---
+
 ## v1.333.0
 
 ### 💬 One central message system
