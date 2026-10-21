@@ -125,7 +125,7 @@ vim items/my-module/config.yml
 ```bash
 # Скачать последний релиз
 cd ~/server/plugins
-curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.328.0/DC-CustomItems-1.328.0.jar
+curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/download/v1.334.0/DC-CustomItems-1.334.0.jar
 
 # Перезапустить сервер
 ./restart.sh
@@ -133,7 +133,7 @@ curl -L -o dcustomitems.jar https://github.com/animesao/dcustomitems/releases/do
 
 ### Ручная установка
 
-1. Скачай `DC-CustomItems-1.328.0.jar` из [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.328.0)
+1. Скачай `DC-CustomItems-1.334.0.jar` из [Releases](https://github.com/animesao/dcustomitems/releases/tag/v1.334.0)
 2. Помести в папку `plugins/`
 3. Перезапусти сервер
 4. Настрой `plugins/DC-CustomItems/config.yml`
@@ -682,6 +682,7 @@ DC-CustomItems/
 
 | Язык | Ссылка |
 |------|--------|
+| 📖 **Вики (с нуля, A→Z)** | [**wiki/README.md**](wiki/README.md) — 19 страниц: установка, YAML и Java-предметы, все действия и триггеры, рецепты, команды, плейсхолдеры, модули, сообщения, БД, события, конфиг, права, примеры, решение проблем |
 | 🇬🇧 English | [Full Documentation](docs/README_EN.md) |
 | 🇷🇺 Русский | [Полная документация](docs/README_RU.md) |
 | ☕ Java API | [Java API Guide](docs/JAVA_API_RU.md) |

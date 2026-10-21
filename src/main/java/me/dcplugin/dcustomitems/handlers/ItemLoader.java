@@ -187,11 +187,17 @@ public class ItemLoader {
             }
 
             // === Attributes ===
-            Map<String, Double> attributes = loadAttributes(itemSection);
+            // Supported both at the top level of the item and inside the
+            // item: section — the top level wins.
+            Map<String, Double> attributes = loadAttributes(section, itemSection);
 
             // === Armor set ===
-            String armorSetId = itemSection.getString("armor-set", null);
-            boolean hasSetBonus = itemSection.getBoolean("has-set-bonus", false);
+            // Supported both at the top level of the item and inside the
+            // item: section — the top level wins.
+            String armorSetId = section.getString("armor-set",
+                    itemSection.getString("armor-set", null));
+            boolean hasSetBonus = section.getBoolean("has-set-bonus",
+                    itemSection.getBoolean("has-set-bonus", false));
             if (armorSetId != null) {
                 plugin.getLogger().fine("[LOAD] Item '" + itemId + "': armor-set=" + armorSetId);
             }
@@ -387,11 +393,22 @@ public class ItemLoader {
         itemStack.setItemMeta(meta);
     }
 
-    private Map<String, Double> loadAttributes(ConfigurationSection itemSection) {
+    /**
+     * Reads the attributes of an item.
+     *
+     * <p>The section is looked up first at the top level of the item and
+     * then inside the {@code item:} block — the top level wins. Previously
+     * only {@code item:} was read, so every item that declared its
+     * attributes at the top level (as all the samples do) silently lost
+     * them.
+     */
+    private Map<String, Double> loadAttributes(ConfigurationSection section, ConfigurationSection itemSection) {
         Map<String, Double> attributes = new HashMap<>();
-        if (!itemSection.contains("attributes")) return attributes;
 
-        ConfigurationSection attrSection = itemSection.getConfigurationSection("attributes");
+        ConfigurationSection attrSection = section.getConfigurationSection("attributes");
+        if (attrSection == null) {
+            attrSection = itemSection.getConfigurationSection("attributes");
+        }
         if (attrSection == null) return attributes;
 
         for (String attrKey : attrSection.getKeys(false)) {
