@@ -36,6 +36,10 @@ java-compilation: true
 # Отладочное логирование (выключить в продакшене)
 debug-mode: false
 
+# Логи плагина в plugins/DC-CustomItems/logs/latest.log вместо консоли.
+# По умолчанию выключено — сообщения плагина идут в консоль сервера.
+file-logging: false
+
 # Бэкапы items/ + config.yml + data.db перед каждым /ci reload.
 backup:
   on-reload: true

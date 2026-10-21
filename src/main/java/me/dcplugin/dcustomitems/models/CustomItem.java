@@ -51,25 +51,29 @@ public class CustomItem {
     private CustomItem(Builder b) {
         this.id = b.id;
         this.itemStack = b.itemStack;
-        this.type = b.type;
-        this.activationSlot = b.activationSlot;
+        // Тип и слот нормализуются в верхний регистр: конфиги писали
+        // "consumable"/"hand", а сравнения в коде шли с "CONSUMABLE"/"HAND".
+        this.type = b.type == null ? "RUNE" : b.type.toUpperCase(java.util.Locale.ROOT);
+        this.activationSlot = b.activationSlot == null
+                ? "HAND"
+                : b.activationSlot.toUpperCase(java.util.Locale.ROOT);
         this.placeable = b.placeable;
-        this.effects = b.effects;
-        this.attributes = b.attributes;
+        this.effects = immutableList(b.effects);
+        this.attributes = immutableMap(b.attributes);
         this.armorSetId = b.armorSetId;
         this.hasSetBonus = b.hasSetBonus;
-        this.leftClickActions = b.leftClickActions;
-        this.rightClickActions = b.rightClickActions;
+        this.leftClickActions = immutableList(b.leftClickActions);
+        this.rightClickActions = immutableList(b.rightClickActions);
         this.clickCooldown = b.clickCooldown;
         this.maxUses = b.maxUses;
-        this.loreTemplate = b.loreTemplate;
+        this.loreTemplate = immutableList(b.loreTemplate);
         this.customModelData = b.customModelData;
         this.permission = b.permission;
-        this.equipParticles = b.equipParticles;
-        this.equipSounds = b.equipSounds;
-        this.unequipParticles = b.unequipParticles;
-        this.unequipSounds = b.unequipSounds;
-        this.triggerActions = b.triggerActions;
+        this.equipParticles = immutableList(b.equipParticles);
+        this.equipSounds = immutableList(b.equipSounds);
+        this.unequipParticles = immutableList(b.unequipParticles);
+        this.unequipSounds = immutableList(b.unequipSounds);
+        this.triggerActions = immutableList(b.triggerActions);
         this.equipMessage = b.equipMessage;
         this.unequipMessage = b.unequipMessage;
         this.cooldownMessage = b.cooldownMessage;
@@ -78,12 +82,26 @@ public class CustomItem {
         this.usesDepletedMessage = b.usesDepletedMessage;
         this.duration = b.duration;
         this.maxDurationMessage = b.maxDurationMessage;
-        this.trailParticles = b.trailParticles;
+        this.trailParticles = immutableList(b.trailParticles);
         this.trailParticleInterval = b.trailParticleInterval;
-        this.allowedWorlds = b.allowedWorlds;
-        this.disabledWorlds = b.disabledWorlds;
+        this.allowedWorlds = immutableList(b.allowedWorlds);
+        this.disabledWorlds = immutableList(b.disabledWorlds);
         this.itemModelVariant = b.itemModelVariant;
-        this.recipes = b.recipes;
+        this.recipes = b.recipes == null ? null : immutableMap(b.recipes);
+    }
+
+    // Collections.copyOf/List.copyOf запрещают null-элементы, а в YAML
+    // значение может быть пустым. Поэтому используем обёртки, которые
+    // допускают null, но запрещают изменение.
+
+    private static List<String> immutableList(List<String> source) {
+        if (source == null || source.isEmpty()) return List.of();
+        return java.util.Collections.unmodifiableList(new ArrayList<>(source));
+    }
+
+    private static <K, V> Map<K, V> immutableMap(Map<K, V> source) {
+        if (source == null || source.isEmpty()) return Map.of();
+        return java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(source));
     }
 
     // ===== БUILDER =====

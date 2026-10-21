@@ -174,14 +174,19 @@ public abstract class Module {
     /**
      * Удалить все динамические команды модуля из CommandMap.
      */
-    @SuppressWarnings("unchecked")
     private void unregisterDynamicCommands() {
         if (dynamicCommands.isEmpty()) return;
         try {
             org.bukkit.command.CommandMap commandMap = getCommandMap();
             if (commandMap == null) return;
 
-            Map<String, org.bukkit.command.Command> knownCommands = getKnownCommands(commandMap);
+            Map<String, org.bukkit.command.Command> knownCommands =
+                    me.dcplugin.dcustomitems.utils.CommandMapAccessor.getKnownCommands(commandMap);
+            if (knownCommands == null) {
+                plugin.getLogger().warning("[Module " + id + "] knownCommands недоступна — команды остаются в CommandMap");
+                dynamicCommands.clear();
+                return;
+            }
             for (org.bukkit.command.Command cmd : dynamicCommands) {
                 knownCommands.remove(cmd.getName().toLowerCase());
                 for (String alias : cmd.getAliases()) {
@@ -195,37 +200,7 @@ public abstract class Module {
     }
 
     private org.bukkit.command.CommandMap getCommandMap() {
-        // Paper 1.21+: Bukkit.getCommandMap()
-        try {
-            java.lang.reflect.Method method = org.bukkit.Bukkit.class.getMethod("getCommandMap");
-            return (org.bukkit.command.CommandMap) method.invoke(null);
-        } catch (Exception ignored) {}
-        // Fallback: поле commandMap
-        try {
-            java.lang.reflect.Field field = org.bukkit.Bukkit.class.getDeclaredField("commandMap");
-            field.setAccessible(true);
-            return (org.bukkit.command.CommandMap) field.get(null);
-        } catch (Exception ignored) {}
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, org.bukkit.command.Command> getKnownCommands(org.bukkit.command.CommandMap commandMap) {
-        for (java.lang.reflect.Field field : commandMap.getClass().getDeclaredFields()) {
-            if (Map.class.isAssignableFrom(field.getType())) {
-                try {
-                    field.setAccessible(true);
-                    Object value = field.get(commandMap);
-                    if (value instanceof Map) {
-                        Map<?, ?> map = (Map<?, ?>) value;
-                        if (!map.isEmpty() && map.keySet().iterator().next() instanceof String) {
-                            return (Map<String, org.bukkit.command.Command>) value;
-                        }
-                    }
-                } catch (Exception ignored) {}
-            }
-        }
-        return new HashMap<>();
+        return me.dcplugin.dcustomitems.utils.CommandMapAccessor.getCommandMap();
     }
 
     // ===== УТИЛИТЫ =====

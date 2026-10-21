@@ -3,10 +3,11 @@ package me.dcplugin.dcustomitems.managers;
 import me.dcplugin.dcustomitems.Main;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ArmorSetManager {
 
@@ -22,16 +23,18 @@ public class ArmorSetManager {
     private void loadSetBonuses() {
         armorSetEffects.clear();
 
-        if (plugin.getConfig().contains("set-bonuses")) {
-            for (String setId : plugin.getConfig().getConfigurationSection("set-bonuses").getKeys(false)) {
-                List<String> effects = plugin.getConfig().getStringList("set-bonuses." + setId + ".effects");
-                armorSetEffects.put(setId, effects);
-            }
+        org.bukkit.configuration.ConfigurationSection section =
+                plugin.getConfig().getConfigurationSection("set-bonuses");
+        if (section == null) return;
+
+        for (String setId : section.getKeys(false)) {
+            List<String> effects = plugin.getConfig().getStringList("set-bonuses." + setId + ".effects");
+            armorSetEffects.put(setId, effects == null ? Collections.emptyList() : effects);
         }
     }
 
     public int countSetPieces(Player player, String setId) {
-        if (setId == null || setId.isEmpty()) {
+        if (player == null || setId == null || setId.isEmpty()) {
             return 0;
         }
 
@@ -58,42 +61,14 @@ public class ArmorSetManager {
     }
 
     public List<String> getSetEffects(String setId) {
+        if (setId == null) return Collections.emptyList();
         return armorSetEffects.getOrDefault(setId, Collections.emptyList());
-    }
-
-    public void applySetBonus(Player player, String setId) {
-        List<String> effectStrings = getSetEffects(setId);
-        if (effectStrings.isEmpty()) {
-            return;
-        }
-
-        Map<PotionEffectType, Integer> effects = plugin.getEffectManager().parseEffects(effectStrings);
-
-        for (Map.Entry<PotionEffectType, Integer> entry : effects.entrySet()) {
-            player.addPotionEffect(new PotionEffect(
-                entry.getKey(),
-                Integer.MAX_VALUE,
-                entry.getValue() - 1,
-                false,
-                false
-            ), true);
-        }
-    }
-
-    public void removeSetBonus(Player player, String setId) {
-        List<String> effectStrings = getSetEffects(setId);
-        if (effectStrings.isEmpty()) {
-            return;
-        }
-
-        Map<PotionEffectType, Integer> effects = plugin.getEffectManager().parseEffects(effectStrings);
-
-        for (PotionEffectType effectType : effects.keySet()) {
-            player.removePotionEffect(effectType);
-        }
     }
 
     public void reload() {
         loadSetBonuses();
+        // Кэш разобранных эффектов сет-бонусов тоже сбрасываем,
+        // иначе после reload использовались бы старые значения.
+        plugin.getEffectManager().invalidateSetBonusCache();
     }
 }

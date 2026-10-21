@@ -1,7 +1,9 @@
 
 package me.dcplugin.dcustomitems.utils;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
@@ -11,17 +13,32 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.profile.PlayerProfile;
 
-import java.lang.reflect.Field;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 public class ItemBuilder {
 
-    private ItemStack itemStack;
+    /**
+     * Fallback-namespace, если билдер создан без ссылки на плагин.
+     * Значение по умолчанию совпадает с namespace текущего plugin.yml
+     * ("DC-CustomItems" -> "dc-customitems").
+     */
+    private static final String FALLBACK_NAMESPACE = "dc-customitems";
+
+    private final ItemStack itemStack;
+    private final org.bukkit.plugin.Plugin plugin;
     private ItemMeta itemMeta;
 
     public ItemBuilder(Material material) {
+        this(material, null);
+    }
+
+    public ItemBuilder(Material material, org.bukkit.plugin.Plugin plugin) {
+        this.plugin = plugin;
         this.itemStack = new ItemStack(material);
         this.itemMeta = itemStack.getItemMeta();
     }
@@ -35,7 +52,7 @@ public class ItemBuilder {
 
     public ItemBuilder setLore(List<String> lore) {
         if (itemMeta != null) {
-            List<String> colorizedLore = new ArrayList<>();
+            List<String> colorizedLore = new ArrayList<>(lore.size());
             for (String line : lore) {
                 colorizedLore.add(ColorUtils.colorize(line));
             }
@@ -57,19 +74,19 @@ public class ItemBuilder {
     }
 
     public ItemBuilder setAmount(int amount) {
-        itemStack.setAmount(amount);
+        itemStack.setAmount(Math.max(1, Math.min(amount, 64)));
         return this;
     }
 
     public ItemBuilder addEnchantment(Enchantment enchantment, int level) {
-        if (itemMeta != null) {
+        if (itemMeta != null && enchantment != null && level > 0) {
             itemMeta.addEnchant(enchantment, level, true);
         }
         return this;
     }
 
     public ItemBuilder addItemFlags(ItemFlag... flags) {
-        if (itemMeta != null) {
+        if (itemMeta != null && flags != null) {
             itemMeta.addItemFlags(flags);
         }
         return this;
@@ -84,6 +101,8 @@ public class ItemBuilder {
 
     public ItemBuilder setGlowing(boolean glowing) {
         if (glowing && itemMeta != null) {
+            // UNBREAKING не даёт бонуса — в отличие от SHARPNESS, который
+            // добавлял бы +1 к урону.
             itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
             itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
@@ -91,82 +110,66 @@ public class ItemBuilder {
     }
 
     public ItemBuilder setSkullTexture(String texture) {
-        if (itemStack.getType() == Material.PLAYER_HEAD && itemMeta instanceof SkullMeta) {
-            SkullMeta skullMeta = (SkullMeta) itemMeta;
+        if (itemStack.getType() != Material.PLAYER_HEAD || !(itemMeta instanceof SkullMeta)) {
+            return this;
+        }
+        if (texture == null || texture.isBlank()) {
+            return this;
+        }
+
+        SkullMeta skullMeta = (SkullMeta) itemMeta;
+        String textureUrl = resolveTextureUrl(texture);
+        if (textureUrl == null) {
+            skullMeta.setOwner("CustomHead");
+            return this;
+        }
+
+        try {
+            UUID id = UUID.nameUUIDFromBytes(("OfflinePlayer:" + texture).getBytes(StandardCharsets.UTF_8));
+            PlayerProfile profile = Bukkit.createPlayerProfile(id, "CustomHead");
+            profile.getTextures().setSkin(new URL(textureUrl));
+            skullMeta.setOwnerProfile(profile);
+        } catch (Exception e) {
+            // Ставим владельца-заглушку: предмет остаётся валидным голова,
+            // просто без текстуры.
             try {
-                // For 1.20.2+ we should use the new PlayerProfile API if possible
-                UUID id = UUID.nameUUIDFromBytes(("OfflinePlayer:" + texture).getBytes(java.nio.charset.StandardCharsets.UTF_8));
-                PlayerProfile profile = org.bukkit.Bukkit.createPlayerProfile(id, "CustomHead");
-                
-                // texture can be either a URL or a Base64 string
-                String textureUrl = texture;
-                if (!texture.startsWith("http")) {
-                    // If it's not a URL, assume it's a Base64 encoded JSON or just the texture hash
-                    if (texture.length() > 64) {
-                        // Likely Base64
-                        byte[] decoded = java.util.Base64.getDecoder().decode(texture);
-                        String json = new String(decoded);
-                        // Simple extraction if it's the standard Minecraft texture JSON
-                        if (json.contains("\"url\":\"")) {
-                            textureUrl = json.split("\"url\":\"")[1].split("\"")[0];
-                        }
-                    } else {
-                        // Likely just the hash
-                        textureUrl = "http://textures.minecraft.net/texture/" + texture;
-                    }
-                }
-                
-                profile.getTextures().setSkin(new java.net.URL(textureUrl));
-                skullMeta.setOwnerProfile(profile);
-            } catch (Exception e) {
-                try {
-                    // Fallback to direct reflection if the above fails (some environments/versions)
-                    Class<?> profileClass = Class.forName("com.mojang.authlib.GameProfile");
-                    Class<?> propertyClass = Class.forName("com.mojang.authlib.properties.Property");
-                    UUID id = UUID.randomUUID();
-                    Object profile = profileClass.getConstructor(UUID.class, String.class).newInstance(id, "CustomHead");
-                    
-                    String value = texture;
-                    if (texture.length() <= 64 && !texture.startsWith("http")) {
-                        // If it's a hash, we need the Base64 encoded JSON for GameProfile property
-                        String json = "{\"textures\":{\"SKIN\":{\"url\":\"http://textures.minecraft.net/texture/" + texture + "\"}}}";
-                        value = java.util.Base64.getEncoder().encodeToString(json.getBytes());
-                    }
-                    
-                    Object property = propertyClass.getConstructor(String.class, String.class).newInstance("textures", value);
-                    Object properties = profileClass.getMethod("getProperties").invoke(profile);
-                    properties.getClass().getMethod("put", Object.class, Object.class).invoke(properties, "textures", property);
-                    
-                    Field field = skullMeta.getClass().getDeclaredField("profile");
-                    field.setAccessible(true);
-                    field.set(skullMeta, profile);
-                } catch (Exception ex) {
-                    skullMeta.setOwner("CustomHead");
-                }
+                skullMeta.setOwner("CustomHead");
+            } catch (Exception ignored) {
+                // Совсем крайний случай — оставляем мета без владельца
             }
         }
         return this;
     }
 
-    private Object createGameProfile(String texture) {
-        try {
-            // Используем reflection для создания GameProfile
-            Class<?> gameProfileClass = Class.forName("com.mojang.authlib.GameProfile");
-            Object gameProfile = gameProfileClass.getConstructor(UUID.class, String.class)
-                    .newInstance(UUID.randomUUID(), "CustomHead");
-            
-            Class<?> propertyClass = Class.forName("com.mojang.authlib.properties.Property");
-            Object property = propertyClass.getConstructor(String.class, String.class)
-                    .newInstance("textures", texture);
-            
-            Object propertyMap = gameProfile.getClass().getMethod("getProperties").invoke(gameProfile);
-            propertyMap.getClass().getMethod("put", Object.class, Object.class)
-                    .invoke(propertyMap, "textures", property);
-            
-            return gameProfile;
-        } catch (Exception e) {
-            return null;
+    /**
+     * Приводит описание текстуры к URL.
+     *
+     * Поддерживаются: прямой http(s)-URL, base64 от JSON-текстуры
+     * и «чистый» хеш (превращается в textures.minecraft.net URL).
+     */
+    private static String resolveTextureUrl(String texture) {
+        String value = texture.trim();
+        if (value.regionMatches(true, 0, "http://", 0, 7)
+                || value.regionMatches(true, 0, "https://", 0, 8)) {
+            return value;
         }
+        if (value.length() > 64) {
+            try {
+                byte[] decoded = java.util.Base64.getDecoder().decode(value);
+                String json = new String(decoded, StandardCharsets.UTF_8);
+                int index = json.indexOf("\"url\":\"");
+                if (index >= 0) {
+                    // Значение начинается сразу после закрывающей кавычки:
+                    // "\"url\":\"" — это 7 символов.
+                    String url = json.substring(index + 7);
+                    int end = url.indexOf('"');
+                    if (end > 0) return url.substring(0, end);
+                }
+            } catch (Exception ignored) {
+                // Не base64 — трактуем как хеш
+            }
+        }
+        return "http://textures.minecraft.net/texture/" + value;
     }
 
     public ItemBuilder addAttribute(String attributeName, double value) {
@@ -181,18 +184,23 @@ public class ItemBuilder {
     }
 
     public ItemBuilder addAttribute(String attributeName, double value, AttributeModifier.Operation operation) {
-        if (itemMeta != null) {
-            try {
-                Attribute attribute = Attribute.valueOf(attributeName.toUpperCase());
-                AttributeModifier modifier = new AttributeModifier(
-                        org.bukkit.NamespacedKey.fromString("custom_" + attributeName.toLowerCase()),
-                        value,
-                        operation,
-                        org.bukkit.inventory.EquipmentSlotGroup.ANY
-                );
-                itemMeta.addAttributeModifier(attribute, modifier);
-            } catch (IllegalArgumentException ignored) {
-            }
+        if (itemMeta == null || attributeName == null) {
+            return this;
+        }
+        Attribute attribute = EnumCache.getAttribute(attributeName);
+        if (attribute == null) {
+            return this;
+        }
+        try {
+            AttributeModifier modifier = new AttributeModifier(
+                    attributeKey(attribute),
+                    value,
+                    operation,
+                    org.bukkit.inventory.EquipmentSlotGroup.ANY
+            );
+            itemMeta.addAttributeModifier(attribute, modifier);
+        } catch (IllegalArgumentException ignored) {
+            // Некорректное имя атрибута — пропускаем
         }
         return this;
     }
@@ -202,5 +210,28 @@ public class ItemBuilder {
             itemStack.setItemMeta(itemMeta);
         }
         return itemStack;
+    }
+
+    /**
+     * Ключ модификатора атрибута в namespace плагина.
+     *
+     * {@code NamespacedKey.fromString} без namespace вернул бы ключ из
+     * namespace {@code minecraft} — поэтому строим ключ вручную,
+     * нормализуя символы до {@code [a-z0-9._-]}.
+     */
+    private NamespacedKey attributeKey(Attribute attribute) {
+        NamespacedKey key = attribute.getKey();
+        String raw = key != null ? key.getKey() : "attribute";
+        StringBuilder sb = new StringBuilder(raw.length());
+        for (int i = 0; i < raw.length(); i++) {
+            char c = raw.charAt(i);
+            boolean valid = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
+                    || c == '_' || c == '-' || c == '.';
+            sb.append(valid ? c : '_');
+        }
+        String fullKey = "custom_" + sb;
+        return plugin != null
+                ? new NamespacedKey(plugin, fullKey)
+                : new NamespacedKey(FALLBACK_NAMESPACE, fullKey);
     }
 }

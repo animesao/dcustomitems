@@ -34,11 +34,22 @@ public class ItemAPI {
     private static NamespacedKey itemModelKey;
 
     /**
+     * Namespace плагина для ключей модификаторов атрибутов.
+     *
+     * Он равен plugin.getName().toLowerCase() — то есть для текущего
+     * plugin.yml это "dc-customitems", а не "dcustomitems". Ручное значение
+     * давало ключи в другом namespace, и модификатор предмета не совпадал
+     * с модификатором, который вешает AttributeManager.
+     */
+    private static String pluginNamespace = "dcustomitems";
+
+    /**
      * Инициализация ключей (вызывается при загрузке плагина).
      */
     public static void init(org.bukkit.plugin.java.JavaPlugin plugin) {
         customItemKey = new NamespacedKey(plugin, "custom_item_id");
         itemModelKey = new NamespacedKey(plugin, "item_model");
+        pluginNamespace = plugin.getName().toLowerCase(java.util.Locale.ROOT);
     }
 
     // ===== СОЗДАНИЕ ПРЕДМЕТОВ =====
@@ -70,7 +81,9 @@ public class ItemAPI {
 
         // Свечение
         if (item.isGlowing()) {
-            meta.addEnchant(Enchantment.SHARPNESS, 1, true);
+            // UNBREAKING не даёт бонуса. SHARPNESS добавил бы +1 к урону
+            // и ломал бы баланс предметов.
+            meta.addEnchant(Enchantment.UNBREAKING, 1, true);
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
 
@@ -98,15 +111,39 @@ public class ItemAPI {
     public static ItemStack createItem(AbstractCustomItem item, Map<Attribute, Double> attributes) {
         ItemStack stack = createItem(item);
         ItemMeta meta = stack.getItemMeta();
-        if (meta != null) {
+        if (meta != null && attributes != null && !attributes.isEmpty()) {
             for (Map.Entry<Attribute, Double> entry : attributes.entrySet()) {
+                // Ключ модификатора должен быть уникальным для предмета:
+                // addAttributeModifier отклоняет дубликаты ключа, а общий
+                // ключ на все предметы ронял бы создание второго предмета.
+                // Старый конструктор с UUID помечен как deprecated для удаления.
                 meta.addAttributeModifier(entry.getKey(),
-                    new AttributeModifier(UUID.randomUUID(), item.getId(), entry.getValue(),
+                    new AttributeModifier(modifierKey(item.getId(), entry.getKey()), entry.getValue(),
                         AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.ANY));
             }
             stack.setItemMeta(meta);
         }
         return stack;
+    }
+
+    /**
+     * Ключ модификатора атрибута в namespace плагина.
+     * Символы вне [a-z0-9._-] заменяются на "_" — иначе NamespacedKey
+     * бросил бы IllegalArgumentException.
+     */
+    private static org.bukkit.NamespacedKey modifierKey(String itemId, Attribute attribute) {
+        org.bukkit.NamespacedKey attributeKey = attribute.getKey();
+        StringBuilder sb = new StringBuilder();
+        sb.append("custom_").append(itemId).append('_')
+                .append(attributeKey != null ? attributeKey.getKey() : "attribute");
+        StringBuilder safe = new StringBuilder(sb.length());
+        for (int i = 0; i < sb.length(); i++) {
+            char c = sb.charAt(i);
+            boolean valid = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
+                    || c == '_' || c == '-' || c == '.';
+            safe.append(valid ? c : '_');
+        }
+        return new org.bukkit.NamespacedKey(pluginNamespace, safe.toString());
     }
 
     // ===== ПРОВЕРКИ =====
@@ -143,10 +180,8 @@ public class ItemAPI {
      * Проверяет, экипирован ли предмет (в руке или броне).
      */
     public static boolean isEquipped(Player player, String itemId) {
+        // getContents() уже включает броню — отдельный проход не нужен.
         for (ItemStack item : player.getInventory().getContents()) {
-            if (isCustomItem(item) && itemId.equals(getCustomItemId(item))) return true;
-        }
-        for (ItemStack item : player.getInventory().getArmorContents()) {
             if (isCustomItem(item) && itemId.equals(getCustomItemId(item))) return true;
         }
         return false;
@@ -342,8 +377,11 @@ public class ItemAPI {
 
         for (Player other : Bukkit.getOnlinePlayers()) {
             if (other == player) continue;
-            double dist = player.getLocation().distance(other.getLocation());
-            if (dist < nearestDist && dist <= maxRange) {
+            // Расстояние между разными мирами не определено — Location.distance()
+            // бросает IllegalArgumentException. Сравниваем только свой мир.
+            if (!other.getWorld().equals(player.getWorld())) continue;
+            double dist = player.getLocation().distanceSquared(other.getLocation());
+            if (dist < nearestDist && dist <= maxRange * maxRange) {
                 nearestDist = dist;
                 nearest = other;
             }
@@ -380,8 +418,15 @@ public class ItemAPI {
         for (org.bukkit.entity.Entity entity : player.getNearbyEntities(radius, radius, radius)) {
             if (entity instanceof Player && entity != player) {
                 Vector dir = entity.getLocation().toVector()
-                    .subtract(player.getLocation().toVector()).normalize();
-                entity.setVelocity(dir.multiply(1.5).setY(0.5));
+                    .subtract(player.getLocation().toVector());
+                // Нулевой вектор после normalize() даёт NaN — скорость станет
+                // некорректной и игрок «залипнет». При нуле — просто подброс.
+                if (dir.lengthSquared() < 1.0E-6) {
+                    entity.setVelocity(entity.getVelocity().add(new Vector(0, 0.5, 0)));
+                } else {
+                    dir.normalize();
+                    entity.setVelocity(dir.multiply(1.5).setY(0.5));
+                }
             }
         }
     }
@@ -401,22 +446,40 @@ public class ItemAPI {
 
     /**
      * Выдаёт предмет игроку.
+     *
+     * Если инвентарь полон — остаток выпадает на землю, а не пропадает.
      */
     public static void giveItem(Player player, Material material, int amount) {
-        player.getInventory().addItem(new ItemStack(material, amount));
+        if (player == null || material == null || amount <= 0) return;
+        Map<Integer, ItemStack> leftover = player.getInventory().addItem(new ItemStack(material, amount));
+        for (ItemStack stack : leftover.values()) {
+            player.getWorld().dropItemNaturally(player.getLocation(), stack);
+        }
     }
 
     /**
      * Забирает предмет у игрока.
+     *
+     * {@code Inventory#getContents()} возвращает копии стеков, поэтому
+     * изменения нужно записать обратно через {@code setContents}.
      */
     public static boolean removeItem(Player player, Material material, int amount) {
+        if (player == null || material == null || amount <= 0) return false;
         int remaining = amount;
-        for (ItemStack item : player.getInventory().getContents()) {
+        ItemStack[] contents = player.getInventory().getContents();
+        boolean changed = false;
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack item = contents[i];
             if (item != null && item.getType() == material && remaining > 0) {
                 int toRemove = Math.min(item.getAmount(), remaining);
-                item.setAmount(item.getAmount() - toRemove);
+                int left = item.getAmount() - toRemove;
                 remaining -= toRemove;
+                contents[i] = left > 0 ? item : null;
+                changed = true;
             }
+        }
+        if (changed) {
+            player.getInventory().setContents(contents);
         }
         return remaining == 0;
     }

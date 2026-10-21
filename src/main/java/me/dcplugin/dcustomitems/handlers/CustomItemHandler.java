@@ -9,8 +9,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Менеджер кастомных предметов.
@@ -19,7 +21,17 @@ import java.util.Map;
 public class CustomItemHandler {
 
     private final Main plugin;
-    private final Map<String, CustomItem> customItems;
+
+    /**
+     * Загруженные предметы.
+     *
+     * volatile + атомарная замена карты: перезагрузка подменяет карту целиком,
+     * а читатели (в т.ч. поток PlaceholderAPI) видят либо старую, либо новую —
+     * никогда частично заполненную. ConcurrentHashMap внутри даёт
+     * «слабо согласованный» обход без ConcurrentModificationException.
+     */
+    private volatile Map<String, CustomItem> customItems = new ConcurrentHashMap<>();
+
     private final NamespacedKey customItemKey;
     private final NamespacedKey itemUsesKey;
     private final NamespacedKey itemModelKey;
@@ -33,13 +45,12 @@ public class CustomItemHandler {
 
     public CustomItemHandler(Main plugin) {
         this.plugin = plugin;
-        this.customItems = new HashMap<>();
         this.customItemKey = new NamespacedKey(plugin, "custom_item_id");
         this.itemUsesKey = new NamespacedKey(plugin, "item_uses");
         this.itemModelKey = new NamespacedKey(plugin, "item_model");
 
         this.itemLoader = new ItemLoader(plugin, customItemKey, itemModelKey);
-        this.loreManager = new LoreManager();
+        this.loreManager = new LoreManager(plugin);
         this.usesManager = new UsesManager(itemUsesKey);
         this.recipeManager = new RecipeManager(plugin);
 
@@ -49,17 +60,21 @@ public class CustomItemHandler {
     // ===== Loading =====
 
     public void loadCustomItems() {
-        customItems.clear();
+        // Загружаем в новую карту и подменяем атомарно: читатели никогда не
+        // увидят полупустой набор предметов.
+        Map<String, CustomItem> loaded = new ConcurrentHashMap<>(itemLoader.loadAll());
+
         recipeManager.clear();
-        customItems.putAll(itemLoader.loadAll());
 
         // Регистрируем крафт-рецепты после полной загрузки предметов:
         // ингредиенты могут ссылаться на другие кастомные предметы.
-        for (CustomItem item : customItems.values()) {
+        for (CustomItem item : loaded.values()) {
             if (item.hasRecipes()) {
                 recipeManager.register(item);
             }
         }
+
+        customItems = loaded;
 
         plugin.getLogger().info("Загружено " + customItems.size() + " кастомных предметов");
     }
@@ -88,8 +103,26 @@ public class CustomItemHandler {
         return meta.getPersistentDataContainer().get(customItemKey, PersistentDataType.STRING);
     }
 
+    /**
+     * Все загруженные YAML-предметы (только для чтения).
+     *
+     * Раньше здесь возвращалась копия карты — она создавалась на каждый
+     * вызов, а метод дёргался из плейсхолдеров PlaceholderAPI и из
+     * /ci validate. Теперь это живое read-only-представление.
+     *
+     * Карта подменяется целиком при reload (атомарно), а внутри —
+     * ConcurrentHashMap, поэтому обход из другого потока (PlaceholderAPI)
+     * безопасен и не бросает ConcurrentModificationException.
+     */
     public Map<String, CustomItem> getAllCustomItems() {
-        return new HashMap<>(customItems);
+        return Collections.unmodifiableMap(customItems);
+    }
+
+    /**
+     * Количество загруженных YAML-предметов (без копирования карты).
+     */
+    public int getCustomItemCount() {
+        return customItems.size();
     }
 
     public boolean isCustomItem(ItemStack itemStack) {

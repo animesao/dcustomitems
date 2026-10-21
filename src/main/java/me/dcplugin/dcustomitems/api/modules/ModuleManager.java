@@ -107,7 +107,10 @@ public class ModuleManager {
      */
     private void loadSimpleModule(File folder, String moduleId, YamlConfiguration config) {
         SimpleModule module = new SimpleModule(plugin, moduleId, folder, config);
-        modules.put(moduleId, module);
+        // Ключ регистрируется в нижнем регистре — как и для Java-модулей.
+        // Раньше здесь был moduleId без нормализации, из-за чего модуль
+        // с именем папки в верхнем регистре было невозможно найти.
+        modules.put(moduleId.toLowerCase(java.util.Locale.ROOT), module);
         module.enable();
     }
 

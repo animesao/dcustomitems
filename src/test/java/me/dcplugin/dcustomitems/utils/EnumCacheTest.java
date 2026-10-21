@@ -57,4 +57,28 @@ class EnumCacheTest {
         assertNull(EnumCache.getSound(null));
         assertNull(EnumCache.getSound(""));
     }
+
+    /**
+     * Поиск атрибута не должен бросать исключение, когда сервера нет
+     * (реестр атрибутов недоступен) и когда имя заведомо неверное.
+     */
+    @Test
+    void attributeLookupNeverThrows() {
+        assertDoesNotThrow(() -> EnumCache.getAttribute(null));
+        assertDoesNotThrow(() -> EnumCache.getAttribute(""));
+        assertDoesNotThrow(() -> EnumCache.getAttribute("GENERIC_ATTACK_DAMAGE"));
+        assertDoesNotThrow(() -> EnumCache.getAttribute("definitely-not-an-attribute"));
+    }
+
+    @Test
+    void attributeNullAndEmpty() {
+        assertNull(EnumCache.getAttribute(null));
+        assertNull(EnumCache.getAttribute(""));
+    }
+
+    @Test
+    void itemFlagNormalizesDashes() {
+        // ItemFlag — обычный enum, доступен без сервера
+        assertNotNull(EnumCache.getItemFlag("hide-enchants"));
+    }
 }

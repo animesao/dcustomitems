@@ -9,8 +9,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.WeakHashMap;
 
 /**
  * Слушатель триггеров кастомных предметов.
@@ -32,12 +31,21 @@ import java.util.WeakHashMap;
 public class TriggerListener implements Listener {
 
     private final Main plugin;
-    private final Map<UUID, Long> jumpCooldowns = new WeakHashMap<>();
-    private final Map<UUID, Long> actionCooldowns = new WeakHashMap<>();
 
-    // Кулдауны триггеров. Значение = время истечения (System.currentTimeMillis() + мс).
-    // Ключи: playerId:itemId:trigger   и   playerId:itemId:cooldown (для cooldown:)
-    private final Map<String, Long> triggerCooldowns = new HashMap<>();
+    // Кулдаун прыжка: playerId -> время последнего прыжка
+    private final Map<UUID, Long> jumpCooldowns = new HashMap<>();
+
+    // Кулдауны триггеров.
+    // Внутренняя структура: playerId -> (itemId:trigger -> время истечения).
+    // Разбивка по игрокам даёт O(1)-очистку при выходе — раньше приходилось
+    // сканировать все ключи HashMap (O(n) на каждого вышедшего).
+    //
+    // Ключи внутри:
+    //   itemId:trigger — кулдаун конкретного триггера;
+    //   itemId:cooldown — кулдаун, установленный действием "cooldown:МС"
+    //                     (используется публичным isOnCooldown/getCooldownRemaining).
+    private final Map<UUID, Map<String, Long>> triggerCooldowns = new HashMap<>();
+
     private static final long JUMP_COOLDOWN_MS = 500;
 
     public TriggerListener(Main plugin) {
@@ -132,9 +140,7 @@ public class TriggerListener implements Listener {
     public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event) {
         UUID playerId = event.getPlayer().getUniqueId();
         jumpCooldowns.remove(playerId);
-        actionCooldowns.remove(playerId);
-        // Чистим triggerCooldowns для этого игрока
-        triggerCooldowns.keySet().removeIf(key -> key.startsWith(playerId.toString()));
+        triggerCooldowns.remove(playerId);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -236,34 +242,51 @@ public class TriggerListener implements Listener {
     /**
      * Выполняет действия триггера. Формат строки в конфиге:
      * "on_kill:effect:REGENERATION:10:2" — разделяем по первому ":".
+     *
+     * Кулдауны:
+     *  - {@code click-cooldown} предмета — блокирует повторное срабатывание;
+     *  - псевдо-действие {@code cooldown:МС} — задаёт собственный кулдаун
+     *    триггера. Раньше оно только записывало значение, но ничего не
+     *    блокировало — теперь реально откладывает следующее срабатывание.
      */
     private void executeTriggerActions(Player player, String trigger, CustomItem item) {
         List<String> triggerActions = item.getTriggerActions();
-        String playerItemKey = player.getUniqueId() + ":" + item.getId();
+        if (triggerActions == null || triggerActions.isEmpty()) return;
+
+        UUID playerId = player.getUniqueId();
+        String itemId = item.getId();
         long now = System.currentTimeMillis();
 
-        boolean executed = false;
+        String triggerKey = itemId + ":" + trigger;
 
+        // Триггер на кулдауне — не выполняем ничего.
+        if (isTriggerOnCooldown(playerId, triggerKey, now)) {
+            return;
+        }
+
+        // Проход 1: находим кастомный кулдаун ("cooldown:МС") в списке действий.
+        // Он обрабатывается первым, иначе он заблокировал бы сами же
+        // действия, идущие следом в том же списке.
+        long customCooldown = -1L;
         for (String action : triggerActions) {
-            int firstColon = action.indexOf(':');
-            if (firstColon == -1) continue;
+            String[] parsed = splitTriggerAction(action);
+            if (parsed == null || !trigger.equals(parsed[0])) continue;
+            String value = parsed[1];
+            if (value.startsWith(COOLDOWN_PREFIX)) {
+                long millis = parseLong(value.substring(COOLDOWN_PREFIX.length()).trim(), 3000);
+                if (millis > customCooldown) customCooldown = millis;
+            }
+        }
+        // Проход 2: выполняем действия.
+        boolean executed = false;
+        for (String action : triggerActions) {
+            String[] parsed = splitTriggerAction(action);
+            if (parsed == null || !trigger.equals(parsed[0])) continue;
 
-            String actionTrigger = action.substring(0, firstColon);
-            String actionValue = action.substring(firstColon + 1);
-
-            if (!trigger.equals(actionTrigger)) continue;
+            String actionValue = parsed[1];
 
             // Псевдо-действие cooldown:МС — устанавливает кулдаун для этого триггера
-            if (actionValue.startsWith("cooldown:")) {
-                long customCooldown = parseLong(actionValue.substring("cooldown:".length()).trim(), 3000);
-                setTriggerExpiry(playerItemKey + ":cooldown", now + customCooldown);
-                setTriggerExpiry(playerItemKey + ":" + trigger, now + customCooldown);
-                continue;
-            }
-
-            // Кулдаун триггера (click-cooldown предмета) между срабатываниями
-            long cooldownMs = item.getClickCooldown();
-            if (cooldownMs > 0 && isTriggerOnCooldown(playerItemKey + ":" + trigger, now)) {
+            if (actionValue.startsWith(COOLDOWN_PREFIX)) {
                 continue;
             }
 
@@ -272,23 +295,43 @@ public class TriggerListener implements Listener {
         }
 
         // Обновляем кулдаун после выполнения (иначе события ловят повторно)
-        if (executed && item.getClickCooldown() > 0) {
-            setTriggerExpiry(playerItemKey + ":" + trigger, now + item.getClickCooldown());
+        long cooldown = customCooldown >= 0 ? customCooldown : item.getClickCooldown();
+        if (cooldown > 0 && (executed || customCooldown >= 0)) {
+            setTriggerExpiry(playerId, triggerKey, now + cooldown);
+            if (customCooldown >= 0) {
+                // Дублируем в общий ключ предмета — его читает публичный
+                // isOnCooldown()/getCooldownRemaining().
+                setTriggerExpiry(playerId, itemId + ":cooldown", now + customCooldown);
+            }
         }
     }
 
-    private boolean isTriggerOnCooldown(String key, long now) {
-        Long expiry = triggerCooldowns.get(key);
+    private static final String COOLDOWN_PREFIX = "cooldown:";
+
+    /**
+     * Разбирает строку действия триггера на (триггер, значение).
+     */
+    private static String[] splitTriggerAction(String action) {
+        if (action == null) return null;
+        int firstColon = action.indexOf(':');
+        if (firstColon == -1) return null;
+        return new String[]{action.substring(0, firstColon), action.substring(firstColon + 1)};
+    }
+
+    private boolean isTriggerOnCooldown(UUID playerId, String key, long now) {
+        Map<String, Long> playerCooldowns = triggerCooldowns.get(playerId);
+        if (playerCooldowns == null) return false;
+        Long expiry = playerCooldowns.get(key);
         if (expiry == null) return false;
         if (now >= expiry) {
-            triggerCooldowns.remove(key);
+            playerCooldowns.remove(key);
             return false;
         }
         return true;
     }
 
-    private void setTriggerExpiry(String key, long expiry) {
-        triggerCooldowns.put(key, expiry);
+    private void setTriggerExpiry(UUID playerId, String key, long expiry) {
+        triggerCooldowns.computeIfAbsent(playerId, k -> new HashMap<>()).put(key, expiry);
     }
 
     // === ПУБЛИЧНЫЙ API КУЛДАУНОВ ===
@@ -297,16 +340,18 @@ public class TriggerListener implements Listener {
      * Кулдаун, установленный действием "cooldown:МС" в триггерах предмета.
      */
     public boolean isOnCooldown(Player player, CustomItem item) {
-        String triggerKey = player.getUniqueId() + ":" + item.getId() + ":cooldown";
-        return isTriggerOnCooldown(triggerKey, System.currentTimeMillis());
+        if (player == null || item == null) return false;
+        return isTriggerOnCooldown(player.getUniqueId(), item.getId() + ":cooldown", System.currentTimeMillis());
     }
 
     /**
      * Оставшееся время кулдауна предмета (мс) в рамках click-cooldown.
      */
     public long getCooldownRemaining(Player player, CustomItem item) {
-        String triggerKey = player.getUniqueId() + ":" + item.getId() + ":cooldown";
-        Long expiry = triggerCooldowns.get(triggerKey);
+        if (player == null || item == null) return 0;
+        Map<String, Long> playerCooldowns = triggerCooldowns.get(player.getUniqueId());
+        if (playerCooldowns == null) return 0;
+        Long expiry = playerCooldowns.get(item.getId() + ":cooldown");
         if (expiry == null) return 0;
         return Math.max(0, expiry - System.currentTimeMillis());
     }
@@ -318,4 +363,4 @@ public class TriggerListener implements Listener {
             return def;
         }
     }
-}
+}

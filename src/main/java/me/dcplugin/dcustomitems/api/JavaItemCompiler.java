@@ -14,6 +14,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Оптимизированный Runtime компилятор для .java файлов
@@ -43,6 +45,22 @@ public class JavaItemCompiler {
     private static final String[] DANGEROUS_TOKENS = {
         "System.exit", "Runtime.getRuntime().exec", "ProcessBuilder", ".setAccessible("
     };
+
+    /**
+     * Импорты, добавляемые автоматически, если их нет в исходнике.
+     * Проверяются поимённо: раньше блок импортов добавлялся только если в
+     * файле вообще не было строки "import me.dcplugin.dcustomitems.api",
+     * и файл с одним импортом (например RecipeDef) не компилировался.
+     */
+    private static final String[] DEFAULT_IMPORTS = {
+        "me.dcplugin.dcustomitems.api.AbstractCustomItem",
+        "me.dcplugin.dcustomitems.api.ItemAPI",
+        "me.dcplugin.dcustomitems.api.commands.CustomCommand",
+        "me.dcplugin.dcustomitems.api.placeholders.CustomPlaceholder"
+    };
+
+    /** Скомпилированные шаблоны замены имён классов (по одному на алиас). */
+    private final List<Map.Entry<Pattern, String>> aliasPatterns = new ArrayList<>();
 
     public JavaItemCompiler(Main plugin) {
         this.plugin = plugin;
@@ -81,6 +99,7 @@ public class JavaItemCompiler {
     private CompileResult compileAllInternal() {
         long startTime = System.currentTimeMillis();
         compiledClasses.clear();
+        moduleSourceFolders.clear();
         CompileResult result = new CompileResult();
 
         try {
@@ -122,6 +141,10 @@ public class JavaItemCompiler {
                 }
             }
         }
+
+        // Шаблоны замены имён компилируются один раз, а не на каждый файл
+        // (раньше Pattern.compile вызывался для каждого алиаса в каждом файле).
+        buildAliasPatterns();
 
         plugin.getLogger().info("[JavaCompiler] Found " + javaFiles.size() + " .java files");
 
@@ -166,17 +189,13 @@ public class JavaItemCompiler {
         saveFileHashesCache();
 
         // Загружаем классы
-        if (compiledClasses.size() > 0) {
-            try {
-                classLoader = new CustomClassLoader(getClass().getClassLoader());
-                for (Map.Entry<String, byte[]> entry : compiledClasses.entrySet()) {
-                    classLoader.addClass(entry.getKey(), entry.getValue());
-                }
-            } catch (Exception e) {
-                plugin.getLogger().log(java.util.logging.Level.SEVERE,
-                "[JavaCompiler] Error loading classes: " + e.getMessage(), e);
-            }
+        // Новый загрузчик создаём всегда: иначе после удаления всех .java
+        // файлов оставался старый classLoader со старыми классами.
+        CustomClassLoader loader = new CustomClassLoader(getClass().getClassLoader());
+        for (Map.Entry<String, byte[]> entry : compiledClasses.entrySet()) {
+            loader.addClass(entry.getKey(), entry.getValue());
         }
+        classLoader = loader;
 
         long elapsed = System.currentTimeMillis() - startTime;
         plugin.getLogger().info("[JavaCompiler] Compiled: " + compiled + ", Skipped: " + skipped + " (" + elapsed + "ms)");
@@ -193,6 +212,10 @@ public class JavaItemCompiler {
                 return false;
             }
             String sourceCode = readFileContent(javaFile);
+            // Компилятор добавляет своё объявление package — собственное
+            // объявление пользователя нужно убрать, иначе в исходнике
+            // окажется два package и javac откажется его собирать.
+            sourceCode = stripPackageDeclaration(sourceCode);
             for (String token : DANGEROUS_TOKENS) {
                 if (sourceCode.contains(token)) {
                     plugin.getLogger().warning("[JavaCompiler] ⚠ " + javaFile.getName() + " содержит опасный вызов '" + token + "' — проверьте файл вручную (java-compilation исполняет произвольный код).");
@@ -201,14 +224,8 @@ public class JavaItemCompiler {
             }
             String fileName = javaFile.getName().replace(".java", "");
 
-            // Добавляем импорты если нет
-            if (!sourceCode.contains("import me.dcplugin.dcustomitems.api")) {
-                sourceCode = "import me.dcplugin.dcustomitems.api.AbstractCustomItem;\n" +
-                             "import me.dcplugin.dcustomitems.api.ItemAPI;\n" +
-                             "import me.dcplugin.dcustomitems.api.commands.CustomCommand;\n" +
-                             "import me.dcplugin.dcustomitems.api.placeholders.CustomPlaceholder;\n" +
-                             sourceCode;
-            }
+            // Добавляем недостающие импорты API плагина
+            sourceCode = injectDefaultImports(sourceCode);
 
             ClassType classType = detectClassType(sourceCode);
             String generatedClassName = getGeneratedClassName(javaFile);
@@ -226,73 +243,82 @@ public class JavaItemCompiler {
             DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
             StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
 
-            JavaFileObject source = new SimpleJavaFileObject(
-                URI.create("string:///" + generatedClassName + ".java"),
-                JavaFileObject.Kind.SOURCE
-            ) {
-                @Override
-                public CharSequence getCharContent(boolean ignoreEncodingErrors) {
-                    return finalSourceCode;
+            try {
+                JavaFileObject source = new SimpleJavaFileObject(
+                    URI.create("string:///" + generatedClassName + ".java"),
+                    JavaFileObject.Kind.SOURCE
+                ) {
+                    @Override
+                    public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+                        return finalSourceCode;
+                    }
+                };
+
+                final Map<String, byte[]> classBytesHolder = new HashMap<>();
+
+                JavaFileManager virtualFileManager = new ForwardingJavaFileManager<StandardJavaFileManager>(fileManager) {
+                    @Override
+                    public JavaFileObject getJavaFileForOutput(Location location, String className,
+                                                               JavaFileObject.Kind kind, FileObject sibling) {
+                        return new SimpleJavaFileObject(
+                            URI.create("mem:///" + className.replace('.', '/') + ".class"),
+                            JavaFileObject.Kind.CLASS
+                        ) {
+                            @Override
+                            public OutputStream openOutputStream() {
+                                return new ByteArrayOutputStream() {
+                                    @Override
+                                    public void close() throws IOException {
+                                        super.close();
+                                        classBytesHolder.put(className, toByteArray());
+                                    }
+                                };
+                            }
+                        };
+                    }
+                };
+
+                List<String> options = List.of(
+                    "-classpath", getClasspath(),
+                    "-d", compiledDir.toString(),
+                    "-proc:none"
+                );
+
+                JavaCompiler.CompilationTask task = compiler.getTask(
+                    null, virtualFileManager, diagnostics, options, null, List.of(source)
+                );
+
+                boolean success = task.call();
+
+                if (success) {
+                    compiledClasses.putAll(classBytesHolder);
+
+                    // Сохраняем в кэш
+                    for (Map.Entry<String, byte[]> entry : classBytesHolder.entrySet()) {
+                        saveToCache(entry.getKey(), entry.getValue());
+                        // Оставляем class-файлы на диске, чтобы следующий исходник
+                        // из той же папки мог использовать уже скомпилированный класс.
+                        saveToCompiledDir(entry.getKey(), entry.getValue());
+                    }
+
+                    addToResult(result, fullClassName, classType);
+                    return true;
+                } else {
+                    for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+                        String error = javaFile.getName() + ":" + diagnostic.getLineNumber() + " - " + diagnostic.getMessage(null);
+                        plugin.getLogger().warning("[JavaCompiler] ❌ " + error);
+                        result.errors.add(error);
+                    }
+                    return false;
                 }
-            };
-
-            final Map<String, byte[]> classBytesHolder = new HashMap<>();
-
-            JavaFileManager virtualFileManager = new ForwardingJavaFileManager<StandardJavaFileManager>(fileManager) {
-                @Override
-                public JavaFileObject getJavaFileForOutput(Location location, String className,
-                                                           JavaFileObject.Kind kind, FileObject sibling) {
-                    return new SimpleJavaFileObject(
-                        URI.create("mem:///" + className.replace('.', '/') + ".class"),
-                        JavaFileObject.Kind.CLASS
-                    ) {
-                        @Override
-                        public OutputStream openOutputStream() {
-                            return new ByteArrayOutputStream() {
-                                @Override
-                                public void close() throws IOException {
-                                    super.close();
-                                    classBytesHolder.put(className, toByteArray());
-                                }
-                            };
-                        }
-                    };
+            } finally {
+                // FileManager держит ресурсы — закрываем всегда, иначе при
+                // исключении внутри компиляции оставались открытые дескрипторы.
+                try {
+                    fileManager.close();
+                } catch (Exception ignored) {
+                    // Закрытие не должно ломать компиляцию
                 }
-            };
-
-            List<String> options = List.of(
-                "-classpath", getClasspath(),
-                "-d", compiledDir.toString(),
-                "-proc:none"
-            );
-
-            JavaCompiler.CompilationTask task = compiler.getTask(
-                null, virtualFileManager, diagnostics, options, null, List.of(source)
-            );
-
-            boolean success = task.call();
-            fileManager.close();
-
-            if (success) {
-                compiledClasses.putAll(classBytesHolder);
-                
-                // Сохраняем в кэш
-                for (Map.Entry<String, byte[]> entry : classBytesHolder.entrySet()) {
-                    saveToCache(entry.getKey(), entry.getValue());
-                    // Оставляем class-файлы на диске, чтобы следующий исходник
-                    // из той же папки мог использовать уже скомпилированный класс.
-                    saveToCompiledDir(entry.getKey(), entry.getValue());
-                }
-
-                addToResult(result, fullClassName, classType);
-                return true;
-            } else {
-                for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
-                    String error = javaFile.getName() + ":" + diagnostic.getLineNumber() + " - " + diagnostic.getMessage(null);
-                    plugin.getLogger().warning("[JavaCompiler] ❌ " + error);
-                    result.errors.add(error);
-                }
-                return false;
             }
 
         } catch (Exception e) {
@@ -343,13 +369,102 @@ public class JavaItemCompiler {
     }
 
     private String replaceClassNames(String sourceCode) {
+        if (aliasPatterns.isEmpty()) return sourceCode;
         String result = sourceCode;
+        for (Map.Entry<Pattern, String> alias : aliasPatterns) {
+            result = alias.getKey().matcher(result).replaceAll(Matcher.quoteReplacement(alias.getValue()));
+        }
+        return result;
+    }
+
+    /**
+     * Компилирует шаблоны замены имён классов (длинные имена — первыми,
+     * чтобы "Foo" не съел "FooBar").
+     */
+    private void buildAliasPatterns() {
+        aliasPatterns.clear();
         List<Map.Entry<String, String>> aliases = new ArrayList<>(sourceClassAliases.entrySet());
         aliases.sort((a, b) -> Integer.compare(b.getKey().length(), a.getKey().length()));
         for (Map.Entry<String, String> alias : aliases) {
-            result = result.replaceAll("\\b" + java.util.regex.Pattern.quote(alias.getKey()) + "\\b", alias.getValue());
+            aliasPatterns.add(Map.entry(
+                    Pattern.compile("\\b" + Pattern.quote(alias.getKey()) + "\\b"),
+                    alias.getValue()));
         }
-        return result;
+    }
+
+    /**
+     * Добавляет недостающие импорты API плагина.
+     *
+     * Проверка идёт поимённо: если в файле есть любой импорт из пакета
+     * api, старый код не добавлял остальные — и файл не компилировался.
+     *
+     * Импорты вставляются ПОСЛЕ объявления package (если оно есть):
+     * в начало файла они попасть не могут — javac требует, чтобы
+     * package был первым оператором.
+     */
+    private String injectDefaultImports(String sourceCode) {
+        List<String> imports = new ArrayList<>();
+        for (String fqcn : DEFAULT_IMPORTS) {
+            String simpleName = fqcn.substring(fqcn.lastIndexOf('.') + 1);
+            // Если пользователь объявил одноимённый класс, импорт API ему не нужен
+            // (и после подмены имён он бы сломался).
+            if (sourceClassAliases.containsKey(simpleName)) continue;
+            if (sourceCode.contains("import " + fqcn + ";")) continue;
+            imports.add(fqcn);
+        }
+        return insertImports(sourceCode, imports);
+    }
+
+    /**
+     * Вставляет импорты в исходник.
+     *
+     * Импорты вставляются ПОСЛЕ объявления package (если оно есть):
+     * в начало файла они попасть не могут — javac требует, чтобы
+     * package был первым оператором.
+     */
+    static String insertImports(String sourceCode, List<String> imports) {
+        if (imports == null || imports.isEmpty()) return sourceCode;
+
+        StringBuilder block = new StringBuilder();
+        for (String fqcn : imports) {
+            block.append("import ").append(fqcn).append(";\n");
+        }
+
+        int insertAt = findPackageDeclarationEnd(sourceCode);
+        return sourceCode.substring(0, insertAt) + block + sourceCode.substring(insertAt);
+    }
+
+    /**
+     * Удаляет объявление package из исходника (компилятор добавляет своё).
+     *
+     * Учитывает BOM (файл в UTF-8 с BOM начинается с U+FEFF) и не задевает
+     * строки в блочных комментариях: package должен быть первой строкой
+     * файла, а не случайным словом в тексте.
+     */
+    static String stripPackageDeclaration(String sourceCode) {
+        String source = sourceCode;
+        if (!source.isEmpty() && source.charAt(0) == '\uFEFF') {
+            source = source.substring(1);
+        }
+        // Якорь начала строки + только пробелы/табы до "package":
+        // многострочный \s* мог бы захватить строку внутри комментария.
+        return source.replaceFirst("(?m)^[ \\t]*package[ \\t]+[\\w.]+[ \\t]*;[^\\S\\n]*\\n?", "");
+    }
+
+    /**
+     * Возвращает индекс символа сразу после объявления package (и его перевода строки).
+     * Если объявления нет — 0.
+     */
+    static int findPackageDeclarationEnd(String sourceCode) {
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+                .compile("(?m)^\\s*package\\s+[\\w.]+\\s*;")
+                .matcher(sourceCode);
+        if (!matcher.find()) return 0;
+        int end = matcher.end();
+        // Переносим вставку на следующую строку, чтобы не приклеивать импорт
+        // к точке с запятой.
+        int newline = sourceCode.indexOf('\n', end);
+        return newline >= 0 ? newline + 1 : end;
     }
 
     private List<File> findJavaFiles(File directory) {
@@ -376,6 +491,13 @@ public class JavaItemCompiler {
         return files;
     }
 
+    /**
+     * Имя генерируемого класса по пути файла.
+     *
+     * Имя должно быть корректным Java-идентификатором: раньше файл
+     * "1abc.java" давал класс "1abcItem", а "my.item.java" — "my.itemItem",
+     * и такой исходник не компилировался.
+     */
     public String getGeneratedClassName(File javaFile) {
         String relative;
         try {
@@ -383,8 +505,31 @@ public class JavaItemCompiler {
         } catch (Exception e) {
             relative = javaFile.getName();
         }
-        return relative.replace('\\', '_').replace('/', '_')
-            .replace(".java", "").replace("-", "_").replace(" ", "_") + "Item";
+        return sanitizeGeneratedClassName(relative);
+    }
+
+    /**
+     * Превращает относительный путь исходника в корректный Java-идентификатор.
+     */
+    static String sanitizeGeneratedClassName(String relativePath) {
+        String base = relativePath == null ? "" : relativePath.replace('\\', '_').replace('/', '_');
+        if (base.toLowerCase(Locale.ROOT).endsWith(".java")) {
+            base = base.substring(0, base.length() - ".java".length());
+        }
+
+        StringBuilder sb = new StringBuilder(base.length() + 5);
+        for (int i = 0; i < base.length(); i++) {
+            char c = base.charAt(i);
+            boolean valid = Character.isLetterOrDigit(c) || c == '_';
+            sb.append(valid ? c : '_');
+        }
+        sb.append("Item");
+
+        // Java-идентификатор не может начинаться с цифры
+        if (sb.length() > 0 && Character.isDigit(sb.charAt(0))) {
+            sb.insert(0, '_');
+        }
+        return sb.toString();
     }
 
     private String getCacheKey(File javaFile) {
@@ -657,6 +802,7 @@ public class JavaItemCompiler {
         fileHashes.clear();
         sourceClassAliases.clear();
         moduleSourceFolders.clear();
+        aliasPatterns.clear();
         classLoader = null;
     }
 

@@ -4,7 +4,6 @@ import me.dcplugin.dcustomitems.Main;
 import me.dcplugin.dcustomitems.api.config.MessagesConfig;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -30,15 +29,17 @@ public class ConfigMigrator {
         if (!itemsDir.exists()) itemsDir.mkdirs();
 
         File messagesFile = new File(itemsDir, "messages.java");
-        if (!messagesFile.exists()) {
-            try {
-                FileWriter writer = new FileWriter(messagesFile);
-                writer.write(generateDefaultMessagesContent());
-                writer.close();
-                plugin.getLogger().info("[Config] Created default messages.java");
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING, "Failed to create messages.java: " + e.getMessage(), e);
-            }
+        if (messagesFile.exists()) return;
+
+        try {
+            // Явный UTF-8: FileWriter использовал системную кодировку,
+            // и на Windows с cp1251 русские тексты в messages.java
+            // превращались в «кракозябры».
+            java.nio.file.Files.write(messagesFile.toPath(),
+                    generateDefaultMessagesContent().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            plugin.getLogger().info("[Config] Created default messages.java");
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to create messages.java: " + e.getMessage(), e);
         }
     }
 

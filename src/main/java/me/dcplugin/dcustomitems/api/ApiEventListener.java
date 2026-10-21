@@ -131,11 +131,25 @@ public class ApiEventListener implements Listener {
      * Обновить предмет в руке после изменения PDC (uses).
      */
     private void updateHandItem(PlayerInteractEvent event, Player player, ItemStack item) {
-        if (event.getHand() == org.bukkit.inventory.EquipmentSlot.HAND) {
+        org.bukkit.inventory.EquipmentSlot hand = event.getHand();
+        if (hand == null) return;
+        if (hand == org.bukkit.inventory.EquipmentSlot.HAND) {
             player.getInventory().setItemInMainHand(item);
-        } else if (event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND) {
+        } else if (hand == org.bukkit.inventory.EquipmentSlot.OFF_HAND) {
             player.getInventory().setItemInOffHand(item);
         }
+    }
+
+    /**
+     * Удалить кулдаун клика игрока.
+     *
+     * Без этого lastColds рос бесконечно: запись добавлялась каждому
+     * игроку, который когда-либо кликал предметом, и никогда не
+     * удалялась — это была утечка памяти на каждого заходившего игрока.
+     */
+    @EventHandler
+    public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+        lastClicks.remove(event.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -232,6 +246,15 @@ public class ApiEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerMove(PlayerMoveEvent event) {
+        // PlayerMoveEvent срабатывает ~20 раз в секунду на каждого игрока,
+        // в том числе при повороте камеры. Если позиция не изменилась —
+        // onMove/onJump вызывать нечего.
+        if (event.getFrom().getX() == event.getTo().getX()
+                && event.getFrom().getY() == event.getTo().getY()
+                && event.getFrom().getZ() == event.getTo().getZ()) {
+            return;
+        }
+
         Player player = event.getPlayer();
         ItemStack item = findCustomItem(player);
         if (item == null) return;
@@ -244,8 +267,9 @@ public class ApiEventListener implements Listener {
 
         customItem.onMove(event, player);
 
-        // Проверка прыжка
-        if (event.getFrom().getY() < event.getTo().getY()) {
+        // Проверка прыжка: заметный подъём, а не любое движение вверх
+        // (иначе onJump срабатывал бы при лестницах/полёте).
+        if (event.getTo().getY() - event.getFrom().getY() > 0.25) {
             customItem.onJump(player);
         }
     }

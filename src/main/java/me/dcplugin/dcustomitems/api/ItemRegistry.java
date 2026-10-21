@@ -12,7 +12,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -24,8 +27,18 @@ public class ItemRegistry {
     private final Map<String, CustomCommand> registeredCommands;
     private final Map<String, CustomPlaceholder> registeredPlaceholders;
     private final Map<String, Module> registeredModules;
+
+    /**
+     * Зеркало ID предметов в потокобезопасном множестве.
+     *
+     * Нужно для обращений из потока PlaceholderAPI: обход keySet() обычной
+     * LinkedHashMap во время reload дал бы ConcurrentModificationException,
+     * а копирование карты на каждый запрос плейсхолдера — лишняя аллокация.
+     */
+    private final Set<String> registeredItemIds = ConcurrentHashMap.newKeySet();
     private final JavaItemCompiler compiler;
     private final AtomicBoolean loading = new AtomicBoolean(false);
+    private final ExecutorService reloadExecutor;
 
     public ItemRegistry(Main plugin) {
         this.plugin = plugin;
@@ -34,6 +47,11 @@ public class ItemRegistry {
         this.registeredPlaceholders = new LinkedHashMap<>();
         this.registeredModules = new LinkedHashMap<>();
         this.compiler = new JavaItemCompiler(plugin);
+        this.reloadExecutor = Executors.newSingleThreadExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "DC-CustomItems-Reload");
+            thread.setDaemon(true);
+            return thread;
+        });
     }
 
     /** Initial load. Must run on the Bukkit main thread. */
@@ -43,6 +61,7 @@ public class ItemRegistry {
         }
 
         registeredItems.clear();
+        registeredItemIds.clear();
         registeredCommands.clear();
         registeredPlaceholders.clear();
         registeredModules.clear();
@@ -53,7 +72,39 @@ public class ItemRegistry {
         loadJavaFiles(itemsDir);
         registerJavaRecipes();
         applyRuntimeMessages();
+
+        // Стартовый путь обязан регистрировать команды и плейсхолдеры так же,
+        // как и reload: иначе onRegister() не вызывался, а Java-плейсхолдеры
+        // не появлялись до первого /ci reload.
+        registerCustomCommandsAndPlaceholders();
+
         logStats();
+    }
+
+    /**
+     * Вызывает onRegister() у команд и плейсхолдеров и регистрирует
+     * плейсхолдеры в PlaceholderManager.
+     */
+    private void registerCustomCommandsAndPlaceholders() {
+        for (CustomCommand cmd : registeredCommands.values()) {
+            try {
+                cmd.onRegister();
+            } catch (Exception exception) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "[API] Error registering command " + cmd.getName(), exception);
+            }
+        }
+        for (CustomPlaceholder ph : registeredPlaceholders.values()) {
+            try {
+                if (plugin.getPlaceholderManager() != null) {
+                    plugin.getPlaceholderManager().registerCustom(ph.getIdentifier(), ph::getValue);
+                }
+                ph.onRegister();
+            } catch (Exception exception) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "[API] Error registering placeholder " + ph.getIdentifier(), exception);
+            }
+        }
     }
 
     /**
@@ -74,6 +125,13 @@ public class ItemRegistry {
             }
         }
 
+        // Отдельный поток вместо общего пула ForkJoin: там же блокирующее
+        // ожидание .get() занимало поток пула и могло привести к
+        // взаимной блокировке с главным потоком сервера.
+        if (reloadExecutor.isShutdown()) {
+            loading.set(false);
+            throw new IllegalStateException("Плагин выключается — перезагрузка недоступна");
+        }
         return CompletableFuture.runAsync(() -> {
             try {
                 Bukkit.getScheduler().callSyncMethod(plugin, () -> {
@@ -88,7 +146,14 @@ public class ItemRegistry {
             } finally {
                 loading.set(false);
             }
-        });
+        }, reloadExecutor);
+    }
+
+    /**
+     * Остановить поток перезагрузки (при выключении плагина).
+     */
+    public void shutdown() {
+        reloadExecutor.shutdownNow();
     }
 
     /** Synchronous reload used by /ci reload on the main Bukkit thread. */
@@ -144,9 +209,16 @@ public class ItemRegistry {
                 plugin.getLogger().log(java.util.logging.Level.WARNING,
                     "[API] Error unregistering placeholder " + ph.getIdentifier(), exception);
             }
+            // Снимаем плейсхолдер и с менеджера: иначе старые реализации
+            // (а вместе с ними старые классы и classloader) оставались
+            // в карте PlaceholderManager навсегда.
+            if (plugin.getPlaceholderManager() != null) {
+                plugin.getPlaceholderManager().unregisterCustom(ph.getIdentifier());
+            }
         }
 
         registeredItems.clear();
+        registeredItemIds.clear();
         registeredCommands.clear();
         registeredPlaceholders.clear();
         registeredModules.clear();
@@ -159,26 +231,7 @@ public class ItemRegistry {
         registerJavaRecipes();
         applyRuntimeMessages();
 
-        for (CustomCommand cmd : registeredCommands.values()) {
-            try {
-                cmd.onRegister();
-            } catch (Exception exception) {
-                plugin.getLogger().log(java.util.logging.Level.WARNING,
-                    "[API] Error registering command " + cmd.getName(), exception);
-            }
-        }
-        for (CustomPlaceholder ph : registeredPlaceholders.values()) {
-            try {
-                if (plugin.getPlaceholderManager() != null) {
-                    plugin.getPlaceholderManager().register(ph.getIdentifier(), ph::getValue);
-                }
-                ph.onRegister();
-            } catch (Exception exception) {
-                plugin.getLogger().log(java.util.logging.Level.WARNING,
-                    "[API] Error registering placeholder " + ph.getIdentifier(), exception);
-            }
-        }
-
+        registerCustomCommandsAndPlaceholders();
         plugin.registerCustomCommands();
         if (plugin.getModuleManager() != null) {
             plugin.getModuleManager().loadAll();
@@ -190,8 +243,12 @@ public class ItemRegistry {
      * Рецепты Java API-предметов (getRecipes() -> RecipeDef) регистрируются
      * в ванильный крафт. Метод сам чистит старые java-ключи перед добавлением,
      * поэтому безопасен при повторных reload без перезагрузки YAML.
+     *
+     * Публичный метод: при старте сервера рецепты перерегистрируются после
+     * загрузки YAML-предметов — иначе Java-рецепт, ссылающийся на YAML-предмет,
+     * не мог бы разрешить ингредиент.
      */
-    private void registerJavaRecipes() {
+    public void registerJavaRecipes() {
         try {
             if (plugin.getItemHandler() != null) {
                 plugin.getItemHandler().getRecipeManager()
@@ -239,7 +296,10 @@ public class ItemRegistry {
 
         for (String cn : result.items) {
             AbstractCustomItem item = compiler.createItemInstance(cn);
-            if (item != null) registeredItems.put(item.getId(), item);
+            if (item != null) {
+                registeredItems.put(item.getId(), item);
+                registeredItemIds.add(item.getId());
+            }
         }
         for (String cn : result.commands) {
             CustomCommand cmd = compiler.createCommandInstance(cn);
@@ -284,6 +344,8 @@ public class ItemRegistry {
     }
 
     private void loadFromJar(File jarFile) {
+        // URLClassLoader держит открытый файл jar — без закрытия на Windows
+        // файл оставался залоченным, а дескриптор не закрывался до GC.
         try (JarFile jar = new JarFile(jarFile)) {
             Enumeration<JarEntry> entries = jar.entries();
             List<String> classNames = new ArrayList<>();
@@ -294,17 +356,19 @@ public class ItemRegistry {
                 }
             }
             URL jarUrl = jarFile.toURI().toURL();
-            ClassLoader cl = new URLClassLoader(new URL[]{jarUrl}, plugin.getClass().getClassLoader());
-            for (String cn : classNames) {
-                try {
-                    Class<?> clazz = Class.forName(cn, false, cl);
-                    if (AbstractCustomItem.class.isAssignableFrom(clazz)) {
-                        AbstractCustomItem item = (AbstractCustomItem) clazz.getDeclaredConstructor().newInstance();
-                        registeredItems.put(item.getId(), item);
+            try (URLClassLoader cl = new URLClassLoader(new URL[]{jarUrl}, plugin.getClass().getClassLoader())) {
+                for (String cn : classNames) {
+                    try {
+                        Class<?> clazz = Class.forName(cn, false, cl);
+                        if (AbstractCustomItem.class.isAssignableFrom(clazz)) {
+                            AbstractCustomItem item = (AbstractCustomItem) clazz.getDeclaredConstructor().newInstance();
+                            registeredItems.put(item.getId(), item);
+                        registeredItemIds.add(item.getId());
+                        }
+                    } catch (Exception exception) {
+                        plugin.getLogger().log(java.util.logging.Level.WARNING,
+                            "[API] Failed to load class " + cn + " from " + jarFile.getName(), exception);
                     }
-                } catch (Exception exception) {
-                    plugin.getLogger().log(java.util.logging.Level.WARNING,
-                        "[API] Failed to load class " + cn + " from " + jarFile.getName(), exception);
                 }
             }
         } catch (IOException exception) {
@@ -320,16 +384,53 @@ public class ItemRegistry {
     }
 
     public AbstractCustomItem getItem(String id) { return registeredItems.get(id); }
-    public Map<String, AbstractCustomItem> getAllItems() { return Collections.unmodifiableMap(registeredItems); }
-    public Set<String> getAllIds() { return registeredItems.keySet(); }
+
+    /**
+     * Снимок всех зарегистрированных Java-предметов (только для чтения).
+     *
+     * Раньше возвращался живой unmodifiable-представление карты: любой
+     * внешний обход мог упасть с ConcurrentModificationException во время
+     * reload и мог менять содержимое карты.
+     */
+    public Map<String, AbstractCustomItem> getAllItems() {
+        return Collections.unmodifiableMap(new LinkedHashMap<>(registeredItems));
+    }
+
+    public Set<String> getAllIds() { return new LinkedHashSet<>(registeredItems.keySet()); }
+
+    /**
+     * Представление ID предметов без копирования (потокобезопасно для обхода).
+     */
+    public Set<String> getItemIdsView() { return Collections.unmodifiableSet(registeredItemIds); }
     public int getItemCount() { return registeredItems.size(); }
     public CustomCommand getCommand(String name) { return registeredCommands.get(name.toLowerCase()); }
-    public Map<String, CustomCommand> getAllCommands() { return Collections.unmodifiableMap(registeredCommands); }
+
+    /**
+     * Снимок всех зарегистрированных команд (только для чтения).
+     */
+    public Map<String, CustomCommand> getAllCommands() {
+        return Collections.unmodifiableMap(new LinkedHashMap<>(registeredCommands));
+    }
+
     public int getCommandCount() { return registeredCommands.size(); }
     public CustomPlaceholder getPlaceholder(String id) { return registeredPlaceholders.get(id.toLowerCase()); }
-    public Map<String, CustomPlaceholder> getAllPlaceholders() { return Collections.unmodifiableMap(registeredPlaceholders); }
+
+    /**
+     * Снимок всех зарегистрированных плейсхолдеров (только для чтения).
+     */
+    public Map<String, CustomPlaceholder> getAllPlaceholders() {
+        return Collections.unmodifiableMap(new LinkedHashMap<>(registeredPlaceholders));
+    }
+
     public int getPlaceholderCount() { return registeredPlaceholders.size(); }
-    public Map<String, Module> getAllModules() { return Collections.unmodifiableMap(registeredModules); }
+
+    /**
+     * Снимок всех зарегистрированных модулей (только для чтения).
+     */
+    public Map<String, Module> getAllModules() {
+        return Collections.unmodifiableMap(new LinkedHashMap<>(registeredModules));
+    }
+
     public Module getModule(String id) { return registeredModules.get(id.toLowerCase()); }
     public int getModuleCount() { return registeredModules.size(); }
     public JavaItemCompiler getCompiler() { return compiler; }

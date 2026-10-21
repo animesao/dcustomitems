@@ -37,7 +37,10 @@ public class Main extends JavaPlugin {
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Error disabling plugin: " + e.getMessage(), e);
         } finally {
-            // PluginLogManager is handled by bootstrap
+            // Статическая ссылка на плагин удерживала старый classloader
+            // после выгрузки — из-за этого перезагруженные версии плагина
+            // не выгружались из памяти.
+            if (instance == this) instance = null;
         }
     }
 

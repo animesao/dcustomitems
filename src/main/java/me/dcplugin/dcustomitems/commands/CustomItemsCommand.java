@@ -76,8 +76,10 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
                 int cmds = plugin.getApiItemRegistry().getCommandCount();
                 int phs = plugin.getApiItemRegistry().getPlaceholderCount();
 
-                // Перерегистрируем кастомные команды
-                plugin.registerCustomCommands();
+                // Команды перерегистрируются внутри registry.reload()
+                // (reloadSynchronously вызывает registerCustomCommands) —
+                // повторная регистрация здесь создавала бы дубликаты
+                // команд в CommandMap.
 
                 sender.sendMessage(MessagesConfig.colorize(MessagesConfig.RELOAD_SUCCESS));
                 sender.sendMessage(MessagesConfig.format(MessagesConfig.RELOAD_YAML,
@@ -147,10 +149,10 @@ public class CustomItemsCommand implements CommandExecutor, TabCompleter {
         int problems = 0;
         java.util.Set<String> mats = new java.util.HashSet<>();
         for (org.bukkit.Material m : org.bukkit.Material.values()) mats.add(m.name());
-        java.util.Set<String> ids = plugin.getItemHandler().getAllCustomItems().keySet();
-        if (plugin.getApiItemRegistry() != null) ids = new java.util.HashSet<>(ids) {{
-            addAll(plugin.getApiItemRegistry().getAllIds());
-        }};
+        java.util.Set<String> ids = new java.util.HashSet<>(plugin.getItemHandler().getAllCustomItems().keySet());
+        if (plugin.getApiItemRegistry() != null) {
+            ids.addAll(plugin.getApiItemRegistry().getAllIds());
+        }
         for (var entry : plugin.getItemHandler().getAllCustomItems().entrySet()) {
             var item = entry.getValue();
             if (item == null || !item.hasRecipes()) continue;

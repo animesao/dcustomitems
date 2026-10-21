@@ -147,14 +147,47 @@ public class DatabaseManager {
     /**
      * Returns the SQLite connection or a leased MySQL pool connection.
      * Callers receiving a MySQL connection must close it; prefer async helpers below.
+     *
+     * Для SQLite возвращается потокобезопасная обёртка: единственное
+     * соединение используется всеми потоками, и обращения к нему
+     * сериализуются (иначе SQLite выдавал "database is locked" или
+     * повреждал данные при параллельных запросах).
      */
     public Connection getConnection() {
         try {
-            return acquireConnection();
+            Connection connection = acquireConnection();
+            if (connection == null) return null;
+            if (isMySql()) return connection;
+            return synchronizedConnection(connection);
         } catch (SQLException e) {
             plugin.getLogger().log(java.util.logging.Level.WARNING, "Could not acquire database connection: " + e.getMessage(), e);
             return null;
         }
+    }
+
+    /**
+     * Обёртка, сериализующая обращения к общему SQLite-соединению.
+     *
+     * Исключения пробрасываются как есть: reflective-обёртка иначе
+     * превращала SQLException в InvocationTargetException, и вызывающий
+     * код с {@code catch (SQLException)} перестал бы ловить ошибки БД.
+     */
+    private Connection synchronizedConnection(Connection delegate) {
+        return (Connection) java.lang.reflect.Proxy.newProxyInstance(
+                delegate.getClass().getClassLoader(),
+                new Class<?>[]{Connection.class},
+                (proxy, method, args) -> {
+                    synchronized (sqliteLock) {
+                        try {
+                            return method.invoke(delegate, args);
+                        } catch (java.lang.reflect.InvocationTargetException e) {
+                            Throwable cause = e.getCause();
+                            if (cause instanceof Exception exception) throw exception;
+                            if (cause instanceof Error error) throw error;
+                            throw e;
+                        }
+                    }
+                });
     }
 
     private Connection acquireConnection() throws SQLException {
@@ -175,7 +208,9 @@ public class DatabaseManager {
     }
 
     public boolean createTable(String tableName, String columns) {
-        return execute("CREATE TABLE IF NOT EXISTS " + tableName + " (" + columns + ")");
+        String safeTable = safeIdentifier(tableName);
+        if (safeTable == null) return false;
+        return execute("CREATE TABLE IF NOT EXISTS " + safeTable + " (" + columns + ")");
     }
 
     public boolean tableExists(String tableName) {
@@ -232,33 +267,45 @@ public class DatabaseManager {
     }
 
     public boolean insert(String table, Map<String, Object> data) {
+        if (data == null || data.isEmpty()) return false;
+        String safeTable = safeIdentifier(table);
+        if (safeTable == null) return false;
         StringBuilder columns = new StringBuilder();
         StringBuilder placeholders = new StringBuilder();
         List<Object> values = new ArrayList<>();
         for (Map.Entry<String, Object> entry : data.entrySet()) {
+            String safeColumn = safeIdentifier(entry.getKey());
+            if (safeColumn == null) return false;
             if (columns.length() > 0) { columns.append(", "); placeholders.append(", "); }
-            columns.append(entry.getKey());
+            columns.append(safeColumn);
             placeholders.append("?");
             values.add(entry.getValue());
         }
-        return execute("INSERT INTO " + table + " (" + columns + ") VALUES (" + placeholders + ")",
+        return execute("INSERT INTO " + safeTable + " (" + columns + ") VALUES (" + placeholders + ")",
             values.toArray());
     }
 
     public boolean update(String table, Map<String, Object> data, String where, Object... whereParams) {
+        if (data == null || data.isEmpty()) return false;
+        String safeTable = safeIdentifier(table);
+        if (safeTable == null) return false;
         StringBuilder sets = new StringBuilder();
         List<Object> values = new ArrayList<>();
         for (Map.Entry<String, Object> entry : data.entrySet()) {
+            String safeColumn = safeIdentifier(entry.getKey());
+            if (safeColumn == null) return false;
             if (sets.length() > 0) sets.append(", ");
-            sets.append(entry.getKey()).append(" = ?");
+            sets.append(safeColumn).append(" = ?");
             values.add(entry.getValue());
         }
         Collections.addAll(values, whereParams);
-        return execute("UPDATE " + table + " SET " + sets + " WHERE " + where, values.toArray());
+        return execute("UPDATE " + safeTable + " SET " + sets + " WHERE " + where, values.toArray());
     }
 
     public boolean delete(String table, String where, Object... params) {
-        return execute("DELETE FROM " + table + " WHERE " + where, params);
+        String safeTable = safeIdentifier(table);
+        if (safeTable == null) return false;
+        return execute("DELETE FROM " + safeTable + " WHERE " + where, params);
     }
 
     public int queryInt(String sql, Object... params) {
@@ -347,15 +394,21 @@ public class DatabaseManager {
     }
 
     public boolean increment(String table, String column, String where, Object... whereParams) {
-        return execute("UPDATE " + table + " SET " + column + " = " + column + " + 1 WHERE " + where,
+        String safeTable = safeIdentifier(table);
+        String safeColumn = safeIdentifier(column);
+        if (safeTable == null || safeColumn == null) return false;
+        return execute("UPDATE " + safeTable + " SET " + safeColumn + " = " + safeColumn + " + 1 WHERE " + where,
             whereParams);
     }
 
     public boolean add(String table, String column, double amount, String where, Object... whereParams) {
+        String safeTable = safeIdentifier(table);
+        String safeColumn = safeIdentifier(column);
+        if (safeTable == null || safeColumn == null) return false;
         List<Object> params = new ArrayList<>();
         params.add(amount);
         Collections.addAll(params, whereParams);
-        return execute("UPDATE " + table + " SET " + column + " = " + column + " + ? WHERE " + where,
+        return execute("UPDATE " + safeTable + " SET " + safeColumn + " = " + safeColumn + " + ? WHERE " + where,
             params.toArray());
     }
 
@@ -396,11 +449,45 @@ public class DatabaseManager {
 
     /** Convert a generic insert to the correct upsert syntax for the selected database. */
     public String upsertSql(String table, String columns, String values, String updateClause) {
+        String safeTable = validateIdentifier(table);
         if (isMySql()) {
-            return "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ") ON DUPLICATE KEY UPDATE " + updateClause;
+            return "INSERT INTO " + safeTable + " (" + columns + ") VALUES (" + values + ") ON DUPLICATE KEY UPDATE " + updateClause;
         }
-        return "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ") ON CONFLICT DO UPDATE SET " + updateClause;
+        return "INSERT INTO " + safeTable + " (" + columns + ") VALUES (" + values + ") ON CONFLICT DO UPDATE SET " + updateClause;
     }
+
+    /**
+     * Проверяет, что имя таблицы/колонки — корректный SQL-идентификатор.
+     *
+     * Имена таблиц и колонок подставляются в SQL как есть (параметры
+     * PreparedStatement для них не годятся), поэтому нельзя допустить
+     * произвольную строку — это путь к SQL-инъекции через код модуля.
+     *
+     * @throws IllegalArgumentException если имя некорректно
+     */
+    private static String validateIdentifier(String identifier) {
+        if (identifier == null || !IDENTIFIER_PATTERN.matcher(identifier).matches()) {
+            throw new IllegalArgumentException("Недопустимый SQL-идентификатор: " + identifier);
+        }
+        return identifier;
+    }
+
+    /**
+     * То же, но без исключения: возвращает null и пишет в лог.
+     * Используется в публичных методах, где исключение сломало бы
+     * контракт "вернуть true/false".
+     */
+    private String safeIdentifier(String identifier) {
+        try {
+            return validateIdentifier(identifier);
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("SQL: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private static final java.util.regex.Pattern IDENTIFIER_PATTERN =
+            java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]{0,63}");
 
     private void setParams(PreparedStatement statement, Object... params) throws SQLException {
         for (int i = 0; i < params.length; i++) statement.setObject(i + 1, params[i]);

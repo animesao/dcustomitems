@@ -286,6 +286,8 @@ my-item:
       - HIDE_ATTRIBUTES
 
     attributes:
+      # Поддерживаются и legacy-имена (GENERIC_*/PLAYER_*), и современные
+      # (attack_damage, max_health), и регистровые ключи.
       GENERIC_ATTACK_DAMAGE: 10
       GENERIC_ATTACK_SPEED: 2
 
@@ -648,10 +650,22 @@ DC-CustomItems/
 | Оптимизация | Описание | Эффект |
 |-------------|----------|--------|
 | 🌍 Глобальный таск | Один `BukkitRunnable` вместо per-player | -90% scheduled задач |
-| 🔍 EnumCache | Кэширование Material/Particle/Sound | -80% рефлексии |
-| 🔧 Стабильные UUID | AttributeManager использует фиксированные ключи | Корректное удаление |
+| 🔍 EnumCache | Кэширование Material/Particle/Sound/Attribute (ConcurrentHashMap) | -80% рефлексии |
+| 🔧 Стабильные ключи | AttributeManager использует фиксированные ключи в namespace плагина | Корректное удаление |
 | ⏱️ Кулдаун пересчёта | 150ms между проверками экипировки | -50% пересчётов |
-| 🗑️ Очистка памяти | HashMap чистятся при выходе игрока | Нет утечек |
+| 📇 Одно чтение PDC | ID предметов всех слотов читаются один раз за тик | -75% `getItemMeta()` |
+| 🧹 Очистка памяти | Кулдауны, эффекты и атрибуты чистятся при выходе игрока | Нет утечек |
+| 🧵 Отдельный поток reload | `reloadAsync()` не занимает поток общего пула | Нет блокировок |
+
+### Опции `config.yml`
+
+| Опция | По умолчанию | Описание |
+|-------|--------------|----------|
+| `java-compilation` | `true` | Runtime-компиляция `.java` из `items/` (выполнение произвольного кода) |
+| `debug-mode` | `false` | Подробное логирование |
+| `file-logging` | `false` | Логи плагина в `plugins/DC-CustomItems/logs/latest.log` вместо консоли |
+| `backup.on-reload` / `backup.keep` | `true` / `5` | Бэкап `items/` перед `/ci reload` |
+| `extract-default-modules` | `false` | Автокопирование образцов `EXAMPLE-*` в `items/` |
 
 ---
 

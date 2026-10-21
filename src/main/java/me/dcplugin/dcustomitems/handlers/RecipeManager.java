@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -486,14 +487,19 @@ public class RecipeManager {
         }
 
         // YAML-предмет
-        CustomItem custom = plugin.getItemHandler().getCustomItem(raw.toLowerCase());
+        CustomItem custom = plugin.getItemHandler().getCustomItem(raw.toLowerCase(Locale.ROOT));
         if (custom != null) {
             return exactChoice(custom.getItemStack());
         }
 
-        // Java API-предмет (AbstractCustomItem)
-        AbstractCustomItem javaItem = plugin.getApiItemRegistry().getItem(raw);
-        if (javaItem == null) javaItem = plugin.getApiItemRegistry().getItem(raw.toLowerCase());
+        // Java API-предмет (AbstractCustomItem).
+        // Реестр может быть ещё не создан (например, YAML-предметы грузятся
+        // раньше реестра) — тогда ищем позже, на этапе регистрации рецептов.
+        if (plugin.getApiItemRegistry() == null) {
+            return null;
+        }
+        AbstractCustomItem javaItem = plugin.getApiItemRegistry().getItem(raw.toLowerCase(Locale.ROOT));
+        if (javaItem == null) javaItem = plugin.getApiItemRegistry().getItem(raw);
         if (javaItem != null) {
             return exactChoice(javaItem.createItemStack());
         }

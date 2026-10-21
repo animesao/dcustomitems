@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Юнит-тесты разбора строк действий ActionParser.
- * Проверяют нормализацию типа (нижний регистр, дефисы = подчёркивания)
- * и отделение значения.
+ * Юнит-тесты разбора и нормализации строк действий ActionParser.
+ * Проверяют нормализацию типа (нижний регистр, дефисы = подчёркивания),
+ * отделение значения и безопасность разбора пустых строк.
  */
 class ActionParserTest {
 
@@ -59,5 +59,16 @@ class ActionParserTest {
         String[] parsed = ActionParser.splitAction("title:&6Title|&7Sub:10:40:10");
         assertEquals("title", parsed[0]);
         assertEquals("&6Title|&7Sub:10:40:10", parsed[1]);
+    }
+
+    /**
+     * Пустое (пробельное) действие раньше приводило к NPE вне блока try:
+     * splitAction возвращал null, а код сразу обращался к parsed[0].
+     */
+    @Test
+    void blankActionDoesNotThrow() {
+        assertDoesNotThrow(() -> ActionParser.execute(null, "   "));
+        assertDoesNotThrow(() -> ActionParser.execute(null, ""));
+        assertDoesNotThrow(() -> ActionParser.execute(null, null));
     }
 }

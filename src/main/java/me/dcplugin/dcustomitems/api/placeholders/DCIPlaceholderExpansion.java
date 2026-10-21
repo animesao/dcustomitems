@@ -93,7 +93,7 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
             case "version":
                 return plugin.getDescription().getVersion();
             case "item_count":
-                return String.valueOf(plugin.getItemHandler().getAllCustomItems().size());
+                return String.valueOf(plugin.getItemHandler().getCustomItemCount());
             case "java_item_count":
                 return plugin.getApiItemRegistry() != null
                     ? String.valueOf(plugin.getApiItemRegistry().getItemCount())
@@ -187,7 +187,18 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
         if (itemId == null) return null;
 
         CustomItem customItem = plugin.getItemHandler().getCustomItem(itemId);
-        if (customItem == null) return "false";
+        String activationSlot = null;
+        if (customItem != null) {
+            activationSlot = customItem.getActivationSlot();
+        } else {
+            // Java API-предмет — у него тоже есть слот активации
+            me.dcplugin.dcustomitems.api.AbstractCustomItem javaItem =
+                    plugin.getApiItemRegistry() != null
+                            ? plugin.getApiItemRegistry().getItem(itemId)
+                            : null;
+            if (javaItem == null) return "false";
+            activationSlot = javaItem.getActivationSlot();
+        }
 
         switch (prefix) {
             case "has_":
@@ -195,7 +206,7 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
             case "holding_":
                 return String.valueOf(isHoldingItem(player, itemId));
             case "equipped_":
-                return String.valueOf(isItemEquipped(player, itemId, customItem));
+                return String.valueOf(isItemEquipped(player, itemId, activationSlot));
             case "item_amount_":
                 return String.valueOf(countItem(player, itemId));
             default:
@@ -204,20 +215,36 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
     }
 
     /**
+     * Кэш известных ID предметов.
+     *
+     * Список ID копировался на каждый запрос плейсхолдера — на сервере с
+     * активными скорбордами это тысячи копий в секунду. Кэш пересобирается
+     * только когда изменился набор предметов (сравнивается контрольная
+     * сумма состава, а не только количество: reload может заменить один
+     * предмет другим).
+     */
+    private java.util.Set<String> knownItemIds = java.util.Set.of();
+    private int knownItemIdsChecksum;
+
+    /**
      * Find a matching item ID from the remainder string.
      * Tries exact match first, then tries progressively shorter segments
      * (from right to left) to handle multi-word IDs like "vampire_blade".
+     *
+     * Учитываются и YAML-предметы, и Java API-предметы — раньше искались
+     * только YAML, поэтому %dci_holding_<java-item>% никогда не работал.
      */
     private String findMatchingItemId(String remainder) {
         // Exact match
         if (plugin.getItemHandler().getCustomItem(remainder) != null) {
             return remainder;
         }
+        if (plugin.getApiItemRegistry() != null
+                && plugin.getApiItemRegistry().getItem(remainder) != null) {
+            return remainder;
+        }
 
-        // Try splitting on underscores from the right
-        // e.g., "has_vampire_blade" -> remainder="vampire_blade"
-        // We need to find which part is the item ID
-        java.util.Set<String> knownIds = plugin.getItemHandler().getAllCustomItems().keySet();
+        java.util.Set<String> knownIds = getKnownItemIds();
 
         // Try exact match first (most common case)
         if (knownIds.contains(remainder)) {
@@ -241,6 +268,28 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
         return null;
     }
 
+    /**
+     * Актуальный набор ID предметов (с кэшем по контрольной сумме состава).
+     */
+    private java.util.Set<String> getKnownItemIds() {
+        java.util.Set<String> yamlIds = plugin.getItemHandler().getAllCustomItems().keySet();
+        java.util.Set<String> javaIds = plugin.getApiItemRegistry() != null
+                ? plugin.getApiItemRegistry().getItemIdsView()
+                : java.util.Set.of();
+
+        int checksum = 17;
+        for (String id : yamlIds) checksum = checksum * 31 + id.hashCode();
+        for (String id : javaIds) checksum = checksum * 31 + id.hashCode();
+
+        if (checksum != knownItemIdsChecksum || knownItemIds.isEmpty()) {
+            java.util.Set<String> ids = new java.util.HashSet<>(yamlIds);
+            ids.addAll(javaIds);
+            knownItemIds = java.util.Collections.unmodifiableSet(ids);
+            knownItemIdsChecksum = checksum;
+        }
+        return knownItemIds;
+    }
+
     private boolean hasItemAnywhere(Player player, String itemId) {
         for (ItemStack item : player.getInventory().getContents()) {
             if (item != null && isCustomItemWithId(item, itemId)) return true;
@@ -261,8 +310,8 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
                (off != null && isCustomItemWithId(off, itemId));
     }
 
-    private boolean isItemEquipped(Player player, String itemId, CustomItem customItem) {
-        String slot = customItem.getActivationSlot();
+    private boolean isItemEquipped(Player player, String itemId, String activationSlot) {
+        String slot = activationSlot == null ? "" : activationSlot.toUpperCase(java.util.Locale.ROOT);
 
         switch (slot) {
             case "HAND":
@@ -303,7 +352,7 @@ public class DCIPlaceholderExpansion extends PlaceholderExpansion {
             case "version":
                 return plugin.getDescription().getVersion();
             case "item_count":
-                return String.valueOf(plugin.getItemHandler().getAllCustomItems().size());
+                return String.valueOf(plugin.getItemHandler().getCustomItemCount());
             case "online":
                 return String.valueOf(plugin.getServer().getOnlinePlayers().size());
             case "max_players":

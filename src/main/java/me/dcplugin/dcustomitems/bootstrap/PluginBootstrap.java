@@ -48,6 +48,7 @@ public class PluginBootstrap {
     private DatabaseManager databaseManager;
     private PlaceholderManager placeholderManager;
     private UpdateChecker updateChecker;
+    private PluginLogManager pluginLogManager;
 
     public PluginBootstrap(Main plugin) {
         this.plugin = plugin;
@@ -73,17 +74,34 @@ public class PluginBootstrap {
         configMigrator.createDefaultMessagesFile();
         configMigrator.checkConfigMigration();
 
+        // Логирование в файл (по желанию)
+        initFileLogging();
+
         // Инициализация менеджеров
         initManagers();
 
-        // Загрузка предметов
-        itemHandler.loadCustomItems();
+        // Плейсхолдеры создаются ДО загрузки Java API: при старте
+        // ItemRegistry.loadAll() регистрирует Java-плейсхолдеры — без
+        // менеджера они бы не появились до первого /ci reload.
+        initPlaceholders();
 
         // Инициализация API
         ItemAPI.init(plugin);
         apiItemRegistry = new ItemRegistry(plugin);
         moduleManager = new ModuleManager(plugin);
+
+        // Java API грузим первыми: YAML-рецепты могут ссылаться на
+        // Java-предметы как на ингредиенты, а реестр должен к этому моменту
+        // уже существовать (раньше он был null — это давало NPE).
         apiItemRegistry.loadAll();
+
+        // Загрузка YAML-предметов (и их рецептов)
+        itemHandler.loadCustomItems();
+
+        // Рецепты Java-предметов перерегистрируем после загрузки YAML:
+        // Java-рецепт может использовать YAML-предмет как ингредиент.
+        apiItemRegistry.registerJavaRecipes();
+
         moduleManager.loadAll();
 
         // Регистрация команд (с задержкой 1 тик)
@@ -94,9 +112,6 @@ public class PluginBootstrap {
 
         // База данных
         initDatabase();
-
-        // Плейсхолдеры
-        initPlaceholders();
 
         // Глобальный таск проверки экипировки
         equippedItemsChecker = new EquippedItemsChecker(plugin);
@@ -117,18 +132,33 @@ public class PluginBootstrap {
     public void disable() {
         plugin.getLogger().info("CustomItems disabling...");
 
-        if (databaseManager != null) {
-            try { databaseManager.shutdownAsync(); } catch (Exception ignored) {}
-            try { databaseManager.disconnect(); } catch (Exception ignored) {}
-        }
-
+        // Снимаем эффекты с игроков: после отключения плагина они иначе
+        // висели бы до конца своей длительности (60 с).
         if (effectManager != null) {
-            plugin.getServer().getOnlinePlayers().forEach(effectManager::stopPeriodicEffects);
+            for (org.bukkit.entity.Player player : plugin.getServer().getOnlinePlayers()) {
+                effectManager.stopPeriodicEffects(player);
+            }
         }
         if (attributeManager != null) attributeManager.cleanup();
 
         if (equippedItemsChecker != null) equippedItemsChecker.cancel();
         try { commandRegistrar.unregisterAll(); } catch (Exception ignored) {}
+        try {
+            if (placeholderManager != null) placeholderManager.unregisterExpansion();
+        } catch (Exception ignored) {}
+        try {
+            if (apiItemRegistry != null) apiItemRegistry.shutdown();
+        } catch (Exception ignored) {}
+
+        if (databaseManager != null) {
+            try { databaseManager.shutdownAsync(); } catch (Exception ignored) {}
+            try { databaseManager.disconnect(); } catch (Exception ignored) {}
+        }
+
+        if (pluginLogManager != null) {
+            try { pluginLogManager.stop(); } catch (Exception ignored) {}
+            pluginLogManager = null;
+        }
 
         plugin.getLogger().info("CustomItems disabled!");
     }
@@ -178,6 +208,18 @@ public class PluginBootstrap {
     private void initPlaceholders() {
         placeholderManager = new PlaceholderManager(plugin);
         placeholderManager.registerExpansion(plugin);
+    }
+
+    /**
+     * Логирование плагина в plugins/DC-CustomItems/logs/latest.log.
+     *
+     * Выключено по умолчанию (file-logging: false) — иначе сообщения
+     * плагина пропали бы из консоли сервера.
+     */
+    private void initFileLogging() {
+        if (!plugin.getConfig().getBoolean("file-logging", false)) return;
+        pluginLogManager = new PluginLogManager(plugin);
+        pluginLogManager.start();
     }
 
     private void checkUpdates() {

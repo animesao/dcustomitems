@@ -309,7 +309,7 @@ public class ItemLoader {
             return null;
         }
 
-        ItemBuilder builder = new ItemBuilder(material);
+        ItemBuilder builder = new ItemBuilder(material, plugin);
 
         String title = itemSection.getString("title");
         if (title != null) builder.setDisplayName(title);
@@ -364,17 +364,20 @@ public class ItemLoader {
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return;
 
-        if (itemModel != null && !itemModel.isEmpty()) {
+        boolean hasModel = itemModel != null && !itemModel.isEmpty();
+        boolean hasVariant = itemModelVariant != null && !itemModelVariant.isEmpty();
+
+        if (hasModel || hasVariant) {
             CustomModelDataComponent cmdComponent = meta.getCustomModelDataComponent();
             List<String> strings = new ArrayList<>();
-            strings.add(itemModel);
+            if (hasModel) strings.add(itemModel);
             // item-model-variant добавляется как дополнительная строка
-            if (itemModelVariant != null && !itemModelVariant.isEmpty()) {
-                strings.add(itemModelVariant);
-            }
+            if (hasVariant) strings.add(itemModelVariant);
             cmdComponent.setStrings(strings);
             meta.setCustomModelDataComponent(cmdComponent);
-            meta.getPersistentDataContainer().set(itemModelKey, PersistentDataType.STRING, itemModel);
+            if (hasModel) {
+                meta.getPersistentDataContainer().set(itemModelKey, PersistentDataType.STRING, itemModel);
+            }
             plugin.getLogger().fine("[LOAD] Применён custom_model_data strings: " + strings + " для " + itemId);
         } else if (customModelData > 0) {
             meta.setCustomModelData(customModelData);
@@ -452,18 +455,20 @@ public class ItemLoader {
     }
 
     private String validateType(String type, String itemId) {
-        if (!VALID_TYPES.contains(type.toUpperCase())) {
+        String normalized = type == null ? "" : type.toUpperCase(java.util.Locale.ROOT);
+        if (!VALID_TYPES.contains(normalized)) {
             plugin.getLogger().warning("Недопустимый тип предмета: " + type + " для предмета: " + itemId);
             return "RUNE";
         }
-        return type;
+        return normalized;
     }
 
     private String validateSlot(String slot, String itemId) {
-        if (!VALID_SLOTS.contains(slot.toUpperCase())) {
+        String normalized = slot == null ? "" : slot.toUpperCase(java.util.Locale.ROOT);
+        if (!VALID_SLOTS.contains(normalized)) {
             plugin.getLogger().warning("Недопустимый слот активации: " + slot + " для предмета: " + itemId);
             return "HAND";
         }
-        return slot;
+        return normalized;
     }
 }

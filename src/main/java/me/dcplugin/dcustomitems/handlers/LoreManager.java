@@ -1,5 +1,6 @@
 package me.dcplugin.dcustomitems.handlers;
 
+import me.dcplugin.dcustomitems.Main;
 import me.dcplugin.dcustomitems.models.CustomItem;
 import me.dcplugin.dcustomitems.utils.ColorUtils;
 import org.bukkit.inventory.ItemStack;
@@ -13,6 +14,12 @@ import java.util.List;
  * подстановка %cooldown% и %uses% в лор предмета.
  */
 public class LoreManager {
+
+    private final Main plugin;
+
+    public LoreManager(Main plugin) {
+        this.plugin = plugin;
+    }
 
     /**
      * Обновить lore предмета с подстановкой %cooldown% и %uses%
@@ -51,13 +58,17 @@ public class LoreManager {
         double seconds = remainingMs / 1000.0;
         String cooldownStr = String.format("%.1f", seconds);
 
-        // Получаем текущие uses из меты предмета (если есть)
+        // Получаем текущие uses из меты предмета (если есть).
+        // Ключ обязан совпадать с тем, которым пишет UsesManager
+        // (new NamespacedKey(plugin, "item_uses")): namespace, указанный
+        // вручную, не совпадал с namespace плагина, и %uses% всегда
+        // показывал максимум вместо остатка.
         int uses = -1;
         if (customItem.hasMaxUses()) {
             ItemMeta meta = itemStack.getItemMeta();
             if (meta != null) {
                 Integer storedUses = meta.getPersistentDataContainer().get(
-                        new org.bukkit.NamespacedKey("dcustomitems", "item_uses"),
+                        new org.bukkit.NamespacedKey(plugin, "item_uses"),
                         org.bukkit.persistence.PersistentDataType.INTEGER);
                 uses = storedUses != null ? storedUses : customItem.getMaxUses();
             }

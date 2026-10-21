@@ -4,12 +4,11 @@ import me.dcplugin.dcustomitems.Main;
 import me.dcplugin.dcustomitems.api.ItemRegistry;
 import me.dcplugin.dcustomitems.api.commands.CustomCommand;
 import me.dcplugin.dcustomitems.api.commands.CustomCommandExecutor;
-import org.bukkit.Bukkit;
+import me.dcplugin.dcustomitems.utils.CommandMapAccessor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -55,11 +54,15 @@ public class CommandRegistrar {
     @SuppressWarnings("unchecked")
     public void unregisterAll() {
         try {
-            CommandMap commandMap = getCommandMap();
+            CommandMap commandMap = CommandMapAccessor.getCommandMap();
             if (commandMap == null) return;
 
             // Access knownCommands via reflection (Paper remaps field names)
-            Map<String, Command> knownCommands = getKnownCommands(commandMap);
+            Map<String, Command> knownCommands = CommandMapAccessor.getKnownCommands(commandMap);
+            if (knownCommands == null) {
+                plugin.getLogger().warning("[API] knownCommands недоступна — команды остаются в CommandMap");
+                return;
+            }
 
             for (Command cmd : dynamicCommands) {
                 knownCommands.remove(cmd.getName().toLowerCase());
@@ -95,49 +98,6 @@ public class CommandRegistrar {
     }
 
     private CommandMap getCommandMap() {
-        // Try Bukkit.getCommandMap() via reflection (Paper 1.21+)
-        try {
-            java.lang.reflect.Method getCommandMapMethod = Bukkit.class.getMethod("getCommandMap");
-            return (CommandMap) getCommandMapMethod.invoke(null);
-        } catch (Exception e) {
-            // Fallback: field-based reflection (Spigot / older Paper)
-            try {
-                Field commandMapField = Bukkit.class.getDeclaredField("commandMap");
-                commandMapField.setAccessible(true);
-                return (CommandMap) commandMapField.get(null);
-            } catch (Exception ex) {
-                plugin.getLogger().log(Level.WARNING, "Failed to access CommandMap: " + ex.getMessage(), ex);
-                return null;
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Command> getKnownCommands(CommandMap commandMap) {
-        // Try all possible field names (Paper remaps some)
-        for (String fieldName : new String[]{"knownCommands", "knownCommands"}) {
-            try {
-                Field field = commandMap.getClass().getDeclaredField(fieldName);
-                field.setAccessible(true);
-                return (Map<String, Command>) field.get(commandMap);
-            } catch (Exception ignored) {}
-        }
-        // Fallback: iterate all declared fields looking for a Map<String, Command>
-        for (Field field : commandMap.getClass().getDeclaredFields()) {
-            if (Map.class.isAssignableFrom(field.getType())) {
-                try {
-                    field.setAccessible(true);
-                    Object value = field.get(commandMap);
-                    if (value instanceof Map) {
-                        Map<?, ?> map = (Map<?, ?>) value;
-                        if (!map.isEmpty() && map.keySet().iterator().next() instanceof String) {
-                            return (Map<String, Command>) value;
-                        }
-                    }
-                } catch (Exception ignored) {}
-            }
-        }
-        plugin.getLogger().warning("Could not access knownCommands map");
-        return new java.util.HashMap<>();
+        return CommandMapAccessor.getCommandMap();
     }
 }

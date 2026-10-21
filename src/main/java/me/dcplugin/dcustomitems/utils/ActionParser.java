@@ -17,6 +17,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Единственный исполнитель действий кастомных предметов.
@@ -43,46 +44,52 @@ public class ActionParser {
     // Маппинг кастомных названий эффектов на Minecraft
     // Лениво инициализируется: статические ссылки на PotionEffectType
     // требуют инициализированного Bukkit и ломали бы чистые юнит-тесты.
-    private static final Map<String, PotionEffectType> EFFECT_MAP = new HashMap<>();
+    // ConcurrentHashMap + double-check: lookup'ы могут прилететь из разных
+    // потоков (основной поток сервера + async-пулы).
+    private static final Map<String, PotionEffectType> EFFECT_MAP = new ConcurrentHashMap<>();
 
     private static Map<String, PotionEffectType> effectMap() {
         if (EFFECT_MAP.isEmpty()) {
-            // Стандартные названия
-            putEffect("SPEED", PotionEffectType.SPEED);
-            putEffect("SLOW", PotionEffectType.SLOWNESS);
-            putEffect("SLOWNESS", PotionEffectType.SLOWNESS);
-            putEffect("HASTE", PotionEffectType.HASTE);
-            putEffect("MINING_FATIGUE", PotionEffectType.MINING_FATIGUE);
-            putEffect("STRENGTH", PotionEffectType.STRENGTH);
-            putEffect("INCREASE_DAMAGE", PotionEffectType.STRENGTH);
-            putEffect("JUMP", PotionEffectType.JUMP_BOOST);
-            putEffect("JUMP_BOOST", PotionEffectType.JUMP_BOOST);
-            putEffect("NAUSEA", PotionEffectType.NAUSEA);
-            putEffect("CONFUSION", PotionEffectType.NAUSEA);
-            putEffect("REGENERATION", PotionEffectType.REGENERATION);
-            putEffect("RESISTANCE", PotionEffectType.RESISTANCE);
-            putEffect("DAMAGE_RESISTANCE", PotionEffectType.RESISTANCE);
-            putEffect("FIRE_RESISTANCE", PotionEffectType.FIRE_RESISTANCE);
-            putEffect("WATER_BREATHING", PotionEffectType.WATER_BREATHING);
-            putEffect("INVISIBILITY", PotionEffectType.INVISIBILITY);
-            putEffect("BLINDNESS", PotionEffectType.BLINDNESS);
-            putEffect("NIGHT_VISION", PotionEffectType.NIGHT_VISION);
-            putEffect("HEALTH_BOOST", PotionEffectType.HEALTH_BOOST);
-            putEffect("ABSORPTION", PotionEffectType.ABSORPTION);
-            putEffect("SATURATION", PotionEffectType.SATURATION);
-            putEffect("GLOWING", PotionEffectType.GLOWING);
-            putEffect("LEVITATION", PotionEffectType.LEVITATION);
-            putEffect("LUCK", PotionEffectType.LUCK);
-            putEffect("UNLUCK", PotionEffectType.UNLUCK);
-            putEffect("SLOW_FALLING", PotionEffectType.SLOW_FALLING);
-            putEffect("CONDUIT_POWER", PotionEffectType.CONDUIT_POWER);
-            putEffect("DOLPHINS_GRACE", PotionEffectType.DOLPHINS_GRACE);
-            putEffect("BAD_OMEN", PotionEffectType.BAD_OMEN);
-            putEffect("HERO_OF_THE_VILLAGE", PotionEffectType.HERO_OF_THE_VILLAGE);
-            putEffect("DARKNESS", PotionEffectType.DARKNESS);
-            putEffect("OOZING", PotionEffectType.OOZING);
-            putEffect("WEAVING", PotionEffectType.WEAVING);
-            putEffect("INFESTED", PotionEffectType.INFESTED);
+            synchronized (EFFECT_MAP) {
+                if (EFFECT_MAP.isEmpty()) {
+                    // Стандартные названия
+                    putEffect("SPEED", PotionEffectType.SPEED);
+                    putEffect("SLOW", PotionEffectType.SLOWNESS);
+                    putEffect("SLOWNESS", PotionEffectType.SLOWNESS);
+                    putEffect("HASTE", PotionEffectType.HASTE);
+                    putEffect("MINING_FATIGUE", PotionEffectType.MINING_FATIGUE);
+                    putEffect("STRENGTH", PotionEffectType.STRENGTH);
+                    putEffect("INCREASE_DAMAGE", PotionEffectType.STRENGTH);
+                    putEffect("JUMP", PotionEffectType.JUMP_BOOST);
+                    putEffect("JUMP_BOOST", PotionEffectType.JUMP_BOOST);
+                    putEffect("NAUSEA", PotionEffectType.NAUSEA);
+                    putEffect("CONFUSION", PotionEffectType.NAUSEA);
+                    putEffect("REGENERATION", PotionEffectType.REGENERATION);
+                    putEffect("RESISTANCE", PotionEffectType.RESISTANCE);
+                    putEffect("DAMAGE_RESISTANCE", PotionEffectType.RESISTANCE);
+                    putEffect("FIRE_RESISTANCE", PotionEffectType.FIRE_RESISTANCE);
+                    putEffect("WATER_BREATHING", PotionEffectType.WATER_BREATHING);
+                    putEffect("INVISIBILITY", PotionEffectType.INVISIBILITY);
+                    putEffect("BLINDNESS", PotionEffectType.BLINDNESS);
+                    putEffect("NIGHT_VISION", PotionEffectType.NIGHT_VISION);
+                    putEffect("HEALTH_BOOST", PotionEffectType.HEALTH_BOOST);
+                    putEffect("ABSORPTION", PotionEffectType.ABSORPTION);
+                    putEffect("SATURATION", PotionEffectType.SATURATION);
+                    putEffect("GLOWING", PotionEffectType.GLOWING);
+                    putEffect("LEVITATION", PotionEffectType.LEVITATION);
+                    putEffect("LUCK", PotionEffectType.LUCK);
+                    putEffect("UNLUCK", PotionEffectType.UNLUCK);
+                    putEffect("SLOW_FALLING", PotionEffectType.SLOW_FALLING);
+                    putEffect("CONDUIT_POWER", PotionEffectType.CONDUIT_POWER);
+                    putEffect("DOLPHINS_GRACE", PotionEffectType.DOLPHINS_GRACE);
+                    putEffect("BAD_OMEN", PotionEffectType.BAD_OMEN);
+                    putEffect("HERO_OF_THE_VILLAGE", PotionEffectType.HERO_OF_THE_VILLAGE);
+                    putEffect("DARKNESS", PotionEffectType.DARKNESS);
+                    putEffect("OOZING", PotionEffectType.OOZING);
+                    putEffect("WEAVING", PotionEffectType.WEAVING);
+                    putEffect("INFESTED", PotionEffectType.INFESTED);
+                }
+            }
         }
         return EFFECT_MAP;
     }
@@ -112,9 +119,14 @@ public class ActionParser {
     }
 
     public static boolean execute(Player player, String action) {
-        if (action == null || action.isEmpty()) return false;
+        if (action == null || action.isBlank()) return false;
 
         String[] parsed = splitAction(action);
+        // splitAction возвращает null для пустой строки — раньше здесь
+        // сразу шёл обращение к parsed[0] и вылетал NPE наружу.
+        if (parsed == null) return false;
+        if (player == null) return false;
+
         String actionType = parsed[0];
         String actionValue = parsed[1];
 
@@ -518,7 +530,11 @@ public class ActionParser {
 
         Material material = EnumCache.getMaterial(parts[0]);
         if (material != null) {
-            player.getInventory().addItem(new ItemStack(material, amount));
+            java.util.Map<Integer, ItemStack> leftover =
+                    player.getInventory().addItem(new ItemStack(material, amount));
+            for (ItemStack stack : leftover.values()) {
+                player.getWorld().dropItemNaturally(player.getLocation(), stack);
+            }
             return;
         }
 
@@ -530,7 +546,11 @@ public class ActionParser {
                 ItemStack stack = customItem.getItemStack().clone();
                 stack.setAmount(amount);
                 plugin.getItemHandler().updateItemWithUses(stack);
-                player.getInventory().addItem(stack);
+                java.util.Map<Integer, ItemStack> leftover =
+                        player.getInventory().addItem(stack);
+                for (ItemStack rest : leftover.values()) {
+                    player.getWorld().dropItemNaturally(player.getLocation(), rest);
+                }
             }
         }
     }
@@ -547,12 +567,22 @@ public class ActionParser {
 
         int amount = parts.length > 1 ? parseInt(parts[1], 1) : 1;
         int remaining = amount;
-        for (ItemStack item : player.getInventory().getContents()) {
+        ItemStack[] contents = player.getInventory().getContents();
+        boolean changed = false;
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack item = contents[i];
             if (item != null && item.getType() == material && remaining > 0) {
                 int toRemove = Math.min(item.getAmount(), remaining);
-                item.setAmount(item.getAmount() - toRemove);
+                int left = item.getAmount() - toRemove;
                 remaining -= toRemove;
+                // Стак с amount=0 остаётся в инвентаре «пустым» — убираем его,
+                // иначе он занимает слот и мешает авто-подбору.
+                contents[i] = left > 0 ? item : null;
+                changed = true;
             }
+        }
+        if (changed) {
+            player.getInventory().setContents(contents);
         }
     }
 
