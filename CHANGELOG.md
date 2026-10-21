@@ -7,6 +7,22 @@
 
 ---
 
+## v1.336.0
+
+### 🔒 MySQL: проверка сертификата сервера
+
+- Новая опция `database.mysql.verify-server-certificate` (по умолчанию
+  `false` — чтобы не сломать существующие подключения).
+  При `use-ssl: true` + `verify-server-certificate: true` используется
+  `sslMode=VERIFY_IDENTITY`: проверяются и сертификат, и имя хоста.
+- Раньше `use-ssl: true` давал только шифрование без проверки сертификата —
+  MITM оставался возможным.
+- Плагин пишет предупреждение в лог, если соединение не зашифровано или
+  сертификат не проверяется, и если пароль лежит в `config.yml` открытым
+  текстом (подсказка про `DCI_MYSQL_PASSWORD`).
+
+---
+
 ## v1.335.0
 
 ### 🔒 Security
@@ -40,9 +56,15 @@ tracing, authorization, concurrency, data exposure, dependencies).
 - **Raw exception messages were sent to players** (a failed custom command
   could leak SQL text or a file path). Players now get a generic message;
   the details stay in the log.
+- **MySQL: the server certificate was never verified.** `use-ssl: true` only
+  encrypted the connection — `sslMode=REQUIRED` does not check the
+  certificate, so a MITM stayed possible. There is now a
+  `database.mysql.verify-server-certificate` option (uses
+  `sslMode=VERIFY_IDENTITY`, which also checks the hostname), and the
+  plugin warns in the log when the connection is unencrypted or
+  unverified.
 
 ### 🧯 Concurrency (PlaceholderAPI runs on its own thread)
-
 - `EffectManager.playerAppliedEffects` and `ItemRegistry.registeredItems`
   were plain `HashMap`/`LinkedHashMap` written by the main thread and read
   by the PlaceholderAPI thread — a data race that can corrupt the hash
