@@ -7,6 +7,37 @@
 
 ---
 
+## v1.332.0
+
+### 📦 The plugin installs exactly one file
+
+A fresh install now contains **only** `plugins/DC-CustomItems/items/messages.java`
+— one file, one compiled class. Nothing else is created or copied.
+
+- **The samples are no longer shipped inside the jar.** They moved to the
+  `samples/` folder in the repository, so the jar contains only `config.yml`
+  and `plugin.yml` from the plugin's own resources.
+- **`DefaultContentExtractor` was removed** together with the
+  `extract-default-modules` option — there is nothing left to extract.
+  The key is still ignored when reading an old `config.yml`, so existing
+  servers keep working.
+- **How to use a sample now:** copy the file or folder you need from
+  `samples/` into `items/`, remove the `EXAMPLE-` prefix from its name and
+  run `/ci reload`.
+  - `samples/EXAMPLE-runes.yml` → `items/runes.yml`
+  - `samples/EXAMPLE-vault/` → `items/vault/`
+- `samples/README.md` documents what every sample shows.
+- Docs and `config.yml` were updated to describe the new layout.
+
+### ⚠️ Update notes
+
+- Nothing is removed from an existing server: `items/` keeps whatever you
+  already have.
+- The `extract-default-modules` option no longer exists. Remove it from
+  your `config.yml` if you want — it is simply ignored.
+
+---
+
 ## v1.331.0
 
 ### 🌍 English by default
