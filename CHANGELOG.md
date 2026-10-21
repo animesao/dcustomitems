@@ -1,25 +1,43 @@
 # Changelog
 
-Все изменения DC-CustomItems по версиям.
+All DC-CustomItems changes by version.
 
-Формат секций: `## v<версия>` — скрипт релиза (`.github/workflows/build.yml`)
-извлекает секцию нужной версии для заметок GitHub Release.
+Section format: `## v<version>` — the release script (`.github/workflows/build.yml`)
+extracts the section of the needed version for the GitHub Release notes.
+
+---
+
+## v1.337.0
+
+### 📖 English release notes
+
+- **The changelog is now in English.** The release script copies the section
+  of the released version into the GitHub Release notes, so the notes of
+  every future release will be in English — the same language the plugin
+  itself now uses by default.
+- The notes of the already published releases (v1.330.0 – v1.336.0) were
+  rewritten in English as well, so the whole release history reads the
+  same way.
+
+### ⚠️ Update notes
+
+- No code changes in this release — only documentation.
 
 ---
 
 ## v1.336.0
 
-### 🔒 MySQL: проверка сертификата сервера
+### 🔒 MySQL: server certificate verification
 
-- Новая опция `database.mysql.verify-server-certificate` (по умолчанию
-  `false` — чтобы не сломать существующие подключения).
-  При `use-ssl: true` + `verify-server-certificate: true` используется
-  `sslMode=VERIFY_IDENTITY`: проверяются и сертификат, и имя хоста.
-- Раньше `use-ssl: true` давал только шифрование без проверки сертификата —
-  MITM оставался возможным.
-- Плагин пишет предупреждение в лог, если соединение не зашифровано или
-  сертификат не проверяется, и если пароль лежит в `config.yml` открытым
-  текстом (подсказка про `DCI_MYSQL_PASSWORD`).
+- New option `database.mysql.verify-server-certificate` (defaults to
+  `false` — so the existing connections are not broken).
+  With `use-ssl: true` + `verify-server-certificate: true` the
+  `sslMode=VERIFY_IDENTITY` is used: both the certificate and the hostname are checked.
+- Previously `use-ssl: true` only encrypted the connection without checking the certificate —
+  MITM was still possible.
+- The plugin writes a warning to the log if the connection is not encrypted or
+  the certificate is not verified, and if the password lies in `config.yml` in plain
+  text (a hint about `DCI_MYSQL_PASSWORD`).
 
 ---
 
@@ -272,270 +290,270 @@ The plugin now ships with **English** as the default language instead of Russian
 
 ## v1.330.0
 
-### 💥 Исправлено
+### 💥 Fixed
 
-- **Атрибуты предметов не применялись вообще**: модификаторы создавались через `NamespacedKey.fromString(...)` без namespace — ключ уходил в `minecraft:` (или был `null` при ID в верхнем регистре), и Bukkit отклонял его. Добавлен `EnumCache.getAttribute()`: понимает и современные имена (`attack_damage`), и legacy (`GENERIC_ATTACK_DAMAGE`, `PLAYER_*`), и регистровые ключи.
-- **Уровни зелий складывались вместо выбора максимума**: два предмета с `SPEED:1` давали Speed II. Теперь берётся максимум (`Math::max`).
-- **`cooldown:МС` в триггерах ничего не блокировал**: значение записывалось, но никогда не проверялось. Теперь псевдо-действие реально откладывает следующее срабатывание триггера.
-- **Кулдаун клика был общим на игрока**: кулдаун одного предмета блокировал другой. Теперь ключ — игрок + предмет.
-- **NPE при пустом действии**: `ActionParser.execute(player, " ")` падал с NullPointerException вне блока try.
-- **`remove:`/`ItemAPI.removeItem` ничего не удаляли**: `Inventory#getContents()` возвращает копии стеков, изменения не попадали обратно в инвентарь.
-- **Ключ счётчика использований в lore не совпадал с тем, которым пишется**: читался `dcustomitems:item_uses`, а писался ключ в namespace плагина (`dc-customitems:item_uses`). Из-за этого `%uses%` всегда показывал максимум вместо остатка.
-- **`onRegister()` у команд и плейсхолдеров не вызывался при старте сервера** — только при `/ci reload`. Java-плейсхолдеры появлялись лишь после первой перезагрузки.
-- **Расходник с `max-uses` не давал эффект на последнем использовании** — предмет исчезал раньше, чем применялся эффект.
-- **Слот не освобождался после расхода**: `setAmount(0)` оставлял «пустой» стак в инвентаре.
-- **`type` и `activation-slot` сравнивались с учётом регистра**: `type: consumable` и `activation-slot: hand` не работали. Значения нормализуются в верхний регистр.
-- **Предметы на Java API не проверялись на `placeable` и на запрет в мире** при установке и подборе.
-- **Команды модулей и Java-API не регистрировались**: рефлексия искала поле `commandMap` в классе `Bukkit` (в Paper оно в `CraftServer`). Добавлен `CommandMapAccessor` с тремя стратегиями поиска и корректным снятием команд при reload.
-- **Команды оставались в `CommandMap` после reload**: при недоступной `knownCommands` возвращалась пустая копия карты — команды «удалялись» только формально.
-- **NPE при загрузке YAML-предметов**: реестр Java API создавался после YAML-предметов, а рецепт мог ссылаться на Java-предмет (`getApiItemRegistry()` возвращал `null`).
-- **Файл `.java` с собственным `package`** не компилировался: импорты вставлялись в начало файла, а объявление `package` оставалось вторым. Импорты теперь вставляются после `package`, а собственное объявление удаляется (иначе получалось два `package`).
-- **Файл с любым импортом из `api` не получал остальные импорты** → не компилировался. Импорты проверяются поимённо.
-- **Имя генерируемого класса могло быть невалидным** (`1abc.java` → `1abcItem`, `my.item.java` → `my.itemItem`) — такой исходник не собирался.
-- **Текстура головы из base64 не применялась** (ошибка смещения при разборе JSON) — исправлено.
-- **`teleportToNearest` падал на игроков в других мирах** (`Location#distance` бросает исключение).
-- **Отбрасывание рядом стоящих игроков давало NaN-скорость** при нулевом векторе.
-- **Java-предметы светились за счёт `SHARPNESS`** (+1 к урону) — теперь используется безобидный `UNBREAKING`.
-- **Сбой `UpdateChecker` на версиях вида `1.2.3-beta`** и незакрытое HTTP-соединение при ошибке.
-- **Сообщения из `messages.java` писались в системной кодировке** (на Windows — «кракозябры»). Теперь всегда UTF-8.
-- **YAML-модули с именем папки в верхнем регистре было невозможно найти** — ID нормализуется.
+- **Item attributes were not applied at all**: the modifiers were created via `NamespacedKey.fromString(...)` without a namespace — the key fell back to `minecraft:` (or was `null` for an upper-case ID), and Bukkit rejected it. Added `EnumCache.getAttribute()`: it understands the modern names (`attack_damage`), the legacy ones (`GENERIC_ATTACK_DAMAGE`, `PLAYER_*`) and the registry keys.
+- **Potion levels were added up instead of taking the maximum**: two items with `SPEED:1` gave Speed II. The maximum is taken now (`Math::max`).
+- **`cooldown:MS` in triggers blocked nothing**: the value was written but never checked. The pseudo-action now really postpones the next trigger activation.
+- **The click cooldown was shared per player**: the cooldown of one item blocked another. The key is now player + item.
+- **NPE on an empty action**: `ActionParser.execute(player, " ")` threw a NullPointerException outside the try block.
+- **`remove:`/`ItemAPI.removeItem` removed nothing**: `Inventory#getContents()` returns copies of the stacks, the changes never reached the inventory.
+- **The use counter key in the lore did not match the one used for writing**: it read `dcustomitems:item_uses`, while the key written was in the plugin namespace (`dc-customitems:item_uses`). Because of that `%uses%` always showed the maximum instead of the remaining uses.
+- **`onRegister()` of the commands and placeholders was not called on the server start** — only on `/ci reload`. The Java placeholders appeared only after the first reload.
+- **A consumable with `max-uses` did not apply the effect on the last use** — the item disappeared before the effect was applied.
+- **The slot was not freed after the consumption**: `setAmount(0)` left an "empty" stack in the inventory.
+- **`type` and `activation-slot` were compared case-sensitively**: `type: consumable` and `activation-slot: hand` did not work. The values are normalized to upper case.
+- **The Java API items were not checked for `placeable` and for the world ban** when placed and picked up.
+- **The module and Java API commands were not registered**: the reflection looked for the `commandMap` field in the `Bukkit` class (in Paper it is in `CraftServer`). Added `CommandMapAccessor` with three lookup strategies and proper command removal on reload.
+- **The commands stayed in the `CommandMap` after a reload**: when `knownCommands` was inaccessible an empty copy of the map was returned — the commands were "removed" only formally.
+- **NPE when loading the YAML items**: the Java API registry was created after the YAML items, and a recipe could reference a Java item (`getApiItemRegistry()` returned `null`).
+- **A `.java` file with its own `package`** did not compile: the imports were inserted at the top of the file, so the `package` declaration stayed second. The imports are now inserted after `package`, and the own declaration is removed (otherwise there would be two `package` declarations).
+- **A file with any import from `api` did not get the other imports** → did not compile. The imports are checked by name now.
+- **The generated class name could be invalid** (`1abc.java` → `1abcItem`, `my.item.java` → `my.itemItem`) — such a source file did not build.
+- **A head texture from base64 was not applied** (an offset error while parsing the JSON) — fixed.
+- **`teleportToNearest` crashed for the players in other worlds** (`Location#distance` throws an exception).
+- **Pushing away the nearby players produced a NaN velocity** with a zero vector.
+- **The Java items glowed because of `SHARPNESS`** (+1 damage) — the harmless `UNBREAKING` is used now.
+- **`UpdateChecker` failed on the versions like `1.2.3-beta`** and left the HTTP connection open on error.
+- **The messages from `messages.java` were written in the system encoding** (on Windows — mojibake). It is always UTF-8 now.
+- **The YAML modules with an upper-case folder name could not be found** — the ID is normalized.
 
-### 🧯 Утечки памяти и ресурсов
+### 🧯 Memory and resource leaks
 
-- `ApiEventListener` не удалял кулдауны игроков при выходе — карта росла бесконечно.
-- `EffectManager` не чистил состояние игроков при выходе (`stopPeriodicEffects` был заглушкой) — эффекты оставались на игроке до 60 с, записи — в памяти.
-- `ItemRegistry` не закрывал `URLClassLoader` загруженных jar — оставались открытые дескрипторы файлов.
-- Плейсхолдеры Java API не снимались с регистрации при reload — старые классы (и classloader) оставались в карте.
-- Статическая ссылка `Main.instance` не обнулялась при выключении — старый classloader не выгружался.
-- `JavaItemCompiler` не закрывал `StandardJavaFileManager` при исключении внутри компиляции.
-- Счётчики `CooldownStore` сохранялись YAML-путём — ID с точкой ломали запись/чтение. Новый формат — список записей (старый читается для совместимости).
+- `ApiEventListener` did not remove the player cooldowns on quit — the map grew without bound.
+- `EffectManager` did not clean up the player state on quit (`stopPeriodicEffects` was a stub) — the effects stayed on the player for up to 60 s, the entries stayed in memory.
+- `ItemRegistry` did not close the `URLClassLoader` of the loaded jars — open file handles were left behind.
+- The Java API placeholders were not unregistered on reload — the old classes (and the classloader) stayed in the map.
+- The static `Main.instance` reference was not cleared on shutdown — the old classloader was not unloaded.
+- `JavaItemCompiler` did not close the `StandardJavaFileManager` when an exception occurred during the compilation.
+- The `CooldownStore` counters were saved as YAML — the IDs with a dot broke the write/read. The new format is a list of entries (the old one is still read for compatibility).
 
-### ⚡ Оптимизация
+### ⚡ Optimization
 
-- `EquippedItemsChecker`: PDC каждого слота читается один раз за 150мс (было каждый тик — 20 раз/сек на игрока), два обхода онлайн-игроков объединены, следы частиц и периодические хуки пропускаются, если таких предметов нет.
-- `ApiEventListener.onMove` больше не срабатывает на поворот камеры (событие шло ~20 раз/сек на игрока).
-- `EffectManager`: разбор сет-бонусов кэшируется (был на каждый пересчёт экипировки).
-- `JavaItemCompiler`: шаблоны замены имён компилируются один раз, а не на каждый файл × алиас.
-- `EnumCache` переведён на `ConcurrentHashMap` (потокобезопасен) и кэширует отрицательные ответы.
-- `DCIPlaceholderExpansion`: список ID предметов кэшируется вместо копирования на каждый запрос плейсхолдера.
-- `ItemRegistry.getAll*()` возвращают снимки — обход внешнего кода больше не может получить `ConcurrentModificationException` во время reload.
-- `CustomItemHandler.getAllCustomItems()` больше не копирует карту на каждый вызов; карта подменяется атомарно (без «полупустого» окна при reload) и безопасна для обхода из потока PlaceholderAPI.
-- `reloadAsync()` использует отдельный поток вместо блокировки потока общего пула ForkJoin.
+- `EquippedItemsChecker`: the PDC of each slot is read once per 150 ms (it was every tick — 20 times/sec per player), the two passes over the online players are merged, the particle trails and the periodic hooks are skipped when there are no such items.
+- `ApiEventListener.onMove` no longer fires on a camera rotation (the event fired ~20 times/sec per player).
+- `EffectManager`: the parsing of the set bonuses is cached (it ran on every equipment recalculation).
+- `JavaItemCompiler`: the name replacement templates are compiled once, not per file × alias.
+- `EnumCache` was moved to a `ConcurrentHashMap` (thread-safe) and caches the negative answers.
+- `DCIPlaceholderExpansion`: the list of item IDs is cached instead of copied for every placeholder request.
+- `ItemRegistry.getAll*()` return snapshots — the external code iterating over them can no longer get a `ConcurrentModificationException` during a reload.
+- `CustomItemHandler.getAllCustomItems()` no longer copies the map on every call; the map is replaced atomically (without a "half-empty" window during a reload) and is safe to iterate from the PlaceholderAPI thread.
+- `reloadAsync()` uses a dedicated thread instead of blocking a thread of the shared ForkJoin pool.
 
-### 🔒 Безопасность
+### 🔒 Security
 
-- Имена таблиц и колонок в `DatabaseManager` проверяются как SQL-идентификаторы — больше нет подстановки произвольных строк в SQL.
-- Обращения к общему SQLite-соединению сериализуются (иначе «database is locked» и риск повреждения данных при параллельных запросах).
-- `getConnection()` для SQLite возвращает потокобезопасную обёртку, которая пробрасывает `SQLException` как есть.
+- The table and column names in `DatabaseManager` are validated as SQL identifiers — arbitrary strings are no longer substituted into SQL.
+- The access to the shared SQLite connection is serialized (otherwise "database is locked" and a risk of data corruption with parallel queries).
+- `getConnection()` for SQLite returns a thread-safe wrapper that passes `SQLException` through as is.
 
-### 🆕 Новое
+### 🆕 New
 
-- **`file-logging: false`** (в `config.yml`) — логи плагина в `plugins/DC-CustomItems/logs/latest.log` вместо консоли. Раньше `PluginLogManager` был написан, но не подключён.
-- `/ci validate` и `/ci debug` теперь видят и Java API-предметы.
+- **`file-logging: false`** (in `config.yml`) — the plugin logs to `plugins/DC-CustomItems/logs/latest.log` instead of the console. Previously `PluginLogManager` was implemented but not wired up.
+- `/ci validate` and `/ci debug` now also see the Java API items.
 
-### ⚠️ Обновление с прошлых версий
+### ⚠️ Update notes
 
-- `config.yml` не перезаписывается автоматически: ключ `file-logging` добавится при следующем обновлении вручную (по умолчанию выключено, поведение не меняется).
-- Уровни зелий от нескольких предметов теперь берут максимум, а не сумму — если баланс полагался на сумму, задавайте нужный уровень явно.
+- `config.yml` is not overwritten automatically: the `file-logging` key will be added manually on the next update (off by default, the behaviour does not change).
+- The potion levels of several items now take the maximum instead of the sum — if the balance relied on the sum, set the required level explicitly.
 
 ---
 
 ## v1.329.0
 
-### 🔧 Исправлено
+### 🔧 Fixed
 
-- **Образцы `EXAMPLE-*` больше не спамят `items/` по умолчанию**: `extract-default-modules` теперь `false` из коробки (было `true`). На чистом сервере папка `items/` остаётся пустой — только рабочий `items/messages.java`. Автокопирование включается только явно (`extract-default-modules: true`), копируются лишь отсутствующие файлы.
-- **Включение образца — копированием без префикса**: `EXAMPLE-runes.yml` → `runes.yml`, `EXAMPLE-vault/` → `vault/`, далее `/ci reload` (комментарии в `config.yml` и javadoc обновлены).
-- **`config.yml`: ключи `java-compilation`, `backup`, `extract-default-modules` больше не считаются предметами** — добавлены в skip-списки `ItemLoader.CONFIG_SKIP_KEYS` и `ConfigMigrator` (убирает ложные варнинги и ложное предложение миграции).
+- **The `EXAMPLE-*` samples no longer flood `items/` by default**: `extract-default-modules` is now `false` out of the box (it was `true`). On a clean server the `items/` folder stays empty — only the working `items/messages.java` is there. The auto-copying is enabled only explicitly (`extract-default-modules: true`), and only the missing files are copied.
+- **Enabling a sample — by copying it without the prefix**: `EXAMPLE-runes.yml` → `runes.yml`, `EXAMPLE-vault/` → `vault/`, then `/ci reload` (the comments in `config.yml` and the javadoc were updated).
+- **`config.yml`: the keys `java-compilation`, `backup`, `extract-default-modules` are no longer counted as items** — they were added to the skip lists `ItemLoader.CONFIG_SKIP_KEYS` and `ConfigMigrator` (this removes the false warnings and the false migration prompt).
 
-### ⚠️ Обновление с прошлых версий
+### ⚠️ Update notes
 
-- На существующем сервере `config.yml` не перезаписывается автоматически: удалите вручную `items/EXAMPLE-*` и выставьте `extract-default-modules: false`, если не хотите автокопирования.
+- On an existing server `config.yml` is not overwritten automatically: delete `items/EXAMPLE-*` manually and set `extract-default-modules: false` if you do not want the auto-copying.
 
 ---
 
 ## v1.328.0
 
-### 💥 Удалено (breaking)
+### 💥 Removed (breaking)
 
-- **`buy-price` / `sell-price` удалены**: поля выпилены из `CustomItem`, `ItemLoader` их игнорирует с варнингом. Магазин мёртв с v1.326 — экономика только через Vault/shop-модули.
-- **`trigger-actions:` удалён**: остался только канон `triggers:` (секция с v1.324). Старый ключ игнорируется с SEVERE-логом. Примеры `EXAMPLE-tools.yml`, `EXAMPLE-advanced.yml` переведены на `triggers:` скриптом.
+- **`buy-price` / `sell-price` removed**: the fields were cut out of `CustomItem`, `ItemLoader` ignores them with a warning. The shop has been dead since v1.326 — the economy works only through Vault/shop modules.
+- **`trigger-actions:` removed**: only the canonical `triggers:` remains (the section since v1.324). The old key is ignored with a SEVERE log. The samples `EXAMPLE-tools.yml`, `EXAMPLE-advanced.yml` were converted to `triggers:` by a script.
 
-### ✨ Новое (из прошлого спринта, релизится здесь)
+### ✨ New (from the last sprint, released here)
 
-- **`/ci validate`** — проверка рецептов (`ItemValidator`): shaped/shapeless/smithing/stonecutting, неизвестные ингредиенты.
-- **`/ci debug <id>`** — дамп предмета (тип/слот/uses/cd/рецепты/PDC).
-- **`/ci backup` + автобэкап** перед `/ci reload` (`backup.on-reload/keep`, `BackupManager`).
-- **Рецепты `smithing` / `stonecutting`** — YAML + Java API (`RecipeDef.smithing()/stonecutting()`), `schema/items.schema.json` для IDE.
-- **`CooldownStore`** — персистентные кулдауны (`cooldowns.yml`).
-- **Безопасность**: лимиты компилятора (300 файлов / 512KB), варнинги на `System.exit/Runtime.exec/ProcessBuilder/setAccessible`.
-- **БД**: `shutdownAsync()` с `awaitTermination(5с)` — гонки при disable больше нет.
+- **`/ci validate`** — the recipe validation (`ItemValidator`): shaped/shapeless/smithing/stonecutting, unknown ingredients.
+- **`/ci debug <id>`** — the item dump (type/slot/uses/cd/recipes/PDC).
+- **`/ci backup` + auto-backup** before `/ci reload` (`backup.on-reload/keep`, `BackupManager`).
+- **The `smithing` / `stonecutting` recipes** — YAML + Java API (`RecipeDef.smithing()/stonecutting()`), `schema/items.schema.json` for the IDE.
+- **`CooldownStore`** — persistent cooldowns (`cooldowns.yml`).
+- **Security**: the compiler limits (300 files / 512KB), the warnings on `System.exit/Runtime.exec/ProcessBuilder/setAccessible`.
+- **DB**: `shutdownAsync()` with `awaitTermination(5s)` — no more races on disable.
 - **`CustomItem.parsedEffects`** — `volatile` + defensive copy.
-- **Дока**: `docs.md` стал редиректом на `docs/`.
+- **Docs**: `docs.md` became a redirect to `docs/`.
 
 ---
 
 ## v1.327.0
 
-### 📦 Контент — только образцы по умолчанию
+### 📦 Content — only the samples by default
 
-- **Всё содержимое `items/` переведено в образцы `EXAMPLE-*`**: предметы
-  (`EXAMPLE-vampire-blade.yml`, `EXAMPLE-runes.yml`, ...), команды
-  (`EXAMPLE-give-command.java`, ...) и модули (`EXAMPLE-vault/`,
+- **Everything in `items/` was moved into the `EXAMPLE-*` samples**: the items
+  (`EXAMPLE-vampire-blade.yml`, `EXAMPLE-runes.yml`, ...), the commands
+  (`EXAMPLE-give-command.java`, ...) and the modules (`EXAMPLE-vault/`,
   `EXAMPLE-shop/`, `EXAMPLE-deluxemenux/`, `EXAMPLE-customcraft/`).
-- **По умолчанию при первом запуске копируются только файлы `EXAMPLE-*`**
-  (компилятор и загрузчики их игнорируют), плюс создаётся рабочий
-  `items/messages.java`. Ни один предмет/команда/модуль не активируется
-  автоматически — сервер стартует «чистым».
-- **Как включить образец**: убрать префикс `EXAMPLE-` из имени файла/папки
+- **By default only the `EXAMPLE-*` files are copied on the first start**
+  (the compiler and the loaders ignore them), plus a working
+  `items/messages.java` is created. No item/command/module is activated
+  automatically — the server starts "clean".
+- **How to enable a sample**: remove the `EXAMPLE-` prefix from the file/folder name
   (`EXAMPLE-vampire-blade.yml` → `vampire-blade.yml`, `EXAMPLE-vault/` →
-  `vault/`) и выполнить `/ci reload`.
-- `extract-default-modules` в `config.yml` по-прежнему управляет
-  автокопированием образцов из jar в `items/`.
-- Документация обновлена: README, docs/, комментарии в конфигах и шапки
-  образцов описывают новое правило.
+  `vault/`) and run `/ci reload`.
+- `extract-default-modules` in `config.yml` still controls
+  the auto-copying of the samples from the jar into `items/`.
+- The documentation was updated: README, docs/, the comments in the configs and the
+  headers of the samples describe the new rule.
 
 ---
 
 ## v1.326.0
 
-### ✨ Модули
+### ✨ Modules
 
-- **Модуль `vault/` упрощён до чистой экономики**:
-  - **Убран магазин кастомных предметов**: удалены команды `/buy`, `/sell`,
-    `/sellhand`, `/worth` и все настройки `shop:` из `config.yml`. Покупка/продажа
-    предметов теперь живёт в отдельных плагинах, работающих с валютой через
-    Vault или публичный API модуля (`getBalance`, `withdraw`, `deposit`, `format`).
-  - **Убран топ богачей**: удалены команда `/baltop`, настройки `baltop-size` /
-    `baltop-refresh-seconds` и плейсхолдеры `%vault_top_name_N%` / `%vault_top_value_N%`.
-  - Остались: `/balance` (алиасы `/bal`, `/money`), `/pay`,
-    `/eco give|take|set|reset` (админ, право `dci.eco`), стартовый баланс,
-    собственная БД (`economy.storage: own`), плейсхолдеры `%vault_balance%` /
-    `%vault_currency%` — валюта для игроков как есть.
+- **The `vault/` module was simplified to a pure economy**:
+  - **The custom item shop was removed**: the commands `/buy`, `/sell`,
+    `/sellhand`, `/worth` and all the `shop:` settings were removed from `config.yml`. The
+    buying/selling of the items now lives in separate plugins that work with the
+    currency via Vault or the public module API (`getBalance`, `withdraw`, `deposit`, `format`).
+  - **The richest players top was removed**: the `/baltop` command, the `baltop-size` /
+    `baltop-refresh-seconds` settings and the `%vault_top_name_N%` / `%vault_top_value_N%` placeholders were removed.
+  - Remaining: `/balance` (the aliases `/bal`, `/money`), `/pay`,
+    `/eco give|take|set|reset` (admin, the permission `dci.eco`), the starting balance,
+    its own DB (`economy.storage: own`), the placeholders `%vault_balance%` /
+    `%vault_currency%` — the currency for the players as is.
 
 ---
 
 ## v1.325.0
 
-### 🔒 Безопасность
+### 🔒 Security
 
-- **Флаг `java-compilation: true/false` в config.yml** — runtime-компиляция
-  `.java` из `items/` теперь можно отключить (это исполнение произвольного
-  кода; при недоверенном доступе к файлам плагина — выключать). При `false`
-  все `.java`-файлы в `items/` игнорируются, YAML-предметы работают как обычно.
-- **`SECURITY.md`** — политика сообщения об уязвимостях.
-- **CodeQL** (security-extended) — отдельный workflow, еженедельно и на PR.
-- **OWASP dependency-check** — профиль `-Psecurity` в Maven (аудит зависимостей,
+- **The `java-compilation: true/false` flag in config.yml** — the runtime compilation
+  of the `.java` files from `items/` can now be disabled (this is an arbitrary code
+  execution; with an untrusted access to the plugin files it should be off). With `false`
+  all the `.java` files in `items/` are ignored, the YAML items work as usual.
+- **`SECURITY.md`** — the vulnerability reporting policy.
+- **CodeQL** (security-extended) — a separate workflow, weekly and on the PRs.
+- **OWASP dependency-check** — the `-Psecurity` profile in Maven (the dependency audit,
   `failBuildOnCVSS=9`).
 
-### 🧪 Тесты и CI
+### 🧪 Tests and CI
 
-- **JaCoCo** — отчёт покрытия тестами, артефакт в GitHub Actions.
-- **JDK 21** в CI и в `maven.compiler` (Paper 1.21.x требует Java 21 в рантайме).
-- Надёжное проставление версии в CI: `mvn versions:set` вместо хрупкого `sed`.
-- `build.sh` переписан: версия читается из `VERSION` (раньше был захардкожен
-  `1.6.5` и неверный путь к jar).
+- **JaCoCo** — the test coverage report, an artifact in GitHub Actions.
+- **JDK 21** in CI and in `maven.compiler` (Paper 1.21.x requires Java 21 at runtime).
+- Reliable version stamping in CI: `mvn versions:set` instead of the fragile `sed`.
+- `build.sh` rewritten: the version is read from `VERSION` (it was hardcoded
+  to `1.6.5` and the path to the jar was wrong).
 
-### 🛠 Исправления и чистка
+### 🛠 Fixes and cleanup
 
-- Удалена мусорная строка в конце `.gitignore` (артефакт прошлой операции).
-- Удалён `items/test.yml` из штатных ресурсов — тестовые предметы больше не
-  копируются на серверы пользователей.
-- Отключена Maven-фильтрация ресурсов (`filtering: false`) — подстановка
-  `${...}` могла тихо ломать YAML-предметы с плейсхолдерами.
-- Компиляция против **paper-api 1.21.8** (вместо spigot-api) — соответствует
-  заявленной поддержке Paper/Folia/Purpur; версия Minecraft унифицирована
-  по документации (1.21.8+).
+- Removed the junk line at the end of `.gitignore` (an artifact of an earlier operation).
+- Removed `items/test.yml` from the default resources — the test items are no longer
+  copied to the users' servers.
+- Disabled the Maven resource filtering (`filtering: false`) — the substitution
+  of `${...}` could silently break the YAML items with the placeholders.
+- Compilation against **paper-api 1.21.8** (instead of spigot-api) — it matches the
+  stated support for Paper/Folia/Purpur; the Minecraft version is unified across
+  the documentation (1.21.8+).
 
 ---
 
 ## v1.324.0
 
-### 🏗️ Модульность — теперь по-настоящему
+### 🏗️ Modularity — for real now
 
-- **Штатные модули/предметы копируются из jar в `items/` при первом запуске**
-  (`DefaultContentExtractor`). Раньше папка `items/` создавалась пустой, и плагин
-  был «голым» — теперь модули, команды и предметы появляются как обычные файлы.
-- Всё функциональное — файлы: удали `items/give-command.java` — исчез `/give`;
-  удали `items/vault/` — исчезли `/buy /sell`; удали любой `.yml` — предмет пропал.
-- Ядро осталось «компилятором»: нотация файлов + базовый инфраструктура (реестр,
-  события, БД). При пустом `items/` работает только `/ci reload`.
-- Папки-справочники `EXAMPLES/`, `_template/` и файлы `EXAMPLE-*` на сервер
-  не копируются и не компилируются.
-- Правила экстракции: `vault/` копируется только при установленном Vault
-  (иначе его Java не скомпилируется). Отключение: `extract-default-modules: false`.
+- **The default modules/items are copied from the jar into `items/` on the first start**
+  (`DefaultContentExtractor`). Previously the `items/` folder was created empty and the
+  plugin was "bare" — now the modules, commands and items appear as regular files.
+- All the functionality is files: delete `items/give-command.java` — `/give` is gone;
+  delete `items/vault/` — `/buy /sell` are gone; delete any `.yml` — the item is gone.
+- The core stays a "compiler": the file notation + the basic infrastructure (the
+  registry, the events, the DB). With an empty `items/` only `/ci reload` works.
+- The reference folders `EXAMPLES/`, `_template/` and the `EXAMPLE-*` files are not
+  copied to the server and not compiled.
+- The extraction rules: `vault/` is copied only when Vault is installed
+  (otherwise its Java does not compile). Disabling: `extract-default-modules: false`.
 
-### ⚡ Единый парсер действий
+### ⚡ One action parser
 
-- Один `ActionParser` вместо трёх дублированных реализаций: клики (YAML) и
-  триггеры выполняются одинаково.
-- Дефисы и подчёркивания эквивалентны: `damage-mobs` = `damage_mobs`.
-- Добавлены недостающие действия: `effect_nearby*`, `knockback/launch/stun_mobs/players`,
-  `break`; `title` понимает все форматы; `teleport` — `~`-координаты и yaw;
-  `give` умеет выдавать кастомные предметы по ID; `command` — от консоли.
-- Починен сломанный `set_xp` и кулдаун триггеров (ключи не совпадали —
-  `cooldown:X` теперь реально работает).
+- One `ActionParser` instead of the three duplicated implementations: the clicks
+  (YAML) and the triggers are executed the same way.
+- Hyphens and underscores are equivalent: `damage-mobs` = `damage_mobs`.
+- Added the missing actions: `effect_nearby*`, `knockback/launch/stun_mobs/players`,
+  `break`; `title` understands all the formats; `teleport` — the `~` coordinates and the yaw;
+  `give` can give the custom items by ID; `command` — from the console.
+- Fixed the broken `set_xp` and the trigger cooldown (the keys did not match —
+  `cooldown:X` now really works).
 
-### 🔔 События для сторонних плагинов (YAML и Java предметы)
+### 🔔 Events for third-party plugins (YAML and Java items)
 
-| Событие | Когда |
+| Event | When |
 |---|---|
-| `CustomItemEquipEvent` | Предмет экипирован/снят (до FX/хука) — отменяемо |
-| `CustomItemUseEvent` | ЛКМ/ПКМ предметом (до действий) — отменяемо |
-| `CustomItemCraftEvent` | Крафт в обычном верстаке и в GUI `/craft` — отменяемо, `setResult()` |
-| `CustomItemDamageDealtEvent` / `DamageTakenEvent` | Урон предметом / по игроку с предметом — урон меняется |
-| `CustomItemKillEvent` / `DeathEvent` | Убийство игрока / смерть с предметом — отменяемо |
-| `CustomItemPeriodicEvent` | Перед каждым `onPeriodic` Java-предмета — отменяемо |
+| `CustomItemEquipEvent` | Item equipped/unequipped (before the FX/hook) — cancellable |
+| `CustomItemUseEvent` | LMB/RMB with an item (before the actions) — cancellable |
+| `CustomItemCraftEvent` | Crafting in a normal crafting table and in the `/craft` GUI — cancellable, `setResult()` |
+| `CustomItemDamageDealtEvent` / `DamageTakenEvent` | Damage with an item / to a player with an item — the damage is changed |
+| `CustomItemKillEvent` / `DeathEvent` | Killing a player / death with an item — cancellable |
+| `CustomItemPeriodicEvent` | Before every `onPeriodic` of a Java item — cancellable |
 
-### 🛠 Крафт-рецепты
+### 🛠 Crafting recipes
 
-- Рецепты прямо в YAML-секции предмета: `shaped`, `shapeless`, `furnace`
-  (пример — `items/EXAMPLE-crafting.yml`). Перерегистрация при `/ci reload`.
-- **Java-предметы** объявляют рецепты через `getRecipes()` + класс `RecipeDef`.
-- **GUI-крафт**: модуль `items/customcraft/` — команда `/craft`, окно 3×3,
-  предпросмотр результата. Идентичность ингредиентов по PDC/NBT: кастомный
-  предмет матчится по ID (можно «сам себя»), чужие предметы — по материалу,
-  их NBT не повреждается.
-- `/give` теперь выдаёт и Java-предметы (резолв по ID, список, tab-complete,
-  `all`/`<игрок>`/`<amount>`).
+- The recipes directly in the YAML item section: `shaped`, `shapeless`, `furnace`
+  (example — `items/EXAMPLE-crafting.yml`). Re-registration on `/ci reload`.
+- **The Java items** declare the recipes via `getRecipes()` + the `RecipeDef` class.
+- **GUI crafting**: the `items/customcraft/` module — the `/craft` command, a 3×3 window,
+  with a preview of the result. The ingredient identity via PDC/NBT: a custom
+  item matches by ID (it can match "itself"), the foreign items — by material,
+  their NBT is not damaged.
+- `/give` now gives the Java items too (the resolution by ID, the list, the tab-complete,
+  `all`/`<player>`/`<amount>`).
 
-### ☕ Java API — «можно писать что угодно»
+### ☕ Java API — "you can write anything"
 
-- Механики YAML-уровня у Java-предметов: `getMaxUses()`, `getDuration()`,
-  `isAllowedInWorld()`, кастомные сообщения `get*Message()`.
-- `getPermission()` теперь проверяется при кликах (как у YAML).
-- Хуки `onEquip` / `onUnequip` / `onPeriodic` реально вызываются глобальным
-  чекером экипировки (раньше были мёртвыми).
-- **Компилятор**: classpath включает серверный jar (Paper / Folia / Purpur /
-  Spigot), все `plugins/*.jar` и папку `plugins/DC-CustomItems/libs/` — любые
-  сторонние библиотеки подключаются класть jar в `libs/` и `/ci reload`.
-- Динамические команды модулей корректно удаляются при отключении/перезагрузке
-  (раньше висели в CommandMap).
-- `items/messages.java` — рабочий конфиг сообщений: `load()` вызывается на
-  старте и при `/ci reload`, правки без пересборки JAR.
+- The YAML-level mechanics of the Java items: `getMaxUses()`, `getDuration()`,
+  `isAllowedInWorld()`, the custom messages `get*Message()`.
+- `getPermission()` is now checked on the clicks (like in YAML).
+- The `onEquip` / `onUnequip` / `onPeriodic` hooks are really called by the global
+  equipment checker (they were dead before).
+- **Compiler**: the classpath includes the server jar (Paper / Folia / Purpur /
+  Spigot), all the `plugins/*.jar` and the `plugins/DC-CustomItems/libs/` folder — any
+  third-party library is connected by dropping the jar into `libs/` and `/ci reload`.
+- The dynamic module commands are properly removed on the disable/reload
+  (before they stayed in the CommandMap).
+- `items/messages.java` — a working message config: `load()` is called on
+  the start and on `/ci reload`, the edits without a rebuild of the JAR.
 
-### 🐛 Исправления
+### 🐛 Fixes
 
-- `SHADOW-dashblade.java` не компилировался на 1.21.8 (устаревшие particle /
-  rayTrace / sendActionBar) — исправлен.
-- Устаревший API в примерах (`EXAMPLE-royal-helmet`) приведён к актуальному.
-- Удалён мёртвый `TriggerConfig`, неиспользуемый `loadJavaModule` и дубли кода FX.
-- `EnumCache`/`ActionParser` инициализируются лениво — надёжнее при старте.
+- `SHADOW-dashblade.java` did not compile on 1.21.8 (the outdated particle /
+  rayTrace / sendActionBar) — fixed.
+- The outdated API in the samples (`EXAMPLE-royal-helmet`) was brought up to date.
+- Removed the dead `TriggerConfig`, the unused `loadJavaModule` and the duplicates of the FX code.
+- `EnumCache`/`ActionParser` are initialized lazily — more reliable on the start.
 
-### 🧪 Тесты и документация
+### 🧪 Tests and documentation
 
-- 16 JUnit-тестов: нормализация действий `ActionParser`, `EnumCache`.
-- Справочные примеры: `items/EXAMPLES/DragonboneArmor.java` (броня: рецепты,
-  экипировка, периодика) и `items/EXAMPLES/Frostblade.java` (оружие: клики,
-  кулдаун, бой).
-- Документация актуализирована (события, рецепты, GUI-крафт, Java API,
+- 16 JUnit tests: the action normalization of `ActionParser`, `EnumCache`.
+- The reference samples: `items/EXAMPLES/DragonboneArmor.java` (armour: the recipes,
+  the equipping, the periodic) and `items/EXAMPLES/Frostblade.java` (weapon: the clicks,
+  the cooldown, the combat).
+- The documentation was brought up to date (the events, the recipes, the GUI crafting, the Java API,
   messages, `libs/`).
 
 ---
 
-## Ранние версии
+## Earlier versions
 
-- **v1.323.0** — стабилизация модулей и компилятора.
-- **v1.322.0** — duration, trail-частицы, запреты миров, триггер `on_sprint`,
-  анимированные модели, CI-релизы из `VERSION`.
-- **v1.321.1** — полное обновление документации и модульная архитектура.
+- **v1.323.0** — the stabilization of the modules and the compiler.
+- **v1.322.0** — duration, the trail particles, the world bans, the `on_sprint` trigger,
+  the animated models, the CI releases from `VERSION`.
+- **v1.321.1** — a full documentation update and a modular architecture.
